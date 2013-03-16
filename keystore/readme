@@ -1,0 +1,41 @@
+macaa = MAC Address Authorization
+cred = credential
+creds = credentials
+
+   MAC key identifier:  h480djs93hd8
+   MAC key:  489dks293j39
+   MAC algorithm:  hmac-sha-1
+   Issue time:  Thu, 02 Dec 2010 21:39:45 GMT
+
+   MAC key identifier
+         A string identifying the MAC key used to calculate the request
+         MAC.  The string is usually opaque to the client.  The server
+         typically assigns a specific scope and lifetime to each set of
+         MAC credentials.  The identifier MAY denote a unique value used
+         to retrieve the authorization information (e.g. from a
+         database), or self-contain the authorization information in a
+         verifiable manner (i.e. a string consisting of some data and a
+         signature).
+   MAC key
+         A shared symmetric secret used as the MAC algorithm key.  The
+         server MUST NOT issue the same MAC key and MAC key identifier
+         combination.
+   MAC algorithm
+         A MAC algorithm used to calculate the request MAC.  Value MUST
+         be one of "hmac-sha-1", "hmac-sha-256", or a registered
+         extension algorithm name as described in Section 8.1.
+         Algorithm names are case-sensitive.  If the MAC algorithm is
+         not understood by the client, the client MUST NOT use the MAC
+         credentials and continue as if no MAC credentials were issued.
+   Issue time
+         The time when the credentials were issued, used to calculate
+         the credentials age when making requests.  If the MAC
+         credentials were obtained via an HTTP response, the time of
+         issue is the time the response was received by the client.
+
+   The MAC key identifier, MAC key, MAC algorithm strings MUST NOT
+   include characters other than:
+
+
+     %x20-21 / %x23-5B / %x5D-7E
+     ; Any printable ASCII character except for <"> and <\>

@@ -1,0 +1,7 @@
+{
+	"type": "cred",
+	"mac_key_identifier": "mash", 
+	"mac_key": "matt", 
+	"mac_algorithm": "hmac-sha-1",
+	"issue_time": "Thu, 02 Dec 2010 21:39:45 GMT"
+}
