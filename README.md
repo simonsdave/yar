@@ -1,7 +1,7 @@
 apimgmt
 =======
 
-Some code allowing Dave to explore some thoughts on a simple API Management service.
+Some code Dave is using to explore some thoughts on a simple API Management service.
 
 prerequisites 
 -------------
