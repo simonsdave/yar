@@ -8,19 +8,19 @@ import tornado.web
 from tornado.options import define, options
 define("port", default=8000, help="run on the given port", type=int)
 
-class MACCredssHandler(tornado.web.RequestHandler):
+class AllCredsHandler(tornado.web.RequestHandler):
 	def get(self):
-		self.write("creds")
+		self.write(">>>all creds<<<")
 
-class MACCredsHandler(tornado.web.RequestHandler):
+class CredsHandler(tornado.web.RequestHandler):
 	def get(self,key):
 		self.write(">>>%s<<<" % key)
 
 if __name__ == "__main__":
 	tornado.options.parse_command_line()
 	handlers = [
-		(r"/mac_creds", MACCredssHandler),
-		(r"/mac_creds/(.*)", MACCredsHandler)
+		(r"/mac_creds(?:/){0,1}", AllCredsHandler),
+		(r"/mac_creds/([^/]+)", CredsHandler)
 	]
 	app = tornado.web.Application(handlers=handlers)
 	http_server = tornado.httpserver.HTTPServer(app)
