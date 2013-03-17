@@ -11,6 +11,9 @@ define("port", default=8000, help="run on the given port", type=int)
 class AllCredsHandler(tornado.web.RequestHandler):
 	def get(self):
 		self.write(">>>all creds<<<")
+	# curl -s -X POST -H "Content-Type: application/json; charset=utf8" -d @"cred_data/dave.json" http://localhost:6969/mac_creds/
+	def post(self):
+		self.write(">>>%s<<<" % self.request.body)
 
 class CredsHandler(tornado.web.RequestHandler):
 	def get(self,key):
