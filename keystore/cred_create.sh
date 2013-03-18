@@ -18,7 +18,6 @@ DB_SERVER_IP=`"$SCRIPTDIR/get_config_option_value.sh" DB_SERVER_IP`
 DB_SERVER_PORT=`"$SCRIPTDIR/get_config_option_value.sh" DB_SERVER_PORT`
 DB_NAME=`"$SCRIPTDIR/get_config_option_value.sh" DB_NAME`
 
-echo curl -s -X POST -H "Content-Type: application/json; charset=utf8" -d @"$CRED_DATA_FILE_NAME" http://$DB_SERVER_IP:$DB_SERVER_PORT/$DB_NAME
 curl -s -X POST -H "Content-Type: application/json; charset=utf8" -d @"$CRED_DATA_FILE_NAME" http://$DB_SERVER_IP:$DB_SERVER_PORT/$DB_NAME | "$SCRIPTDIR/pp.sh"
 
 exit 0
