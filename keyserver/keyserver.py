@@ -83,8 +83,14 @@ class CredsHandler(tornado.web.RequestHandler):
 		url = url_fmt % (id, id)
 		response = http_client.fetch(url)
 		body = json.loads(response.body)
-		# :TODO: what if no 'rows' exist?
-		self.write(json.dumps(body['rows']))
+		rows = body['rows']
+		if 0 == len(rows):
+			self.clear()
+			self.set_status(404)
+		else:
+			row = rows[0]
+			value = row['value']
+			self.write(json.dumps(value))
 
 if __name__ == "__main__":
 	tornado.options.parse_command_line()
