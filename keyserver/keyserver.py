@@ -51,7 +51,7 @@ class AllCredsHandler(tornado.web.RequestHandler):
 		self.write(json.dumps(rows))
 		# :TODO: content-type?
 
-	# curl -s -X POST -H "Content-Type: application/json; charset=utf8" -d @"cred_data/dave.json" http://localhost:6969/mac_creds/
+	# curl -X POST -H "Content-Type: application/json; charset=utf8" -d "{\"owner\":\"dave.simons@points.com\"}" http://localhost:6969/mac_creds/
 	def post(self):
 		# :TODO: check content type
 		body = json.loads(self.request.body)
@@ -62,11 +62,7 @@ class AllCredsHandler(tornado.web.RequestHandler):
 		body = json.dumps(mac_creds,cls=JSONEncoder)
 		# :TODO: this should not be hard-coded
 		url = "http://localhost:5984/macaa/"
-		headers = tornado.httputil.HTTPHeaders(
-			{
-				"Content-Type": "application/json; charset=utf8"
-			}
-			)
+		headers = {"Content-Type": "application/json; charset=utf8"}
 		http_client = tornado.httpclient.HTTPClient()
 		response = http_client.fetch(
 			url,
