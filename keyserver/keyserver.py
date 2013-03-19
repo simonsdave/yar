@@ -49,7 +49,7 @@ class AllCredsHandler(tornado.web.RequestHandler):
 			rows.append( row['value'] )
 		# what to do with the extra attributes that are leaking out?
 		self.write(json.dumps(rows))
-		# :TODO: content-type?
+		self.set_header("Content-Type", "application/json; charset=utf8") 
 
 	# curl -X POST -H "Content-Type: application/json; charset=utf8" -d "{\"owner\":\"dave.simons@points.com\"}" http://localhost:6969/mac_creds/
 	def post(self):
