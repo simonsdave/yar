@@ -76,6 +76,8 @@ class AllCredsHandler(tornado.web.RequestHandler):
 		# self.write(">>>%s<<<" % json.dumps(body))
 
 class CredsHandler(tornado.web.RequestHandler):
+
+	# curl -v -X GET http://localhost:6969/mac_creds/b205c21fbc467b4d28aa93fba7000d12
 	def get(self,id):
 		http_client = tornado.httpclient.HTTPClient()
 		# :TODO: should not be hardcoded
@@ -90,7 +92,8 @@ class CredsHandler(tornado.web.RequestHandler):
 		else:
 			row = rows[0]
 			value = row['value']
-			self.write(json.dumps(value))
+			# since value is a dict self.write() will correctly set the content type
+			self.write(value)
 
 if __name__ == "__main__":
 	tornado.options.parse_command_line()
