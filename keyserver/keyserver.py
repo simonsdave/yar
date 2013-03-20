@@ -55,25 +55,17 @@ class AllCredsHandler(tornado.web.RequestHandler):
 	def post(self):
 		# :TODO: check content type
 		body = json.loads(self.request.body)
-		# :TODO: what if 'owner' not there?
-		owner = body['owner']
-		mac_creds = MACcredentials.MACcredentials( owner )
-		# :TODO: need to ensure UTF8 encoding
+		if 'owner' not in body:
+			self.set_status(404)
+			return
+		mac_creds = MACcredentials.MACcredentials( body['owner'] )
 		body = json.dumps(mac_creds,cls=JSONEncoder)
-		# :TODO: this should not be hard-coded
-		url = "http://localhost:5984/macaa/"
-		headers = {"Content-Type": "application/json; charset=utf8"}
 		http_client = tornado.httpclient.HTTPClient()
 		response = http_client.fetch(
-			url,
+			"http://localhost:5984/macaa/",		# :TODO: this should not be hard-coded
 			method='POST',
-			headers=headers,
-			body=body
-			)
-		print 30*'-'
-		print response
-		print 30*'-'
-		# self.write(">>>%s<<<" % json.dumps(body))
+			headers={"Content-Type": "application/json; charset=utf8"},
+			body=body )
 
 class CredsHandler(tornado.web.RequestHandler):
 
