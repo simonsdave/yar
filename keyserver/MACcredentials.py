@@ -41,6 +41,16 @@ class MACcredentials(object):
 			self.issue_time
 			)
 
+	def asDict(self):
+		dict = {
+			"owner": self.owner,
+			"mac_key_identifier": self.mac_key_identifier,
+			"mac_key": self.mac_key,
+			"mac_algorithm": self.mac_algorithm,
+			"issue_time": self.issue_time
+		}
+		return dict
+
 if __name__ == "__main__":
 	pass
 
