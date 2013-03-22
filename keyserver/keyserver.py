@@ -45,12 +45,12 @@ class CredsHandler(tornado.web.RequestHandler):
 
 class AllCredsHandler(CredsHandler):
 
-	# curl -s -X GET http://localhost:6969/mac_creds/
-	# curl -s -X GET http://localhost:6969/mac_creds
+	# curl -s -X GET http://localhost:6969/v1.0/mac_creds/
+	# curl -s -X GET http://localhost:6969/v1.0/mac_creds
 	def get(self):
 		self.write_creds( MACcredentials.get_all() )
 
-	# curl -X POST -H "Content-Type: application/json; charset=utf8" -d "{\"owner\":\"dave.simons@points.com\"}" http://localhost:6969/mac_creds/
+	# curl -X POST -H "Content-Type: application/json; charset=utf8" -d "{\"owner\":\"dave.simons@points.com\"}" http://localhost:6969/v1.0/mac_creds/
 	def post(self):
 		# :TODO: check content type
 		body = json.loads(self.request.body)
@@ -63,12 +63,12 @@ class AllCredsHandler(CredsHandler):
 
 class ACredsHandler(CredsHandler):
 
-	# curl -v -X GET http://localhost:6969/mac_creds/b205c21fbc467b4d28aa93fba7000d12
+	# curl -v -X GET http://localhost:6969/v1.0/mac_creds/b205c21fbc467b4d28aa93fba7000d12
 	def get(self,mac_key_identifer):
 		assert mac_key_identifer is not None
 		self.write_creds(MACcredentials.get(mac_key_identifer))
 
-	# curl -v -X DELETE http://localhost:6969/mac_creds/b205c21fbc467b4d28aa93fba7000d12
+	# curl -v -X DELETE http://localhost:6969/v1.0/mac_creds/b205c21fbc467b4d28aa93fba7000d12
 	def delete(self,mac_key_identifer):
 		assert mac_key_identifer is not None
 		creds = MACcredentials.get(mac_key_identifer)
@@ -81,8 +81,8 @@ class ACredsHandler(CredsHandler):
 if __name__ == "__main__":
 	tornado.options.parse_command_line()
 	handlers = [
-		(r"/mac_creds(?:/){0,1}", AllCredsHandler),
-		(r"/mac_creds/([^/]+)", ACredsHandler)
+		(r"/v1.0/mac_creds(?:/){0,1}", AllCredsHandler),
+		(r"/v1.0/mac_creds/([^/]+)", ACredsHandler)
 	]
 	app = tornado.web.Application(handlers=handlers)
 	http_server = tornado.httpserver.HTTPServer(app)
