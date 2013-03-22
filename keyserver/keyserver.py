@@ -11,23 +11,44 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.options
 import tornado.web
-import tornado.httpclient
-import tornado.httputil
 from tornado.options import define, options
 
-import MACcredentials
-from MACcredentialsDoc import MACcredentialsDoc
+from MACcredentials import MACcredentials
 
 define("port", default=8000, help="run on the given port", type=int)
 
-class AllCredsHandler(tornado.web.RequestHandler):
+class JSONEncoder(json.JSONEncoder):
+	def default(self, obj):
+		if isinstance(obj, MACcredentials):
+			rv = {
+				"owner": obj.owner,
+				"mac_key_identifier": obj.mac_key_identifier,
+				"mac_key": obj.mac_key,
+				"mac_algorithm": obj.mac_algorithm,
+				"issue_time": obj.issue_time,
+			}
+			if obj.is_deleted:
+				rv["is_deleted"] = True
+			return rv
+		return json.JSONEncoder.default(self, obj)
+
+class CredsHandler(tornado.web.RequestHandler):
+
+	def write_creds(self,creds):
+		if creds is None:
+			self.clear()
+			self.set_status(404)
+		else:
+			# :TODO: need creds->json conversion
+			self.write(json.dumps(creds,cls=JSONEncoder))
+			self.set_header("Content-Type", "application/json; charset=utf8") 
+
+class AllCredsHandler(CredsHandler):
 
 	# curl -s -X GET http://localhost:6969/mac_creds/
 	# curl -s -X GET http://localhost:6969/mac_creds
 	def get(self):
-		docs = MACcredentialsDoc.get_all()
-		self.write(json.dumps(docs))
-		self.set_header("Content-Type", "application/json; charset=utf8") 
+		self.write_creds( MACcredentials.get_all() )
 
 	# curl -X POST -H "Content-Type: application/json; charset=utf8" -d "{\"owner\":\"dave.simons@points.com\"}" http://localhost:6969/mac_creds/
 	def post(self):
@@ -37,37 +58,31 @@ class AllCredsHandler(tornado.web.RequestHandler):
 			self.set_status(404)
 			return
 		owner = body['owner']
-		mac_creds = MACcredentials.MACcredentials(owner)
-		doc = MACcredentialsDoc(mac_creds.asDict())
-		doc.save()
+		creds = MACcredentials(owner)
+		creds.save()
 
-class CredsHandler(tornado.web.RequestHandler):
+class ACredsHandler(CredsHandler):
 
 	# curl -v -X GET http://localhost:6969/mac_creds/b205c21fbc467b4d28aa93fba7000d12
-	def get(self,id):
-		assert id is not None
-		doc = MACcredentialsDoc.get(id)
-		if doc is None:
-			self.clear()
-			self.set_status(404)
-		else:
-			# since value is a dict self.write() will correctly set the content type
-			self.write(doc)
+	def get(self,mac_key_identifer):
+		assert mac_key_identifer is not None
+		self.write_creds(MACcredentials.get(mac_key_identifer))
 
 	# curl -v -X DELETE http://localhost:6969/mac_creds/b205c21fbc467b4d28aa93fba7000d12
-	def delete(self,id):
-		doc = MACcredentialsDoc.get(id)
-		if doc is None:
+	def delete(self,mac_key_identifer):
+		assert mac_key_identifer is not None
+		creds = MACcredentials.get(mac_key_identifer)
+		if creds is None:
 			self.clear()
 			self.set_status(404)
 		else:
-			doc.delete()
+			creds.delete()
 
 if __name__ == "__main__":
 	tornado.options.parse_command_line()
 	handlers = [
 		(r"/mac_creds(?:/){0,1}", AllCredsHandler),
-		(r"/mac_creds/([^/]+)", CredsHandler)
+		(r"/mac_creds/([^/]+)", ACredsHandler)
 	]
 	app = tornado.web.Application(handlers=handlers)
 	http_server = tornado.httpserver.HTTPServer(app)

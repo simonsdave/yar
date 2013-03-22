@@ -3,9 +3,6 @@
 	"views": {
 		"all": {
 			"map": "function(doc) { if (doc.type == 'cred') emit(doc._id, doc) }"
-		},
-		"mac_key_identifier": {
-			"map": "function(doc) { if (doc.type == 'cred') emit(doc.mac_key_identifier, doc) }"
 		}
 	}
 }
