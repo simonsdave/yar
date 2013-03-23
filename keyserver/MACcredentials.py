@@ -52,10 +52,13 @@ class MACcredentials(object):
 			self._rev = dict.get("_rev",None)
 
 	@classmethod
-	def get_all(cls,owner=None,as_list_of_dicts=False):
+	def get_all(cls,owner=None):
 		http_client = tornado.httpclient.HTTPClient()
 		# :TODO: this should not be hard-coded
-		url = "http://localhost:5984/macaa/_design/creds/_view/all"
+		if owner is not None:
+			url = "http://localhost:5984/macaa/_design/creds/_view/by_owner?startkey=\"%s\"&endkey=\"%s\"" % (owner, owner)
+		else:
+			url = "http://localhost:5984/macaa/_design/creds/_view/all"
 		response = http_client.fetch(url)
 		body = json.loads(response.body)
 		rv = []

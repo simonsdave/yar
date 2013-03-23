@@ -39,16 +39,15 @@ class CredsHandler(tornado.web.RequestHandler):
 			self.clear()
 			self.set_status(404)
 		else:
-			# :TODO: need creds->json conversion
 			self.write(json.dumps(creds,cls=JSONEncoder))
 			self.set_header("Content-Type", "application/json; charset=utf8") 
 
 class AllCredsHandler(CredsHandler):
 
-	# curl -s -X GET http://localhost:6969/v1.0/mac_creds/
 	# curl -s -X GET http://localhost:6969/v1.0/mac_creds
 	def get(self):
-		self.write_creds( MACcredentials.get_all() )
+		owner = self.get_argument("owner",None)
+		self.write_creds(MACcredentials.get_all(owner))
 
 	# curl -X POST -H "Content-Type: application/json; charset=utf8" -d "{\"owner\":\"dave.simons@points.com\"}" http://localhost:6969/v1.0/mac_creds/
 	def post(self):
@@ -58,6 +57,7 @@ class AllCredsHandler(CredsHandler):
 			self.set_status(404)
 			return
 		owner = body['owner']
+		
 		creds = MACcredentials(owner)
 		creds.save()
 

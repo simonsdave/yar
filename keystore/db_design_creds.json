@@ -3,6 +3,9 @@
 	"views": {
 		"all": {
 			"map": "function(doc) { if (doc.type == 'cred') emit(doc._id, doc) }"
+		},
+		"by_owner": {
+			"map": "function(doc) { if (doc.type == 'cred') emit(doc.owner, doc) }"
 		}
 	}
 }
