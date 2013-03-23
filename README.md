@@ -12,3 +12,4 @@ References
 Prerequisites 
 -------------
 * [Tornado 2.4.1](http://www.tornadoweb.org/en/branch2.4/ "Tornado 2.4.1")
+* [httplib2 0.8](https://code.google.com/p/httplib2/ "httplib2")
