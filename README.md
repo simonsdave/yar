@@ -7,6 +7,7 @@ References
 ----------
 * [HTTP Authentication: MAC Access Authentication](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00 "HTTP Authentication: MAC Access Authentication")
 * [OAuth 2.0](http://oauth.net/2/ "OAuth 2.0")
+* [JSONPath](http://goessner.net/articles/JsonPath/)
 
 Prerequisites 
 -------------
