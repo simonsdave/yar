@@ -17,6 +17,8 @@ from MACcredentials import MACcredentials
 
 define("port", default=8000, help="run on the given port", type=int)
 
+#-------------------------------------------------------------------------------
+
 class JSONEncoder(json.JSONEncoder):
 	def default(self, obj):
 		if isinstance(obj, MACcredentials):
@@ -32,6 +34,19 @@ class JSONEncoder(json.JSONEncoder):
 			return rv
 		return json.JSONEncoder.default(self, obj)
 
+#-------------------------------------------------------------------------------
+
+class StatusHandler(tornado.web.RequestHandler):
+
+	def get(self):
+		status = {
+			"status": "ok",
+			"version": "1.0",
+		}
+		self.write(status)
+
+#-------------------------------------------------------------------------------
+
 class CredsHandler(tornado.web.RequestHandler):
 
 	def write_creds(self,creds):
@@ -41,6 +56,8 @@ class CredsHandler(tornado.web.RequestHandler):
 		else:
 			self.write(json.dumps(creds,cls=JSONEncoder))
 			self.set_header("Content-Type", "application/json; charset=utf8") 
+
+#-------------------------------------------------------------------------------
 
 class AllCredsHandler(CredsHandler):
 
@@ -61,6 +78,8 @@ class AllCredsHandler(CredsHandler):
 		creds = MACcredentials(owner)
 		creds.save()
 
+#-------------------------------------------------------------------------------
+
 class ACredsHandler(CredsHandler):
 
 	# curl -v -X GET http://localhost:6969/v1.0/mac_creds/b205c21fbc467b4d28aa93fba7000d12
@@ -78,14 +97,18 @@ class ACredsHandler(CredsHandler):
 		else:
 			creds.delete()
 
+#-------------------------------------------------------------------------------
+
+_tornado_handlers = [
+	(r"/status", StatusHandler),
+	(r"/v1.0/mac_creds(?:/){0,1}", AllCredsHandler),
+	(r"/v1.0/mac_creds/([^/]+)", ACredsHandler)
+]
+_tornado_app = tornado.web.Application(handlers=_tornado_handlers)
+
 if __name__ == "__main__":
 	tornado.options.parse_command_line()
-	handlers = [
-		(r"/v1.0/mac_creds(?:/){0,1}", AllCredsHandler),
-		(r"/v1.0/mac_creds/([^/]+)", ACredsHandler)
-	]
-	app = tornado.web.Application(handlers=handlers)
-	http_server = tornado.httpserver.HTTPServer(app)
+	http_server = tornado.httpserver.HTTPServer(_tornado_app)
 	http_server.listen(options.port)
 	tornado.ioloop.IOLoop.instance().start()
 
