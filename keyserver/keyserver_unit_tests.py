@@ -5,6 +5,8 @@
 #
 #-------------------------------------------------------------------------------
 
+import logging
+logging.basicConfig( level=logging.FATAL )
 import time
 import socket
 import threading
@@ -62,7 +64,7 @@ class KeyServer(threading.Thread):
 
 #-------------------------------------------------------------------------------
 
-class TestStatus(unittest.TestCase):
+class KeyServerTestCase(unittest.TestCase):
 	
 	@classmethod
 	def setUpClass(cls):
@@ -74,13 +76,19 @@ class TestStatus(unittest.TestCase):
 		cls._key_server.stop()
 		cls._key_server = None
 
-	@property
 	def url(self):
-		return "http://localhost:%s/status" % self.__class__._key_server.port
+		return "http://localhost:%s" % self.__class__._key_server.port
+
+#-------------------------------------------------------------------------------
+
+class TestStatusResource(KeyServerTestCase):
+	
+	def url(self):
+		return "%s/status" % KeyServerTestCase.url(self)
 
 	def test_get(self):
 		http_client = httplib2.Http()
-		response, content = http_client.request(self.url, "GET")
+		response, content = http_client.request(self.url(), "GET")
 
 		self.assertIsNotNone(response)
 		self.assertTrue(httplib.OK == response.status)
@@ -97,18 +105,83 @@ class TestStatus(unittest.TestCase):
 
 	def _test_bad_method(self,method):
 		http_client = httplib2.Http()
-		response, content = http_client.request(self.url, method)
+		response, content = http_client.request(self.url(), method)
 		self.assertIsNotNone(response)
 		self.assertTrue(httplib.METHOD_NOT_ALLOWED == response.status)
 
 	def test_post(self):
 		self._test_bad_method("POST")
 
-	def test_put( self ):
+	def test_put(self):
 		self._test_bad_method("PUT")
 
-	def test_delete( self ):
+	def test_delete(self):
 		self._test_bad_method("DELETE")
+
+#-------------------------------------------------------------------------------
+
+class TestMacCredsResource(KeyServerTestCase):
+
+	def url(self):
+		return "%s/v1.0/mac_creds" % KeyServerTestCase.url(self)
+
+	def test_post_with_no_content_type_header(self):
+		http_client = httplib2.Http()
+		response, content = http_client.request(
+			self.url(),
+			"POST",
+			body=json.dumps({"owner": "simonsdave@gmail.com"}),
+			headers={}
+			)
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.BAD_REQUEST == response.status)
+
+	def test_post_with_no_body(self):
+		http_client = httplib2.Http()
+		response, content = http_client.request(
+			self.url(),
+			"POST",
+			body="",
+			headers={"Content-Type": "application/json; charset=utf8"}
+			)
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.BAD_REQUEST == response.status)
+
+	def test_post_all_good(self):
+		# create a MAC creds resource
+		http_client = httplib2.Http()
+		response, content = http_client.request(
+			self.url(),
+			"POST",
+			body=json.dumps({"owner": "simonsdave@gmail.com"}),
+			headers={"Content-Type": "application/json; charset=utf8"}
+			)
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.OK == response.status)
+		self.assertTrue('location' in response)
+		location = response['location']
+		self.assertIsNotNone(location)
+		self.assertIsNotNone(location.startswith(self.url()))
+
+		# based on the returned location retrieve the newly created MAC creds
+		http_client = httplib2.Http()
+		response, content = http_client.request(location, "GET")
+		self.assertTrue(httplib.OK == response.status)
+		self.assertTrue("content-type" in response)
+		content_type = response["content-type"]
+		self.assertIsNotNone(_json_utf8_content_type_reg_ex.match(content_type))
+		mac_creds = json.loads(content)
+		self.assertIsNotNone(mac_creds)
+
+		# delete the newly created and freshly returned MAC creds
+		http_client = httplib2.Http()
+		response, content = http_client.request(location, "DELETE")
+		self.assertTrue(httplib.OK == response.status)
+
+		# AGAIN delete the newly created and freshly returned MAC creds
+		http_client = httplib2.Http()
+		response, content = http_client.request(location, "DELETE")
+		self.assertTrue(httplib.NOT_FOUND == response.status)
 
 #-------------------------------------------------------------------------------
 

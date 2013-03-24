@@ -5,6 +5,8 @@
 #
 #-------------------------------------------------------------------------------
 
+import httplib
+import re
 import json
 
 import tornado.httpserver
@@ -21,7 +23,18 @@ define("port", default=8000, help="run on the given port", type=int)
 
 #-------------------------------------------------------------------------------
 
-class JSONEncoder(json.JSONEncoder):
+class StatusHandler(tornado.web.RequestHandler):
+
+	def get(self):
+		status = {
+			"status": "ok",
+			"version": "1.0",
+		}
+		self.write(status)
+
+#-------------------------------------------------------------------------------
+
+class MACCredsJSONEncoder(json.JSONEncoder):
 	def default(self, obj):
 		if isinstance(obj, maccreds.MACcredentials):
 			rv = {
@@ -38,64 +51,73 @@ class JSONEncoder(json.JSONEncoder):
 
 #-------------------------------------------------------------------------------
 
-class StatusHandler(tornado.web.RequestHandler):
-
-	def get(self):
-		status = {
-			"status": "ok",
-			"version": "1.0",
-		}
-		self.write(status)
-
-#-------------------------------------------------------------------------------
-
 class CredsHandler(tornado.web.RequestHandler):
 
 	def write_creds(self,creds):
 		if creds is None:
 			self.clear()
-			self.set_status(404)
+			self.set_status(httplib.BAD_REQUEST)
 		else:
-			self.write(json.dumps(creds,cls=JSONEncoder))
+			self.write(json.dumps(creds,cls=MACCredsJSONEncoder))
 			self.set_header("Content-Type", "application/json; charset=utf8") 
 
 #-------------------------------------------------------------------------------
 
 class AllCredsHandler(CredsHandler):
 
-	# curl -s -X GET http://localhost:6969/v1.0/mac_creds
+	_json_utf8_content_type_reg_ex = re.compile(
+		"^\s*application/json;\s+charset\=utf-{0,1}8\s*$",
+		re.IGNORECASE )
+
+	def _is_json_utf8_content_type(self):
+		content_type = self.request.headers.get("content-type", None)
+		if content_type is None:
+			return False
+		if not self.__class__._json_utf8_content_type_reg_ex.match(content_type):
+			return False
+		return True
+
+	def _get_request_body_as_dict_from_json(self):
+		if not self._is_json_utf8_content_type():
+			return None
+		body = self.request.body
+		if body is None:
+			return None
+		try:
+			return json.loads(body)
+		except:
+			pass
+		return None
+
 	def get(self):
 		owner = self.get_argument("owner",None)
 		self.write_creds(maccreds.MACcredentials.get_all(owner))
 
-	# curl -X POST -H "Content-Type: application/json; charset=utf8" -d "{\"owner\":\"dave.simons@points.com\"}" http://localhost:6969/v1.0/mac_creds/
 	def post(self):
-		# :TODO: check content type
-		body = json.loads(self.request.body)
-		if 'owner' not in body:
-			self.set_status(404)
-			return
-		owner = body['owner']
-		
-		creds = maccreds.MACcredentials(owner)
-		creds.save()
+		body = self._get_request_body_as_dict_from_json()
+		if body is None:
+			self.set_status(httplib.BAD_REQUEST)
+		else:
+			creds = maccreds.MACcredentials(body["owner"])
+			creds.save()
+			self.set_header(
+				"Location",
+				"%s/%s" % (self.request.full_url(), creds.mac_key_identifier))
 
 #-------------------------------------------------------------------------------
 
 class ACredsHandler(CredsHandler):
 
-	# curl -v -X GET http://localhost:6969/v1.0/mac_creds/b205c21fbc467b4d28aa93fba7000d12
 	def get(self,mac_key_identifer):
 		assert mac_key_identifer is not None
 		self.write_creds(maccreds.MACcredentials.get(mac_key_identifer))
 
-	# curl -v -X DELETE http://localhost:6969/v1.0/mac_creds/b205c21fbc467b4d28aa93fba7000d12
 	def delete(self,mac_key_identifer):
 		assert mac_key_identifer is not None
 		creds = maccreds.MACcredentials.get(mac_key_identifer)
 		if creds is None:
 			self.clear()
-			self.set_status(404)
+			self.set_status(httplib.NOT_FOUND)
 		else:
 			creds.delete()
 
@@ -103,7 +125,7 @@ class ACredsHandler(CredsHandler):
 
 _tornado_handlers = [
 	(r"/status", StatusHandler),
-	(r"/v1.0/mac_creds(?:/){0,1}", AllCredsHandler),
+	(r"/v1.0/mac_creds", AllCredsHandler),
 	(r"/v1.0/mac_creds/([^/]+)", ACredsHandler)
 ]
 _tornado_app = tornado.web.Application(handlers=_tornado_handlers)
