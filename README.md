@@ -18,7 +18,7 @@ Tokenization Server
 
 Key Server 
 ----------
-* curl -X POST -H "Content-Type: application/json; charset=utf8" -d "{\"owner\":\"dave.simons@points.com\"}" http://localhost:6969/v1.0/mac_creds/
+* curl -X POST -H "Content-Type: application/json; charset=utf8" -d "{\"owner\":\"dave.simons@points.com\"}" http://localhost:6969/v1.0/mac_creds
 * curl -s -X GET http://localhost:6969/v1.0/mac_creds
 * curl -v -X GET http://localhost:6969/v1.0/mac_creds/<MAC key identifier>
 * curl -v -X DELETE http://localhost:6969/v1.0/mac_creds/<MAC key identifier>
