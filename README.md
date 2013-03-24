@@ -32,6 +32,7 @@ References
 * [HTTP Authentication: MAC Access Authentication](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00 "HTTP Authentication: MAC Access Authentication")
 * [OAuth 2.0](http://oauth.net/2/ "OAuth 2.0")
 * [JSONPath](http://goessner.net/articles/JsonPath/)
+* [Cybersource: Payment Tokenization - Using the Simple Order API](http://apps.cybersource.com/library/documentation/dev_guides/Payment_Tokenization/SO_API/Payment_Tokenization_SO_API.pdf)
 
 Articles
 --------
