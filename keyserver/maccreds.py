@@ -109,7 +109,7 @@ class MACcredentials(object):
 		if self.is_deleted:
 			dict["is_deleted"] = True
 		if is_for_couch:
-			dict["type"] = "cred",
+			dict["type"] = "cred"
 			dict["_id"] = self.mac_key_identifier
 			if self._rev is not None:
 				dict["_rev"] = self._rev
