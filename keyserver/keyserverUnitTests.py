@@ -9,6 +9,10 @@ import time
 import socket
 import threading
 import unittest
+import re
+import httplib
+import httplib2
+import json
 
 import tornado.httpserver
 import tornado.ioloop
@@ -20,7 +24,13 @@ import keyserver
 
 #-------------------------------------------------------------------------------
 
-class HTTPServer(threading.Thread):
+_json_utf8_content_type_reg_ex = re.compile(
+ 	"^\s*application/json;\s+charset\=utf-{0,1}8\s*$",
+ 	re.IGNORECASE )
+
+#-------------------------------------------------------------------------------
+
+class KeyServer(threading.Thread):
 
 	@classmethod
 	def _get_socket(cls):
@@ -40,30 +50,67 @@ class HTTPServer(threading.Thread):
 		http_server = tornado.httpserver.HTTPServer(keyserver._tornado_app)
 		http_server.add_sockets([sock])
 
+		# this might not be required but want to give the server 
+		# a bit of time to get itself settled
+		time.sleep(1)
+
 	def run(self):
 		tornado.ioloop.IOLoop.instance().start()
 
 	def stop(self):
 		tornado.ioloop.IOLoop.instance().stop()
 
-#------------------------------------------------------------------- End-of-File
+#-------------------------------------------------------------------------------
 
-class Test(unittest.TestCase):
+class TestStatus(unittest.TestCase):
 	
 	@classmethod
 	def setUpClass(cls):
-		cls._http_server = HTTPServer()
-		cls._http_server.start()
+		cls._key_server = KeyServer()
+		cls._key_server.start()
 
 	@classmethod
 	def tearDownClass(cls):
-		cls._http_server.stop()
-		cls._http_server = None
+		cls._key_server.stop()
+		cls._key_server = None
 
-	def test_ctr( self ):
-		# self.assertTrue( mac_credentials.owner == owner )
-		time.sleep(2)
-		print self.__class__._http_server.port
+	@property
+	def url(self):
+		return "http://localhost:%s/status" % self.__class__._key_server.port
+
+	def test_get(self):
+		http_client = httplib2.Http()
+		response, content = http_client.request(self.url, "GET")
+
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.OK == response.status)
+		self.assertTrue("content-type" in response)
+		content_type = response["content-type"]
+		self.assertIsNotNone(_json_utf8_content_type_reg_ex.match(content_type))
+
+		self.assertIsNotNone(content)
+		content = json.loads(content)
+		self.assertTrue("status" in content)
+		self.assertTrue(content["status"] == "ok")
+		self.assertTrue("version" in content)
+		self.assertTrue(content["version"] == "1.0")
+
+	def _test_bad_method(self,method):
+		http_client = httplib2.Http()
+		response, content = http_client.request(self.url, method)
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.METHOD_NOT_ALLOWED == response.status)
+
+	def test_post(self):
+		self._test_bad_method("POST")
+
+	def test_put( self ):
+		self._test_bad_method("PUT")
+
+	def test_delete( self ):
+		self._test_bad_method("DELETE")
+
+#-------------------------------------------------------------------------------
 
 if __name__ == "__main__":
 	unittest.main()
