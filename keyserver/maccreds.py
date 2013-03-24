@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
 #
-# MACcredentials.py
-#	http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00
+# maccreds.py #	http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00
 #
 # :TODO:
 #	remove http://localhost:5984/macaa hard-coding

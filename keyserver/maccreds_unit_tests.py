@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
 #
-# MACcredentialsUnitTests.py
+# maccreds_unit_tests.py
 #
 #-------------------------------------------------------------------------------
 
 import unittest
 
-import MACcredentials
+import maccreds
 
 class Test(unittest.TestCase):
 
 	def test_ctr( self ):
 		owner = "boo"
-		mac_credentials = MACcredentials.MACcredentials( "boo" )
+		mac_credentials = maccreds.MACcredentials( "boo" )
 		self.assertTrue( mac_credentials.owner == owner )
 		self.assertTrue( mac_credentials.mac_key_identifier is not None )
 		self.assertTrue( mac_credentials.mac_key is not None )

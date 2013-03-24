@@ -13,7 +13,9 @@ import tornado.options
 import tornado.web
 from tornado.options import define, options
 
-from MACcredentials import MACcredentials
+import maccreds
+
+#-------------------------------------------------------------------------------
 
 define("port", default=8000, help="run on the given port", type=int)
 
@@ -21,7 +23,7 @@ define("port", default=8000, help="run on the given port", type=int)
 
 class JSONEncoder(json.JSONEncoder):
 	def default(self, obj):
-		if isinstance(obj, MACcredentials):
+		if isinstance(obj, maccreds.MACcredentials):
 			rv = {
 				"owner": obj.owner,
 				"mac_key_identifier": obj.mac_key_identifier,
@@ -64,7 +66,7 @@ class AllCredsHandler(CredsHandler):
 	# curl -s -X GET http://localhost:6969/v1.0/mac_creds
 	def get(self):
 		owner = self.get_argument("owner",None)
-		self.write_creds(MACcredentials.get_all(owner))
+		self.write_creds(maccreds.MACcredentials.get_all(owner))
 
 	# curl -X POST -H "Content-Type: application/json; charset=utf8" -d "{\"owner\":\"dave.simons@points.com\"}" http://localhost:6969/v1.0/mac_creds/
 	def post(self):
@@ -75,7 +77,7 @@ class AllCredsHandler(CredsHandler):
 			return
 		owner = body['owner']
 		
-		creds = MACcredentials(owner)
+		creds = maccreds.MACcredentials(owner)
 		creds.save()
 
 #-------------------------------------------------------------------------------
@@ -85,12 +87,12 @@ class ACredsHandler(CredsHandler):
 	# curl -v -X GET http://localhost:6969/v1.0/mac_creds/b205c21fbc467b4d28aa93fba7000d12
 	def get(self,mac_key_identifer):
 		assert mac_key_identifer is not None
-		self.write_creds(MACcredentials.get(mac_key_identifer))
+		self.write_creds(maccreds.MACcredentials.get(mac_key_identifer))
 
 	# curl -v -X DELETE http://localhost:6969/v1.0/mac_creds/b205c21fbc467b4d28aa93fba7000d12
 	def delete(self,mac_key_identifer):
 		assert mac_key_identifer is not None
-		creds = MACcredentials.get(mac_key_identifer)
+		creds = maccreds.MACcredentials.get(mac_key_identifer)
 		if creds is None:
 			self.clear()
 			self.set_status(404)
