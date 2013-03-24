@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
 #
-# maccreds.py #	http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00
+# maccreds.py
+#	http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00
 #
 # :TODO:
 #	remove http://localhost:5984/macaa hard-coding
@@ -109,7 +110,7 @@ class MACcredentials(object):
 		if self.is_deleted:
 			dict["is_deleted"] = True
 		if is_for_couch:
-			dict["type"] = "cred"
+			dict["type"] = "cred_v1.0"
 			dict["_id"] = self.mac_key_identifier
 			if self._rev is not None:
 				dict["_rev"] = self._rev

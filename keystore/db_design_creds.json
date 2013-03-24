@@ -2,7 +2,7 @@
 	"language": "javascript",
 	"views": {
 		"all": {
-			"map": "function(doc) { if (doc.type == 'cred') emit(doc._id, doc) }"
+			"map": "function(doc) { if (!doc.is_deleted && doc.type.match(/^cred_v\\d+.\\d+/i)) emit(doc._id, doc) }"
 		},
 		"by_owner": {
 			"map": "function(doc) { if (doc.type == 'cred') emit(doc.owner, doc) }"
