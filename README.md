@@ -5,6 +5,7 @@ Some code Dave is using to explore some thoughts on a simple API Management serv
 
 Prerequisites 
 -------------
+* code written and tested on Mac OS X 10.8.2 using Python 2.7.2 and [virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv)
 * [Tornado 2.4.1](http://www.tornadoweb.org/en/branch2.4/ "Tornado 2.4.1")
 * [httplib2 0.8](https://code.google.com/p/httplib2/ "httplib2")
 
