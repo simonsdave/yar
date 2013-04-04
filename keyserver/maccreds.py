@@ -2,10 +2,9 @@
 #-------------------------------------------------------------------------------
 #
 # maccreds.py
-#	http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00
 #
-# :TODO:
-#	remove http://localhost:5984/macaa hard-coding
+#	See http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00
+#	for context on this module.
 #
 #-------------------------------------------------------------------------------
 
@@ -13,7 +12,9 @@ import json
 import datetime
 import uuid
 
-import tornado.httpclient
+from couchdb import CouchDB
+
+#-------------------------------------------------------------------------------
 
 class MACcredentials(object):
 
@@ -53,13 +54,14 @@ class MACcredentials(object):
 
 	@classmethod
 	def get_all(cls,owner=None):
-		http_client = tornado.httpclient.HTTPClient()
-		# :TODO: this should not be hard-coded
+		cdb = CouchDB()
 		if owner is not None:
-			url = "http://localhost:5984/macaa/_design/creds/_view/by_owner?startkey=\"%s\"&endkey=\"%s\"" % (owner, owner)
+			response = cdb.get(
+				"_design/creds/_view/by_owner?startkey=\"%s\"&endkey=\"%s\"",
+				owner,
+				owner)
 		else:
-			url = "http://localhost:5984/macaa/_design/creds/_view/all"
-		response = http_client.fetch(url)
+			response = cdb.get("_design/creds/_view/all")
 		body = json.loads(response.body)
 		rv = []
 		for row in body['rows']:
@@ -69,51 +71,35 @@ class MACcredentials(object):
 		return rv
 
 	@classmethod
-	def get(cls,mac_key_dentifier):
-		http_client = tornado.httpclient.HTTPClient()
-		# :TODO: should not be hardcoded
-		url = 'http://localhost:5984/macaa/%s' % mac_key_dentifier
-		# :TODO: deal with id not being found
-		response = http_client.fetch(url)
+	def get(cls, mac_key_identifier):
+		cdb = CouchDB()
+		response = cdb.get(mac_key_identifier)
 		if response is None:
 			return None
 		return cls(None,json.loads(response.body))
 
 	def save(self):
-		http_client = tornado.httpclient.HTTPClient()
-		response = http_client.fetch(
-			# :TODO: this should not be hard-coded
-			"http://localhost:5984/macaa/%s" % self.mac_key_identifier,
-			method='PUT',
-			headers={"Content-Type": "application/json; charset=utf8"},
-			body=json.dumps(self._asDict(True)))
+		cdb = CouchDB()
+		response = cdb.put(self._as_dict(), self.mac_key_identifier)
 
 	def delete(self):
 		self.is_deleted = True
-		http_client = tornado.httpclient.HTTPClient()
-		response = http_client.fetch(
-			# :TODO: this should not be hard-coded
-			"http://localhost:5984/macaa/%s" % self.mac_key_identifier,
-			method="PUT",
-			headers={"Content-Type": "application/json; charset=utf8"},
-			body=json.dumps(self._asDict(True))
-			)
+		self.save()
 
-	def _asDict(self,is_for_couch=False):
+	def _as_dict(self):
 		dict = {
 			"owner": self.owner,
 			"mac_key_identifier": self.mac_key_identifier,
 			"mac_key": self.mac_key,
 			"mac_algorithm": self.mac_algorithm,
 			"issue_time": self.issue_time,
+			"type": "cred_v1.0",
+			"_id": self.mac_key_identifier,
 		}
 		if self.is_deleted:
 			dict["is_deleted"] = True
-		if is_for_couch:
-			dict["type"] = "cred_v1.0"
-			dict["_id"] = self.mac_key_identifier
-			if self._rev is not None:
-				dict["_rev"] = self._rev
+		if self._rev is not None:
+			dict["_rev"] = self._rev
 		return dict
 
 if __name__ == "__main__":
