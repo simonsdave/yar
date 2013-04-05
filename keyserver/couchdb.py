@@ -29,15 +29,19 @@ class CouchDB(object):
 
 	def _fetch(self,dict,path,*args):
 		url = self._url(path,args)
-		http_client = tornado.httpclient.HTTPClient()
-		if dict is None:
-			response = http_client.fetch(url)
-		else:
-			response = http_client.fetch(
-				url,
-				method='PUT',
-				headers={"Content-Type": "application/json; charset=utf8"},
-				body=json.dumps(dict))
+		try:
+			http_client = tornado.httpclient.HTTPClient()
+			if dict is None:
+				response = http_client.fetch(url)
+			else:
+				body = json.dumps(dict)
+				response = http_client.fetch(
+					url,
+					method='PUT',
+					headers={"Content-Type": "application/json; charset=utf8"},
+					body=body)
+		except tornado.httpclient.HTTPError:
+			return None
 		return response
 
 	def get(self,path,*args):

@@ -56,7 +56,7 @@ class CredsHandler(tornado.web.RequestHandler):
 	def write_creds(self,creds):
 		if creds is None:
 			self.clear()
-			self.set_status(httplib.BAD_REQUEST)
+			self.set_status(httplib.NOT_FOUND)
 		else:
 			self.write(json.dumps(creds,cls=MACCredsJSONEncoder))
 			self.set_header("Content-Type", "application/json; charset=utf8") 

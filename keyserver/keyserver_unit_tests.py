@@ -125,6 +125,13 @@ class TestMacCredsResource(KeyServerTestCase):
 	def url(self):
 		return "%s/v1.0/mac_creds" % KeyServerTestCase.url(self)
 
+	def test_get_of_non_existent_resource(self):
+		url = "%s/dave" % self.url()
+		http_client = httplib2.Http()
+		response, content = http_client.request(url, "GET")
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.NOT_FOUND == response.status)
+
 	def test_post_with_no_content_type_header(self):
 		http_client = httplib2.Http()
 		response, content = http_client.request(
@@ -181,6 +188,7 @@ class TestMacCredsResource(KeyServerTestCase):
 		# AGAIN delete the newly created and freshly returned MAC creds
 		http_client = httplib2.Http()
 		response, content = http_client.request(location, "DELETE")
+		print response.status
 		self.assertTrue(httplib.NOT_FOUND == response.status)
 
 #-------------------------------------------------------------------------------
