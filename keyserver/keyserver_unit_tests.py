@@ -164,7 +164,7 @@ class TestMacCredsResource(KeyServerTestCase):
 			headers={"Content-Type": "application/json; charset=utf8"}
 			)
 		self.assertIsNotNone(response)
-		self.assertTrue(httplib.OK == response.status)
+		self.assertTrue(httplib.CREATED == response.status)
 		self.assertTrue('location' in response)
 		location = response['location']
 		self.assertIsNotNone(location)

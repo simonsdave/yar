@@ -103,6 +103,7 @@ class AllCredsHandler(CredsHandler):
 			self.set_header(
 				"Location",
 				"%s/%s" % (self.request.full_url(), creds.mac_key_identifier))
+			self.set_status(httplib.CREATED)
 
 #-------------------------------------------------------------------------------
 
@@ -126,8 +127,9 @@ class ACredsHandler(CredsHandler):
 _tornado_handlers = [
 	(r"/status", StatusHandler),
 	(r"/v1.0/mac_creds", AllCredsHandler),
-	(r"/v1.0/mac_creds/([^/]+)", ACredsHandler)
+	(r"/v1.0/mac_creds/([^/]+)", ACredsHandler),
 ]
+
 _tornado_app = tornado.web.Application(handlers=_tornado_handlers)
 
 if __name__ == "__main__":
