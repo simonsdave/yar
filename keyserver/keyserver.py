@@ -77,32 +77,44 @@ class AllCredsHandler(CredsHandler):
 			return False
 		return True
 
-	def _get_request_body_as_dict_from_json(self):
-		if not self._is_json_utf8_content_type():
-			return None
-		body = self.request.body
-		if body is None:
-			return None
-		try:
-			return json.loads(body)
-		except:
-			pass
-		return None
-
 	def get(self):
 		owner = self.get_argument("owner",None)
 		self.write_creds(maccreds.MACcredentials.get_all(owner))
 
-	def post(self):
-		body = self._get_request_body_as_dict_from_json()
+	def _get_owner_from_request_body(self):
+		if not self._is_json_utf8_content_type():
+			return None
+
+		body = self.request.body
 		if body is None:
+			return None
+
+		try:
+			body_as_dict = json.loads(body)
+		except:
+			return None
+
+		if "owner" not in body_as_dict:
+			return None
+		owner = body_as_dict["owner"]
+
+		owner = owner.strip()
+		if 0 == len(owner):
+			return None
+
+		return owner
+
+	def post(self):
+		owner = self._get_owner_from_request_body()
+		if owner is None:
 			self.set_status(httplib.BAD_REQUEST)
 		else:
-			creds = maccreds.MACcredentials(body["owner"])
+			creds = maccreds.MACcredentials(owner)
 			creds.save()
-			self.set_header(
-				"Location",
-				"%s/%s" % (self.request.full_url(), creds.mac_key_identifier))
+			location_url = "%s/%s" % (
+				self.request.full_url(),
+				creds.mac_key_identifier)
+			self.set_header("Location", location_url)
 			self.set_status(httplib.CREATED)
 
 #-------------------------------------------------------------------------------

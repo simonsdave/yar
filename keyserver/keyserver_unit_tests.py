@@ -150,12 +150,55 @@ class TestMacCredsResource(KeyServerTestCase):
 		self.assertIsNotNone(response)
 		self.assertTrue(httplib.BAD_REQUEST == response.status)
 
+	def test_post_with_unsupported_content_type_header(self):
+		http_client = httplib2.Http()
+		response, content = http_client.request(
+			self.url(),
+			"POST",
+			body=json.dumps({"owner": "simonsdave@gmail.com"}),
+			headers={"Content-Type": "text/plain"}
+			)
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.BAD_REQUEST == response.status)
+
 	def test_post_with_no_body(self):
 		http_client = httplib2.Http()
 		response, content = http_client.request(
 			self.url(),
 			"POST",
+			headers={"Content-Type": "application/json; charset=utf8"}
+			)
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.BAD_REQUEST == response.status)
+
+	def test_post_with_zero_length_body(self):
+		http_client = httplib2.Http()
+		response, content = http_client.request(
+			self.url(),
+			"POST",
 			body="",
+			headers={"Content-Type": "application/json; charset=utf8"}
+			)
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.BAD_REQUEST == response.status)
+
+	def test_post_with_non_json_body(self):
+		http_client = httplib2.Http()
+		response, content = http_client.request(
+			self.url(),
+			"POST",
+			body="dave_was_here",
+			headers={"Content-Type": "application/json; charset=utf8"}
+			)
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.BAD_REQUEST == response.status)
+
+	def test_post_with_no_owner_in_body(self):
+		http_client = httplib2.Http()
+		response, content = http_client.request(
+			self.url(),
+			"POST",
+			body=json.dumps({"XXXownerXXX": "simonsdave@gmail.com"}),
 			headers={"Content-Type": "application/json; charset=utf8"}
 			)
 		self.assertIsNotNone(response)
@@ -170,7 +213,7 @@ class TestMacCredsResource(KeyServerTestCase):
 			body=json.dumps({"owner": "simonsdave@gmail.com"}),
 			headers={"Content-Type": "application/json; charset=utf8"}
 			)
-		location = response['location']
+		location = response["location"]
 
 		# delete the newly created and freshly returned MAC creds
 		http_client = httplib2.Http()
