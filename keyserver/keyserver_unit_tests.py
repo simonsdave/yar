@@ -26,12 +26,6 @@ import keyserver
 
 #-------------------------------------------------------------------------------
 
-_json_utf8_content_type_reg_ex = re.compile(
- 	"^\s*application/json;\s+charset\=utf-{0,1}8\s*$",
- 	re.IGNORECASE )
-
-#-------------------------------------------------------------------------------
-
 class KeyServer(threading.Thread):
 
 	@classmethod
@@ -66,6 +60,10 @@ class KeyServer(threading.Thread):
 
 class KeyServerTestCase(unittest.TestCase):
 	
+	_json_utf8_content_type_reg_ex = re.compile(
+		"^\s*application/json;\s+charset\=utf-{0,1}8\s*$",
+		re.IGNORECASE )
+
 	@classmethod
 	def setUpClass(cls):
 		cls._key_server = KeyServer()
@@ -78,6 +76,14 @@ class KeyServerTestCase(unittest.TestCase):
 
 	def url(self):
 		return "http://localhost:%s" % self.__class__._key_server.port
+
+	"""
+	method name/style chosen for consistency with unittest.TestCase
+	"""
+	def assertIsJsonUtf8ContentType(self,content_type):
+		self.assertIsNotNone(content_type)
+		json_utf8_content_type_reg_ex = self.__class__._json_utf8_content_type_reg_ex
+		self.assertIsNotNone(json_utf8_content_type_reg_ex.match(content_type))
 
 #-------------------------------------------------------------------------------
 
@@ -94,7 +100,7 @@ class TestStatusResource(KeyServerTestCase):
 		self.assertTrue(httplib.OK == response.status)
 		self.assertTrue("content-type" in response)
 		content_type = response["content-type"]
-		self.assertIsNotNone(_json_utf8_content_type_reg_ex.match(content_type))
+		self.assertIsJsonUtf8ContentType(content_type)
 
 		self.assertIsNotNone(content)
 		content = json.loads(content)
@@ -154,6 +160,27 @@ class TestMacCredsResource(KeyServerTestCase):
 		self.assertIsNotNone(response)
 		self.assertTrue(httplib.BAD_REQUEST == response.status)
 
+	def test_delete_already_deleted(self):
+		# create a MAC creds resource
+		http_client = httplib2.Http()
+		response, content = http_client.request(
+			self.url(),
+			"POST",
+			body=json.dumps({"owner": "simonsdave@gmail.com"}),
+			headers={"Content-Type": "application/json; charset=utf8"}
+			)
+		location = response['location']
+
+		# delete the newly created and freshly returned MAC creds
+		http_client = httplib2.Http()
+		response, content = http_client.request(location, "DELETE")
+		self.assertTrue(httplib.OK == response.status)
+
+		# AGAIN delete the newly created and freshly returned MAC creds
+		http_client = httplib2.Http()
+		response, content = http_client.request(location, "DELETE")
+		self.assertTrue(httplib.OK == response.status)
+
 	def test_post_all_good(self):
 		# create a MAC creds resource
 		http_client = httplib2.Http()
@@ -176,7 +203,7 @@ class TestMacCredsResource(KeyServerTestCase):
 		self.assertTrue(httplib.OK == response.status)
 		self.assertTrue("content-type" in response)
 		content_type = response["content-type"]
-		self.assertIsNotNone(_json_utf8_content_type_reg_ex.match(content_type))
+		self.assertIsJsonUtf8ContentType(content_type)
 		mac_creds = json.loads(content)
 		self.assertIsNotNone(mac_creds)
 
@@ -188,8 +215,7 @@ class TestMacCredsResource(KeyServerTestCase):
 		# AGAIN delete the newly created and freshly returned MAC creds
 		http_client = httplib2.Http()
 		response, content = http_client.request(location, "DELETE")
-		print response.status
-		self.assertTrue(httplib.NOT_FOUND == response.status)
+		self.assertTrue(httplib.OK == response.status)
 
 #-------------------------------------------------------------------------------
 

@@ -107,7 +107,7 @@ class AllCredsHandler(CredsHandler):
 
 #-------------------------------------------------------------------------------
 
-class ACredsHandler(CredsHandler):
+class CredsHandler(CredsHandler):
 
 	def get(self,mac_key_identifer):
 		assert mac_key_identifer is not None
@@ -120,14 +120,15 @@ class ACredsHandler(CredsHandler):
 			self.clear()
 			self.set_status(httplib.NOT_FOUND)
 		else:
-			creds.delete()
+			if not creds.is_deleted:
+				creds.delete()
 
 #-------------------------------------------------------------------------------
 
 _tornado_handlers = [
 	(r"/status", StatusHandler),
 	(r"/v1.0/mac_creds", AllCredsHandler),
-	(r"/v1.0/mac_creds/([^/]+)", ACredsHandler),
+	(r"/v1.0/mac_creds/([^/]+)", CredsHandler),
 ]
 
 _tornado_app = tornado.web.Application(handlers=_tornado_handlers)
