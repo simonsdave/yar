@@ -11,6 +11,7 @@
 import json
 import datetime
 import uuid
+import httplib
 
 from couchdb import CouchDB
 
@@ -56,31 +57,27 @@ class MACcredentials(object):
 	def get_all(cls,owner=None):
 		cdb = CouchDB()
 		if owner is not None:
-			response = cdb.get(
+			(http_status_code, rv) = cdb.get(
 				"_design/creds/_view/by_owner?startkey=\"%s\"&endkey=\"%s\"",
 				owner,
 				owner)
 		else:
-			response = cdb.get("_design/creds/_view/all")
-		body = json.loads(response.body)
-		rv = []
-		for row in body['rows']:
-			doc = row['value']
-			creds = cls(None,doc)
-			rv.append(creds)
+			(http_status_code, rv) = cdb.get("_design/creds/_view/all")
 		return rv
 
 	@classmethod
 	def get(cls, mac_key_identifier):
 		cdb = CouchDB()
-		response = cdb.get(mac_key_identifier)
-		if response is None:
+		(http_status_code,dict) = cdb.get(mac_key_identifier)
+		if http_status_code != httplib.OK or dict is None:
 			return None
-		return cls(None,json.loads(response.body))
+		return cls(None,dict)
 
 	def save(self):
 		cdb = CouchDB()
-		response = cdb.put(self._as_dict(), self.mac_key_identifier)
+		(http_status_code,ignore) = cdb.put(
+			self._as_dict(),
+			self.mac_key_identifier)
 
 	def delete(self):
 		self.is_deleted = True

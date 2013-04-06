@@ -15,6 +15,7 @@ import re
 import httplib
 import httplib2
 import json
+import uuid
 
 import tornado.httpserver
 import tornado.ioloop
@@ -132,7 +133,7 @@ class TestMacCredsResource(KeyServerTestCase):
 		return "%s/v1.0/mac_creds" % KeyServerTestCase.url(self)
 
 	def test_get_of_non_existent_resource(self):
-		url = "%s/dave" % self.url()
+		url = "%s/%s" % (self.url(), str(uuid.uuid4()).replace("-",""))
 		http_client = httplib2.Http()
 		response, content = http_client.request(url, "GET")
 		self.assertIsNotNone(response)
