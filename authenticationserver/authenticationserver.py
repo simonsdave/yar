@@ -33,14 +33,14 @@ class RequestHandler(tornado.web.RequestHandler):
 		"Cache-Control",
 		"Content-Type",
 		"Location",
+		"Etag",
 		)
 
 	def initialize(self):
-#		tornado.web.RequestHandler.initialize(self)
+		tornado.web.RequestHandler.initialize(self)
 		self.forwardto = tornado.options.options.forwardto
 
 	def _handle_response(self, response):
-		print ">>>%s<<<" % (response.code or "DAVE_WAS_HERE")
 		self.set_status(response.code) 
 		for header in self.__class__._headers_to_return:
 			# v = response.headers.get(header) 
@@ -78,8 +78,13 @@ class RequestHandler(tornado.web.RequestHandler):
 
 #-------------------------------------------------------------------------------
 
-# the _tornado_app variable simplifies construction of testing infrastructure
-_tornado_app = tornado.web.Application(handlers=[(r".*", RequestHandler)])
+# _tornado_handlers simplifies the _tornado_app constructor
+_tornado_handlers=[
+	(r"/status", StatusHandler),
+	(r".*", RequestHandler),
+	]
+# _tornado_app simplifies construction of testing infrastructure
+_tornado_app = tornado.web.Application(handlers=_tornado_handlers)
 
 #-------------------------------------------------------------------------------
 
