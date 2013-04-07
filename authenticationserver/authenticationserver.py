@@ -8,6 +8,9 @@
 #
 #-------------------------------------------------------------------------------
 
+import re
+import httplib
+
 import tornado.httpserver
 import tornado.httpclient
 import tornado.ioloop
@@ -29,6 +32,34 @@ class StatusHandler(tornado.web.RequestHandler):
 
 class RequestHandler(tornado.web.RequestHandler):
 
+	# Authorization: MAC id="h480djs93hd8",
+	#			         nonce="264095:dj83hs9s",
+	#			         mac="SLDJd4mg43cjQfElUs3Qub4L6xE="
+	_authorization_reg_ex = re.compile(
+		'^\s*MAC\s+id\s*\=\s*"(?P<id>[^"]+)"\s*\,\s+nonce\s*\=\s*"(?P<nonce>[^"]+)"\s*\,\s+mac\s*\=\s*"(?P<mac>[^"]+)"\s*$',
+		# '^\s*MAC\s+id\s*\=\s*"(?P<id>[^"]+)"\s*\,\s+nonce\s*\=\s*"(?P<nonce>[^"]+)"\s*\,\s+mac\s*\=\s*"(?P<mac>[^"]+)"\s*$',
+		re.IGNORECASE )
+
+	def _get_authorization_header_value(self):
+		authorization_header_value = self.request.headers.get("Authorization", None)
+		if authorization_header_value is None:
+			return (None,None,None)
+		
+		print ">>>%s<<<" % authorization_header_value
+		authorization_match = self.__class__._authorization_reg_ex.match(authorization_header_value)
+		if not authorization_match:
+			print "poo"
+			return (None,None,None)
+
+		print "dave"
+		assert 0 == authorization_match.start()
+		assert len(self.authorization_header_value) == authorization_match.end()
+		assert 3 == len(authorization_match.groups())
+		id = authorization_match.group( "id" )
+		nonce = authorization_match.group( "nonce" )
+		mac = authorization_match.group( "mac" )
+		return (id,nonce,mac)
+
 	@property
 	def _forward_to(self):
 		return tornado.options.options.forwardto
@@ -48,6 +79,13 @@ class RequestHandler(tornado.web.RequestHandler):
 
 	@tornado.web.asynchronous
 	def _handle_request(self):
+		(id, nonce, mac) = self._get_authorization_header_value()
+		if id is None or nonce is None or mac is None:
+			self.set_status(httplib.UNAUTHORIZED)
+			self.finish()
+			return
+		print ">>>%s<<<>>>%s<<<>>>%s<<<" % (id, nonce, mac)
+
 		http_client = tornado.httpclient.AsyncHTTPClient()
 		http_client.fetch(
 			tornado.httpclient.HTTPRequest( 
