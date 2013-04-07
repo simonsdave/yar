@@ -38,16 +38,14 @@ class RequestHandler(tornado.web.RequestHandler):
 
 	def initialize(self):
 		tornado.web.RequestHandler.initialize(self)
-		self.forwardto = tornado.options.options.forwardto
+		self._forward_to = tornado.options.options.forwardto
+		self._pass_thru_headers = tornado.options.options.passthruheaders.split(",")
 
 	def _handle_response(self, response):
 		self.set_status(response.code) 
-		for header in self.__class__._headers_to_return:
-			# v = response.headers.get(header) 
-			# if v: 
+		for header in self._pass_thru_headers:
 			if header in response.headers:
 				self.set_header(header, response.headers.get(header)) 
-				# self.set_header(header, v) 
 		if response.body: 
 			self.write(response.body) 
 		self.finish()
@@ -57,7 +55,7 @@ class RequestHandler(tornado.web.RequestHandler):
 		http_client = tornado.httpclient.AsyncHTTPClient()
 		http_client.fetch(
 			tornado.httpclient.HTTPRequest( 
-				url="http://%s%s" % (self.forwardto, self.request.uri),
+				url="http://%s%s" % (self._forward_to, self.request.uri),
 				method=self.request.method, 
 				body=(self.request.body or None), 
 				headers=self.request.headers, 
@@ -98,6 +96,11 @@ if __name__ == "__main__":
 		"forwardto",
 		default="localhost:8080",
 		help="after authentication forward requests to this host:port",
+		type=str)
+	tornado.options.define(
+		"passthruheaders",
+		default="Date,Cache-Control,Content-Type,Location,Etag",
+		help="comma sep list of HTTP headers to pass thru proxy",
 		type=str)
 	tornado.options.parse_command_line()
 	http_server = tornado.httpserver.HTTPServer(_tornado_app)
