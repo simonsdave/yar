@@ -28,18 +28,14 @@ class StatusHandler(tornado.web.RequestHandler):
 #-------------------------------------------------------------------------------
 
 class RequestHandler(tornado.web.RequestHandler):
-	_headers_to_return=(
-		"Date",
-		"Cache-Control",
-		"Content-Type",
-		"Location",
-		"Etag",
-		)
 
-	def initialize(self):
-		tornado.web.RequestHandler.initialize(self)
-		self._forward_to = tornado.options.options.forwardto
-		self._pass_thru_headers = tornado.options.options.passthruheaders.split(",")
+	@property
+	def _forward_to(self):
+		return tornado.options.options.forwardto
+
+	@property
+	def _pass_thru_headers(self):
+		return tornado.options.options.passthruheaders
 
 	def _handle_response(self, response):
 		self.set_status(response.code) 
@@ -99,8 +95,9 @@ if __name__ == "__main__":
 		type=str)
 	tornado.options.define(
 		"passthruheaders",
-		default="Date,Cache-Control,Content-Type,Location,Etag",
+		default=["Date","Cache-Control","Content-Type","Location","Etag"],
 		help="comma sep list of HTTP headers to pass thru proxy",
+		multiple=True,
 		type=str)
 	tornado.options.parse_command_line()
 	http_server = tornado.httpserver.HTTPServer(_tornado_app)
