@@ -8,21 +8,15 @@
 #
 #-------------------------------------------------------------------------------
 
-import json
 import datetime
 import uuid
 import httplib
 
-from couchdb import CouchDB
+from maccredscouchdb import CouchDB
 
 #-------------------------------------------------------------------------------
 
 class MACcredentials(object):
-
-	_mac_algorithm = "hmac-sha-1"
-	# section 5 of http://www.ietf.org/rfc/rfc0822.txt
-	# example: Thu, 02 Dec 2010 21:39:45 GMT
-	_rfc_822_sect_5_datetime_fmt_str = "%a, %d %b %Y %H:%M:%S GMT"
 
 	@classmethod
 	def _uuidstr(cls):
@@ -32,19 +26,17 @@ class MACcredentials(object):
 		object.__init__(self)
 
 		if owner is not None:
-			assert dict is None
 			self.owner = owner
 			self.mac_key_identifier = self.__class__._uuidstr()
 			self.mac_key = self.__class__._uuidstr()
-			self.mac_algorithm = self.__class__._mac_algorithm
+			self.mac_algorithm = "hmac-sha-1"
 			issue_time = datetime.datetime.utcnow()
-			format_str = self.__class__._rfc_822_sect_5_datetime_fmt_str
-			self.issue_time = issue_time.strftime(format_str)
-
+			# section 5 of http://www.ietf.org/rfc/rfc0822.txt
+			# example: Thu, 02 Dec 2010 21:39:45 GMT
+			self.issue_time = issue_time.strftime("%a, %d %b %Y %H:%M:%S GMT")
 			self.is_deleted = False
 			self._rev = None
 		else:
-			assert dict is not None
 			self.owner = dict["owner"]
 			self.mac_key_identifier = dict["mac_key_identifier"]
 			self.mac_key = dict["mac_key"]
@@ -56,28 +48,20 @@ class MACcredentials(object):
 	@classmethod
 	def get_all(cls,owner=None):
 		cdb = CouchDB()
-		if owner is not None:
-			(http_status_code, rv) = cdb.get(
-				"_design/creds/_view/by_owner?startkey=\"%s\"&endkey=\"%s\"",
-				owner,
-				owner)
-		else:
-			(http_status_code, rv) = cdb.get("_design/creds/_view/all")
+		(http_status_code, rv) = cdb.get_all_for_owner(owner)
 		return rv
 
 	@classmethod
 	def get(cls, mac_key_identifier):
 		cdb = CouchDB()
-		(http_status_code,dict) = cdb.get(mac_key_identifier)
-		if http_status_code != httplib.OK or dict is None:
+		dict = cdb.get_for_mac_key_identifier(mac_key_identifier)
+		if dict is None:
 			return None
 		return cls(None,dict)
 
 	def save(self):
 		cdb = CouchDB()
-		(http_status_code,ignore) = cdb.put(
-			self._as_dict(),
-			self.mac_key_identifier)
+		return cdb.save(self._as_dict())
 
 	def delete(self):
 		self.is_deleted = True

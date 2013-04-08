@@ -135,6 +135,15 @@ class TestWhatever(AuthenticationServerTestCase):
 	def test_get_with_no_authorization_header(self):
 		http_client = httplib2.Http()
 		response, content = http_client.request(self.url(), "GET")
+		self.assertTrue(response.status == httplib.UNAUTHORIZED)
+
+	def test_get_with_invalid_authorization_header(self):
+		http_client = httplib2.Http()
+		response, content = http_client.request(
+			self.url(),
+			"GET",
+			headers={"Authorization": 'MAC id="", nonce="98", mac="bindle"'})
+		self.assertTrue(response.status == httplib.UNAUTHORIZED)
 
 #-------------------------------------------------------------------------------
 
