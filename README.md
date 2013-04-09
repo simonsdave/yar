@@ -11,7 +11,7 @@ Prerequisites
 
 Authentication Server
 ---------------------
-* ...
+* ./authenticationserver.py --port=8080 --key_server=localhost:6969 --app_server=localhost:8081
 
 Tokenization Server
 -------------------
