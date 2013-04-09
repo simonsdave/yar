@@ -5,40 +5,70 @@
 #
 #-------------------------------------------------------------------------------
 
+import logging
 import os
 import sys
 import glob
 import httplib
 import httplib2
 
-#-------------------------------------------------------------------------------
-
-default_host = "localhost"
-default_port = 5984
-default_db = "macaa"
+from command_line_parser import CommandLineParser
 
 #-------------------------------------------------------------------------------
 
-def create(db=default_db,host=default_host,port=default_port):
+_logger = logging.getLogger( "KEYSTORE_%s" % __name__ )
 
-	url = "http://%s:%d/%s" % (host, port, db)
+#-------------------------------------------------------------------------------
+
+def is_couchdb_accessible(host="localhost:5984"):
+
+	url = "http://%s" % host
+	http_client = httplib2.Http()
+	try:
+		response, content = http_client.request(url,"GET")
+	except:
+		return False
+	return httplib.OK == response.status
+
+#-------------------------------------------------------------------------------
+
+def create(database="macaa", host="localhost:5984"):
+
+	_logger.info("Creating database '%s' on '%s'", database, host)
+
+	#
+	# first create the database
+	#
+	url = "http://%s/%s" % (host, database)
 	http_client = httplib2.Http()
 	response, content = http_client.request(url,"PUT")
 	if httplib.CREATED != response.status:
-		print "Failed to create database '%s' on '%s:%d'." % (db, host, port)
+		_logger.error("Failed to create database '%s' on '%s'", database, host)
 		return False
-	print "Successfully created database '%s' on '%s:%d'." % (db, host, port)
+	_logger.info("Successfully created database '%s' on '%s'", database, host)
 
+	#
+	# now iterate thru each file in the same directory as this script
+	# for files that end with ".json" - these files are assumed to be
+	# design documents with the filename (less ".json" being the design
+	# document name
+	#
 	path = os.path.split(sys.argv[0])[0]
 	design_doc_file_name_pattern = os.path.join(path,"*.json")
 	for design_doc_file_name in glob.glob(design_doc_file_name_pattern):
+
+		_logger.info(
+			"Creating design doc '%s' in database '%s' on '%s'",
+			design_doc_file_name,
+			database,
+			host)
 
 		design_doc_name = os.path.basename(design_doc_file_name)[:-len(".json")]
 
 		with open(design_doc_file_name, "r") as design_doc_file:
 			design_doc = design_doc_file.read()
 
-		url = "http://%s:%d/%s/_design/%s" % (host, port, db, design_doc_name)
+		url = "http://%s/%s/_design/%s" % (host, database, design_doc_name)
 		http_client = httplib2.Http()
 		response, content = http_client.request(
 			url,
@@ -46,30 +76,37 @@ def create(db=default_db,host=default_host,port=default_port):
 			body=design_doc,
 			headers={"Content-Type": "application/json; charset=utf8"})
 		if httplib.CREATED != response.status:
-			print "Failed to create design doc '%s'" % url
+			_logger.error("Failed to create design doc '%s'", url)
 			return False
-		print "Successfully created design doc '%s'" % url
+		_logger.info("Successfully created design doc '%s'", url)
 
 	return True
 
 #-------------------------------------------------------------------------------
 
-def delete(db=default_db,host=default_host,port=default_port):
+def delete(database="macaa", host="localhost:5984"):
 
-	url = "http://%s:%d/%s" % (host, port, db)
+	_logger.info("Deleting database '%s' on '%s'", database, host)
+	url = "http://%s/%s" % (host, database)
 	http_client = httplib2.Http()
 	response, content = http_client.request(url,"DELETE")
-	if httplib.OK == response.status:
-		print "Successfully deleted database '%s' on '%s:%d'." % (
-			db, host, port)
-	else:
-		print "Failed to delete database '%s' on '%s:%d'." % (
-			db, host, port)
+	if httplib.OK != response.status:
+		_logger.error("Failed to delete database '%s' on '%s'", database, host)
+		return False
+	_logger.info("Successfully deleted database '%s' on '%s'", database, host)
+	return True
 
 #-------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-	delete()
-	create()
+	clp = CommandLineParser()
+	(clo, cla) = clp.parse_args()
+
+	loggingLevel = getattr(logging, clo.loggingLevel)
+	logging.basicConfig(level=loggingLevel)
+
+	if is_couchdb_accessible(clo.host):
+		delete(clo.database,clo.host)
+		create(clo.database,clo.host)
 
 #------------------------------------------------------------------- End-of-File
