@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+"""This module contains the core logic for the authenication server.
+The server uses implements MAC Access Authentication."""
 #-------------------------------------------------------------------------------
 #
 # authenticationserver.py
@@ -40,17 +42,17 @@ class RequestHandler(tornado.web.RequestHandler):
 
 	@property
 	def _app_server(self):
-		"""This property is all about syntactic sugar for callers."""
+		"""This property is all about making the caller's code easer to read."""
 		return tornado.options.options.app_server
 
 	@property
 	def _headers_to_forward(self):
-		"""This property is all about syntactic sugar for callers."""
+		"""This property is all about making the caller's code easer to read."""
 		return tornado.options.options.headers_to_forward
 
 	@property
 	def _key_server(self):
-		"""This property is all about syntactic sugar for callers."""
+		"""This property is all about making the caller's code easer to read."""
 		return tornado.options.options.key_server
 
 	def _handle_app_server_response(self, response):
@@ -101,6 +103,9 @@ class RequestHandler(tornado.web.RequestHandler):
 
 	def _handle_key_server_response(self, response):
 		if not self._extract_mac_credentials_from_key_server_response(response):
+			_logger.error(
+				"No MAC credentials found for '%s'",
+				self._key_server_url())
 			self.set_status(httplib.UNAUTHORIZED)
 			self.finish()
 			return
@@ -126,7 +131,7 @@ class RequestHandler(tornado.web.RequestHandler):
 	# Authorization: MAC id="h480djs93hd8",
 	#			         nonce="264095:dj83hs9s",
 	#			         mac="SLDJd4mg43cjQfElUs3Qub4L6xE="
-	_authorization_reg_ex = re.compile(
+	_authorization_header_value_reg_ex = re.compile(
 		'^\s*MAC\s+id\s*\=\s*"(?P<id>[^"]+)"\s*\,\s*nonce\s*\=\s*"(?P<nonce>[^"]+)"\s*\,\s*mac\s*\=\s*"(?P<mac>[^"]+)"\s*$',
 		re.IGNORECASE )
 
@@ -135,27 +140,28 @@ class RequestHandler(tornado.web.RequestHandler):
 		if authorization_header_value is None:
 			return False
 		
-		authorization_match = self.__class__._authorization_reg_ex.match(authorization_header_value)
-		if not authorization_match:
+		reg_ex = self.__class__._authorization_header_value_reg_ex
+		match = reg_ex.match(authorization_header_value)
+		if not match:
 			return False
 
-		assert 0 == authorization_match.start()
-		assert len(authorization_header_value) == authorization_match.end()
-		assert 3 == len(authorization_match.groups())
-		self._auth_header_id = authorization_match.group("id")
+		assert 0 == match.start()
+		assert len(authorization_header_value) == match.end()
+		assert 3 == len(match.groups())
+		self._auth_header_id = match.group("id")
 		assert self._auth_header_id is not None
 		assert 0 < len(self._auth_header_id)
-		self._auth_header_nonce = authorization_match.group("nonce")
+		self._auth_header_nonce = match.group("nonce")
 		assert self._auth_header_nonce is not None
 		assert 0 < len(self._auth_header_nonce)
-		self._auth_header_mac = authorization_match.group("mac")
+		self._auth_header_mac = match.group("mac")
 		assert self._auth_header_mac is not None
 		assert 0 < len(self._auth_header_mac)
 		return True
 
 	@property
 	def _key_server_url(self):
-		"""This property is all about syntactic sugar for callers."""
+		"""This property is all about making the caller's code easer to read."""
 		return "http://%s/v1.0/mac_creds/%s" % (self._key_server, self._auth_header_id)
 
 	@tornado.web.asynchronous
