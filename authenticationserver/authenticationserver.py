@@ -39,25 +39,24 @@ class StatusHandler(tornado.web.RequestHandler):
 class RequestHandler(tornado.web.RequestHandler):
 
 	@property
-	def _forward_to(self):
+	def _app_server(self):
 		"""This property is all about syntactic sugar for callers."""
-		return tornado.options.options.forwardto
+		return tornado.options.options.app_server
 
 	@property
-	def _pass_thru_headers(self):
+	def _headers_to_forward(self):
 		"""This property is all about syntactic sugar for callers."""
-		return tornado.options.options.passthruheaders
+		return tornado.options.options.headers_to_forward
 
 	@property
-	def _keyserver(self):
+	def _key_server(self):
 		"""This property is all about syntactic sugar for callers."""
-		return tornado.options.options.keyserver
+		return tornado.options.options.key_server
 
 	def _handle_app_server_response(self, response):
 		self.set_status(response.code) 
-		for header in self._pass_thru_headers:
-			if header in response.headers:
-				self.set_header(header, response.headers.get(header)) 
+		for header_name in response.headers.keys():
+			self.set_header(header_name, response.headers[header_name]) 
 		if response.body: 
 			self.write(response.body) 
 		self.finish()
@@ -108,13 +107,16 @@ class RequestHandler(tornado.web.RequestHandler):
 
 		# :TODO: now that we've got the MAC credentials, confirm
 
-		headers = tornado.httputil.HTTPHeaders(self.request.headers)
+		headers = tornado.httputil.HTTPHeaders()
+		for header_name in self._headers_to_forward:
+			if header_name in self.request.headers:
+				headers[header_name] = self.request.headers[header_name]
 		headers["Authorization"] = 'VOYAGER id="%s"' % self._auth_header_id
 
 		http_client = tornado.httpclient.AsyncHTTPClient()
 		http_client.fetch(
 			tornado.httpclient.HTTPRequest( 
-				url="http://%s%s" % (self._forward_to, self.request.uri),
+				url="http://%s%s" % (self._app_server, self.request.uri),
 				method=self.request.method, 
 				body=(self.request.body or None), 
 				headers=headers,
@@ -152,9 +154,9 @@ class RequestHandler(tornado.web.RequestHandler):
 		return True
 
 	@property
-	def _keyserver_url(self):
+	def _key_server_url(self):
 		"""This property is all about syntactic sugar for callers."""
-		return "http://%s/v1.0/mac_creds/%s" % (self._keyserver, self._auth_header_id)
+		return "http://%s/v1.0/mac_creds/%s" % (self._key_server, self._auth_header_id)
 
 	@tornado.web.asynchronous
 	def _handle_request(self):
@@ -168,7 +170,7 @@ class RequestHandler(tornado.web.RequestHandler):
 		http_client = tornado.httpclient.AsyncHTTPClient()
 		http_client.fetch(
 			tornado.httpclient.HTTPRequest( 
-				url=self._keyserver_url,
+				url=self._key_server_url,
 				method="GET",
 				follow_redirects=False),
 			callback=self._handle_key_server_response)
@@ -204,19 +206,19 @@ if __name__ == "__main__":
 		help="run on this port",
 		type=int)
 	tornado.options.define(
-		"keyserver",
+		"key_server",
 		default="localhost:6969",
-		help="keyserver's host:port",
+		help="key server can be found @ host:port",
 		type=str)
 	tornado.options.define(
-		"forwardto",
+		"app_server",
 		default="localhost:8080",
-		help="after authentication forward requests to this host:port",
+		help="after authentication forward requests to app server on this host:port",
 		type=str)
 	tornado.options.define(
-		"passthruheaders",
+		"headers_to_forward",
 		default=["Date","Cache-Control","Content-Type","Location","Etag"],
-		help="comma sep list of HTTP headers to pass thru proxy",
+		help="comma sep list of HTTP headers to forward to the app server",
 		multiple=True,
 		type=str)
 	tornado.options.parse_command_line()
