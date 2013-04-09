@@ -33,10 +33,10 @@ class CouchDB(couchdb.CouchDB):
 			return None
 		return rv
 
-	def save(self,maccreds):
+	def save(self, mac_key_identifier, maccreds):
 		(http_status_code,ignore) = self.put(
-   			self._as_dict(),
-			self.mac_key_identifier)
+   			maccreds,
+			mac_key_identifier)
 		return httplib.OK == http_status_code
 
 #-------------------------------------------------------------------------------

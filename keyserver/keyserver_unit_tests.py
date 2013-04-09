@@ -213,6 +213,8 @@ class TestMacCredsResource(KeyServerTestCase):
 			body=json.dumps({"owner": "simonsdave@gmail.com"}),
 			headers={"Content-Type": "application/json; charset=utf8"}
 			)
+		self.assertTrue(httplib.CREATED == response.status)
+		self.assertTrue("location" in  response)
 		location = response["location"]
 
 		# delete the newly created and freshly returned MAC creds

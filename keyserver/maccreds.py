@@ -61,7 +61,7 @@ class MACcredentials(object):
 
 	def save(self):
 		cdb = CouchDB()
-		return cdb.save(self._as_dict())
+		return cdb.save(self.mac_key_identifier,self._as_dict())
 
 	def delete(self):
 		self.is_deleted = True
