@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
 #
-# auth_server_core_unit_tests.py
+# auth_server_auth_unit_tests.py
 #
 #-------------------------------------------------------------------------------
 
@@ -16,12 +16,6 @@ import httplib
 import httplib2
 import json
 import uuid
-
-import tornado.httpserver
-import tornado.ioloop
-import tornado.options
-import tornado.web
-import tornado.netutil
 
 import testcase
 import auth_server

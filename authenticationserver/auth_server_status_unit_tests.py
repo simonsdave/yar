@@ -17,12 +17,6 @@ import httplib2
 import json
 import uuid
 
-import tornado.httpserver
-import tornado.ioloop
-import tornado.options
-import tornado.web
-import tornado.netutil
-
 import testcase
 
 #-------------------------------------------------------------------------------
