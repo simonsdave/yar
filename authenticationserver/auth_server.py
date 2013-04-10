@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 """This module contains the core logic for the authenication server.
-The server uses implements MAC Access Authentication."""
-#-------------------------------------------------------------------------------
-#
-# auth_server.py
-#
-# key influences for this module
-#	https://groups.google.com/forum/?fromgroups=#!msg/python-tornado/TB_6oKBmdlA/Js9JoOcI6nsJ
-#
-#-------------------------------------------------------------------------------
+The server uses implements MAC Access Authentication.
+
+Key influencers for this module include [1]
+[1]: https://groups.google.com/forum/?fromgroups=#!msg/python-tornado/TB_6oKBmdlA/Js9JoOcI6nsJ"""
 
 import logging
 import re

@@ -27,6 +27,38 @@ import auth_server
 
 #-------------------------------------------------------------------------------
 
+class Server(object):
+
+	def __init__(self):
+		object.__init__(self)
+
+		[self.socket] = tornado.netutil.bind_sockets(
+			0,
+			"localhost",
+			family=socket.AF_INET)
+		self.port = self.socket.getsockname()[1]
+
+#-------------------------------------------------------------------------------
+
+class AppServerRequestHandler(tornado.web.RequestHandler):
+
+    def get(self):
+		self.set_status(httplib.OK)
+
+#-------------------------------------------------------------------------------
+
+class AppServer(Server):
+
+	def __init__(self):
+		Server.__init__(self)
+
+		handlers=[(r".*", AppServerRequestHandler)]
+		app = tornado.web.Application(handlers=handlers)
+		http_server = tornado.httpserver.HTTPServer(app)
+		http_server.add_sockets([self.socket])
+
+#-------------------------------------------------------------------------------
+
 class KeyServerRequestHandler(tornado.web.RequestHandler):
 
     def get(self):
@@ -57,63 +89,33 @@ class KeyServerRequestHandler(tornado.web.RequestHandler):
 
 #-------------------------------------------------------------------------------
 
-class KeyServer(threading.Thread):
-
-	@classmethod
-	def _get_socket(cls):
-		[sock] = tornado.netutil.bind_sockets(
-			0,
-			"localhost",
-			family=socket.AF_INET)
-		return sock
+class KeyServer(Server):
 
 	def __init__(self):
-		threading.Thread.__init__(self)
-		self.daemon = True
-
-		sock = self.__class__._get_socket()
-		self.port = sock.getsockname()[1]
+		Server.__init__(self)
 
 		handlers=[(r".*", KeyServerRequestHandler)]
 		app = tornado.web.Application(handlers=handlers)
 		http_server = tornado.httpserver.HTTPServer(app)
-		http_server.add_sockets([sock])
-
-		# this might not be required but want to give the server 
-		# a bit of time to get itself settled
-		time.sleep(1)
-
-	def run(self):
-		tornado.ioloop.IOLoop.instance().start()
-
-	def stop(self):
-		tornado.ioloop.IOLoop.instance().stop()
+		http_server.add_sockets([self.socket])
 
 #-------------------------------------------------------------------------------
 
-class AuthenticationServer(threading.Thread):
+class AuthenticationServer(Server):
 
-	@classmethod
-	def _get_socket(cls):
-		[sock] = tornado.netutil.bind_sockets(
-			0,
-			"localhost",
-			family=socket.AF_INET)
-		return sock
+	def __init__(self):
+		Server.__init__(self)
+
+		http_server = tornado.httpserver.HTTPServer(auth_server._tornado_app)
+		http_server.add_sockets([self.socket])
+
+#-------------------------------------------------------------------------------
+
+class IOLoop(threading.Thread):
 
 	def __init__(self):
 		threading.Thread.__init__(self)
 		self.daemon = True
-
-		sock = self.__class__._get_socket()
-		self.port = sock.getsockname()[1]
-
-		http_server = tornado.httpserver.HTTPServer(auth_server._tornado_app)
-		http_server.add_sockets([sock])
-
-		# this might not be required but want to give the server 
-		# a bit of time to get itself settled
-		time.sleep(1)
 
 	def run(self):
 		tornado.ioloop.IOLoop.instance().start()

@@ -26,12 +26,14 @@ class TestStatusResource(testcase.TestCase):
 	@classmethod
 	def setUpClass(cls):
 		cls.auth_server = testcase.AuthenticationServer()
-		cls.auth_server.start()
+
+		cls.io_loop = testcase.IOLoop()
+		cls.io_loop.start()
 
 	@classmethod
 	def tearDownClass(cls):
-		cls.auth_server.stop()
-		cls.auth_server = None
+		cls.io_loop.stop()
+		cls.io_loop = None
 
 	def test_get(self):
 		http_client = httplib2.Http()
