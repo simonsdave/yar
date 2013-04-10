@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
 #
-# authenticationserver_unit_tests.py
+# auth_server_core_unit_tests.py
 #
 #-------------------------------------------------------------------------------
 
@@ -24,56 +24,54 @@ import tornado.web
 import tornado.netutil
 
 import testcase
+import authenticationserver
 
 #-------------------------------------------------------------------------------
 
-class TestStatusResource(testcase.TestCase):
+class TestCase(testcase.TestCase):
 	
 	@classmethod
 	def setUpClass(cls):
 		cls.auth_server = testcase.AuthenticationServer()
 		cls.auth_server.start()
 
+		cls.key_server = testcase.KeyServer()
+		cls.key_server.start()
+		authenticationserver.RequestHandler.key_server = \
+			"localhost:%d" % cls.key_server.port
+
 	@classmethod
 	def tearDownClass(cls):
 		cls.auth_server.stop()
 		cls.auth_server = None
 
-	def test_get(self):
+		authenticationserver.RequestHandler.key_server = None
+		cls.key_server.stop()
+		cls.key_server = None
+
+	def test_get_with_no_authorization_header(self):
 		http_client = httplib2.Http()
 		response, content = http_client.request(
-			"http://localhost:%d/status" % self.__class__.auth_server.port,
+			"http://localhost:%d/whatever" % self.__class__.auth_server.port,
 			"GET")
-		self.assertIsNotNone(response)
+		self.assertTrue(response.status == httplib.UNAUTHORIZED)
 
-		self.assertTrue(httplib.OK == response.status)
-		self.assertTrue("content-type" in response)
-		content_type = response["content-type"]
-		self.assertIsJsonUtf8ContentType(content_type)
-
-		self.assertIsNotNone(content)
-		content = json.loads(content)
-		self.assertTrue("status" in content)
-		self.assertTrue(content["status"] == "ok")
-		self.assertTrue("version" in content)
-		self.assertTrue(content["version"] == "1.0")
-
-	def _test_bad_method(self,method):
+	def DAVE_test_get_with_invalid_authorization_header(self):
 		http_client = httplib2.Http()
 		response, content = http_client.request(
-			"http://localhost:%d/status" % self.__class__.auth_server.port,
-			method)
-		self.assertIsNotNone(response)
-		self.assertTrue(httplib.METHOD_NOT_ALLOWED == response.status)
+			self.url(),
+			"GET",
+			headers={"Authorization": 'MAC id="", nonce="98", mac="bindle"'})
+		self.assertTrue(response.status == httplib.UNAUTHORIZED)
 
-	def test_post(self):
-		self._test_bad_method("POST")
-
-	def test_put(self):
-		self._test_bad_method("PUT")
-
-	def test_delete(self):
-		self._test_bad_method("DELETE")
+	def DAVE_test_get_with_unknonwn_mac_key_identifier(self):
+		auth_header_value = 'MAC id="%s", nonce="98", mac="bindle"' % uuid.uuid4()
+		http_client = httplib2.Http()
+		response, content = http_client.request(
+			self.url(),
+			"GET",
+			headers={"Authorization": auth_header_value})
+		self.assertTrue(response.status == httplib.UNAUTHORIZED)
 
 #-------------------------------------------------------------------------------
 
