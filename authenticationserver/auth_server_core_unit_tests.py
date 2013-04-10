@@ -24,7 +24,7 @@ import tornado.web
 import tornado.netutil
 
 import testcase
-import authenticationserver
+import auth_server
 
 #-------------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ class TestCase(testcase.TestCase):
 
 		cls.key_server = testcase.KeyServer()
 		cls.key_server.start()
-		authenticationserver.RequestHandler.key_server = \
+		auth_server.AuthRequestHandler.key_server = \
 			"localhost:%d" % cls.key_server.port
 
 	@classmethod
@@ -45,7 +45,7 @@ class TestCase(testcase.TestCase):
 		cls.auth_server.stop()
 		cls.auth_server = None
 
-		authenticationserver.RequestHandler.key_server = None
+		auth_server.AuthRequestHandler.key_server = None
 		cls.key_server.stop()
 		cls.key_server = None
 
@@ -56,10 +56,10 @@ class TestCase(testcase.TestCase):
 			"GET")
 		self.assertTrue(response.status == httplib.UNAUTHORIZED)
 
-	def DAVE_test_get_with_invalid_authorization_header(self):
+	def test_get_with_invalid_authorization_header(self):
 		http_client = httplib2.Http()
 		response, content = http_client.request(
-			self.url(),
+			"http://localhost:%d/whatever" % self.__class__.auth_server.port,
 			"GET",
 			headers={"Authorization": 'MAC id="", nonce="98", mac="bindle"'})
 		self.assertTrue(response.status == httplib.UNAUTHORIZED)
