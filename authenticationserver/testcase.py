@@ -23,7 +23,7 @@ import tornado.options
 import tornado.web
 import tornado.netutil
 
-import authenticationserver
+import auth_server
 
 #-------------------------------------------------------------------------------
 
@@ -108,7 +108,7 @@ class AuthenticationServer(threading.Thread):
 		sock = self.__class__._get_socket()
 		self.port = sock.getsockname()[1]
 
-		http_server = tornado.httpserver.HTTPServer(authenticationserver._tornado_app)
+		http_server = tornado.httpserver.HTTPServer(auth_server._tornado_app)
 		http_server.add_sockets([sock])
 
 		# this might not be required but want to give the server 

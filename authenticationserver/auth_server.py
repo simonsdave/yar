@@ -3,7 +3,7 @@
 The server uses implements MAC Access Authentication."""
 #-------------------------------------------------------------------------------
 #
-# authenticationserver.py
+# auth_server.py
 #
 # key influences for this module
 #	https://groups.google.com/forum/?fromgroups=#!msg/python-tornado/TB_6oKBmdlA/Js9JoOcI6nsJ
@@ -27,14 +27,14 @@ _logger = logging.getLogger("AUTHSERVER_%s" % __name__)
 
 #-------------------------------------------------------------------------------
 
-class StatusHandler(tornado.web.RequestHandler):
+class StatusRequestHandler(tornado.web.RequestHandler):
 
 	def get(self):
 		self.write({"status": "ok", "version": "1.0"})
 
 #-------------------------------------------------------------------------------
 
-class RequestHandler(tornado.web.RequestHandler):
+class AuthRequestHandler(tornado.web.RequestHandler):
 
 	app_server = None
 	key_server = None
@@ -191,8 +191,8 @@ class RequestHandler(tornado.web.RequestHandler):
 
 # _tornado_handlers simplifies the _tornado_app constructor
 _tornado_handlers=[
-	(r"/status", StatusHandler),
-	(r".*", RequestHandler),
+	(r"/status", StatusRequestHandler),
+	(r".*", AuthRequestHandler),
 	]
 # _tornado_app simplifies construction of testing infrastructure
 _tornado_app = tornado.web.Application(handlers=_tornado_handlers)
