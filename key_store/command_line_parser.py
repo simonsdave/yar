@@ -14,7 +14,6 @@ class CommandLineParser(optparse.OptionParser):
 		optparse.OptionParser.__init__(self, "usage: %prog [options]" )
 
 		self.add_option(
-			"-l",
 			"--log",
 			action="store",
 			choices=["DEBUG","INFO","WARNING","ERROR","CRITICAL","FATAL"],
@@ -35,5 +34,19 @@ class CommandLineParser(optparse.OptionParser):
 			dest="database",
 			default="macaa",
 			help="database" )
+
+		self.add_option(
+			"--delete",
+			action="store_true",
+			dest="delete",
+			default=False,
+			help="delete before creating" )
+
+		self.add_option(
+			"--create",
+			action="store_true",
+			dest="create",
+			default=True,
+			help="delete before creating" )
 
 #------------------------------------------------------------------- End-of-File

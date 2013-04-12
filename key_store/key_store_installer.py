@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-#-------------------------------------------------------------------------------
-#
-# keystore.py
-#
+"""This module contains all the logic required to create and delete
+a CouchDB database that implements key store."""
+
 #-------------------------------------------------------------------------------
 
 import logging
@@ -20,7 +19,9 @@ _logger = logging.getLogger( "KEYSTORE_%s" % __name__ )
 
 #-------------------------------------------------------------------------------
 
-def is_couchdb_accessible(host="localhost:5984"):
+def _is_couchdb_accessible(host="localhost:5984"):
+	"""Returns True if there's a CouchDB server running on ```host```.
+	Otherwise returns False."""
 
 	url = "http://%s" % host
 	http_client = httplib2.Http()
@@ -105,8 +106,18 @@ if __name__ == "__main__":
 	loggingLevel = getattr(logging, clo.loggingLevel)
 	logging.basicConfig(level=loggingLevel)
 
-	if is_couchdb_accessible(clo.host):
-		delete(clo.database,clo.host)
-		create(clo.database,clo.host)
+	if not _is_couchdb_accessible(clo.host):
+		_logger.error("CouchDB isn't running on '%s'", clo.host)
+		sys.exit(1)
+
+	if clo.delete:
+		if not delete(clo.database,clo.host):
+			sys.exit(1)
+
+	if clo.create:
+		if not create(clo.database,clo.host):
+			sys.exit(1)
+
+	sys.exit(0)
 
 #------------------------------------------------------------------- End-of-File
