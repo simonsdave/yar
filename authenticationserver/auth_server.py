@@ -23,6 +23,8 @@ _logger = logging.getLogger("AUTHSERVER_%s" % __name__)
 #-------------------------------------------------------------------------------
 
 class StatusRequestHandler(tornado.web.RequestHandler):
+	"""This class is responsible for handling HTTP GET requests
+	against the auth server's status resource."""
 
 	def get(self):
 		self.write({"status": "ok", "version": "1.0"})
@@ -31,7 +33,11 @@ class StatusRequestHandler(tornado.web.RequestHandler):
 
 class AuthRequestHandler(tornado.web.RequestHandler):
 
+	"""Once a request has been authenticated, the request is forwarded
+	to the app server as defined by this host:port combination."""
 	app_server = None
+
+	"""This host:port combination define the location of the key server."""
 	key_server = None
 
 	def _handle_app_server_response(self, response):
@@ -46,11 +52,19 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 		"""This method parses the response from the key server. The response
 		is supposed to be a JSON document containing mac credentials."""
 		if httplib.OK != response.code:
+			_logger.info(
+				"Failed to find mac credentials for MAC key identifier '%s'",
+				self._auth_header_id)
 			return False
 
 		# :TODO: exepcting content-type to be JSON
 		# :TODO: what happens if this is invalid JSON or not JSON at all?
 		mac_credentials = json.loads(response.body)
+
+		_logger.info(
+			"For MAC key identifier '%s' retrieved '%s' from key server",
+			self._auth_header_id,
+			mac_credentials)
 
 		# :TODO: be more paranoid in the code below ITO the contents of the JSON document
 

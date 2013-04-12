@@ -84,7 +84,7 @@ class KeyServerRequestHandler(tornado.web.RequestHandler):
 			re.IGNORECASE )
 		match = uri_reg_ex.match(self.request.uri)
 		if not match:
-			KeyServer.mac_key_identifier_in_request = None
+			_mac_key_identifier_in_key_server_request = None
 			self.set_status(httplib.NOT_FOUND)
 		else:
 			assert 0 == match.start()
@@ -94,29 +94,33 @@ class KeyServerRequestHandler(tornado.web.RequestHandler):
 			assert mac_key_identifier is not None
 			assert 0 < len(mac_key_identifier)
 
-			KeyServer.mac_key_identifier_in_request = mac_key_identifier
+			_mac_key_identifier_in_key_server_request = mac_key_identifier
 
-			dict = {
-				"mac_key_identifier": mac_key_identifier,
-				"mac_key": "def",
-				"mac_algorithm": "def",
-				"issue_time": "def",
+			dict = _body_of_response_to_key_server_request \
+				or \
+				{
+					"mac_key_identifier": mac_key_identifier,
+					"mac_key": "def",
+					"mac_algorithm": "def",
+					"issue_time": "def",
 				}
 			body = json.dumps(dict)
 			self.write(body)
-			self.set_header("Content-Type", "application/json; charset=utf8")
-			self.set_status(httplib.OK)
+
+			self.set_header(
+				_content_type_of_response_to_key_server_request
+				or
+				"Content-Type", "application/json; charset=utf8")
+
+			self.set_status(
+				_status_code_of_response_to_key_server_request
+				or
+				httplib.OK)
 
 #-------------------------------------------------------------------------------
 
 class KeyServer(Server):
 	"""The mock key server."""
-
-	"""When KeyServerRequestHandler's get() is given a valid
-	mac key identifier KeyServer's mac_key_identifier_in_request
-	is set to the mac key identifier. See TestCase's
-	assertMACKeyIdentifierInKeyServerRequest()."""
-	mac_key_identifier_in_request = None
 
 	def __init__(self):
 		"""Creates an instance of the mock key server and starts the
@@ -161,10 +165,31 @@ class IOLoop(threading.Thread):
 
 #-------------------------------------------------------------------------------
 
+"""When KeyServerRequestHandler's get() is given a valid
+mac key identifier, _mac_key_identifier_in_key_server_request
+is set to the mac key identifier in the handler.
+See TestCase's assertMACKeyIdentifierInKeyServerRequest()
+for when _mac_key_identifier_in_key_server_request is used."""
+_mac_key_identifier_in_key_server_request = None
+
+"""..."""
+_status_code_of_response_to_key_server_request = None
+
+"""..."""
+_content_type_of_response_to_key_server_request = None
+
+"""..."""
+_body_of_response_to_key_server_request = None
+
+#-------------------------------------------------------------------------------
+
 class TestCase(unittest.TestCase):
 	
 	def setUp(self):
-		KeyServer.mac_key_identifier_in_request = None
+		unittest.TestCase.setUp(self)
+		_mac_key_identifier_in_key_server_request = None
+		_body_of_response_to_key_server_request = None
+		_status_code_of_response_to_key_server_request = None
 
 	def assertIsJsonUtf8ContentType(self,content_type):
 		"""A method name/style chosen for consistency with unittest.TestCase
@@ -183,10 +208,10 @@ class TestCase(unittest.TestCase):
 		allows to caller to assert which MAC key identifier was sent to the
 		key server."""
 		if mac_key_identifier is None:
-			self.assertIsNone(KeyServer.mac_key_identifier_in_request)
+			self.assertIsNone(_mac_key_identifier_in_key_server_request)
 		else:
 			self.assertEqual(
-				KeyServer.mac_key_identifier_in_request,
+				_mac_key_identifier_in_key_server_request,
 				mac_key_identifier)
 
 #-------------------------------------------------------------------------------
