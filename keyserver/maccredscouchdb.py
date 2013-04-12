@@ -15,7 +15,7 @@ class CouchDB(couchdb.CouchDB):
 
 	def get_all_for_owner(self, owner=None):
 		if owner is None:
-			(http_status_code,rv) = selt.get("_design/creds/_view/all")
+			(http_status_code,rv) = self.get("_design/creds/_view/all")
 			if httplib.OK != http_status_code:
 				return None
 			return rv

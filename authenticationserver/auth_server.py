@@ -5,6 +5,8 @@ The server uses implements MAC Access Authentication.
 Key influencers for this module include [1]
 [1]: https://groups.google.com/forum/?fromgroups=#!msg/python-tornado/TB_6oKBmdlA/Js9JoOcI6nsJ"""
 
+#-------------------------------------------------------------------------------
+
 import logging
 import re
 import json
@@ -41,14 +43,18 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 	key_server = None
 
 	def _handle_app_server_response(self, response):
-		self.set_status(response.code) 
-		for header_name in response.headers.keys():
-			self.set_header(header_name, response.headers[header_name]) 
-		if response.body: 
-			self.write(response.body) 
+		if response.error:
+			print ">>>%s<<<" % response.error
+			self.set_status(httplib.INTERNAL_SERVER_ERROR) 
+		else:
+			self.set_status(response.code) 
+			for header_name in response.headers.keys():
+				self.set_header(header_name, response.headers[header_name]) 
+			if 0 < response.headers.get("Content-Length", 0):
+				self.write(response.body) 
 		self.finish()
 
-	def _extract_mac_credentials_from_key_server_response(self,response):
+	def _extract_mac_credentials_from_key_server_response(self, response):
 		"""This method parses the response from the key server. The response
 		is supposed to be a JSON document containing mac credentials."""
 		if httplib.OK != response.code:
@@ -124,12 +130,18 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 		headers = tornado.httputil.HTTPHeaders(self.request.headers)
 		headers["Authorization"] = 'VOYAGER id="%s"' % self._auth_header_id
 
+		# required because self.request.body throws an exception
+		# if there's no body in the request
+		body = None
+		if 0 < self.request.headers.get("Content-Length", 0):
+			body = self.request.body
+
 		http_client = tornado.httpclient.AsyncHTTPClient()
 		http_client.fetch(
 			tornado.httpclient.HTTPRequest( 
 				url="http://%s%s" % (self.__class__.app_server, self.request.uri),
 				method=self.request.method, 
-				body=(self.request.body or None), 
+				body=body,
 				headers=headers,
 				follow_redirects=False),
 			callback=self._handle_app_server_response)
@@ -225,8 +237,8 @@ if __name__ == "__main__":
 		help="app server's host:port",
 		type=str)
 	tornado.options.parse_command_line()
-	RequestHandler.key_server = tornado.options.options.key_server
-	RequestHandler.app_server = tornado.options.options.app_server
+	AuthRequestHandler.key_server = tornado.options.options.key_server
+	AuthRequestHandler.app_server = tornado.options.options.app_server
 
 	http_server = tornado.httpserver.HTTPServer(_tornado_app)
 	http_server.listen(tornado.options.options.port)
