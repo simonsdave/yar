@@ -21,13 +21,13 @@ Key Server
 ----------
 To start the key server:
 ~~~~~
-./app_server.py --port=6969
+./key_server.py --port=6969
 ~~~~~
 By default the key server will attempt to use port 8070.
 
 To get all MAC credentials currently saved in the key store:
 ~~~~~~
-curl -s -X GET http://localhost:6969/v1.0/mac_creds | ../bin/pp.sh
+curl -s -X GET http://localhost:6969/v1.0/mac_creds
 ~~~~~~
 All MAC credentials are "owned" by someone.
 An owner's identity is represented below as an opaque string at least one character long.
@@ -54,7 +54,7 @@ To create the key store:
 ~~~~~
 To get all MAC credentials currently saved in the key store:
 ~~~~~~
-curl -s -X GET http://localhost:5984/macaa/_design/creds/_view/all | ../bin/pp.sh
+curl -s -X GET http://localhost:5984/macaa/_design/creds/_view/all
 ~~~~~~
 To get an existing set of creditials:
 ~~~~~
