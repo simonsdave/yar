@@ -13,7 +13,11 @@ Authentication Server
 ---------------------
 To start the authorization server:
 ~~~~~
-./authenticationserver.py --port=8080 --key_server=localhost:6969 --app_server=localhost:8081
+./auth_server.py --port=8000 --key_server=localhost:6969 --app_server=localhost:8080
+~~~~~
+To make a request to the app server thru the authentication server:
+~~~~~
+curl -v -X GET -H "Authorization: MAC id=\"h480djs93hd8\", nonce=\"264095:dj83hs9s\", mac=\"SLDJd4mg43cjQfElUs3Qub4L6xE=\"" http://localhost:8000/dave.html
 ~~~~~
 
 Key Server 
