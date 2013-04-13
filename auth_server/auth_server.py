@@ -24,12 +24,16 @@ _logger = logging.getLogger("AUTHSERVER_%s" % __name__)
 
 #-------------------------------------------------------------------------------
 
+__version__ = "1.0"
+
+#-------------------------------------------------------------------------------
+
 class StatusRequestHandler(tornado.web.RequestHandler):
 	"""This class is responsible for handling HTTP GET requests
 	against the auth server's status resource."""
 
 	def get(self):
-		self.write({"status": "ok", "version": "1.0"})
+		self.write({"status": "ok", "version": __version__})
 
 #-------------------------------------------------------------------------------
 
@@ -44,7 +48,6 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 
 	def _handle_app_server_response(self, response):
 		if response.error:
-			print ">>>%s<<<" % response.error
 			self.set_status(httplib.INTERNAL_SERVER_ERROR) 
 		else:
 			self.set_status(response.code) 

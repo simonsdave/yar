@@ -6,7 +6,7 @@
 #-------------------------------------------------------------------------------
 
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.FATAL)
 import unittest
 import httplib
 import httplib2
@@ -43,14 +43,14 @@ class TestCase(testcase.TestCase):
 		cls.io_loop.stop()
 		cls.io_loop = None
 
-	def DAVE_test_get_with_no_authorization_header(self):
+	def test_get_with_no_authorization_header(self):
 		http_client = httplib2.Http()
 		response, content = http_client.request(
 			"http://localhost:%d/whatever" % self.__class__.auth_server.port,
 			"GET")
 		self.assertTrue(response.status == httplib.UNAUTHORIZED)
 
-	def DAVE_test_get_with_invalid_authorization_header(self):
+	def test_get_with_invalid_authorization_header(self):
 		http_client = httplib2.Http()
 		response, content = http_client.request(
 			"http://localhost:%d/whatever" % self.__class__.auth_server.port,
@@ -59,7 +59,7 @@ class TestCase(testcase.TestCase):
 		self.assertTrue(response.status == httplib.UNAUTHORIZED)
 
 	def test_get_with_unknonwn_mac_key_identifier(self):
-		TestCase.status_code_of_response_to_key_server_request = httplib.NOT_FOUND
+		testcase.TestCase.status_code_of_response_to_key_server_request = httplib.NOT_FOUND
 		mac_key_identifier = str(uuid.uuid4())
 		auth_header_value = 'MAC id="%s", nonce="98", mac="bindle"' % mac_key_identifier
 		http_client = httplib2.Http()
@@ -67,8 +67,8 @@ class TestCase(testcase.TestCase):
 			"http://localhost:%d/whatever" % self.__class__.auth_server.port,
 			"GET",
 			headers={"Authorization": auth_header_value})
-		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
 		self.assertTrue(response.status == httplib.UNAUTHORIZED)
+		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
 
 #-------------------------------------------------------------------------------
 
