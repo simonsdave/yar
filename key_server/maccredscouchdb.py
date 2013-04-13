@@ -19,7 +19,7 @@ class CouchDB(couchdb.CouchDB):
 			if httplib.OK != http_status_code:
 				return None
 			return rv
-		(http_status_code,rv) = cdb.get(
+		(http_status_code,rv) = self.get(
 			"_design/creds/_view/by_owner?startkey=\"%s\"&endkey=\"%s\"",
 			owner,
 			owner)

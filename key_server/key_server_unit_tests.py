@@ -132,6 +132,84 @@ class TestMacCredsResource(KeyServerTestCase):
 	def url(self):
 		return "%s/v1.0/mac_creds" % KeyServerTestCase.url(self)
 
+	def _create_creds(self, owner):
+		self.assertIsNotNone(owner)
+		self.assertTrue(0 < len(owner))
+
+		# create the resource
+		http_client = httplib2.Http()
+		response, content = http_client.request(
+			self.url(),
+			"POST",
+			body=json.dumps({"owner": owner}),
+			headers={"Content-Type": "application/json; charset=utf8"}
+			)
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.CREATED == response.status)
+		self.assertTrue('location' in response)
+		location = response['location']
+		self.assertIsNotNone(location)
+		self.assertIsNotNone(location.startswith(self.url()))
+
+		# based on the returned location retrieve the newly created MAC creds
+		http_client = httplib2.Http()
+		response, content = http_client.request(location, "GET")
+		self.assertTrue(httplib.OK == response.status)
+		self.assertTrue("content-type" in response)
+		content_type = response["content-type"]
+		self.assertIsJsonUtf8ContentType(content_type)
+		creds = json.loads(content)
+		self.assertIsNotNone(creds)
+		self.assertEqual(owner, creds.get('owner', None))
+		mac_key_identifier = creds.get('mac_key_identifier', None)
+		self.assertIsNotNone(mac_key_identifier)
+		self.assertTrue(location.endswith(mac_key_identifier))
+
+		return (creds, location)
+
+	def _get_all_creds(self, owner=None):
+		http_client = httplib2.Http()
+		url = self.url()
+		if owner is not None:
+			self.assertTrue(0 < len(owner))
+			url = "%s?owner=%s" % (url, owner)
+		response, content = http_client.request(self.url(), "GET")
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.OK == response.status)
+		self.assertTrue("content-type" in  response)
+		content_type = response["content-type"]
+		self.assertIsJsonUtf8ContentType(content_type)
+		self.assertTrue("content-length" in  response)
+		content_length = response["content-length"]
+		content_length = int(content_length)
+		self.assertTrue(0 < content_length)
+		self.assertIsNotNone(content)
+		self.assertTrue(0 < len(content))
+		self.assertEqual(content_length, len(content))
+		creds = json.loads(content)
+		self.assertIsNotNone(creds)
+		return creds
+
+	def _delete_creds(self, mac_key_identifier):
+		self.assertIsNotNone(mac_key_identifier)
+		self.assertTrue(0<len(mac_key_identifier))
+
+		url = "%s/%s" % (self.url(), mac_key_identifier)
+		http_client = httplib2.Http()
+		response, content = http_client.request(url, "DELETE")
+		self.assertTrue(httplib.OK == response.status)
+
+	def _delete_all_creds(self, owner=None):
+		all_creds = self._get_all_creds(owner)
+		self.assertIsNotNone(all_creds)
+		for creds in all_creds:
+			self.assertTrue("mac_key_identifier" in creds)
+			mac_key_identifier = creds["mac_key_identifier"]
+			self._delete_creds(mac_key_identifier)
+		all_creds = self._get_all_creds(owner)
+		self.assertIsNotNone(all_creds)
+		self.assertEqual(0, len(all_creds))
+
 	def test_get_of_non_existent_resource(self):
 		url = "%s/%s" % (self.url(), str(uuid.uuid4()).replace("-",""))
 		http_client = httplib2.Http()
@@ -204,64 +282,46 @@ class TestMacCredsResource(KeyServerTestCase):
 		self.assertIsNotNone(response)
 		self.assertTrue(httplib.BAD_REQUEST == response.status)
 
-	def test_delete_already_deleted(self):
-		# create a MAC creds resource
-		http_client = httplib2.Http()
-		response, content = http_client.request(
-			self.url(),
-			"POST",
-			body=json.dumps({"owner": "simonsdave@gmail.com"}),
-			headers={"Content-Type": "application/json; charset=utf8"}
-			)
-		self.assertTrue(httplib.CREATED == response.status)
-		self.assertTrue("location" in  response)
-		location = response["location"]
+	def test_get_by_owner(self):
+		self._delete_all_creds()
 
-		# delete the newly created and freshly returned MAC creds
-		http_client = httplib2.Http()
-		response, content = http_client.request(location, "DELETE")
-		self.assertTrue(httplib.OK == response.status)
+		owner = str(uuid.uuid4()).replace("-","")
+		owner_creds = []
+		for x in range(1,11):
+			owner_creds.append(self._create_creds(owner))
 
-		# AGAIN delete the newly created and freshly returned MAC creds
-		http_client = httplib2.Http()
-		response, content = http_client.request(location, "DELETE")
-		self.assertTrue(httplib.OK == response.status)
+		other_owner = str(uuid.uuid4()).replace("-","")
+		other_owner_creds = []
+		for x in range(1,4):
+			other_owner_creds.append(self._create_creds(other_owner))
 
-	def test_post_all_good(self):
-		# create a MAC creds resource
-		http_client = httplib2.Http()
-		response, content = http_client.request(
-			self.url(),
-			"POST",
-			body=json.dumps({"owner": "simonsdave@gmail.com"}),
-			headers={"Content-Type": "application/json; charset=utf8"}
-			)
-		self.assertIsNotNone(response)
-		self.assertTrue(httplib.CREATED == response.status)
-		self.assertTrue('location' in response)
-		location = response['location']
-		self.assertIsNotNone(location)
-		self.assertIsNotNone(location.startswith(self.url()))
+		all_owner_creds = self._get_all_creds(owner)
+		self.assertIsNotNone(all_owner_creds)
+		self.assertEqual(len(all_owner_creds), len(owner_creds))
 
-		# based on the returned location retrieve the newly created MAC creds
-		http_client = httplib2.Http()
-		response, content = http_client.request(location, "GET")
-		self.assertTrue(httplib.OK == response.status)
-		self.assertTrue("content-type" in response)
-		content_type = response["content-type"]
-		self.assertIsJsonUtf8ContentType(content_type)
-		mac_creds = json.loads(content)
-		self.assertIsNotNone(mac_creds)
+		for creds in (owner_creds + other_owner_creds):
+			self._delete_creds(creds[0]['mac_key_identifier'])
 
-		# delete the newly created and freshly returned MAC creds
-		http_client = httplib2.Http()
-		response, content = http_client.request(location, "DELETE")
-		self.assertTrue(httplib.OK == response.status)
+	def test_all_good_for_simple_create_and_delete(self):
+		self._delete_all_creds()
 
-		# AGAIN delete the newly created and freshly returned MAC creds
-		http_client = httplib2.Http()
-		response, content = http_client.request(location, "DELETE")
-		self.assertTrue(httplib.OK == response.status)
+		all_creds = self._get_all_creds()
+		self.assertIsNotNone(all_creds)
+		self.assertEqual(0, len(all_creds))
+
+		owner = str(uuid.uuid4()).replace("-","")
+		(creds, location) = self._create_creds(owner)
+		self.assertIsNotNone(creds)
+		mac_key_identifier = creds.get('mac_key_identifier', None)
+		self.assertIsNotNone(mac_key_identifier)
+		self.assertTrue(0 < len(mac_key_identifier))
+
+		self._delete_creds(mac_key_identifier)
+		self._delete_creds(mac_key_identifier)
+
+		all_creds = self._get_all_creds()
+		self.assertIsNotNone(all_creds)
+		self.assertEqual(0, len(all_creds))
 
 #-------------------------------------------------------------------------------
 

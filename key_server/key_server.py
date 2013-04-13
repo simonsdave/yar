@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-#-------------------------------------------------------------------------------
-#
-# keyserver.py
-#
-#-------------------------------------------------------------------------------
+"""This module contains the core key server logic."""
 
 import httplib
 import re
@@ -19,12 +15,16 @@ import maccreds
 
 #-------------------------------------------------------------------------------
 
+__version__ = "1.0"
+
+#-------------------------------------------------------------------------------
+
 class StatusHandler(tornado.web.RequestHandler):
 
 	def get(self):
 		status = {
 			"status": "ok",
-			"version": "1.0",
+			"version": __version__,
 		}
 		self.write(status)
 
@@ -74,7 +74,7 @@ class AllCredsHandler(CredsHandler):
 		return True
 
 	def get(self):
-		owner = self.get_argument("owner",None)
+		owner = self.get_argument("owner", None)
 		self.write_creds(maccreds.MACcredentials.get_all(owner))
 
 	def _get_owner_from_request_body(self):
@@ -104,14 +104,15 @@ class AllCredsHandler(CredsHandler):
 		owner = self._get_owner_from_request_body()
 		if owner is None:
 			self.set_status(httplib.BAD_REQUEST)
-		else:
-			creds = maccreds.MACcredentials(owner)
-			creds.save()
-			location_url = "%s/%s" % (
-				self.request.full_url(),
-				creds.mac_key_identifier)
-			self.set_header("Location", location_url)
-			self.set_status(httplib.CREATED)
+			return
+
+		creds = maccreds.MACcredentials(owner)
+		creds.save()
+		location_url = "%s/%s" % (
+			self.request.full_url(),
+			creds.mac_key_identifier)
+		self.set_header("Location", location_url)
+		self.set_status(httplib.CREATED)
 
 #-------------------------------------------------------------------------------
 
