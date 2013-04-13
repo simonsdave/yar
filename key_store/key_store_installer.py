@@ -15,13 +15,14 @@ from command_line_parser import CommandLineParser
 
 #-------------------------------------------------------------------------------
 
-_logger = logging.getLogger( "KEYSTORE_%s" % __name__ )
+_logger = logging.getLogger("KEYSTORE_%s" % __name__)
 
 #-------------------------------------------------------------------------------
 
 def _is_couchdb_accessible(host="localhost:5984"):
 	"""Returns True if there's a CouchDB server running on ```host```.
-	Otherwise returns False."""
+	Otherwise returns False. ```host``` is expected to be of the form
+	host:port."""
 
 	url = "http://%s" % host
 	http_client = httplib2.Http()
