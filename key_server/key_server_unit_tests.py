@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
 #
-# keyserver_unit_tests.py
+# key_server_unit_tests.py
 #
 #-------------------------------------------------------------------------------
 
@@ -23,7 +23,7 @@ import tornado.options
 import tornado.web
 import tornado.netutil
 
-import keyserver
+import key_server
 
 #-------------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ class KeyServer(threading.Thread):
 		sock = self.__class__._get_socket()
 		self.port = sock.getsockname()[1]
 
-		http_server = tornado.httpserver.HTTPServer(keyserver._tornado_app)
+		http_server = tornado.httpserver.HTTPServer(key_server._tornado_app)
 		http_server.add_sockets([sock])
 
 		# this might not be required but want to give the server 

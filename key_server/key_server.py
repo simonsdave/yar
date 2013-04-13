@@ -19,10 +19,6 @@ import maccreds
 
 #-------------------------------------------------------------------------------
 
-define("port", default=8000, help="run on the given port", type=int)
-
-#-------------------------------------------------------------------------------
-
 class StatusHandler(tornado.web.RequestHandler):
 
 	def get(self):
@@ -145,10 +141,19 @@ _tornado_handlers = [
 
 _tornado_app = tornado.web.Application(handlers=_tornado_handlers)
 
+#-------------------------------------------------------------------------------
+
 if __name__ == "__main__":
+	define(
+		"port",
+		default=8070,
+		help="run on the given port",
+		type=int)
 	tornado.options.parse_command_line()
+
 	http_server = tornado.httpserver.HTTPServer(_tornado_app)
 	http_server.listen(options.port)
+
 	tornado.ioloop.IOLoop.instance().start()
 
 #------------------------------------------------------------------- End-of-File
