@@ -12,11 +12,11 @@ import tornado.httpclient
 
 #-------------------------------------------------------------------------------
 
-class CouchDB(object):
+couchdb_server = "localhost:5984/macaa"
 
-	_host = "localhost"
-	_port = "5984"
-	_database = "macaa"
+#-------------------------------------------------------------------------------
+
+class CouchDB(object):
 
 	_put_headers = tornado.httputil.HTTPHeaders({
 		"Content-Type": "application/json; charset=utf8",
@@ -25,14 +25,8 @@ class CouchDB(object):
 	})
 
 	def _url(self,path,*args):
-		url = "http://%s:%s/%s/%s" % (
-			self.__class__._host,
-			self.__class__._port,
-			self.__class__._database,
-			# :TODO: is the args[0][0] below really the right way to do this?
-			(path % args[0][0])
-			)
-		return url
+		# :TODO: is the args[0][0] below really the right way to do this?
+		return "http://%s/%s" % (couchdb_server, (path % args[0][0]))
 
 	def _fetch(self,dict,path,*args):
 		url = self._url(path,args)

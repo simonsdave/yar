@@ -9,8 +9,8 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.options
 import tornado.web
-from tornado.options import define, options
 
+import couchdb
 import maccreds
 
 #-------------------------------------------------------------------------------
@@ -145,15 +145,21 @@ _tornado_app = tornado.web.Application(handlers=_tornado_handlers)
 #-------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-	define(
+	tornado.options.define(
 		"port",
 		default=8070,
 		help="run on the given port",
 		type=int)
+	tornado.options.define(
+		"key_store",
+		default="localhost:5984/macaa",
+		help="<host>:<port>/<database> - default = localhost:5984/macaa",
+		type=str)
 	tornado.options.parse_command_line()
+	couchdb.couchdb_server = tornado.options.options.key_store
 
 	http_server = tornado.httpserver.HTTPServer(_tornado_app)
-	http_server.listen(options.port)
+	http_server.listen(tornado.options.options.port)
 
 	tornado.ioloop.IOLoop.instance().start()
 
