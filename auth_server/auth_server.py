@@ -48,7 +48,6 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 
 	def _handle_app_server_response(self, response):
 		if response.error:
-			print ">>>%s<<<" % response.error
 			self.set_status(httplib.INTERNAL_SERVER_ERROR) 
 		else:
 			self.set_status(response.code) 
