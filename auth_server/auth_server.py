@@ -186,8 +186,6 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 			self.finish()
 			return
 
-		# :TODO: insert logic to validate the MAC
-
 		url = "http://%s/v1.0/mac_creds/%s" % (
 			self.__class__.key_server,
 			self._auth_header_id)
