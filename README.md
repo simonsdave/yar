@@ -21,7 +21,7 @@ Key Server
 ----------
 To start the key server:
 ~~~~~
-./key_server.py --port=6969 --key_store="localhost:5984/macaa"
+./key_server.py --port=6969 --key_store=localhost:5984/macaa
 ~~~~~
 By default the key server will attempt to listen on port 8070 and connect a key store at localhost:5984/macaa.
 
@@ -47,7 +47,7 @@ curl -v -X DELETE http://localhost:6969/v1.0/mac_creds/<MAC key identifier>
 Key Store
 ---------
 The key store is implemented as a CouchDB database.
-In the examples below, CouchDB is assumed to be running on localhost port 5984.
+In the examples below, CouchDB is assumed to be running on localhost and listening on port 5984.
 To create the key store:
 ~~~~~
 ./key_store_installer.py --host=localhost:5984 --database=macaa --log=INFO --delete
