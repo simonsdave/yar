@@ -48,8 +48,7 @@ class MACcredentials(object):
 	@classmethod
 	def get_all(cls,owner=None):
 		cdb = CouchDB()
-		(http_status_code, rv) = cdb.get_all_for_owner(owner)
-		return rv
+		return cdb.get_all_for_owner(owner)
 
 	@classmethod
 	def get(cls, mac_key_identifier):
