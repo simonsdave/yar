@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 """This module contains a super simple app server to be used for testing."""
 
+import logging
+import os
+import sys
 import datetime
 
 import tornado.httpserver
@@ -11,11 +14,19 @@ import tornado.web
 
 #-------------------------------------------------------------------------------
 
+__version__ = "1.0"
+
+#-------------------------------------------------------------------------------
+
+_logger = logging.getLogger("APPSERVER_%s" % __name__)
+
+#-------------------------------------------------------------------------------
+
 class RequestHandler(tornado.web.RequestHandler):
 	def get(self):
 		dict = {
 			"status": "ok",
-			"version": "1.0",
+			"version": __version__,
 			"when": str(datetime.datetime.now())
 		}
 		self.write(dict)
@@ -40,6 +51,12 @@ if __name__ == "__main__":
 		type=int)
 	tornado.options.parse_command_line()
 
+	_logger.info(
+		"%s %s running on %d",
+		os.path.basename(os.path.split(sys.argv[0])[1]),
+		__version__,
+		tornado.options.options.port)
+		
 	app = tornado.web.Application(handlers=[(r".*", RequestHandler)])
 	http_server = tornado.httpserver.HTTPServer(app)
 	http_server.listen(tornado.options.options.port)
