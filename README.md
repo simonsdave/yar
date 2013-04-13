@@ -21,9 +21,9 @@ Key Server
 ----------
 To start the key server:
 ~~~~~
-./app_server.py --port=8080
+./app_server.py --port=6969
 ~~~~~
-By default the key server will attempt to use port 8080.
+By default the key server will attempt to use port 8070.
 
 To get all MAC credentials currently saved in the key store:
 ~~~~~~
