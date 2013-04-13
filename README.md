@@ -26,7 +26,8 @@ Key Server
 
 Key Store
 ---------
-* ...
+* curl -s -X GET http://localhost:5984/macaa/_design/creds/_view/all
+* curl -s -X GET http://localhost:5984/macaa/<MAC key identifier>
 
 References
 ----------
