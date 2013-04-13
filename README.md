@@ -19,6 +19,12 @@ Tokenization Server
 
 Key Server 
 ----------
+To start the key server:
+~~~~~
+./app_server.py --port=8080
+~~~~~
+By default the key server will attempt to use port 8080.
+
 To get all MAC credentials currently saved in the key store:
 ~~~~~~
 curl -s -X GET http://localhost:6969/v1.0/mac_creds | ../bin/pp.sh
@@ -40,16 +46,34 @@ curl -v -X DELETE http://localhost:6969/v1.0/mac_creds/<MAC key identifier>
 
 Key Store
 ---------
-To create the key store
+The key store is implemented as a CouchDB database.
+In the examples below, CouchDB is assumed to be running on localhost port 5984.
+To create the key store:
 ~~~~~
-./key_store_installer.py --delete --log=INFO
+./key_store_installer.py --host=localhost:5984 --database=macaa --log=INFO --delete
 ~~~~~
-* curl -s -X GET http://localhost:5984/macaa/_design/creds/_view/all
-* curl -s -X GET http://localhost:5984/macaa/<MAC key identifier>
+To get all MAC credentials currently saved in the key store:
+~~~~~~
+curl -s -X GET http://localhost:5984/macaa/_design/creds/_view/all | ../bin/pp.sh
+~~~~~~
+To get an existing set of creditials:
+~~~~~
+curl -s -X GET http://localhost:5984/macaa/<MAC key identifier>
+~~~~~
 
 App Server
 ----------
-* curl -X GET http://localhost:8080/dave.html
+To start the app server:
+~~~~~
+./app_server.py --port=8080
+~~~~~
+By default the app server will attempt to use port 8080.
+
+The app server will respond to HTTP GET, POST, DELETE and PUT requests.
+To confirm the app server is working correctly try:
+~~~~~
+curl -X GET http://localhost:8080/dave.html
+~~~~~
 
 References
 ----------
