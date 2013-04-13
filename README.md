@@ -19,15 +19,37 @@ Tokenization Server
 
 Key Server 
 ----------
-* curl -X POST -H "Content-Type: application/json; charset=utf8" -d "{\"owner\":\"dave.simons@points.com\"}" http://localhost:6969/v1.0/mac_creds
-* curl -s -X GET http://localhost:6969/v1.0/mac_creds
-* curl -v -X GET http://localhost:6969/v1.0/mac_creds/<MAC key identifier>
-* curl -v -X DELETE http://localhost:6969/v1.0/mac_creds/<MAC key identifier>
+To get all MAC credentials currently saved in the key store:
+~~~~~~
+curl -s -X GET http://localhost:6969/v1.0/mac_creds | ../bin/pp.sh
+~~~~~~
+All MAC credentials are "owned" by someone.
+An owner's identity is represented below as an opaque string at least one character long.
+To create a set of credentials:
+~~~~~~
+curl -X POST -H "Content-Type: application/json; charset=utf8" -d "{\"owner\":\"simonsdave@gmail.com\"}" http://localhost:6969/v1.0/mac_creds
+~~~~~~
+To get an existing set of creditials:
+~~~~~
+curl -v -X GET http://localhost:6969/v1.0/mac_creds/<MAC key identifier>
+~~~~~
+To delete a set of existing credentials:
+~~~~~
+curl -v -X DELETE http://localhost:6969/v1.0/mac_creds/<MAC key identifier>
+~~~~~
 
 Key Store
 ---------
+To create the key store
+~~~~~
+./key_store_installer.py --delete --log=INFO
+~~~~~
 * curl -s -X GET http://localhost:5984/macaa/_design/creds/_view/all
 * curl -s -X GET http://localhost:5984/macaa/<MAC key identifier>
+
+App Server
+----------
+* curl -X GET http://localhost:8080/dave.html
 
 References
 ----------
