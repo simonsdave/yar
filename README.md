@@ -21,9 +21,9 @@ Key Server
 ----------
 To start the key server:
 ~~~~~
-./key_server.py --port=6969
+./key_server.py --port=6969 --key_store="localhost:5984/macaa"
 ~~~~~
-By default the key server will attempt to use port 8070.
+By default the key server will attempt to listen on port 8070 and connect a key store at localhost:5984/macaa.
 
 To get all MAC credentials currently saved in the key store:
 ~~~~~~
