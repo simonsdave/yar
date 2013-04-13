@@ -282,6 +282,32 @@ class TestMacCredsResource(KeyServerTestCase):
 		self.assertIsNotNone(response)
 		self.assertTrue(httplib.BAD_REQUEST == response.status)
 
+	def test_delete_method_on_creds_collection_resource(self):
+		http_client = httplib2.Http()
+		response, content = http_client.request(self.url(), "DELETE")
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.METHOD_NOT_ALLOWED == response.status)
+
+	def test_put_method_on_creds_collection_resource(self):
+		http_client = httplib2.Http()
+		response, content = http_client.request(self.url(), "DELETE")
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.METHOD_NOT_ALLOWED == response.status)
+
+	def test_post_method_on_creds_resource(self):
+		http_client = httplib2.Http()
+		url = "%s/%s" % (self.url(), "dave")
+		response, content = http_client.request(url, "POST")
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.METHOD_NOT_ALLOWED == response.status)
+
+	def test_put_method_on_creds_resource(self):
+		http_client = httplib2.Http()
+		url = "%s/%s" % (self.url(), "dave")
+		response, content = http_client.request(url, "PUT")
+		self.assertIsNotNone(response)
+		self.assertTrue(httplib.METHOD_NOT_ALLOWED == response.status)
+
 	def test_get_by_owner(self):
 		self._delete_all_creds()
 

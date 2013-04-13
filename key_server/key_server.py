@@ -47,7 +47,7 @@ class MACCredsJSONEncoder(json.JSONEncoder):
 
 #-------------------------------------------------------------------------------
 
-class CredsHandler(tornado.web.RequestHandler):
+class RequestHandler(tornado.web.RequestHandler):
 
 	def write_creds(self,creds):
 		if creds is None:
@@ -57,27 +57,19 @@ class CredsHandler(tornado.web.RequestHandler):
 			self.write(json.dumps(creds,cls=MACCredsJSONEncoder))
 			self.set_header("Content-Type", "application/json; charset=utf8") 
 
-#-------------------------------------------------------------------------------
-
-class AllCredsHandler(CredsHandler):
-
-	_json_utf8_content_type_reg_ex = re.compile(
-		"^\s*application/json;\s+charset\=utf-{0,1}8\s*$",
-		re.IGNORECASE )
-
 	def _is_json_utf8_content_type(self):
 		content_type = self.request.headers.get("content-type", None)
 		if content_type is None:
 			return False
-		if not self.__class__._json_utf8_content_type_reg_ex.match(content_type):
+		json_utf8_content_type_reg_ex = re.compile(
+			"^\s*application/json;\s+charset\=utf-{0,1}8\s*$",
+			re.IGNORECASE )
+		if not json_utf8_content_type_reg_ex.match(content_type):
 			return False
 		return True
 
-	def get(self):
-		owner = self.get_argument("owner", None)
-		self.write_creds(maccreds.MACcredentials.get_all(owner))
-
 	def _get_owner_from_request_body(self):
+		# :TODO: wrap this up in a "_get_json_body_as_dict()"
 		if not self._is_json_utf8_content_type():
 			return None
 
@@ -100,7 +92,18 @@ class AllCredsHandler(CredsHandler):
 
 		return owner
 
-	def post(self):
+	def get(self, mac_key_identifier=None):
+		if mac_key_identifier is not None:
+			self.write_creds(maccreds.MACcredentials.get(mac_key_identifier))
+		else:
+			owner = self.get_argument("owner", None)
+			self.write_creds(maccreds.MACcredentials.get_all(owner))
+
+	def post(self, mac_key_identifer=None):
+		if mac_key_identifer is not None:
+			self.set_status(httplib.METHOD_NOT_ALLOWED)
+			return
+
 		owner = self._get_owner_from_request_body()
 		if owner is None:
 			self.set_status(httplib.BAD_REQUEST)
@@ -114,16 +117,11 @@ class AllCredsHandler(CredsHandler):
 		self.set_header("Location", location_url)
 		self.set_status(httplib.CREATED)
 
-#-------------------------------------------------------------------------------
+	def delete(self, mac_key_identifer=None):
+		if mac_key_identifer is None:
+			self.set_status(httplib.METHOD_NOT_ALLOWED)
+			return
 
-class CredsHandler(CredsHandler):
-
-	def get(self,mac_key_identifer):
-		assert mac_key_identifer is not None
-		self.write_creds(maccreds.MACcredentials.get(mac_key_identifer))
-
-	def delete(self,mac_key_identifer):
-		assert mac_key_identifer is not None
 		creds = maccreds.MACcredentials.get(mac_key_identifer)
 		if creds is None:
 			self.clear()
@@ -136,8 +134,7 @@ class CredsHandler(CredsHandler):
 
 _tornado_handlers = [
 	(r"/status", StatusHandler),
-	(r"/v1.0/mac_creds", AllCredsHandler),
-	(r"/v1.0/mac_creds/([^/]+)", CredsHandler),
+	(r"/v1.0/mac_creds(?:/([^/]+))?", RequestHandler),
 ]
 
 _tornado_app = tornado.web.Application(handlers=_tornado_handlers)
