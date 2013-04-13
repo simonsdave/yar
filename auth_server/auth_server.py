@@ -181,12 +181,12 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 
 	@tornado.web.asynchronous
 	def _handle_request(self):
-		"""This method is the key entry point for handling all get, post, delete
-		and put requests."""
 		if not self._extract_authorization_header_value():
 			self.set_status(httplib.UNAUTHORIZED)
 			self.finish()
 			return
+
+		# :TODO: insert logic to validate the MAC
 
 		url = "http://%s/v1.0/mac_creds/%s" % (
 			self.__class__.key_server,
