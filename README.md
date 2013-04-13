@@ -11,11 +11,10 @@ Prerequisites
 
 Authentication Server
 ---------------------
-* ./authenticationserver.py --port=8080 --key_server=localhost:6969 --app_server=localhost:8081
-
-Tokenization Server
--------------------
-* ...
+To start the authorization server:
+~~~~~
+./authenticationserver.py --port=8080 --key_server=localhost:6969 --app_server=localhost:8081
+~~~~~
 
 Key Server 
 ----------
@@ -77,12 +76,13 @@ curl -X GET http://localhost:8080/dave.html
 
 References
 ----------
-* [HTTP Authentication: MAC Access Authentication](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00 "HTTP Authentication: MAC Access Authentication")
-* [OAuth 2.0](http://oauth.net/2/ "OAuth 2.0")
-* [JSONPath](http://goessner.net/articles/JsonPath/)
-* [Cybersource: Payment Tokenization - Using the Simple Order API](http://apps.cybersource.com/library/documentation/dev_guides/Payment_Tokenization/SO_API/Payment_Tokenization_SO_API.pdf)
-
-Articles
---------
-* [6 Feb '11: using Tornado as a proxy](https://groups.google.com/forum/?fromgroups=#!topic/python-tornado/TB_6oKBmdlA)
-
+* Authentication
+ * [HTTP Authentication: MAC Access Authentication](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00 "HTTP Authentication: MAC Access Authentication")
+ * [OAuth 2.0](http://oauth.net/2/ "OAuth 2.0")
+ * [macauthlib 0.5.0](https://github.com/mozilla-services/macauthlib) (pip install macauthlib)
+* Tokenization
+ * [JSONPath](http://goessner.net/articles/JsonPath/)
+ * [Cybersource: Payment Tokenization - Using the Simple Order API](http://apps.cybersource.com/library/documentation/dev_guides/Payment_Tokenization/SO_API/Payment_Tokenization_SO_API.pdf)
+* Technology
+ * [couchdb-python](http://code.google.com/p/couchdb-python/)
+ * [6 Feb '11: using Tornado as a proxy](https://groups.google.com/forum/?fromgroups=#!topic/python-tornado/TB_6oKBmdlA)
