@@ -81,7 +81,7 @@ curl -X GET http://localhost:8080/dave.html
 References
 ----------
 * Authentication
- * [HTTP Authentication: MAC Access Authentication](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00 "HTTP Authentication: MAC Access Authentication")
+ * [HTTP Authentication: MAC Access Authentication - note this is version 3 from Feb '13](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-03 "HTTP Authentication: MAC Access Authentication")
  * [OAuth 2.0](http://oauth.net/2/ "OAuth 2.0")
  * [macauthlib 0.5.0](https://github.com/mozilla-services/macauthlib) (pip install macauthlib)
 * Tokenization
