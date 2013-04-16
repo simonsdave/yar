@@ -84,9 +84,9 @@ class Mac(object):
 			   (content_type is not None and md5_of_body is not None)
 
 		if content_type is None:
-			self._ext = ""
+			self.ext = ""
 		else:
-			self._ext = "%s-%s" % (content_type, md5_of_body or "")
+			self.ext = "%s-%s" % (content_type, md5_of_body)
 
 		self._normalized_request_string = str(ts) + '\n' + \
 			str(nonce) + '\n' + \
@@ -94,7 +94,7 @@ class Mac(object):
 			uri + '\n' + \
 			host + '\n' + \
 			str(port) + '\n' + \
-			self._ext + '\n'
+			self.ext + '\n'
 
 		self._hmac = hmac.new(
 			mac_key,
