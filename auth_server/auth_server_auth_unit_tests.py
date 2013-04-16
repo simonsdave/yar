@@ -55,13 +55,13 @@ class TestCase(testcase.TestCase):
 		response, content = http_client.request(
 			"http://localhost:%d/whatever" % self.__class__.auth_server.port,
 			"GET",
-			headers={"Authorization": 'MAC id="", nonce="98", mac="bindle"'})
+			headers={"Authorization": 'MAC id="", ts="890", nonce="98", ext="abc", mac="bindle"'})
 		self.assertTrue(response.status == httplib.UNAUTHORIZED)
 
 	def test_get_with_unknonwn_mac_key_identifier(self):
 		testcase.TestCase.status_code_of_response_to_key_server_request = httplib.NOT_FOUND
 		mac_key_identifier = str(uuid.uuid4())
-		auth_header_value = 'MAC id="%s", nonce="98", mac="bindle"' % mac_key_identifier
+		auth_header_value = 'MAC id="%s", ts="890", nonce="98", ext="def", mac="bindle"' % mac_key_identifier
 		http_client = httplib2.Http()
 		response, content = http_client.request(
 			"http://localhost:%d/whatever" % self.__class__.auth_server.port,
