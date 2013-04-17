@@ -18,7 +18,6 @@ class Test(unittest.TestCase):
 		self.assertTrue( mac_credentials.mac_key_identifier is not None )
 		self.assertTrue( mac_credentials.mac_key is not None )
 		self.assertTrue( mac_credentials.mac_algorithm is not None )
-		self.assertTrue( mac_credentials.issue_time is not None )
 
 if __name__ == "__main__":
 	unittest.main()

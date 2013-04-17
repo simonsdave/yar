@@ -38,7 +38,6 @@ class MACCredsJSONEncoder(json.JSONEncoder):
 				"mac_key_identifier": obj.mac_key_identifier,
 				"mac_key": obj.mac_key,
 				"mac_algorithm": obj.mac_algorithm,
-				"issue_time": obj.issue_time,
 			}
 			if obj.is_deleted:
 				rv["is_deleted"] = True

@@ -30,10 +30,6 @@ class MACcredentials(object):
 			self.mac_key_identifier = self.__class__._uuidstr()
 			self.mac_key = self.__class__._uuidstr()
 			self.mac_algorithm = "hmac-sha-1"
-			issue_time = datetime.datetime.utcnow()
-			# section 5 of http://www.ietf.org/rfc/rfc0822.txt
-			# example: Thu, 02 Dec 2010 21:39:45 GMT
-			self.issue_time = issue_time.strftime("%a, %d %b %Y %H:%M:%S GMT")
 			self.is_deleted = False
 			self._rev = None
 		else:
@@ -41,7 +37,6 @@ class MACcredentials(object):
 			self.mac_key_identifier = dict["mac_key_identifier"]
 			self.mac_key = dict["mac_key"]
 			self.mac_algorithm = dict["mac_algorithm"]
-			self.issue_time = dict["issue_time"]
 			self.is_deleted = dict.get("is_deleted",False)
 			self._rev = dict.get("_rev",None)
 
@@ -72,7 +67,6 @@ class MACcredentials(object):
 			"mac_key_identifier": self.mac_key_identifier,
 			"mac_key": self.mac_key,
 			"mac_algorithm": self.mac_algorithm,
-			"issue_time": self.issue_time,
 			"type": "cred_v1.0",
 			"_id": self.mac_key_identifier,
 		}
