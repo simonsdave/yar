@@ -77,13 +77,14 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 
 		# :TODO: be more paranoid in the code below ITO the contents of the JSON document
 
-		if "mac_key_identifier" not in mac_credentials:
+		self._key_server_mac_key_identifier = mac_credentials.get(
+			"mac_key_identifier",
+			None)
+		if self._key_server_mac_key_identifier is None:
 			_logger.error(
 				"'mac_key_identifier' not found in mac credentials '%s'",
 				mac_credentials)
 			return False
-		self._key_server_mac_key_identifier = mac_credentials["mac_key_identifier"]
-		assert self._key_server_mac_key_identifier is not None
 
 		if self._key_server_mac_key_identifier != self._auth_header_id:
 			_logger.error(
@@ -92,29 +93,29 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 				self._key_server_mac_key_identifier)
 			return False
 
-		if "mac_key" not in mac_credentials:
+		self._key_server_mac_key = mac_credentials.get("mac_key", None)
+		if self._key_server_mac_key is None:
 			_logger.error(
 				"'mac_key' not found in mac credentials '%s'",
 				mac_credentials)
 			return False
-		self._key_server_mac_key = mac_credentials["mac_key"]
-		assert self._key_server_mac_key is not None
 
-		if "mac_algorithm" not in mac_credentials:
+		self._key_server_mac_algorithm = mac_credentials.get(
+			"mac_algorithm",
+			None)
+		if self._key_server_mac_algorithm is None:
 			_logger.error(
 				"'mac_algorithm' not found in mac credentials '%s'",
 				mac_credentials)
 			return False
-		self._key_server_mac_algorithm = mac_credentials["mac_algorithm"]
-		assert self._key_server_mac_algorithm is not None
 
-		if "issue_time" not in mac_credentials:
+		valid_mac_algorithms = ["hmac-sha-1", "hmac-sha-256"]
+		if self._key_server_mac_algorithm not in valid_mac_algorithms:
 			_logger.error(
-				"'issue_time' not found in mac credentials '%s'",
-				mac_credentials)
+				"'%s' is not one of the support mac algorithms = '%s'",
+				self._key_server_mac_algorithm,
+				valid_mac_algorithms)
 			return False
-		self._key_server_issue_time = mac_credentials["issue_time"]
-		assert self._key_server_issue_time is not None
 
 		return True
 

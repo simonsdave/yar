@@ -105,8 +105,7 @@ class KeyServerRequestHandler(tornado.web.RequestHandler):
 					{
 						"mac_key_identifier": mac_key_identifier,
 						"mac_key": "def",
-						"mac_algorithm": "def",
-						"issue_time": "def",
+						"mac_algorithm": "hmac-sha-1",
 					}
 				body = json.dumps(dict)
 				self.write(body)

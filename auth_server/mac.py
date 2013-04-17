@@ -71,18 +71,18 @@ class Mac(object):
 		host,
 		port,
 		content_type = None,
-		md5_of_body = None):
+		md5_of_body = None
+		):
+
+		object.__init__(self)
 
 		assert mac_algorithm == "hmac-sha-1" or mac_algorithm == "hmac-sha-256"
-
 		if mac_algorithm == "hmac-sha-1":
 			self._mac_algorithm = hashlib.sha1
 		else:
 			self._mac_algorithm = hashlib.sha256
 
-		assert (content_type is None and md5_of_body is None) or \
-			   (content_type is not None and md5_of_body is not None)
-
+		assert (content_type and md5_of_body) or (not content_type and not md5_of_body)
 		if content_type is None:
 			self.ext = ""
 		else:
