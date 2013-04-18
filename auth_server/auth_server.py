@@ -160,7 +160,7 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 			return False
 		
 		reg_ex = re.compile(
-			'^\s*MAC\s+id\s*\=\s*"(?P<id>[^"]+)"\s*\,\s*ts\s*\=\s*"(?P<ts>[^"]+)"\s*\,\s*nonce\s*\=\s*"(?P<nonce>[^"]+)"\s*\,\s*ext\s*\=\s*"(?P<ext>[^"]+)"\s*\,\s*mac\s*\=\s*"(?P<mac>[^"]+)"\s*$',
+			'^\s*MAC\s+id\s*\=\s*"(?P<id>[^"]+)"\s*\,\s*ts\s*\=\s*"(?P<ts>[^"]+)"\s*\,\s*nonce\s*\=\s*"(?P<nonce>[^"]+)"\s*\,\s*ext\s*\=\s*"(?P<ext>[^"]*)"\s*\,\s*mac\s*\=\s*"(?P<mac>[^"]+)"\s*$',
 			re.IGNORECASE )
 		match = reg_ex.match(authorization_header_value)
 		if not match:
@@ -184,7 +184,6 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 
 		self._auth_header_ext = match.group("ext")
 		assert self._auth_header_ext is not None
-		assert 0 < len(self._auth_header_ext)
 
 		self._auth_header_mac = match.group("mac")
 		assert self._auth_header_mac is not None

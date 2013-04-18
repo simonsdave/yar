@@ -100,7 +100,7 @@ class Mac(object):
 			mac_key,
 			self._normalized_request_string,
 			self._mac_algorithm)
-		self._base64_encoded_hmac = base64.b64encode( self._hmac.digest() )
+		self._base64_encoded_hmac = base64.b64encode(self._hmac.digest())
 
 	def __str__(self):
 		return self._base64_encoded_hmac

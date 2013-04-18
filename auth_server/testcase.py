@@ -27,6 +27,10 @@ import auth_server
 
 #-------------------------------------------------------------------------------
 
+_logger = logging.getLogger(__name__)
+
+#-------------------------------------------------------------------------------
+
 class Server(object):
 	"""An abstract base class for mock auth server, key server and
 	app server. The primary reason for this class to exist is so the
@@ -79,6 +83,9 @@ class KeyServerRequestHandler(tornado.web.RequestHandler):
 
 	def get(self):
 		"""Implements HTTP GET for the mock key server."""
+		_logger.info(
+			"Key Server GET %s",
+			self.request.uri)
 		uri_reg_ex = re.compile(
 			'^/v1\.0/mac_creds/(?P<mac_key_identifier>.+)$',
 			re.IGNORECASE )

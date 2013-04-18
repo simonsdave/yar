@@ -6,7 +6,7 @@
 #-------------------------------------------------------------------------------
 
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.FATAL)
 import unittest
 import httplib
 import httplib2
@@ -65,7 +65,6 @@ class TestCase(testcase.TestCase):
 			self.__class__.auth_server.port)
 		auth_header_value = 'MAC id="%s", ts="%s", nonce="%s", ext="%s", mac="%s"' % \
 			(mac_key_identifier, ts, nonce, my_mac.ext, my_mac)
-		print auth_header_value
 		http_client = httplib2.Http()
 		response, content = http_client.request(
 			"http://localhost:%d%s" % (self.__class__.auth_server.port, uri),
