@@ -45,32 +45,32 @@ class TestCase(testcase.TestCase):
 		cls.io_loop = None
 
 	def test_key_server_responding_with_invalid_mac_algorithm(self):
-		# testcase.TestCase.status_code_of_response_to_key_server_request = httplib.NOT_FOUND
 		mac_key_identifier = str(uuid.uuid4())
 		mac_key = str(uuid.uuid4())
 		mac_algorithm = "hmac-sha-1"
-		ts = mac.Timestamp()
-		nonce = mac.Nonce()
 		http_method = "GET"
 		uri = "/whatever"
 		host = "localhost"
-		my_mac = mac.Mac(
+		port = self.__class__.auth_server.port
+
+		testcase.TestCase.mac_key_in_response_to_key_server_request = mac_key
+		testcase.TestCase.mac_algorithm_response_to_key_server_request = mac_algorithm
+
+		auth_header_value = mac.AuthHeader(
+			mac_key_identifier,
 			mac_key,
 			mac_algorithm,
-			ts,
-			nonce,
 			http_method,
 			uri,
 			host,
-			self.__class__.auth_server.port)
-		auth_header_value = 'MAC id="%s", ts="%s", nonce="%s", ext="%s", mac="%s"' % \
-			(mac_key_identifier, ts, nonce, my_mac.ext, my_mac)
+			port)
+		auth_header_value = str(auth_header_value)
 		http_client = httplib2.Http()
 		response, content = http_client.request(
-			"http://localhost:%d%s" % (self.__class__.auth_server.port, uri),
+			"http://%s:%d%s" % (host, port, uri),
 			http_method,
 			headers={"Authorization": auth_header_value})
-		self.assertTrue(response.status == httplib.UNAUTHORIZED)
+		self.assertTrue(response.status == httplib.OK)
 		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
 
 	def test_get_with_no_authorization_header(self):

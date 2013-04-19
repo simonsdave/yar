@@ -105,4 +105,49 @@ class Mac(object):
 	def __str__(self):
 		return self._base64_encoded_hmac
 			
+#-------------------------------------------------------------------------------
+
+class AuthHeader(object):
+	"""..."""
+
+	def __init__(
+		self,
+		mac_key_identifier,
+		mac_key,
+		mac_algorithm,
+		http_method,
+		uri,
+		host,
+		port,
+		content_type = None,
+		md5_of_body = None
+		):
+
+		object.__init__(self)
+
+		self._mac_key_identifier = mac_key_identifier
+		self._ts = Timestamp()
+		self._nonce = Nonce()
+
+		self._mac = Mac(
+			mac_key,
+			mac_algorithm,
+			self._ts,
+			self._nonce,
+			http_method,
+			uri,
+			host,
+			port,
+			content_type,
+			md5_of_body)
+
+	def __str__(self):
+		rv = 'MAC id="%s", ts="%s", nonce="%s", ext="%s", mac="%s"' % (
+			self._mac_key_identifier,
+			self._ts,
+			self._nonce,
+			self._mac.ext,
+			self._mac)
+		return rv
+
 #------------------------------------------------------------------- End-of-File

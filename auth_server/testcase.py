@@ -111,8 +111,8 @@ class KeyServerRequestHandler(tornado.web.RequestHandler):
 					or \
 					{
 						"mac_key_identifier": mac_key_identifier,
-						"mac_key": "def",
-						"mac_algorithm": "hmac-sha-1",
+						"mac_key": TestCase.mac_key_in_response_to_key_server_request,
+						"mac_algorithm": TestCase.mac_algorithm_response_to_key_server_request,
 					}
 				body = json.dumps(dict)
 				self.write(body)
@@ -188,12 +188,21 @@ class TestCase(unittest.TestCase):
 	"""..."""
 	body_of_response_to_key_server_request = None
 
+	"""..."""
+	mac_key_in_response_to_key_server_request = None
+
+	"""..."""
+	mac_algorithm_response_to_key_server_request = None
+
 	def setUp(self):
 		unittest.TestCase.setUp(self)
 		TestCase._mac_key_identifier_in_key_server_request = None
-		_status_code_of_response_to_key_server_request = None
-		_content_type_of_response_to_key_server_request = None
-		_body_of_response_to_key_server_request = None
+		TestCase.status_code_of_response_to_key_server_request = None
+		TestCase.content_type_of_response_to_key_server_request = None
+		TestCase.body_of_response_to_key_server_request = None
+		TestCase.mac_key_in_response_to_key_server_request = None
+		TestCase.mac_algorithm_response_to_key_server_request = None
+
 
 	def assertIsJsonUtf8ContentType(self,content_type):
 		"""A method name/style chosen for consistency with unittest.TestCase
