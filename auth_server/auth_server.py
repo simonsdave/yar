@@ -15,8 +15,9 @@ import httplib
 import tornado.httpserver
 import tornado.httpclient
 import tornado.ioloop
-import tornado.options
 import tornado.web
+
+from clparser import CommandLineParser
 
 #-------------------------------------------------------------------------------
 
@@ -234,27 +235,16 @@ _tornado_app = tornado.web.Application(handlers=_tornado_handlers)
 #-------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-	tornado.options.define(
-		"port",
-		default=8000,
-		help="run on this port",
-		type=int)
-	tornado.options.define(
-		"key_server",
-		default="localhost:6969",
-		help="key server's host:port",
-		type=str)
-	tornado.options.define(
-		"app_server",
-		default="localhost:8080",
-		help="app server's host:port",
-		type=str)
-	tornado.options.parse_command_line()
-	AuthRequestHandler.key_server = tornado.options.options.key_server
-	AuthRequestHandler.app_server = tornado.options.options.app_server
+	clp = CommandLineParser()
+	(clo, cla) = clp.parse_args()
+
+	logging.basicConfig(level=clo.logging_level)
+
+	AuthRequestHandler.key_server = clo.key_server
+	AuthRequestHandler.app_server = clo.app_server
 
 	http_server = tornado.httpserver.HTTPServer(_tornado_app)
-	http_server.listen(tornado.options.options.port)
+	http_server.listen(clo.port)
 	tornado.ioloop.IOLoop.instance().start()
 
 #------------------------------------------------------------------- End-of-File
