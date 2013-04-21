@@ -12,6 +12,7 @@ import tornado.web
 
 import couchdb
 import maccreds
+from clparser import CommandLineParser
 
 #-------------------------------------------------------------------------------
 
@@ -141,21 +142,13 @@ _tornado_app = tornado.web.Application(handlers=_tornado_handlers)
 #-------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-	tornado.options.define(
-		"port",
-		default=8070,
-		help="run on the given port",
-		type=int)
-	tornado.options.define(
-		"key_store",
-		default="localhost:5984/macaa",
-		help="<host>:<port>/<database> - default = localhost:5984/macaa",
-		type=str)
-	tornado.options.parse_command_line()
-	couchdb.couchdb_server = tornado.options.options.key_store
+	clp = CommandLineParser()
+	(clo, cla) = clp.parse_args()
+
+	couchdb.couchdb_server = clo.key_store
 
 	http_server = tornado.httpserver.HTTPServer(_tornado_app)
-	http_server.listen(tornado.options.options.port)
+	http_server.listen(clo.port)
 
 	tornado.ioloop.IOLoop.instance().start()
 
