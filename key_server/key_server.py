@@ -6,6 +6,7 @@ import re
 import json
 
 import tornado.httpserver
+import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 
@@ -30,31 +31,61 @@ class StatusHandler(tornado.web.RequestHandler):
 
 #-------------------------------------------------------------------------------
 
-class MACCredsJSONEncoder(json.JSONEncoder):
-	def default(self, obj):
-		if isinstance(obj, maccreds.MACcredentials):
-			rv = {
-				"owner": obj.owner,
-				"mac_key_identifier": obj.mac_key_identifier,
-				"mac_key": obj.mac_key,
-				"mac_algorithm": obj.mac_algorithm,
-			}
-			if obj.is_deleted:
-				rv["is_deleted"] = True
-			return rv
-		return json.JSONEncoder.default(self, obj)
-
-#-------------------------------------------------------------------------------
-
 class RequestHandler(tornado.web.RequestHandler):
 
-	def write_creds(self,creds):
-		if creds is None:
-			self.clear()
+	"""Format of this string is host:port/database. It's used to construct
+	a URL when talking to the key store."""
+	key_store = None
+
+	def _handle_key_store_get_response(self, response):
+		if response.code == httplib.NOT_FOUND:
 			self.set_status(httplib.NOT_FOUND)
+			self.finish()
+			return
+
+		if response.code != httplib.OK:
+			self.set_status(httplib.INTERNAL_SERVER_ERROR)
+			self.finish()
+			return
+
+		body_as_dict = json.loads(response.body)
+		if 'rows' in body_as_dict:
+			rv = []
+			for row in body_as_dict['rows']:
+				doc = row['value']
+				# :TODO: filter out the CouchDB specific attributes that should
+				# not flow outside of the key server
+				rv.append(doc)
 		else:
-			self.write(json.dumps(creds,cls=MACCredsJSONEncoder))
-			self.set_header("Content-Type", "application/json; charset=utf8") 
+			# :TODO: filter out the CouchDB specific attributes that should
+			# not flow outside of the key server
+			rv = body_as_dict
+
+		self.write(json.dumps(rv))
+		self.set_header("Content-Type", "application/json; charset=utf8") 
+		self.finish()
+
+	@tornado.web.asynchronous
+	def get(self, mac_key_identifier=None):
+		if mac_key_identifier:
+			url = "http://%s/%s" % (self.__class__.key_store, mac_key_identifier)
+		else:
+			owner = self.get_argument("owner", None)
+			if owner:
+				url = 'http://%s/_design/creds/_view/by_owner?startkey="%s"&endkey="%s"' % (
+					self.__class__.key_store,
+					owner,
+					owner)
+			else:
+				url = "http://%s/_design/creds/_view/all" % self.__class__.key_store
+				
+		http_client = tornado.httpclient.AsyncHTTPClient()
+		http_client.fetch(
+			tornado.httpclient.HTTPRequest(
+				url=url,
+				method="GET",
+				follow_redirects=False),
+			callback=self._handle_key_store_get_response)
 
 	def _is_json_utf8_content_type(self):
 		content_type = self.request.headers.get("content-type", None)
@@ -90,13 +121,6 @@ class RequestHandler(tornado.web.RequestHandler):
 			return None
 
 		return owner
-
-	def get(self, mac_key_identifier=None):
-		if mac_key_identifier is not None:
-			self.write_creds(maccreds.MACcredentials.get(mac_key_identifier))
-		else:
-			owner = self.get_argument("owner", None)
-			self.write_creds(maccreds.MACcredentials.get_all(owner))
 
 	def post(self, mac_key_identifer=None):
 		if mac_key_identifer is not None:
@@ -145,6 +169,7 @@ if __name__ == "__main__":
 	(clo, cla) = clp.parse_args()
 
 	couchdb.couchdb_server = clo.key_store
+	RequestHandler.key_store = clo.key_store
 
 	http_server = tornado.httpserver.HTTPServer(_tornado_app)
 	http_server.listen(clo.port)

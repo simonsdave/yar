@@ -173,8 +173,11 @@ class TestMacCredsResource(KeyServerTestCase):
 		if owner is not None:
 			self.assertTrue(0 < len(owner))
 			url = "%s?owner=%s" % (url, owner)
-		response, content = http_client.request(self.url(), "GET")
+		response, content = http_client.request(url, "GET")
 		self.assertIsNotNone(response)
+		print url
+		print response
+		print content
 		self.assertTrue(httplib.OK == response.status)
 		self.assertTrue("content-type" in  response)
 		content_type = response["content-type"]
