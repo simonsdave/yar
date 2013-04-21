@@ -6,7 +6,7 @@
 #-------------------------------------------------------------------------------
 
 import logging
-logging.basicConfig( level=logging.FATAL )
+logging.basicConfig(level=logging.FATAL)
 import time
 import socket
 import threading
@@ -175,9 +175,6 @@ class TestMacCredsResource(KeyServerTestCase):
 			url = "%s?owner=%s" % (url, owner)
 		response, content = http_client.request(url, "GET")
 		self.assertIsNotNone(response)
-		print url
-		print response
-		print content
 		self.assertTrue(httplib.OK == response.status)
 		self.assertTrue("content-type" in  response)
 		content_type = response["content-type"]

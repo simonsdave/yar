@@ -4,6 +4,7 @@
 import httplib
 import re
 import json
+import uuid
 
 import tornado.httpserver
 import tornado.httpclient
@@ -122,6 +123,20 @@ class RequestHandler(tornado.web.RequestHandler):
 
 		return owner
 
+	def _handle_key_store_post_response(self, response):
+		if response.code != httplib.CREATED:
+			self.set_status(httplib.INTERNAL_SERVER_ERROR)
+			self.finish()
+			return
+
+		location_url = "%s/%s" % (
+			self.request.full_url(),
+			response.request.headers["X-MAC-Key-Identifier"])
+		self.set_header("Location", location_url)
+		self.set_status(httplib.CREATED)
+		self.finish()
+
+	@tornado.web.asynchronous
 	def post(self, mac_key_identifer=None):
 		if mac_key_identifer is not None:
 			self.set_status(httplib.METHOD_NOT_ALLOWED)
@@ -132,13 +147,31 @@ class RequestHandler(tornado.web.RequestHandler):
 			self.set_status(httplib.BAD_REQUEST)
 			return
 
-		creds = maccreds.MACcredentials(owner)
-		creds.save()
-		location_url = "%s/%s" % (
-			self.request.full_url(),
-			creds.mac_key_identifier)
-		self.set_header("Location", location_url)
-		self.set_status(httplib.CREATED)
+		creds = {
+		   "owner": owner,
+		   "mac_key_identifier": str(uuid.uuid4()).replace("-",""),
+		   "mac_key": str(uuid.uuid4()).replace("-",""),
+		   "mac_algorithm": "hmac-sha-1",
+		   "type": "cred_v1.0",
+		   "is_deleted": False,
+		}
+		headers = {
+			"Content-Type": "application/json; charset=utf8",
+			"Accept": "application/json",
+			"Accept-Encoding": "charset=utf8",
+			"X-MAC-Key-Identifier": creds["mac_key_identifier"],
+		}
+		url = "http://%s/%s" % (
+			self.__class__.key_store,
+			creds["mac_key_identifier"])
+		http_client = tornado.httpclient.AsyncHTTPClient()
+		http_client.fetch(
+			tornado.httpclient.HTTPRequest(
+				url,
+				method="PUT",
+				headers=tornado.httputil.HTTPHeaders(headers),
+				body=json.dumps(creds)),
+			callback=self._handle_key_store_post_response)
 
 	def delete(self, mac_key_identifer=None):
 		if mac_key_identifer is None:
