@@ -48,14 +48,6 @@ class CommandLineParser(optparse.OptionParser):
 			option_class=_Option)
 
 		self.add_option(
-			"--logback",
-			action="store",
-			choices=["DEBUG","INFO","WARNING","ERROR","CRITICAL","FATAL"],
-			dest="loggingLevel",
-			default="ERROR",
-			help="logging level [DEBUG,INFO,WARNING,ERROR,CRITICAL,FATAL] - default = ERRROR" )
-
-		self.add_option(
 			"--log",
 			action="store",
 			dest="logging_level",
