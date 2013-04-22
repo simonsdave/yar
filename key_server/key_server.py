@@ -19,7 +19,7 @@ __version__ = "1.0"
 
 #-------------------------------------------------------------------------------
 
-class StatusHandler(tornado.web.RequestHandler):
+class StatusRequestHandler(tornado.web.RequestHandler):
 
 	def get(self):
 		status = {
@@ -262,7 +262,7 @@ class RequestHandler(tornado.web.RequestHandler):
 #-------------------------------------------------------------------------------
 
 _tornado_handlers = [
-	(r"/status", StatusHandler),
+	(r"/(?:status)?", StatusRequestHandler),
 	(r"/v1.0/mac_creds(?:/([^/]+))?", RequestHandler),
 ]
 

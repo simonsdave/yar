@@ -226,7 +226,7 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 
 # _tornado_handlers simplifies the _tornado_app constructor
 _tornado_handlers=[
-	(r"/status", StatusRequestHandler),
+	(r"/(?:status)?", StatusRequestHandler),
 	(r".*", AuthRequestHandler),
 	]
 # _tornado_app simplifies construction of testing infrastructure
