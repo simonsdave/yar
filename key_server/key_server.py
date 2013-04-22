@@ -30,6 +30,49 @@ class StatusHandler(tornado.web.RequestHandler):
 
 #-------------------------------------------------------------------------------
 
+class AsnycCredsCreator(object):
+
+	def _uuid(self):
+		return str(uuid.uuid4()).replace("-","")
+
+	def create(self, owner, callback):
+
+		self._callback = callback
+
+		self._creds = {
+		   "owner": owner,
+		   "mac_key_identifier": self._uuid(),
+		   "mac_key": self._uuid(),
+		   "mac_algorithm": "hmac-sha-1",
+		   "type": "cred_v1.0",
+		   "is_deleted": False,
+		}
+		headers = {
+			"Content-Type": "application/json; charset=utf8",
+			"Accept": "application/json",
+			"Accept-Encoding": "charset=utf8"
+		}
+		url = "http://%s/%s" % (
+			RequestHandler.key_store,
+			self._creds["mac_key_identifier"])
+		http_client = tornado.httpclient.AsyncHTTPClient()
+		http_client.fetch(
+			tornado.httpclient.HTTPRequest(
+				url,
+				method="PUT",
+				headers=tornado.httputil.HTTPHeaders(headers),
+				body=json.dumps(self._creds)),
+			callback=self._my_callback)
+
+	def _my_callback(self, response):
+		if response.code != httplib.CREATED:
+			self._callback(None)
+			return	
+
+		self._callback(self._creds)
+
+#-------------------------------------------------------------------------------
+
 class AsyncCredsRetriever(object):
 
 	def fetch(self, callback, mac_key_identifier=None, owner=None):
@@ -137,15 +180,15 @@ class RequestHandler(tornado.web.RequestHandler):
 
 		return owner
 
-	def _on_response_from_key_store_to_post(self, response):
-		if response.code != httplib.CREATED:
+	def _on_async_creds_create_done(self, creds):
+		if creds is None:
 			self.set_status(httplib.INTERNAL_SERVER_ERROR)
 			self.finish()
 			return
 
 		location_url = "%s/%s" % (
 			self.request.full_url(),
-			response.request.headers["X-MAC-Key-Identifier"])
+			creds["mac_key_identifier"])
 		self.set_header("Location", location_url)
 		self.set_status(httplib.CREATED)
 		self.finish()
@@ -154,38 +197,17 @@ class RequestHandler(tornado.web.RequestHandler):
 	def post(self, mac_key_identifer=None):
 		if mac_key_identifer is not None:
 			self.set_status(httplib.METHOD_NOT_ALLOWED)
+			self.finish()
 			return
 
 		owner = self._get_owner_from_request_body()
 		if owner is None:
 			self.set_status(httplib.BAD_REQUEST)
+			self.finish()
 			return
 
-		creds = {
-		   "owner": owner,
-		   "mac_key_identifier": str(uuid.uuid4()).replace("-",""),
-		   "mac_key": str(uuid.uuid4()).replace("-",""),
-		   "mac_algorithm": "hmac-sha-1",
-		   "type": "cred_v1.0",
-		   "is_deleted": False,
-		}
-		headers = {
-			"Content-Type": "application/json; charset=utf8",
-			"Accept": "application/json",
-			"Accept-Encoding": "charset=utf8",
-			"X-MAC-Key-Identifier": creds["mac_key_identifier"],
-		}
-		url = "http://%s/%s" % (
-			self.__class__.key_store,
-			creds["mac_key_identifier"])
-		http_client = tornado.httpclient.AsyncHTTPClient()
-		http_client.fetch(
-			tornado.httpclient.HTTPRequest(
-				url,
-				method="PUT",
-				headers=tornado.httputil.HTTPHeaders(headers),
-				body=json.dumps(creds)),
-			callback=self._on_response_from_key_store_to_post)
+		acc = AsnycCredsCreator()
+		acc.create(owner, self._on_async_creds_create_done)
 
 	def _on_response_from_key_store_to_put_for_delete(self, response):
 		if response.code != httplib.CREATED:
@@ -236,7 +258,6 @@ class RequestHandler(tornado.web.RequestHandler):
 		acr.fetch(
 			self._async_creds_retriever_callback_for_delete,
 			mac_key_identifier=mac_key_identifier)
-
 
 #-------------------------------------------------------------------------------
 
