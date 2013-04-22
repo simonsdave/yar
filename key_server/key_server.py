@@ -11,8 +11,6 @@ import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 
-import couchdb
-import maccreds
 from clparser import CommandLineParser
 
 #-------------------------------------------------------------------------------
@@ -255,7 +253,6 @@ if __name__ == "__main__":
 	clp = CommandLineParser()
 	(clo, cla) = clp.parse_args()
 
-	couchdb.couchdb_server = clo.key_store
 	RequestHandler.key_store = clo.key_store
 
 	http_server = tornado.httpserver.HTTPServer(_tornado_app)
