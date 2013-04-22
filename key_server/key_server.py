@@ -32,21 +32,35 @@ class StatusHandler(tornado.web.RequestHandler):
 
 #-------------------------------------------------------------------------------
 
-class RequestHandler(tornado.web.RequestHandler):
+class AsyncCredsRetriever(object):
 
-	"""Format of this string is host:port/database. It's used to construct
-	a URL when talking to the key store."""
-	key_store = None
+	def fetch(self, callback, mac_key_identifier=None, owner=None):
+		object.__init__(self)
 
-	def _handle_key_store_get_response(self, response):
-		if response.code == httplib.NOT_FOUND:
-			self.set_status(httplib.NOT_FOUND)
-			self.finish()
-			return
+		self._callback = callback
 
+		if mac_key_identifier:
+			url = "http://%s/%s" % (RequestHandler.key_store, mac_key_identifier)
+		else:
+			if owner:
+				url = 'http://%s/_design/creds/_view/by_owner?startkey="%s"&endkey="%s"' % (
+					RequestHandler.key_store,
+					owner,
+					owner)
+			else:
+				url = "http://%s/_design/creds/_view/all" % RequestHandler.key_store
+				
+		http_client = tornado.httpclient.AsyncHTTPClient()
+		http_client.fetch(
+			tornado.httpclient.HTTPRequest(
+				url,
+				method="GET",
+				follow_redirects=False),
+			callback=self._my_callback)
+
+	def _my_callback(self, response):
 		if response.code != httplib.OK:
-			self.set_status(httplib.INTERNAL_SERVER_ERROR)
-			self.finish()
+			self._callback(None)
 			return
 
 		body_as_dict = json.loads(response.body)
@@ -62,31 +76,33 @@ class RequestHandler(tornado.web.RequestHandler):
 			# not flow outside of the key server
 			rv = body_as_dict
 
-		self.write(json.dumps(rv))
+		self._callback(rv)
+
+#-------------------------------------------------------------------------------
+
+class RequestHandler(tornado.web.RequestHandler):
+
+	"""Format of this string is host:port/database. It's used to construct
+	a URL when talking to the key store."""
+	key_store = None
+
+	def _async_creds_retriever_callback_for_get(self, creds):
+		if creds is None:
+			self.set_status(httplib.NOT_FOUND)
+			self.finish()
+			return
+
+		self.write(json.dumps(creds))
 		self.set_header("Content-Type", "application/json; charset=utf8") 
 		self.finish()
 
 	@tornado.web.asynchronous
 	def get(self, mac_key_identifier=None):
-		if mac_key_identifier:
-			url = "http://%s/%s" % (self.__class__.key_store, mac_key_identifier)
-		else:
-			owner = self.get_argument("owner", None)
-			if owner:
-				url = 'http://%s/_design/creds/_view/by_owner?startkey="%s"&endkey="%s"' % (
-					self.__class__.key_store,
-					owner,
-					owner)
-			else:
-				url = "http://%s/_design/creds/_view/all" % self.__class__.key_store
-				
-		http_client = tornado.httpclient.AsyncHTTPClient()
-		http_client.fetch(
-			tornado.httpclient.HTTPRequest(
-				url=url,
-				method="GET",
-				follow_redirects=False),
-			callback=self._handle_key_store_get_response)
+		acr = AsyncCredsRetriever()
+		acr.fetch(
+			self._async_creds_retriever_callback_for_get,
+			mac_key_identifier=mac_key_identifier,
+			owner=self.get_argument("owner", None))
 
 	def _is_json_utf8_content_type(self):
 		content_type = self.request.headers.get("content-type", None)
@@ -123,7 +139,7 @@ class RequestHandler(tornado.web.RequestHandler):
 
 		return owner
 
-	def _handle_key_store_post_response(self, response):
+	def _on_response_from_key_store_to_post(self, response):
 		if response.code != httplib.CREATED:
 			self.set_status(httplib.INTERNAL_SERVER_ERROR)
 			self.finish()
@@ -171,20 +187,58 @@ class RequestHandler(tornado.web.RequestHandler):
 				method="PUT",
 				headers=tornado.httputil.HTTPHeaders(headers),
 				body=json.dumps(creds)),
-			callback=self._handle_key_store_post_response)
+			callback=self._on_response_from_key_store_to_post)
 
-	def delete(self, mac_key_identifer=None):
-		if mac_key_identifer is None:
+	def _on_response_from_key_store_to_put_for_delete(self, response):
+		if response.code != httplib.CREATED:
+			self.set_status(httplib.INTERNAL_SERVER_ERROR)
+			self.finish()
+			return
+
+		self.set_status(httplib.OK)
+		self.finish()
+
+	def _async_creds_retriever_callback_for_delete(self, creds):
+		if creds is None:
+			self.set_status(httplib.NOT_FOUND)
+			self.finish()
+			return
+
+		if creds.get("is_deleted", False):
+			self.set_status(httplib.OK)
+			self.finish()
+			return
+
+		creds["is_deleted"] = True
+
+		headers = {
+			"Content-Type": "application/json; charset=utf8",
+			"Accept": "application/json",
+			"Accept-Encoding": "charset=utf8",
+		}
+		url = "http://%s/%s" % (
+			self.__class__.key_store,
+			creds["mac_key_identifier"])
+		http_client = tornado.httpclient.AsyncHTTPClient()
+		http_client.fetch(
+			tornado.httpclient.HTTPRequest(
+				url,
+				method="PUT",
+				headers=tornado.httputil.HTTPHeaders(headers),
+				body=json.dumps(creds)),
+			callback=self._on_response_from_key_store_to_put_for_delete)
+			
+	@tornado.web.asynchronous
+	def delete(self, mac_key_identifier=None):
+		if mac_key_identifier is None:
 			self.set_status(httplib.METHOD_NOT_ALLOWED)
 			return
 
-		creds = maccreds.MACcredentials.get(mac_key_identifer)
-		if creds is None:
-			self.clear()
-			self.set_status(httplib.NOT_FOUND)
-		else:
-			if not creds.is_deleted:
-				creds.delete()
+		acr = AsyncCredsRetriever()
+		acr.fetch(
+			self._async_creds_retriever_callback_for_delete,
+			mac_key_identifier=mac_key_identifier)
+
 
 #-------------------------------------------------------------------------------
 
