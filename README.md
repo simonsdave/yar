@@ -17,7 +17,7 @@ To start the authorization server:
 ~~~~~
 To make a request to the app server thru the authentication server:
 ~~~~~
-curl -v -X GET -H "Authorization: MAC id=\"h480djs93hd8\", nonce=\"264095:dj83hs9s\", mac=\"SLDJd4mg43cjQfElUs3Qub4L6xE=\"" http://localhost:8000/dave.html
+curl -v -X GET -H "Authorization: MAC id=\"h480djs93hd8\", ts=\"00000\", nonce=\"264095:dj83hs9s\", ext=\"davsim\", mac=\"SLDJd4mg43cjQfElUs3Qub4L6xE=\"" http://localhost:8000/dave.html
 ~~~~~
 
 Key Server 
