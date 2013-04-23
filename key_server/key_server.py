@@ -17,7 +17,7 @@ from clparser import CommandLineParser
 
 """Format of this string is host:port/database. It's used to construct
 a URL when talking to the key store."""
-_key_store = None
+_key_store = "localhost:5984/macaa"
 
 #-------------------------------------------------------------------------------
 
