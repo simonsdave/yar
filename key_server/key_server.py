@@ -15,6 +15,12 @@ from clparser import CommandLineParser
 
 #-------------------------------------------------------------------------------
 
+"""Format of this string is host:port/database. It's used to construct
+a URL when talking to the key store."""
+_key_store = None
+
+#-------------------------------------------------------------------------------
+
 __version__ = "1.0"
 
 #-------------------------------------------------------------------------------
@@ -53,7 +59,7 @@ class AsnycCredsCreator(object):
 			"Accept-Encoding": "charset=utf8"
 		}
 		url = "http://%s/%s" % (
-			RequestHandler.key_store,
+			_key_store,
 			self._creds["mac_key_identifier"])
 		http_client = tornado.httpclient.AsyncHTTPClient()
 		http_client.fetch(
@@ -81,15 +87,15 @@ class AsyncCredsRetriever(object):
 		self._callback = callback
 
 		if mac_key_identifier:
-			url = "http://%s/%s" % (RequestHandler.key_store, mac_key_identifier)
+			url = "http://%s/%s" % (_key_store, mac_key_identifier)
 		else:
 			if owner:
 				url = 'http://%s/_design/creds/_view/by_owner?startkey="%s"&endkey="%s"' % (
-					RequestHandler.key_store,
+					_key_store,
 					owner,
 					owner)
 			else:
-				url = "http://%s/_design/creds/_view/all" % RequestHandler.key_store
+				url = "http://%s/_design/creds/_view/all" % _key_store
 				
 		http_client = tornado.httpclient.AsyncHTTPClient()
 		http_client.fetch(
@@ -143,7 +149,7 @@ class AsyncCredsDeleter(object):
 			"Accept-Encoding": "charset=utf8",
 		}
 		url = "http://%s/%s" % (
-			RequestHandler.key_store,
+			_key_store,
 			creds["mac_key_identifier"])
 		http_client = tornado.httpclient.AsyncHTTPClient()
 		http_client.fetch(
@@ -165,10 +171,6 @@ class AsyncCredsDeleter(object):
 #-------------------------------------------------------------------------------
 
 class RequestHandler(tornado.web.RequestHandler):
-
-	"""Format of this string is host:port/database. It's used to construct
-	a URL when talking to the key store."""
-	key_store = None
 
 	def _async_creds_retriever_callback_for_get(self, creds):
 		if creds is None:
@@ -268,6 +270,7 @@ class RequestHandler(tornado.web.RequestHandler):
 	def delete(self, mac_key_identifier=None):
 		if mac_key_identifier is None:
 			self.set_status(httplib.METHOD_NOT_ALLOWED)
+			self.finish()
 			return
 
 		acd = AsyncCredsDeleter()
@@ -290,7 +293,7 @@ if __name__ == "__main__":
 	clp = CommandLineParser()
 	(clo, cla) = clp.parse_args()
 
-	RequestHandler.key_store = clo.key_store
+	_key_store = clo.key_store
 
 	http_server = tornado.httpserver.HTTPServer(_tornado_app)
 	http_server.listen(clo.port)
