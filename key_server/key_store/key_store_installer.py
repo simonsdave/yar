@@ -55,7 +55,7 @@ def create(database="macaa", host="localhost:5984"):
 	# design documents with the filename (less ".json" being the design
 	# document name
 	#
-	path = os.path.split(sys.argv[0])[0]
+	path = os.path.split(__file__)[0]
 	design_doc_file_name_pattern = os.path.join(path,"*.json")
 	for design_doc_file_name in glob.glob(design_doc_file_name_pattern):
 

@@ -24,6 +24,7 @@ import tornado.web
 import tornado.netutil
 
 import key_server
+import key_store.key_store_installer
 
 #-------------------------------------------------------------------------------
 
@@ -37,9 +38,11 @@ class KeyServer(threading.Thread):
 			family=socket.AF_INET)
 		return sock
 
-	def __init__(self):
+	def __init__(self, key_store):
 		threading.Thread.__init__(self)
 		self.daemon = True
+
+		key_server._key_store = key_store
 
 		sock = self.__class__._get_socket()
 		self.port = sock.getsockname()[1]
@@ -65,15 +68,21 @@ class KeyServerTestCase(unittest.TestCase):
 		"^\s*application/json;\s+charset\=utf-{0,1}8\s*$",
 		re.IGNORECASE )
 
+	_database_name = None
+
 	@classmethod
 	def setUpClass(cls):
-		cls._key_server = KeyServer()
+		cls._database_name = "das%s" % str(uuid.uuid4()).replace("-","")[:7]
+		key_store.key_store_installer.create(cls._database_name)
+		cls._key_server = KeyServer("localhost:5984/%s" % cls._database_name)
 		cls._key_server.start()
 
 	@classmethod
 	def tearDownClass(cls):
 		cls._key_server.stop()
 		cls._key_server = None
+		key_store.key_store_installer.delete(cls._database_name)
+		cls._database_name = None
 
 	def url(self):
 		return "http://localhost:%s" % self.__class__._key_server.port
