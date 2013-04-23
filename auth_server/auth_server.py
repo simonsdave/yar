@@ -29,15 +29,6 @@ __version__ = "1.0"
 
 #-------------------------------------------------------------------------------
 
-class StatusRequestHandler(tornado.web.RequestHandler):
-	"""This class is responsible for handling HTTP GET requests
-	against the auth server's status resource."""
-
-	def get(self):
-		self.write({"status": "ok", "version": __version__})
-
-#-------------------------------------------------------------------------------
-
 class AuthRequestHandler(tornado.web.RequestHandler):
 
 	"""Once a request has been authenticated, the request is forwarded
@@ -230,13 +221,8 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 
 #-------------------------------------------------------------------------------
 
-# _tornado_handlers simplifies the _tornado_app constructor
-_tornado_handlers=[
-	(r"/(?:status)?", StatusRequestHandler),
-	(r".*", AuthRequestHandler),
-	]
 # _tornado_app simplifies construction of testing infrastructure
-_tornado_app = tornado.web.Application(handlers=_tornado_handlers)
+_tornado_app = tornado.web.Application(handlers=[(r".*", AuthRequestHandler),])
 
 #-------------------------------------------------------------------------------
 
