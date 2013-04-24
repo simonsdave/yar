@@ -11,7 +11,7 @@ import glob
 import httplib
 import httplib2
 
-from command_line_parser import CommandLineParser
+from clparser import CommandLineParser
 
 #-------------------------------------------------------------------------------
 
@@ -104,8 +104,7 @@ if __name__ == "__main__":
 	clp = CommandLineParser()
 	(clo, cla) = clp.parse_args()
 
-	loggingLevel = getattr(logging, clo.loggingLevel)
-	logging.basicConfig(level=loggingLevel)
+	logging.basicConfig(level=clo.logging_level)
 
 	if not _is_couchdb_accessible(clo.host):
 		_logger.error("CouchDB isn't running on '%s'", clo.host)
