@@ -5,12 +5,15 @@ import logging
 import os
 import sys
 import datetime
+import uuid
+import httplib
 
 import tornado.httpserver
 import tornado.httpclient
 import tornado.ioloop
-import tornado.options
 import tornado.web
+
+from clparser import CommandLineParser
 
 #-------------------------------------------------------------------------------
 
@@ -32,7 +35,11 @@ class RequestHandler(tornado.web.RequestHandler):
 		self.write(dict)
 
 	def post(self):
-		self.get()
+		location_url = "%s/%s" % (
+			self.request.full_url(),
+			str(uuid.uuid4()).replace("-",""))
+		self.set_header("Location", location_url)
+		self.set_status(httplib.CREATED)
 
 	def put(self):
 		self.get()
@@ -44,22 +51,20 @@ class RequestHandler(tornado.web.RequestHandler):
 
 if __name__ == "__main__":
 
-	tornado.options.define(
-		"port",
-		default=8080,
-		help="run on this port - default = 8080",
-		type=int)
-	tornado.options.parse_command_line()
+	clp = CommandLineParser()
+	(clo, cla) = clp.parse_args()
+
+	logging.basicConfig(level=clo.logging_level)
 
 	_logger.info(
 		"%s %s running on %d",
 		os.path.basename(os.path.split(sys.argv[0])[1]),
 		__version__,
-		tornado.options.options.port)
+		clo.port)
 		
 	app = tornado.web.Application(handlers=[(r".*", RequestHandler)])
 	http_server = tornado.httpserver.HTTPServer(app)
-	http_server.listen(tornado.options.options.port)
+	http_server.listen(clo.port)
 	tornado.ioloop.IOLoop.instance().start()
 
 #------------------------------------------------------------------- End-of-File
