@@ -17,7 +17,11 @@ To start the authorization server:
 ~~~~~
 To make a request to the app server thru the authentication server:
 ~~~~~
-curl -v -X GET -H "Authorization: MAC id=\"h480djs93hd8\", ts=\"00000\", nonce=\"264095:dj83hs9s\", ext=\"davsim\", mac=\"SLDJd4mg43cjQfElUs3Qub4L6xE=\"" http://localhost:8000/dave.html
+curl \
+  -v \
+  -X GET \
+  -H "Authorization: MAC id=\"h480djs93hd8\", ts=\"00000\", nonce=\"264095:dj83hs9s\", ext=\"davsim\", mac=\"SLDJd4mg43cjQfElUs3Qub4L6xE=\"" \
+  http://localhost:8000/dave.html
 ~~~~~
 
 Key Server 
@@ -36,7 +40,12 @@ All MAC credentials are "owned" by someone.
 An owner's identity is represented below as an opaque string at least one character long.
 To create a set of credentials:
 ~~~~~~
-curl -X POST -H "Content-Type: application/json; charset=utf8" -d "{\"owner\":\"simonsdave@gmail.com\"}" http://localhost:6969/v1.0/mac_creds
+curl \
+  -v \
+  -X POST \
+  -H "Content-Type: application/json; charset=utf8" \
+  -d "{\"owner\":\"simonsdave@gmail.com\"}" \
+  http://localhost:6969/v1.0/mac_creds
 ~~~~~~
 To get an existing set of creditials:
 ~~~~~
