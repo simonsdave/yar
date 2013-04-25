@@ -1,0 +1,3 @@
+This file only exists as way to ensure bin/cfg4ev is sourced
+from the root directory of the apimgmt project. Any better ways
+to do this?

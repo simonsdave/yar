@@ -50,7 +50,6 @@ class RequestHandler(tornado.web.RequestHandler):
 #-------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-
 	clp = CommandLineParser()
 	(clo, cla) = clp.parse_args()
 
