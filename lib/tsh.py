@@ -4,11 +4,17 @@ like a clean shutdown."""
 
 import signal
 import sys
+import logging
+
+#-------------------------------------------------------------------------------
+
+_logger = logging.getLogger("TSH_%s" % __name__)
 
 #-------------------------------------------------------------------------------
 
 def _term_signal_handler(signalNumber, frame):
 	assert signalNumber == signal.SIGINT
+	_logger.info("Shutting down ...")
 	sys.exit(0)
 
 #-------------------------------------------------------------------------------
