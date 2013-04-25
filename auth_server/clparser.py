@@ -2,29 +2,9 @@
 server's command line."""
 
 import optparse
-import re
 import logging
 
-#-------------------------------------------------------------------------------
-
-def _check_host_colon_port(option, opt, value):
-	"""Type checking function for command line parser's 'hostcolonport' type."""
-	reg_ex = re.compile("^[^\s]+\:\d+$")
-	if reg_ex.match(value):
-		return value
-	msg = "option %s: should be host:port format" % opt
-	raise optparse.OptionValueError(msg)
-
-#-------------------------------------------------------------------------------
-
-def _check_logging_level(option, opt, value):
-	"""Type checking function for command line parser's 'logginglevel' type."""
-	reg_ex = re.compile("^(DEBUG|INFO|WARNING|ERROR|CRITICAL|FATAL)$")
-	if reg_ex.match(value):
-		logging_level = getattr(logging, value)
-		return logging_level
-	msg = "option %s: should be one of DEBUG, INFO, WARNING, ERROR, CRITICAL or FATAL" % opt
-	raise optparse.OptionValueError(msg)
+import clparserutil
 
 #-------------------------------------------------------------------------------
 
@@ -33,8 +13,8 @@ class _Option(optparse.Option):
 	list of available types."""
 	TYPES = optparse.Option.TYPES + ("hostcolonport","logginglevel",)
 	TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
-	TYPE_CHECKER["hostcolonport"] = _check_host_colon_port
-	TYPE_CHECKER["logginglevel"] = _check_logging_level
+	TYPE_CHECKER["hostcolonport"] = clparserutil.check_host_colon_port
+	TYPE_CHECKER["logginglevel"] = clparserutil.check_logging_level
 
 #-------------------------------------------------------------------------------
 
