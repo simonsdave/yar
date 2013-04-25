@@ -5,6 +5,7 @@ import httplib
 import re
 import json
 import uuid
+import logging
 
 import tornado.httpserver
 import tornado.httpclient
@@ -22,6 +23,10 @@ _key_store = "localhost:5984/macaa"
 #-------------------------------------------------------------------------------
 
 __version__ = "1.0"
+
+#-------------------------------------------------------------------------------
+
+_logger = logging.getLogger("KEYSERVER_%s" % __name__)
 
 #-------------------------------------------------------------------------------
 
@@ -293,7 +298,14 @@ if __name__ == "__main__":
 	clp = CommandLineParser()
 	(clo, cla) = clp.parse_args()
 
+	logging.basicConfig(level=clo.logging_level)
+
 	_key_store = clo.key_store
+
+	_logger.info(
+		"Key server listening on %d and using key store '%s'",
+		clo.port,
+		clo.key_store)
 
 	http_server = tornado.httpserver.HTTPServer(_tornado_app)
 	http_server.listen(clo.port)

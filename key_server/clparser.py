@@ -5,6 +5,8 @@ import optparse
 import re
 import logging
 
+import clparserutil
+
 #-------------------------------------------------------------------------------
 
 def _check_key_store(option, opt, value):
@@ -16,22 +18,13 @@ def _check_key_store(option, opt, value):
 
 #-------------------------------------------------------------------------------
 
-def _check_logging_level(option, opt, value):
-	"""Type checking function for command line parser's 'logginglevel' type."""
-	if re.match("^(DEBUG|INFO|WARNING|ERROR|CRITICAL|FATAL)$", value):
-		return getattr(logging, value)
-	msg = "option %s: should be one of DEBUG, INFO, WARNING, ERROR, CRITICAL or FATAL" % opt
-	raise optparse.OptionValueError(msg)
-
-#-------------------------------------------------------------------------------
-
 class _Option(optparse.Option):
 	"""Adds key_store and logginglevel types to the command line parser's
 	list of available types."""
 	TYPES = optparse.Option.TYPES + ("key_store","logginglevel",)
 	TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
 	TYPE_CHECKER["key_store"] = _check_key_store
-	TYPE_CHECKER["logginglevel"] = _check_logging_level
+	TYPE_CHECKER["logginglevel"] = clparserutil.check_logging_level
 
 #-------------------------------------------------------------------------------
 
