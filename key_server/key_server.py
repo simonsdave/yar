@@ -179,7 +179,7 @@ class AsyncCredsDeleter(object):
 
 class RequestHandler(trhutil.RequestHandler):
 
-	def _async_creds_retriever_callback_for_get(self, creds):
+	def _on_async_creds_retrieve_done(self, creds):
 		if creds is None:
 			self.set_status(httplib.NOT_FOUND)
 			self.finish()
@@ -193,7 +193,7 @@ class RequestHandler(trhutil.RequestHandler):
 	def get(self, mac_key_identifier=None):
 		acr = AsyncCredsRetriever()
 		acr.fetch(
-			self._async_creds_retriever_callback_for_get,
+			self._on_async_creds_retrieve_done,
 			mac_key_identifier=mac_key_identifier,
 			owner=self.get_argument("owner", None))
 
