@@ -3,28 +3,10 @@ store installer's command line."""
 
 #-------------------------------------------------------------------------------
 
-import re
 import logging
 import optparse
 
-#-------------------------------------------------------------------------------
-
-def _check_host_colon_port(option, opt, value):
-	"""Type checking function for command line parser's 'hostcolonport' type."""
-	reg_ex = re.compile("^[^\s]+\:\d+$")
-	if reg_ex.match(value):
-		return value
-	msg = "option %s: should be host:port format" % opt
-	raise optparse.OptionValueError(msg)
-
-#-------------------------------------------------------------------------------
-
-def _check_logging_level(option, opt, value):
-	"""Type checking function for command line parser's 'logginglevel' type."""
-	if re.match("^(DEBUG|INFO|WARNING|ERROR|CRITICAL|FATAL)$", value):
-		return getattr(logging, value)
-	msg = "option %s: should be one of DEBUG, INFO, WARNING, ERROR, CRITICAL or FATAL" % opt
-	raise optparse.OptionValueError(msg)
+import clparserutil
 
 #-------------------------------------------------------------------------------
 
@@ -33,8 +15,8 @@ class _Option(optparse.Option):
 	list of available types."""
 	TYPES = optparse.Option.TYPES + ("hostcolonport","logginglevel",)
 	TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
-	TYPE_CHECKER["hostcolontport"] = _check_host_colon_port
-	TYPE_CHECKER["logginglevel"] = _check_logging_level
+	TYPE_CHECKER["hostcolontport"] = clparserutil.check_host_colon_port
+	TYPE_CHECKER["logginglevel"] = clparserutil.check_logging_level
 
 #-------------------------------------------------------------------------------
 

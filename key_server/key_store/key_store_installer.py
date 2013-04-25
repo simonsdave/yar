@@ -107,7 +107,7 @@ if __name__ == "__main__":
 	logging.basicConfig(level=clo.logging_level)
 
 	if not _is_couchdb_accessible(clo.host):
-		_logger.error("CouchDB isn't running on '%s'", clo.host)
+		_logger.fatal("CouchDB isn't running on '%s'", clo.host)
 		sys.exit(1)
 
 	if clo.delete:
