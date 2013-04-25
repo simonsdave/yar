@@ -13,6 +13,7 @@ import tornado.ioloop
 import tornado.web
 
 from clparser import CommandLineParser
+import tsh
 
 #-------------------------------------------------------------------------------
 
@@ -299,6 +300,8 @@ if __name__ == "__main__":
 	(clo, cla) = clp.parse_args()
 
 	logging.basicConfig(level=clo.logging_level)
+
+	tsh.install_handler()
 
 	_key_store = clo.key_store
 
