@@ -14,6 +14,7 @@ import tornado.web
 
 from clparser import CommandLineParser
 import tsh
+import trhutil
 
 #-------------------------------------------------------------------------------
 
@@ -31,7 +32,7 @@ _logger = logging.getLogger("KEYSERVER_%s" % __name__)
 
 #-------------------------------------------------------------------------------
 
-class StatusRequestHandler(tornado.web.RequestHandler):
+class StatusRequestHandler(trhutil.RequestHandler):
 
 	def get(self):
 		status = {
@@ -176,7 +177,7 @@ class AsyncCredsDeleter(object):
 
 #-------------------------------------------------------------------------------
 
-class RequestHandler(tornado.web.RequestHandler):
+class RequestHandler(trhutil.RequestHandler):
 
 	def _async_creds_retriever_callback_for_get(self, creds):
 		if creds is None:
@@ -195,41 +196,6 @@ class RequestHandler(tornado.web.RequestHandler):
 			self._async_creds_retriever_callback_for_get,
 			mac_key_identifier=mac_key_identifier,
 			owner=self.get_argument("owner", None))
-
-	def _is_json_utf8_content_type(self):
-		content_type = self.request.headers.get("content-type", None)
-		if content_type is None:
-			return False
-		json_utf8_content_type_reg_ex = re.compile(
-			"^\s*application/json;\s+charset\=utf-{0,1}8\s*$",
-			re.IGNORECASE )
-		if not json_utf8_content_type_reg_ex.match(content_type):
-			return False
-		return True
-
-	def _get_owner_from_request_body(self):
-		# :TODO: wrap this up in a "_get_json_body_as_dict()"
-		if not self._is_json_utf8_content_type():
-			return None
-
-		body = self.request.body
-		if body is None:
-			return None
-
-		try:
-			body_as_dict = json.loads(body)
-		except:
-			return None
-
-		if "owner" not in body_as_dict:
-			return None
-		owner = body_as_dict["owner"]
-
-		owner = owner.strip()
-		if 0 == len(owner):
-			return None
-
-		return owner
 
 	def _on_async_creds_create_done(self, creds):
 		if creds is None:
@@ -251,7 +217,7 @@ class RequestHandler(tornado.web.RequestHandler):
 			self.finish()
 			return
 
-		owner = self._get_owner_from_request_body()
+		owner = self.get_value_from_json_request_body("owner", None)
 		if owner is None:
 			self.set_status(httplib.BAD_REQUEST)
 			self.finish()
