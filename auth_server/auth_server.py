@@ -18,6 +18,7 @@ import tornado.ioloop
 import tornado.web
 
 from clparser import CommandLineParser
+import tsh
 
 #-------------------------------------------------------------------------------
 
@@ -230,7 +231,15 @@ if __name__ == "__main__":
 	clp = CommandLineParser()
 	(clo, cla) = clp.parse_args()
 
+	tsh.install_handler()
+
 	logging.basicConfig(level=clo.logging_level)
+
+	_logger.info(
+		"Auth Server listening on %d using Key Server '%s' and App Server '%s'",
+		clo.port,
+		clo.key_server,
+		clo.app_server)
 
 	AuthRequestHandler.key_server = clo.key_server
 	AuthRequestHandler.app_server = clo.app_server
