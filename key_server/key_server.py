@@ -88,10 +88,17 @@ class AsnycCredsCreator(object):
 
 class AsyncCredsRetriever(object):
 
-	def fetch(self, callback, mac_key_identifier=None, owner=None):
+	def fetch(
+		self,
+		callback,
+		mac_key_identifier=None,
+		owner=None,
+		is_filter_out_non_model_properties=False):
+
 		object.__init__(self)
 
 		self._callback = callback
+		self._is_filter_out_non_model_properties = is_filter_out_non_model_properties
 
 		if mac_key_identifier:
 			url = "http://%s/%s" % (_key_store, mac_key_identifier)
@@ -122,15 +129,22 @@ class AsyncCredsRetriever(object):
 			rv = []
 			for row in body_as_dict['rows']:
 				doc = row['value']
-				# :TODO: filter out the CouchDB specific attributes that should
-				# not flow outside of the key server
+				if self._is_filter_out_non_model_properties:
+					doc = self._filter_out_non_model_properties(doc)
 				rv.append(doc)
 		else:
-			# :TODO: filter out the CouchDB specific attributes that should
-			# not flow outside of the key server
+			if self._is_filter_out_non_model_properties:
+				body_as_dict = self._filter_out_non_model_properties(body_as_dict)
 			rv = body_as_dict
 
 		self._callback(rv)
+
+	def _filter_out_non_model_properties(self, dict):
+		rv = {}
+		for key in ["is_deleted","mac_algorithm","mac_key","mac_key_identifier","owner"]:
+			if key in dict:
+				rv[key] = dict[key]
+		return rv
 
 #-------------------------------------------------------------------------------
 
@@ -195,7 +209,8 @@ class RequestHandler(trhutil.RequestHandler):
 		acr.fetch(
 			self._on_async_creds_retrieve_done,
 			mac_key_identifier=mac_key_identifier,
-			owner=self.get_argument("owner", None))
+			owner=self.get_argument("owner", None),
+			is_filter_out_non_model_properties=True)
 
 	def _on_async_creds_create_done(self, creds):
 		if creds is None:
