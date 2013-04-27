@@ -207,16 +207,22 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		acr = AsyncCredsRetriever()
 		acr.fetch(self._on_async_creds_retriever_done, self._auth_header_id)
 
-	def post(self):
+	def get(self):
 		self._handle_request()
 
-	def get(self):
+	def post(self):
 		self._handle_request()
 
 	def put(self):
 		self._handle_request()
 
 	def delete(self):
+		self._handle_request()
+
+	def head(self):
+		self._handle_request()
+
+	def options(self):
 		self._handle_request()
 
 #-------------------------------------------------------------------------------

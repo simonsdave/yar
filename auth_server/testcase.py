@@ -251,6 +251,14 @@ class TestCase(unittest.TestCase):
 	```app_server_received_delete``` to True."""
 	app_server_received_delete = None
 
+	"""When the app server recieves a HEAD it sets
+	```app_server_received_head``` to True."""
+	app_server_received_head = None
+
+	"""When the app server recieves a OPTIONS it sets
+	```app_server_received_options``` to True."""
+	app_server_received_options = None
+
 	def setUp(self):
 		unittest.TestCase.setUp(self)
 		TestCase._mac_key_identifier_in_key_server_request = None
@@ -265,6 +273,8 @@ class TestCase(unittest.TestCase):
 		TestCase.app_server_received_post = False
 		TestCase.app_server_received_put = False
 		TestCase.app_server_received_delete = False
+		TestCase.app_server_received_head = False
+		TestCase.app_server_received_options = False
 
 	def assertIsJsonUtf8ContentType(self, content_type):
 		"""Allows the caller to assert if ```content_type```
@@ -312,7 +322,7 @@ class TestCase(unittest.TestCase):
 		self.assertEqual(auth_method, expected_auth_method)
 		self.assertEqual(id, expected_id)
 
-	def assertAppServerRequest(self, get=False, post=False, delete=False, put=False):
+	def assertAppServerRequest(self, get=False, post=False, delete=False, put=False, head=False, options=False):
 		"""The unit test that was just run caused the authentication server
 		to forward a request to the app server. This method allows the caller
 		to assert that the app server recieved the correct request."""
@@ -320,6 +330,8 @@ class TestCase(unittest.TestCase):
 		self.assertEqual(TestCase.app_server_received_post, post)
 		self.assertEqual(TestCase.app_server_received_put, put)
 		self.assertEqual(TestCase.app_server_received_delete, delete)
+		self.assertEqual(TestCase.app_server_received_head, head)
+		self.assertEqual(TestCase.app_server_received_options, options)
 
 #-------------------------------------------------------------------------------
 
