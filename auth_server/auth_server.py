@@ -79,8 +79,8 @@ class AsyncCredsRetriever(object):
 			"properties" : {
 				"is_deleted" : {"type" : "boolean"},
 				"mac_algorithm" : {"type" : "string", "choices": ["hmac-sha-1", "hmac-sha-256"]},
-				"mac_key" : {"type" : "string"},
-				"mac_key_identifier" : {"type" : "string"},
+				"mac_key" : {"type" : "string", "minLength": 1},
+				"mac_key_identifier" : {"type" : "string", "minLength": 1},
 				"owner" : {"type" : "string"},
 			},
 		}

@@ -2,7 +2,7 @@
 """This module contains the auth server's unit tests."""
 
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.FATAL)
 import unittest
 import httplib
 import httplib2
@@ -64,6 +64,41 @@ class TestCase(testcase.TestCase):
 			headers={"Authorization": auth_header_value})
 		self.assertTrue(response.status == httplib.UNAUTHORIZED)
 		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
+
+	def test_invalid_mac_algorithm_returned_from_key_server(self):
+		mac_key_identifier = str(uuid.uuid4())
+		mac_key = str(uuid.uuid4())
+		mac_algorithm = "hmac-sha-1"
+		owner = str(uuid.uuid4())
+		http_method = "GET"
+		uri = "/whatever"
+		host = "localhost"
+		port = self.__class__.auth_server.port
+
+		testcase.TestCase.mac_key_in_response_to_key_server_request = mac_key
+		testcase.TestCase.mac_algorithm_response_to_key_server_request = "dave-%s" % mac_algorithm
+		testcase.TestCase.owner_in_response_to_key_server_request = owner
+
+		auth_header_value = mac.AuthHeader(
+			mac_key_identifier,
+			mac_key,
+			mac_algorithm,
+			http_method,
+			uri,
+			host,
+			port)
+		auth_header_value = str(auth_header_value)
+		http_client = httplib2.Http()
+		response, content = http_client.request(
+			"http://%s:%d%s" % (host, port, uri),
+			http_method,
+			headers={"Authorization": auth_header_value})
+		self.assertTrue(response.status == httplib.OK)
+		self.assertAppServerRequest(get=True)
+		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
+		self.assertAuthorizationHeaderInAppServerRequest(
+			self.__class__.app_server_auth_method,
+			owner)
 
 	def test_all_good_on_get(self):
 		mac_key_identifier = str(uuid.uuid4())
