@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-#-------------------------------------------------------------------------------
-#
-# auth_server_auth_unit_tests.py
-#
-#-------------------------------------------------------------------------------
+"""This module contains the auth server's unit tests."""
 
 import logging
 logging.basicConfig(level=logging.INFO)
