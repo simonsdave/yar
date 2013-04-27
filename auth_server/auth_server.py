@@ -16,6 +16,7 @@ import tornado.httpserver
 import tornado.httpclient
 import tornado.ioloop
 import tornado.web
+import jsonschema
 
 from clparser import CommandLineParser
 import tsh
@@ -51,6 +52,16 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 		self.finish()
 
 	def _extract_mac_credentials_from_key_server_response(self, response):
+		schema = {
+			"type" : "object",
+			"properties" : {
+				"is_deleted" : {"type" : "string"},
+				"mac_algorithm" : {"type" : "string"},
+				"mac_key" : {"type" : "string"},
+				"mac_key_identifier" : {"type" : "string"},
+				"owner" : {"type" : "string"},
+			},
+		}
 		"""This method parses the response from the key server. The response
 		is supposed to be a JSON document containing mac credentials."""
 		if httplib.OK != response.code:

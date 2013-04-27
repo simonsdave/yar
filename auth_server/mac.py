@@ -7,7 +7,7 @@ used in HTTP MAC access authentication scheme. See [1] for details.
 #-------------------------------------------------------------------------------
 
 import logging
-logging.basicConfig(level=logging.FATAL)
+logging.basicConfig(level=logging.INFO)
 import string
 import random
 import datetime
@@ -71,8 +71,7 @@ class Mac(object):
 		host,
 		port,
 		content_type = None,
-		md5_of_body = None
-		):
+		body = None):
 
 		object.__init__(self)
 
@@ -82,11 +81,13 @@ class Mac(object):
 		else:
 			self._mac_algorithm = hashlib.sha256
 
-		assert (content_type and md5_of_body) or (not content_type and not md5_of_body)
-		if content_type is None:
-			self.ext = ""
+		if content_type and body: 
+			hash_of_body = hashlib.new('md5', body)
+			hash_of_body = hash_of_body.digest()
+			self.ext = "%s-%s" % (content_type, hash_of_body)
+			self.ext = base64.b64encode(self.ext)
 		else:
-			self.ext = "%s-%s" % (content_type, md5_of_body)
+			self.ext = ""
 
 		self._normalized_request_string = str(ts) + '\n' + \
 			str(nonce) + '\n' + \
@@ -120,8 +121,7 @@ class AuthHeader(object):
 		host,
 		port,
 		content_type = None,
-		md5_of_body = None
-		):
+		body = None):
 
 		object.__init__(self)
 
@@ -139,7 +139,7 @@ class AuthHeader(object):
 			host,
 			port,
 			content_type,
-			md5_of_body)
+			body)
 
 	def __str__(self):
 		rv = 'MAC id="%s", ts="%s", nonce="%s", ext="%s", mac="%s"' % (

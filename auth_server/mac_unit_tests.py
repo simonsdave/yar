@@ -32,12 +32,6 @@ class TimestampTestCase(unittest.TestCase):
 	
 	def test_it(self):
 		ts1 = mac.Timestamp()
-		# print ts1
-		# print ts1._ts
-		# time.sleep(2)
-		# ts2 = mac.Timestamp()
-		# print ts2
-		# print ts2._ts
 
 #-------------------------------------------------------------------------------
 
@@ -68,7 +62,7 @@ class MacTestCase(unittest.TestCase):
 		self.assertTrue(hashlib.sha256 == x._mac_algorithm)
 
 	def test_invalid_mac_algorithm(self):
-		with self.assertRaises( AssertionError ):
+		with self.assertRaises(AssertionError):
 			x = mac.Mac(
 				"dave",
 				"hmac-sha-whatever",
@@ -78,8 +72,6 @@ class MacTestCase(unittest.TestCase):
 				"/dave.html",
 				"simonsfamily.ca",
 				80)
-
-# "application/json; charset=utf8"
 
 #-------------------------------------------------------------------------------
 
