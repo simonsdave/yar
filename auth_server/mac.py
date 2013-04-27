@@ -70,8 +70,8 @@ class Mac(object):
 		uri,
 		host,
 		port,
-		content_type = None,
-		body = None):
+		content_type=None,
+		body=None):
 
 		object.__init__(self)
 
