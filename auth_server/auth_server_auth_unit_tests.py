@@ -23,24 +23,22 @@ class TestCase(testcase.TestCase):
 	
 	@classmethod
 	def setUpClass(cls):
-		cls.auth_server = testcase.AuthenticationServer()
-
-		cls.key_server = testcase.KeyServer()
-		auth_server.AuthRequestHandler.key_server = \
-			"localhost:%d" % cls.key_server.port
-
 		cls.app_server = testcase.AppServer()
-		auth_server.AuthRequestHandler.app_server = \
-			"localhost:%d" % cls.app_server.port
+		cls.app_server_auth_method = str(uuid.uuid4()).replace("-","")
+		cls.key_server = testcase.KeyServer()
+		cls.auth_server = testcase.AuthenticationServer(
+			cls.key_server,
+			cls.app_server,
+			cls.app_server_auth_method)
 
 		cls.io_loop = testcase.IOLoop()
 		cls.io_loop.start()
 
 	@classmethod
 	def tearDownClass(cls):
+		cls.app_server = None
 		cls.auth_server = None
 		cls.key_server = None
-		cls.app_server = None
 		cls.io_loop.stop()
 		cls.io_loop = None
 
@@ -71,10 +69,11 @@ class TestCase(testcase.TestCase):
 		self.assertTrue(response.status == httplib.UNAUTHORIZED)
 		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
 
-	def test_key_all_good_on_get(self):
+	def test_all_good_on_get(self):
 		mac_key_identifier = str(uuid.uuid4())
 		mac_key = str(uuid.uuid4())
 		mac_algorithm = "hmac-sha-1"
+		owner = str(uuid.uuid4())
 		http_method = "GET"
 		uri = "/whatever"
 		host = "localhost"
@@ -82,6 +81,7 @@ class TestCase(testcase.TestCase):
 
 		testcase.TestCase.mac_key_in_response_to_key_server_request = mac_key
 		testcase.TestCase.mac_algorithm_response_to_key_server_request = mac_algorithm
+		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
 		auth_header_value = mac.AuthHeader(
 			mac_key_identifier,
@@ -98,12 +98,17 @@ class TestCase(testcase.TestCase):
 			http_method,
 			headers={"Authorization": auth_header_value})
 		self.assertTrue(response.status == httplib.OK)
+		self.assertAppServerRequest(get=True)
 		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
+		self.assertAuthorizationHeaderInAppServerRequest(
+			self.__class__.app_server_auth_method,
+			owner)
 
-	def test_key_all_good_on_post(self):
+	def test_all_good_on_post(self):
 		mac_key_identifier = str(uuid.uuid4())
 		mac_key = str(uuid.uuid4())
 		mac_algorithm = "hmac-sha-1"
+		owner = str(uuid.uuid4())
 		http_method = "POST"
 		uri = "/isallokonpost"
 		host = "localhost"
@@ -113,6 +118,7 @@ class TestCase(testcase.TestCase):
 
 		testcase.TestCase.mac_key_in_response_to_key_server_request = mac_key
 		testcase.TestCase.mac_algorithm_response_to_key_server_request = mac_algorithm
+		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
 		auth_header_value = mac.AuthHeader(
 			mac_key_identifier,
@@ -135,7 +141,11 @@ class TestCase(testcase.TestCase):
 			headers=headers,
 			body=body)
 		self.assertTrue(response.status == httplib.OK)
+		self.assertAppServerRequest(post=True)
 		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
+		self.assertAuthorizationHeaderInAppServerRequest(
+			self.__class__.app_server_auth_method,
+			owner)
 
 #-------------------------------------------------------------------------------
 

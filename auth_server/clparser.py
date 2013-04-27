@@ -44,6 +44,13 @@ class CommandLineParser(optparse.OptionParser):
 			help="database" )
 
 		self.add_option(
+			"--authmethod",
+			action="store",
+			dest="app_server_auth_method",
+			default="DAS",
+			help="app server's authorization method - default = DAS" )
+
+		self.add_option(
 			"--keyserver",
 			action="store",
 			dest="key_server",

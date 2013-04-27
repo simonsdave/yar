@@ -56,12 +56,32 @@ class AppServerRequestHandler(tornado.web.RequestHandler):
 	"""Tornado request handler for use by the mock app server. This request
 	handler only implements HTTP GET."""
 
+	def _save_authorization_header_value(self):
+		TestCase.authorization_header_in_request_to_app_server = \
+			self.request.headers.get("Authorization", None)
+
 	def get(self):
 		"""Implements HTTP GET for the mock app server."""
+		TestCase.app_server_received_get = True
+		self._save_authorization_header_value()
 		self.set_status(httplib.OK)
 
 	def post(self):
 		"""Implements HTTP POST for the mock app server."""
+		TestCase.app_server_received_post = True
+		self._save_authorization_header_value()
+		self.set_status(httplib.OK)
+
+	def put(self):
+		"""Implements HTTP PUT for the mock app server."""
+		TestCase.app_server_received_put = True
+		self._save_authorization_header_value()
+		self.set_status(httplib.OK)
+
+	def delete(self):
+		"""Implements HTTP DELETE for the mock app server."""
+		TestCase.app_server_received_delete = True
+		self._save_authorization_header_value()
 		self.set_status(httplib.OK)
 
 #-------------------------------------------------------------------------------
@@ -83,12 +103,13 @@ class AppServer(Server):
 
 class KeyServerRequestHandler(tornado.web.RequestHandler):
 	"""Tornado request handler for use by the mock key server. This request
-	handler only implements HTTP GET."""
+	handler only implements HTTP GET since that's the only type of request the
+	auth server issues to the key server."""
 
 	def get(self):
 		"""Implements HTTP GET for the mock key server."""
 		_logger.info(
-			"Key Server GET %s",
+			"Mock Key Server GET %s",
 			self.request.uri)
 		uri_reg_ex = re.compile(
 			'^/v1\.0/mac_creds/(?P<mac_key_identifier>.+)$',
@@ -96,7 +117,7 @@ class KeyServerRequestHandler(tornado.web.RequestHandler):
 		match = uri_reg_ex.match(self.request.uri)
 		if not match:
 			TestCase._mac_key_identifier_in_key_server_request = None
-			self.set_status(httplib.NOT_FOUND)
+			self.set_status(httplib.BAD_REQUEST)
 		else:
 			assert 0 == match.start()
 			assert len(self.request.uri) == match.end()
@@ -114,9 +135,11 @@ class KeyServerRequestHandler(tornado.web.RequestHandler):
 				dict = TestCase.body_of_response_to_key_server_request \
 					or \
 					{
-						"mac_key_identifier": mac_key_identifier,
-						"mac_key": TestCase.mac_key_in_response_to_key_server_request,
+						"is_deleted": False,
 						"mac_algorithm": TestCase.mac_algorithm_response_to_key_server_request,
+						"mac_key": TestCase.mac_key_in_response_to_key_server_request,
+						"mac_key_identifier": mac_key_identifier,
+						"owner": TestCase.owner_in_response_to_key_server_request or str(uuid.uuid4()),
 					}
 				body = json.dumps(dict)
 				self.write(body)
@@ -146,10 +169,14 @@ class KeyServer(Server):
 class AuthenticationServer(Server):
 	"""Mock authentication server."""
 
-	def __init__(self):
+	def __init__(self, key_server, app_server, app_server_auth_method):
 		"""Creates an instance of the auth server and starts the
 		server listenting on a random, available port."""
 		Server.__init__(self)
+
+		auth_server.key_server = "localhost:%d" % key_server.port
+		auth_server.app_server = "localhost:%d" % app_server.port
+		auth_server.app_server_auth_method = app_server_auth_method
 
 		http_server = tornado.httpserver.HTTPServer(auth_server._tornado_app)
 		http_server.add_sockets([self.socket])
@@ -198,6 +225,32 @@ class TestCase(unittest.TestCase):
 	"""..."""
 	mac_algorithm_response_to_key_server_request = None
 
+	"""When the mock key server responds to the auth server's request
+	for credentials, ```owner_in_response_to_key_server_request```
+	is used for the owner attribute."""
+	owner_in_response_to_key_server_request = None
+
+	"""When the auth server forwards a request to the app server the
+	request's authorization header contained the value found
+	in '''authorization_header_in_request_to_app_server```."""
+	authorization_header_in_request_to_app_server = None
+
+	"""When the app server recieves a GET it sets
+	```app_server_received_post``` to True."""
+	app_server_received_get = None
+
+	"""When the app server recieves a POST it sets
+	```app_server_received_post``` to True."""
+	app_server_received_post = None
+
+	"""When the app server recieves a PUT it sets
+	```app_server_received_post``` to True."""
+	app_server_received_put = None
+
+	"""When the app server recieves a DELETE it sets
+	```app_server_received_delete``` to True."""
+	app_server_received_delete = None
+
 	def setUp(self):
 		unittest.TestCase.setUp(self)
 		TestCase._mac_key_identifier_in_key_server_request = None
@@ -206,19 +259,23 @@ class TestCase(unittest.TestCase):
 		TestCase.body_of_response_to_key_server_request = None
 		TestCase.mac_key_in_response_to_key_server_request = None
 		TestCase.mac_algorithm_response_to_key_server_request = None
+		TestCase.owner_in_response_to_key_server_request = None
+		TestCase.authorization_header_in_request_to_app_server = None
+		TestCase.app_server_received_get = False
+		TestCase.app_server_received_post = False
+		TestCase.app_server_received_put = False
+		TestCase.app_server_received_delete = False
 
-
-	def assertIsJsonUtf8ContentType(self,content_type):
-		"""A method name/style chosen for consistency with unittest.TestCase
-		which allows the caller to assert if the 'content_type' argument
-		is a valid value for the Content-type HTTP header. """
+	def assertIsJsonUtf8ContentType(self, content_type):
+		"""Allows the caller to assert if ```content_type```
+		is valid for specifying utf8 json content in an http header. """
 		self.assertIsNotNone(content_type)
 		json_utf8_content_type_reg_ex = re.compile(
 			"^\s*application/json;\s+charset\=utf-{0,1}8\s*$",
 			re.IGNORECASE )
 		self.assertIsNotNone(json_utf8_content_type_reg_ex.match(content_type))
 
-	def assertMACKeyIdentifierInKeyServerRequest(self,mac_key_identifier):
+	def assertMACKeyIdentifierInKeyServerRequest(self, mac_key_identifier):
 		"""The unit test that was just run caused the authentication server
 		to call out (perhaps) to the key server. The authentication server
 		made this call with a particular MAC key identifier. This method
@@ -230,6 +287,39 @@ class TestCase(unittest.TestCase):
 			self.assertEqual(
 				TestCase._mac_key_identifier_in_key_server_request,
 				mac_key_identifier)
+
+	def assertAuthorizationHeaderInAppServerRequest(self, expected_auth_method, expected_id):
+		"""The unit test that was just run caused the authentication server
+		to forward a request to the app server. The authentication server
+		made this call with a particular authorization header. This method
+		allows to caller to assert that the format and content of the authorization
+		header was as expected."""
+		self.assertIsNotNone(TestCase.authorization_header_in_request_to_app_server)
+		reg_ex = re.compile(
+			'^\s*(?P<auth_method>[^\s]+)\s+(?P<id>[^\s]+)\s*$$',
+			re.IGNORECASE )
+		match = reg_ex.match(TestCase.authorization_header_in_request_to_app_server)
+		self.assertIsNotNone(match)
+		assert 0 == match.start()
+		assert len(TestCase.authorization_header_in_request_to_app_server) == match.end()
+		assert 2 == len(match.groups())
+		auth_method = match.group("auth_method")
+		assert auth_method is not None
+		assert 0 < len(auth_method)
+		id = match.group("id")
+		assert id is not None
+		assert 0 < len(id)
+		self.assertEqual(auth_method, expected_auth_method)
+		self.assertEqual(id, expected_id)
+
+	def assertAppServerRequest(self, get=False, post=False, delete=False, put=False):
+		"""The unit test that was just run caused the authentication server
+		to forward a request to the app server. This method allows the caller
+		to assert that the app server recieved the correct request."""
+		self.assertEqual(TestCase.app_server_received_get, get)
+		self.assertEqual(TestCase.app_server_received_post, post)
+		self.assertEqual(TestCase.app_server_received_put, put)
+		self.assertEqual(TestCase.app_server_received_delete, delete)
 
 #-------------------------------------------------------------------------------
 
