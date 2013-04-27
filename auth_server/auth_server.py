@@ -77,8 +77,8 @@ class AsyncCredsRetriever(object):
 		schema = {
 			"type" : "object",
 			"properties" : {
-				"is_deleted" : {"type" : "string"},
-				"mac_algorithm" : {"type" : "string"},
+				"is_deleted" : {"type" : "boolean"},
+				"mac_algorithm" : {"type" : "string", "choices": ["hmac-sha-1", "hmac-sha-256"]},
 				"mac_key" : {"type" : "string"},
 				"mac_key_identifier" : {"type" : "string"},
 				"owner" : {"type" : "string"},

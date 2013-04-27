@@ -6,7 +6,7 @@
 #-------------------------------------------------------------------------------
 
 import logging
-logging.basicConfig(level=logging.FATAL)
+logging.basicConfig(level=logging.INFO)
 import unittest
 import httplib
 import httplib2

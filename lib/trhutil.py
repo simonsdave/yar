@@ -104,6 +104,13 @@ class Response(object):
 		except:
 			return None
 
+		if schema:
+			try:
+				jsonschema.validate(body, schema)
+			except Exception as ex:
+				print ">>>%s<<<" % str(ex)
+				return None
+
 		return body
 
 #------------------------------------------------------------------- End-of-File
