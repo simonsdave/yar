@@ -16,10 +16,10 @@ import tornado.httpserver
 import tornado.httpclient
 import tornado.ioloop
 import tornado.web
-import jsonschema
 
 from clparser import CommandLineParser
 import tsh
+import trhutil
 
 #-------------------------------------------------------------------------------
 
@@ -74,19 +74,6 @@ class AsyncCredsRetriever(object):
 			self._callback(False, self._mac_key_identifier)
 			return
 
-		if not self._extract_mac_credentials_from_key_server_response(response):
-			self._callback(False, self._mac_key_identifier)
-			return
-
-		self._callback(
-			True,
-			self._mac_key_identifier,
-			False, # is deleted
-			self._key_server_mac_algorithm,
-			self._key_server_mac_key,
-			"dave")
-
-	def _extract_mac_credentials_from_key_server_response(self, response):
 		schema = {
 			"type" : "object",
 			"properties" : {
@@ -97,81 +84,28 @@ class AsyncCredsRetriever(object):
 				"owner" : {"type" : "string"},
 			},
 		}
-		"""This method parses the response from the key server. The response
-		is supposed to be a JSON document containing mac credentials."""
-		if httplib.OK != response.code:
-			_logger.info(
-				"Failed to find mac credentials for MAC key identifier '%s'",
-				self._auth_header_id)
-			return False
-
-		# :TODO: exepcting content-type to be JSON
-		# :TODO: what happens if this is invalid JSON or not JSON at all?
-		mac_credentials = json.loads(response.body)
+		response = trhutil.Response(response)
+		body = response.get_json_body(schema)
+		if body is None:
+			self._callback(False, self._mac_key_identifier)
+			return
 
 		_logger.info(
-			"For MAC key identifier '%s' retrieved '%s' from key server",
+			"For mac key identifier '%s' retrieved credentials '%s'",
 			self._mac_key_identifier,
-			mac_credentials)
+			body)
 
-		# :TODO: be more paranoid in the code below ITO the contents of the JSON document
-
-		self._key_server_mac_key_identifier = mac_credentials.get(
-			"mac_key_identifier",
-			None)
-		if self._key_server_mac_key_identifier is None:
-			_logger.error(
-				"'mac_key_identifier' not found in mac credentials '%s'",
-				mac_credentials)
-			return False
-
-		if self._key_server_mac_key_identifier != self._mac_key_identifier:
-			_logger.error(
-				"MAC key identifier '%s' expected but '%s' found",
-				self._auth_header_id,
-				self._key_server_mac_key_identifier)
-			return False
-
-		self._key_server_mac_key = mac_credentials.get("mac_key", None)
-		if self._key_server_mac_key is None:
-			_logger.error(
-				"'mac_key' not found in mac credentials '%s'",
-				mac_credentials)
-			return False
-
-		self._key_server_mac_algorithm = mac_credentials.get(
-			"mac_algorithm",
-			None)
-		if self._key_server_mac_algorithm is None:
-			_logger.error(
-				"'mac_algorithm' not found in mac credentials '%s'",
-				mac_credentials)
-			return False
-
-		valid_mac_algorithms = ["hmac-sha-1", "hmac-sha-256"]
-		if self._key_server_mac_algorithm not in valid_mac_algorithms:
-			_logger.error(
-				"'%s' is not one of the support mac algorithms = '%s'",
-				self._key_server_mac_algorithm,
-				valid_mac_algorithms)
-			return False
-
-		return True
+		self._callback(
+			True,
+			self._mac_key_identifier,
+			body["is_deleted"],
+			body["mac_algorithm"],
+			body["mac_key"],
+			body["owner"])
 
 #-------------------------------------------------------------------------------
 
-class AuthRequestHandler(tornado.web.RequestHandler):
-
-	def _handle_app_server_response(self, response):
-		if response.error:
-			self.set_status(httplib.INTERNAL_SERVER_ERROR) 
-		else:
-			self.set_status(response.code) 
-			for header_name in response.headers.keys():
-				self.set_header(header_name, response.headers[header_name]) 
-			if 0 < response.headers.get("Content-Length", 0):
-				self.write(response.body) 
-		self.finish()
+class AuthRequestHandler(trhutil.RequestHandler):
 
 	def _extract_authorization_header_value(self):
 		authorization_header_value = self.request.headers.get("Authorization", None)
@@ -216,6 +150,17 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 
 		return True
 
+	def _on_app_server_done(self, response):
+		if response.error:
+			self.set_status(httplib.INTERNAL_SERVER_ERROR) 
+		else:
+			self.set_status(response.code) 
+			for header_name in response.headers.keys():
+				self.set_header(header_name, response.headers[header_name]) 
+			if 0 < response.headers.get("Content-Length", 0):
+				self.write(response.body) 
+		self.finish()
+
 	def _on_async_creds_retriever_done(
 		self,
 		is_ok,
@@ -240,23 +185,17 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 			self.request.uri)
 
 		headers = tornado.httputil.HTTPHeaders(self.request.headers)
-		headers["Authorization"] = '%s %s' % (
-			app_server_auth_method,
-			owner)
-
-		body = None
-		if 0 < self.request.headers.get("Content-Length", 0):
-			body = self.request.body
+		headers["Authorization"] = '%s %s' % (app_server_auth_method, owner)
 
 		http_client = tornado.httpclient.AsyncHTTPClient()
 		http_client.fetch(
 			tornado.httpclient.HTTPRequest( 
 				url="http://%s%s" % (app_server, self.request.uri),
 				method=self.request.method, 
-				body=body,
+				body=self.get_request_body_if_exists(),
 				headers=headers,
 				follow_redirects=False),
-			callback=self._handle_app_server_response)
+			callback=self._on_app_server_done)
 
 	@tornado.web.asynchronous
 	def _handle_request(self):
@@ -282,7 +221,6 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 
 #-------------------------------------------------------------------------------
 
-# _tornado_app simplifies construction of testing infrastructure
 _tornado_app = tornado.web.Application(handlers=[(r".*", AuthRequestHandler),])
 
 #-------------------------------------------------------------------------------
