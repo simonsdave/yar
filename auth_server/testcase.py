@@ -60,6 +60,10 @@ class AppServerRequestHandler(tornado.web.RequestHandler):
 		"""Implements HTTP GET for the mock app server."""
 		self.set_status(httplib.OK)
 
+	def post(self):
+		"""Implements HTTP POST for the mock app server."""
+		self.set_status(httplib.OK)
+
 #-------------------------------------------------------------------------------
 
 class AppServer(Server):

@@ -134,6 +134,9 @@ class AuthRequestHandler(tornado.web.RequestHandler):
 
 		# :TODO: now that we've got the MAC credentials, use them to
 		# confirm the caller's identity
+		_logger.info(
+			"Authorization successful for '%s'",
+			response.request.url)
 
 		headers = tornado.httputil.HTTPHeaders(self.request.headers)
 		headers["Authorization"] = 'VOYAGER id="%s"' % self._auth_header_id
