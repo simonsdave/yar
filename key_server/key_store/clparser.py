@@ -38,8 +38,8 @@ class CommandLineParser(optparse.OptionParser):
 			"--database",
 			action="store",
 			dest="database",
-			default="macaa",
-			help="database" )
+			default="creds",
+			help="database - default = creds" )
 
 		self.add_option(
 			"--delete",

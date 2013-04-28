@@ -21,7 +21,7 @@ import jsonschemas
 
 """Format of this string is host:port/database. It's used to construct
 a URL when talking to the key store."""
-_key_store = "localhost:5984/macaa"
+_key_store = "localhost:5984/creds"
 
 #-------------------------------------------------------------------------------
 
@@ -272,7 +272,7 @@ class RequestHandler(trhutil.RequestHandler):
 
 _tornado_handlers = [
 	(r"/(?:status)?", StatusRequestHandler),
-	(r"/v1.0/mac_creds(?:/([^/]+))?", RequestHandler),
+	(r"/v1.0/creds(?:/([^/]+))?", RequestHandler),
 ]
 
 _tornado_app = tornado.web.Application(handlers=_tornado_handlers)

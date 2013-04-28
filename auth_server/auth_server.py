@@ -58,7 +58,7 @@ class AsyncCredsRetriever(object):
 		self._callback = callback
 		self._mac_key_identifier = mac_key_identifier
 
-		url = "http://%s/v1.0/mac_creds/%s" % (
+		url = "http://%s/v1.0/creds/%s" % (
 			key_server,
 			self._mac_key_identifier)
 		http_client = tornado.httpclient.AsyncHTTPClient()

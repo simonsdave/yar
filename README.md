@@ -34,7 +34,7 @@ By default the key server will attempt to listen on port 8070 and connect a key 
 
 To get all MAC credentials currently saved in the key store:
 ~~~~~~
-curl -s -X GET http://localhost:6969/v1.0/mac_creds
+curl -s -X GET http://localhost:6969/v1.0/creds
 ~~~~~~
 All MAC credentials are "owned" by someone.
 An owner's identity is represented below as an opaque string at least one character long.
@@ -45,15 +45,15 @@ curl \
   -X POST \
   -H "Content-Type: application/json; charset=utf8" \
   -d "{\"owner\":\"simonsdave@gmail.com\"}" \
-  http://localhost:6969/v1.0/mac_creds
+  http://localhost:6969/v1.0/creds
 ~~~~~~
 To get an existing set of creditials:
 ~~~~~
-curl -v -X GET http://localhost:6969/v1.0/mac_creds/<MAC key identifier>
+curl -v -X GET http://localhost:6969/v1.0/creds/<MAC key identifier>
 ~~~~~
 To delete a set of existing credentials:
 ~~~~~
-curl -v -X DELETE http://localhost:6969/v1.0/mac_creds/<MAC key identifier>
+curl -v -X DELETE http://localhost:6969/v1.0/creds/<MAC key identifier>
 ~~~~~
 
 Key Store

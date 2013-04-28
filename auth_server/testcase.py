@@ -112,7 +112,7 @@ class KeyServerRequestHandler(tornado.web.RequestHandler):
 			"Mock Key Server GET %s",
 			self.request.uri)
 		uri_reg_ex = re.compile(
-			'^/v1\.0/mac_creds/(?P<mac_key_identifier>.+)$',
+			'^/v1\.0/creds/(?P<mac_key_identifier>.+)$',
 			re.IGNORECASE )
 		match = uri_reg_ex.match(self.request.uri)
 		if not match:

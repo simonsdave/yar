@@ -57,8 +57,8 @@ class CommandLineParser(optparse.OptionParser):
 			"--key_store",
 			action="store",
 			dest="key_store",
-			default="localhost:5984/macaa",
+			default="localhost:5984/creds",
 			type="key_store",
-			help="key store - host:port/database - default = localhost:5984/macaa" )
+			help="key store - host:port/database - default = localhost:5984/creds" )
 
 #------------------------------------------------------------------- End-of-File

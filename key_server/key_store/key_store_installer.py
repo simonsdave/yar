@@ -34,7 +34,7 @@ def _is_couchdb_accessible(host="localhost:5984"):
 
 #-------------------------------------------------------------------------------
 
-def create(database="macaa", host="localhost:5984"):
+def create(database="creds", host="localhost:5984"):
 
 	_logger.info("Creating database '%s' on '%s'", database, host)
 
@@ -86,7 +86,7 @@ def create(database="macaa", host="localhost:5984"):
 
 #-------------------------------------------------------------------------------
 
-def delete(database="macaa", host="localhost:5984"):
+def delete(database="creds", host="localhost:5984"):
 
 	_logger.info("Deleting database '%s' on '%s'", database, host)
 	url = "http://%s/%s" % (host, database)

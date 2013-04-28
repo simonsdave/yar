@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-#-------------------------------------------------------------------------------
-#
-# key_server_unit_tests.py
-#
-#-------------------------------------------------------------------------------
+"""This module implements the key server's unit tests."""
 
 import logging
 logging.basicConfig(level=logging.FATAL)
@@ -139,7 +135,7 @@ class TestStatusResource(KeyServerTestCase):
 class TestMacCredsResource(KeyServerTestCase):
 
 	def url(self):
-		return "%s/v1.0/mac_creds" % KeyServerTestCase.url(self)
+		return "%s/v1.0/creds" % KeyServerTestCase.url(self)
 
 	def _create_creds(self, owner):
 		self.assertIsNotNone(owner)
