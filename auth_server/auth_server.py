@@ -20,6 +20,7 @@ import tornado.web
 from clparser import CommandLineParser
 import tsh
 import trhutil
+import jsonschemas
 
 #-------------------------------------------------------------------------------
 
@@ -74,18 +75,8 @@ class AsyncCredsRetriever(object):
 			self._callback(False, self._mac_key_identifier)
 			return
 
-		schema = {
-			"type" : "object",
-			"properties" : {
-				"is_deleted" : {"type" : "boolean"},
-				"mac_algorithm" : {"type" : "string", "choices": ["hmac-sha-1", "hmac-sha-256"]},
-				"mac_key" : {"type" : "string", "minLength": 1},
-				"mac_key_identifier" : {"type" : "string", "minLength": 1},
-				"owner" : {"type" : "string"},
-			},
-		}
 		response = trhutil.Response(response)
-		body = response.get_json_body(schema)
+		body = response.get_json_body(jsonschemas.key_server_response)
 		if body is None:
 			self._callback(False, self._mac_key_identifier)
 			return
