@@ -36,7 +36,8 @@ class RequestHandler(tornado.web.RequestHandler):
 
 	def get_request_body_if_exists(self, value_if_not_found=None):
 		"""Return the request's body if one exists otherwise return None."""
-		if 0 == self.request.headers.get("Content-Length", 0):
+		content_length = self.request.headers.get("Content-Length", 0)
+		if 0 == content_length:
 			return None
 		return self.request.body
 
@@ -44,8 +45,8 @@ class RequestHandler(tornado.web.RequestHandler):
 		"""Get the request's JSON body and convert it into a dict.
 		If there's not body, the body isn't JSON, etc then return
 		None otherwise return the dict."""
-		body = self.get_request_body_if_exists(self, None)
-		if 0 == content_length:
+		body = self.get_request_body_if_exists(None)
+		if body is None:
 			return None
 
 		content_type = self.request.headers.get("content-type", None)
