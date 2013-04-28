@@ -1,6 +1,6 @@
 """This module contains a series of generally useful and reusable
-components for use when building extensions to optparse.OptionParser
-which parse command lines."""
+components for use when building extensions to the optparse module
+which parses command lines."""
 
 #-------------------------------------------------------------------------------
 
@@ -26,5 +26,29 @@ def check_host_colon_port(option, opt, value):
 		return value
 	msg = "option %s: should be host:port format" % opt
 	raise optparse.OptionValueError(msg)
+
+#-------------------------------------------------------------------------------
+
+def _check_boolean(option, opt, value):
+	"""Type checking function for command line parser's 'boolean' type."""
+	true_reg_ex = re.compile("^(true|t|y|yes|1)$", re.IGNORECASE)
+	if true_reg_ex.match(value):
+		return True
+	false_reg_ex = re.compile("^(false|f|n|no|0)$", re.IGNORECASE)
+	if false_reg_ex.match(value):
+		return False
+	msg = "option %s: should be one of true, false, yes, no, 1 or 0" % opt
+	raise optparse.OptionValueError(msg)
+
+#-------------------------------------------------------------------------------
+
+class Option(optparse.Option):
+    """Adds hostcolonport, boolean & logginglevel types to the command
+	line parser's list of available types."""
+    TYPES = optparse.Option.TYPES + ("hostcolonport", "logginglevel", "boolean", )
+    TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
+    TYPE_CHECKER["hostcolontport"] = check_host_colon_port
+    TYPE_CHECKER["logginglevel"] = check_logging_level
+    TYPE_CHECKER["boolean"] = _check_boolean
 
 #------------------------------------------------------------------- End-of-File
