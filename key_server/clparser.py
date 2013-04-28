@@ -49,9 +49,9 @@ class CommandLineParser(optparse.OptionParser):
 			"--port",
 			action="store",
 			dest="port",
-			default="8070",
+			default=8070,
 			type=int,
-			help="database" )
+			help="port - default = 8070" )
 
 		self.add_option(
 			"--key_store",
@@ -59,6 +59,6 @@ class CommandLineParser(optparse.OptionParser):
 			dest="key_store",
 			default="localhost:5984/macaa",
 			type="key_store",
-			help="key store - host:port/database" )
+			help="key store - host:port/database - default = localhost:5984/macaa" )
 
 #------------------------------------------------------------------- End-of-File
