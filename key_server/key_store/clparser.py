@@ -10,23 +10,13 @@ import clparserutil
 
 #-------------------------------------------------------------------------------
 
-class _Option(optparse.Option):
-	"""Adds key_store and hostcolonport types to the command line parser's
-	list of available types."""
-	TYPES = optparse.Option.TYPES + ("hostcolonport","logginglevel",)
-	TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
-	TYPE_CHECKER["hostcolontport"] = clparserutil.check_host_colon_port
-	TYPE_CHECKER["logginglevel"] = clparserutil.check_logging_level
-
-#-------------------------------------------------------------------------------
-
 class CommandLineParser(optparse.OptionParser):
 
 	def __init__(self):
 		optparse.OptionParser.__init__(
 			self,
 			"usage: %prog [options]",
-			option_class=_Option)
+			option_class=clparserutil.Option)
 
 		self.add_option(
 			"--log",
@@ -53,16 +43,18 @@ class CommandLineParser(optparse.OptionParser):
 
 		self.add_option(
 			"--delete",
-			action="store_true",
+			action="store",
 			dest="delete",
 			default=False,
-			help="delete before creating" )
+			type="boolean",
+			help="delete before creating key store - default = False" )
 
 		self.add_option(
 			"--create",
-			action="store_true",
+			action="store",
 			dest="create",
 			default=True,
-			help="delete before creating" )
+			type="boolean",
+			help="create key store - default = True" )
 
 #------------------------------------------------------------------- End-of-File
