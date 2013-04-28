@@ -34,16 +34,18 @@ class RequestHandler(tornado.web.RequestHandler):
 	and responses. The utility methods focus on requests and responses
 	that use JSON."""
 
+	def get_request_body_if_exists(self, value_if_not_found=None):
+		"""Return the request's body if one exists otherwise return None."""
+		if 0 == self.request.headers.get("Content-Length", 0):
+			return None
+		return self.request.body
+
 	def get_json_request_body(self, schema=None):
 		"""Get the request's JSON body and convert it into a dict.
 		If there's not body, the body isn't JSON, etc then return
 		None otherwise return the dict."""
-		content_length = self.request.headers.get("Content-Length", 0)
+		body = self.get_request_body_if_exists(self, None)
 		if 0 == content_length:
-			return None
-
-		body = self.request.body
-		if not body:
 			return None
 
 		content_type = self.request.headers.get("content-type", None)
