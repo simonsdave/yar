@@ -3,6 +3,24 @@ JSON request and response bodies between the various services in
 the API management solution."""
 
 #-------------------------------------------------------------------------------
+"""```key_server_requent``` is a JSON schema used to validate
+create credentials requests to the key server."""
+
+key_server_create_creds_request = {
+	"type" : "object",
+	"properties" : {
+		"owner": {
+			"type": "string",
+			"minLength": 1
+		},
+	},
+	"required": [
+		"owner",
+	],
+	"additionalProperties": False,
+}
+
+#-------------------------------------------------------------------------------
 """```key_server_response``` is a JSON schema used to validate
 responses from the key server."""
 

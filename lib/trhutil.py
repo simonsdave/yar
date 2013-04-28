@@ -34,44 +34,34 @@ class RequestHandler(tornado.web.RequestHandler):
 	and responses. The utility methods focus on requests and responses
 	that use JSON."""
 
-	def get_request_body_if_exists(self, value_if_not_found=None):
-		"""Return the request's body if one exists otherwise return None."""
-		if 0 == self.request.headers.get("Content-Length", 0):
-			return None
-		return self.request.body
-
-	def get_json_request_body(self):
+	def get_json_request_body(self, schema=None):
 		"""Get the request's JSON body and convert it into a dict.
 		If there's not body, the body isn't JSON, etc then return
 		None otherwise return the dict."""
+		content_length = self.request.headers.get("Content-Length", 0)
+		if 0 == content_length:
+			return None
+
+		body = self.request.body
+		if not body:
+			return None
+
 		content_type = self.request.headers.get("content-type", None)
 		if not _is_json_utf8_content_type(content_type):
 			return None
 
-		body = self.get_request_body_if_exists(self)
-		if not body:
-			return None
-
 		try:
-			body_as_dict = json.loads(body)
+			body = json.loads(body)
 		except:
 			return None
 
-		return body_as_dict
+		if schema:
+			try:
+				jsonschema.validate(body, schema)
+			except Exception as ex:
+				return None
 
-	def get_value_from_json_request_body(self, key, value_if_not_found=None):
-		# :TODO: fix this comment 'cause it's not RST
-		"""This method is a shortcut for:
-		body = self.get_json_request_body()
-		if body is None:
-			value = value_if_not_found
-		else:
-			value = body.get(key, value_if_not)"""
-		body_as_dict = self.get_json_request_body()
-		if body_as_dict is None:
-			return value_if_not_found
-
-		return body_as_dict.get(key, value_if_not_found)
+		return body
 
 #-------------------------------------------------------------------------------
 
@@ -108,7 +98,6 @@ class Response(object):
 			try:
 				jsonschema.validate(body, schema)
 			except Exception as ex:
-				print ">>>%s<<<" % str(ex)
 				return None
 
 		return body

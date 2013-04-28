@@ -15,6 +15,7 @@ import tornado.web
 from clparser import CommandLineParser
 import tsh
 import trhutil
+import jsonschemas
 
 #-------------------------------------------------------------------------------
 
@@ -232,14 +233,16 @@ class RequestHandler(trhutil.RequestHandler):
 			self.finish()
 			return
 
-		owner = self.get_value_from_json_request_body("owner", None)
-		if owner is None:
+		body = self.get_json_request_body(jsonschemas.key_server_create_creds_request)
+		if body is None:
 			self.set_status(httplib.BAD_REQUEST)
 			self.finish()
 			return
 
 		acc = AsnycCredsCreator()
-		acc.create(owner, self._on_async_creds_create_done)
+		acc.create(
+			body["owner"],
+			self._on_async_creds_create_done)
 
 	def _on_async_creds_delete_done(self, isok):
 		if isok is None:
