@@ -76,7 +76,7 @@ class AsyncCredsRetriever(object):
 			return
 
 		response = trhutil.Response(response)
-		body = response.get_json_body(jsonschemas.key_server_response)
+		body = response.get_json_body(jsonschemas.key_server_get_creds_response)
 		if body is None:
 			self._callback(False, self._mac_key_identifier)
 			return

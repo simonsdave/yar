@@ -22,9 +22,9 @@ key_server_create_creds_request = {
 
 #-------------------------------------------------------------------------------
 """```key_server_response``` is a JSON schema used to validate
-responses from the key server."""
+the key server's response to get creds request."""
 
-key_server_response = {
+key_server_get_creds_response = {
 	"type" : "object",
 	"properties" : {
 		"is_deleted": {
