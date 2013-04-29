@@ -31,7 +31,7 @@ class CommandLineParser(optparse.OptionParser):
 			dest="port",
 			default="8000",
 			type=int,
-			help="database" )
+			help="port - default = 8000" )
 
 		self.add_option(
 			"--authmethod",
@@ -46,7 +46,7 @@ class CommandLineParser(optparse.OptionParser):
 			dest="key_server",
 			default="localhost:6969",
 			type="hostcolonport",
-			help="key server - host:port" )
+			help="key server - default = localhost:6969" )
 
 		self.add_option(
 			"--appserver",
@@ -54,6 +54,6 @@ class CommandLineParser(optparse.OptionParser):
 			dest="app_server",
 			default="localhost:8080",
 			type="hostcolonport",
-			help="app server - host:port" )
+			help="app server - default = localhost:8080" )
 
 #------------------------------------------------------------------- End-of-File
