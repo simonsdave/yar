@@ -32,7 +32,7 @@ class CommandLineParser(optparse.OptionParser):
 			dest="host",
 			default="localhost:5984",
 			type="hostcolonport",
-			help="CouchDB install" )
+			help="where's CouchDB running - default = localhost:5984" )
 
 		self.add_option(
 			"--database",
