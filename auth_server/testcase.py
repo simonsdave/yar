@@ -298,7 +298,11 @@ class TestCase(unittest.TestCase):
 				TestCase._mac_key_identifier_in_key_server_request,
 				mac_key_identifier)
 
-	def assertAuthorizationHeaderInAppServerRequest(self, expected_auth_method, expected_id):
+	def assertAuthorizationHeaderInAppServerRequest(
+		self,
+		expected_auth_method,
+		expected_owner,
+		expected_id):
 		"""The unit test that was just run caused the authentication server
 		to forward a request to the app server. The authentication server
 		made this call with a particular authorization header. This method
@@ -306,20 +310,24 @@ class TestCase(unittest.TestCase):
 		header was as expected."""
 		self.assertIsNotNone(TestCase.authorization_header_in_request_to_app_server)
 		reg_ex = re.compile(
-			'^\s*(?P<auth_method>[^\s]+)\s+(?P<id>[^\s]+)\s*$$',
+			'^\s*(?P<auth_method>[^\s]+)\s+(?P<owner>[^\s]+)\s+(?P<id>[^\s]+)\s*$$',
 			re.IGNORECASE )
 		match = reg_ex.match(TestCase.authorization_header_in_request_to_app_server)
 		self.assertIsNotNone(match)
 		assert 0 == match.start()
 		assert len(TestCase.authorization_header_in_request_to_app_server) == match.end()
-		assert 2 == len(match.groups())
+		assert 3 == len(match.groups())
 		auth_method = match.group("auth_method")
 		assert auth_method is not None
 		assert 0 < len(auth_method)
+		owner = match.group("owner")
+		assert owner is not None
+		assert 0 < len(owner)
 		id = match.group("id")
 		assert id is not None
 		assert 0 < len(id)
 		self.assertEqual(auth_method, expected_auth_method)
+		self.assertEqual(owner, expected_owner)
 		self.assertEqual(id, expected_id)
 
 	def assertAppServerRequest(self, get=False, post=False, delete=False, put=False, head=False, options=False):

@@ -98,7 +98,8 @@ class TestCase(testcase.TestCase):
 		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
 		self.assertAuthorizationHeaderInAppServerRequest(
 			self.__class__.app_server_auth_method,
-			owner)
+			owner,
+			mac_key_identifier)
 
 	def test_all_good_on_get(self):
 		mac_key_identifier = str(uuid.uuid4())
@@ -133,7 +134,8 @@ class TestCase(testcase.TestCase):
 		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
 		self.assertAuthorizationHeaderInAppServerRequest(
 			self.__class__.app_server_auth_method,
-			owner)
+			owner,
+			mac_key_identifier)
 
 	def test_all_good_on_post(self):
 		mac_key_identifier = str(uuid.uuid4())
@@ -176,7 +178,8 @@ class TestCase(testcase.TestCase):
 		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
 		self.assertAuthorizationHeaderInAppServerRequest(
 			self.__class__.app_server_auth_method,
-			owner)
+			owner,
+			mac_key_identifier)
 
 #-------------------------------------------------------------------------------
 

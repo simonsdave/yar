@@ -176,7 +176,10 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			self.request.uri)
 
 		headers = tornado.httputil.HTTPHeaders(self.request.headers)
-		headers["Authorization"] = '%s %s' % (app_server_auth_method, owner)
+		headers["Authorization"] = "%s %s %s" % (
+			app_server_auth_method,
+			owner,
+			mac_key_identifier)
 
 		http_client = tornado.httpclient.AsyncHTTPClient()
 		http_client.fetch(
