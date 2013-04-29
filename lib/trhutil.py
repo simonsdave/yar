@@ -39,6 +39,8 @@ class RequestHandler(tornado.web.RequestHandler):
 		content_length = self.request.headers.get("Content-Length", 0)
 		if 0 == content_length:
 			return value_if_not_found
+		if not self.request.body:
+			return value_if_not_found
 		return self.request.body
 
 	def get_json_request_body(self, schema=None):

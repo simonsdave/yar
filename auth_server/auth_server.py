@@ -183,7 +183,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			tornado.httpclient.HTTPRequest( 
 				url="http://%s%s" % (app_server, self.request.uri),
 				method=self.request.method, 
-				body=self.get_request_body_if_exists(""),
+				body=self.get_request_body_if_exists(None),
 				headers=headers,
 				follow_redirects=False),
 			callback=self._on_app_server_done)
