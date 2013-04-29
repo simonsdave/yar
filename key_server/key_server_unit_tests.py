@@ -137,6 +137,27 @@ class TestMacCredsResource(KeyServerTestCase):
 	def url(self):
 		return "%s/v1.0/creds" % KeyServerTestCase.url(self)
 
+	def _get_creds(self, mac_key_identifier, expected_to_be_found=True, get_deleted=False):
+		self.assertIsNotNone(mac_key_identifier)
+		self.assertTrue(0 < len(mac_key_identifier))
+		url = "%s/%s" % (self.url(), mac_key_identifier)
+		if get_deleted:
+			url = "%s?deleted=true" % url
+		http_client = httplib2.Http()
+		response, content = http_client.request(url, "GET")
+		if not expected_to_be_found:
+			self.assertTrue(httplib.NOT_FOUND == response.status)
+			return None
+		self.assertTrue(httplib.OK == response.status)
+		self.assertTrue("content-type" in response)
+		content_type = response["content-type"]
+		self.assertIsJsonUtf8ContentType(content_type)
+		creds = json.loads(content)
+		self.assertIsNotNone(creds)
+		self.assertTrue("mac_key_identifier" in creds)
+		self.assertEqual(mac_key_identifier, creds["mac_key_identifier"])
+		return creds
+
 	def _create_creds(self, owner):
 		self.assertIsNotNone(owner)
 		self.assertTrue(0 < len(owner))
@@ -169,6 +190,9 @@ class TestMacCredsResource(KeyServerTestCase):
 		mac_key_identifier = creds.get('mac_key_identifier', None)
 		self.assertIsNotNone(mac_key_identifier)
 		self.assertTrue(location.endswith(mac_key_identifier))
+
+		# this is really over the top but that's the way I roll:-)
+		self._get_creds(mac_key_identifier)
 
 		return (creds, location)
 
@@ -353,6 +377,16 @@ class TestMacCredsResource(KeyServerTestCase):
 		all_creds = self._get_all_creds()
 		self.assertIsNotNone(all_creds)
 		self.assertEqual(0, len(all_creds))
+
+	def test_deleted_creds_not_returned_by_default_on_get(self):
+		owner = str(uuid.uuid4()).replace("-","")
+		(creds_on_create, location_on_create) = self._create_creds(owner)
+		mac_key_identifier = creds_on_create["mac_key_identifier"]
+		creds_on_get_before_delete = self._get_creds(mac_key_identifier)
+		self.assertIsNotNone(creds_on_get_before_delete)
+		self._delete_creds(mac_key_identifier)
+		self._get_creds(mac_key_identifier, expected_to_be_found=False)
+		self._get_creds(mac_key_identifier, get_deleted=True)
 
 #-------------------------------------------------------------------------------
 

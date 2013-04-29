@@ -13,6 +13,20 @@ import jsonschema
 
 #-------------------------------------------------------------------------------
 
+def _is_json_content_type(content_type):
+	"""Returns True if ```content_type``` is a valid json
+	content type otherwise returns False."""
+	if content_type is None:
+		return False
+	json_content_type_reg_ex = re.compile(
+		"^\s*application/json\s*$",
+		re.IGNORECASE )
+	if not json_content_type_reg_ex.match(content_type):
+		return False
+	return True
+
+#-------------------------------------------------------------------------------
+
 def _is_json_utf8_content_type(content_type):
 	"""Returns True if ```content_type``` is a valid utf8 json
 	content type otherwise returns False."""
@@ -38,33 +52,37 @@ class RequestHandler(tornado.web.RequestHandler):
 		"""Return the request's body if one exists otherwise return None."""
 		content_length = self.request.headers.get("Content-Length", 0)
 		if 0 == content_length:
-			return value_if_not_found
+			transfer_encoding = self.request.headers.get(
+				"Transfer-Encoding",
+				None)
+			if not transfer_encoding:
+				return value_if_not_found
 		if not self.request.body:
 			return value_if_not_found
 		return self.request.body
 
-	def get_json_request_body(self, schema=None):
+	def get_json_request_body(self, value_if_not_found=None, schema=None):
 		"""Get the request's JSON body and convert it into a dict.
 		If there's not body, the body isn't JSON, etc then return
 		None otherwise return the dict."""
 		body = self.get_request_body_if_exists(None)
 		if body is None:
-			return None
+			return value_if_not_found
 
 		content_type = self.request.headers.get("content-type", None)
 		if not _is_json_utf8_content_type(content_type):
-			return None
+			return value_if_not_found
 
 		try:
 			body = json.loads(body)
 		except:
-			return None
+			return value_if_not_found
 
 		if schema:
 			try:
 				jsonschema.validate(body, schema)
 			except Exception as ex:
-				return None
+				return value_if_not_found
 
 		return body
 
@@ -78,32 +96,40 @@ class Response(object):
 		object.__init__(self)
 		self._response = response
 
-	def get_json_body(self, schema=None):
+	def get_json_body(self, value_if_not_found=None, schema=None):
 		"""Extract and return the JSON document from a
 		```tornado.httpclient.HTTPResponse``` as well as optionally
 		validating the document against a schema. If there's
 		an error along the way return None."""
+		if self._response is None:
+			return value_if_not_found
+
 		if httplib.OK != self._response.code:
-			return None
+			return value_if_not_found
 
-		content_length = self._response.headers.get("content-length", 0)
+		content_length = self._response.headers.get("Content-length", 0)
 		if 0 == content_length:
-			return None
+			transfer_encoding = self._response.headers.get(
+				"Transfer-Encoding",
+				None)
+			if not transfer_encoding:
+				return value_if_not_found
 
-		content_type = self._response.headers.get("content-type", None)
+		content_type = self._response.headers.get("Content-type", None)
 		if not _is_json_utf8_content_type(content_type):
-			return None
+			if not _is_json_content_type(content_type):
+				return value_if_not_found
 
 		try:
 			body = json.loads(self._response.body)
 		except:
-			return None
+			return value_if_not_found
 
 		if schema:
 			try:
 				jsonschema.validate(body, schema)
 			except Exception as ex:
-				return None
+				return value_if_not_found
 
 		return body
 

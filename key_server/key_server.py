@@ -94,12 +94,14 @@ class AsyncCredsRetriever(object):
 		callback,
 		mac_key_identifier=None,
 		owner=None,
+		is_filter_out_deleted=True,
 		is_filter_out_non_model_properties=False):
 
 		object.__init__(self)
 
 		self._callback = callback
 		self._is_filter_out_non_model_properties = is_filter_out_non_model_properties
+		self._is_filter_out_deleted = is_filter_out_deleted
 
 		if mac_key_identifier:
 			url = "http://%s/%s" % (_key_store, mac_key_identifier)
@@ -112,31 +114,43 @@ class AsyncCredsRetriever(object):
 			else:
 				url = "http://%s/_design/creds/_view/all" % _key_store
 				
+		headers = {
+			"Accept": "application/json",
+			"Accept-Encoding": "charset=utf8",
+		}
 		http_client = tornado.httpclient.AsyncHTTPClient()
 		http_client.fetch(
 			tornado.httpclient.HTTPRequest(
 				url,
 				method="GET",
+				headers=headers,
 				follow_redirects=False),
 			callback=self._my_callback)
 
 	def _my_callback(self, response):
-		if response.code != httplib.OK:
+		response = trhutil.Response(response)
+		body = response.get_json_body()
+		if not body:
 			self._callback(None)
 			return
 
-		body_as_dict = json.loads(response.body)
-		if 'rows' in body_as_dict:
+		if 'rows' in body:
 			rv = []
-			for row in body_as_dict['rows']:
+			for row in body['rows']:
 				doc = row['value']
+				if doc.get("is_deleted", False):
+					if self._is_filter_out_deleted:
+						continue	
 				if self._is_filter_out_non_model_properties:
 					doc = self._filter_out_non_model_properties(doc)
 				rv.append(doc)
 		else:
-			if self._is_filter_out_non_model_properties:
-				body_as_dict = self._filter_out_non_model_properties(body_as_dict)
-			rv = body_as_dict
+			if body.get("is_deleted", False) and self._is_filter_out_deleted:
+				rv = None
+			else:
+				if self._is_filter_out_non_model_properties:
+					body = self._filter_out_non_model_properties(body)
+				rv = body
 
 		self._callback(rv)
 
@@ -188,7 +202,8 @@ class AsyncCredsDeleter(object):
 		acr = AsyncCredsRetriever()
 		acr.fetch(
 			self._on_async_creds_retriever_done,
-			mac_key_identifier=mac_key_identifier)
+			mac_key_identifier=mac_key_identifier,
+			is_filter_out_deleted=False)
 
 #-------------------------------------------------------------------------------
 
@@ -211,6 +226,7 @@ class RequestHandler(trhutil.RequestHandler):
 			self._on_async_creds_retrieve_done,
 			mac_key_identifier=mac_key_identifier,
 			owner=self.get_argument("owner", None),
+			is_filter_out_deleted=False if self.get_argument("deleted", None) else True,
 			is_filter_out_non_model_properties=True)
 
 	def _on_async_creds_create_done(self, creds):
@@ -233,8 +249,10 @@ class RequestHandler(trhutil.RequestHandler):
 			self.finish()
 			return
 
-		body = self.get_json_request_body(jsonschemas.key_server_create_creds_request)
-		if body is None:
+		body = self.get_json_request_body(
+			None,
+			jsonschemas.key_server_create_creds_request)
+		if not body:
 			self.set_status(httplib.BAD_REQUEST)
 			self.finish()
 			return
