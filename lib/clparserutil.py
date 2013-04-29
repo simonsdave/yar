@@ -10,7 +10,16 @@ import optparse
 
 #-------------------------------------------------------------------------------
 
-def check_logging_level(option, opt, value):
+def _check_couchdb(option, opt, value):
+    """Type checking function for command line parser's 'couchdb' type."""
+    if re.match("^[^\s]+\:\d+\/[^\s]+$", value):
+        return value
+    msg = "option %s: required format is host:port/database" % opt
+    raise optparse.OptionValueError(msg)
+
+#-------------------------------------------------------------------------------
+
+def _check_logging_level(option, opt, value):
 	"""Type checking function for command line parser's 'logginglevel' type."""
 	if re.match("^(DEBUG|INFO|WARNING|ERROR|CRITICAL|FATAL)$", value):
 		return getattr(logging, value)
@@ -19,7 +28,7 @@ def check_logging_level(option, opt, value):
 
 #-------------------------------------------------------------------------------
 
-def check_host_colon_port(option, opt, value):
+def _check_host_colon_port(option, opt, value):
 	"""Type checking function for command line parser's 'hostcolonport' type."""
 	reg_ex = re.compile("^[^\s]+\:\d+$")
 	if reg_ex.match(value):
@@ -43,12 +52,14 @@ def _check_boolean(option, opt, value):
 #-------------------------------------------------------------------------------
 
 class Option(optparse.Option):
-    """Adds hostcolonport, boolean & logginglevel types to the command
-	line parser's list of available types."""
-    TYPES = optparse.Option.TYPES + ("hostcolonport", "logginglevel", "boolean", )
+    """Adds couchdb, hostcolonport, boolean & logginglevel types to the
+	command line parser's list of available types."""
+    new_types = ("hostcolonport", "logginglevel", "boolean","couchdb",)
+    TYPES = optparse.Option.TYPES + new_types
     TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
-    TYPE_CHECKER["hostcolontport"] = check_host_colon_port
-    TYPE_CHECKER["logginglevel"] = check_logging_level
+    TYPE_CHECKER["hostcolontport"] = _check_host_colon_port
+    TYPE_CHECKER["logginglevel"] = _check_logging_level
     TYPE_CHECKER["boolean"] = _check_boolean
+    TYPE_CHECKER["couchdb"] = _check_couchdb
 
 #------------------------------------------------------------------- End-of-File

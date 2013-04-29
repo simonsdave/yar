@@ -9,25 +9,6 @@ import clparserutil
 
 #-------------------------------------------------------------------------------
 
-def _check_key_store(option, opt, value):
-	"""Type checking function for command line parser's 'key_store' type."""
-	if re.match("^[^\s]+\:\d+\/[^\s]+$", value):
-		return value
-	msg = "option %s: required format is host:port/database" % opt
-	raise optparse.OptionValueError(msg)
-
-#-------------------------------------------------------------------------------
-
-class _Option(optparse.Option):
-	"""Adds key_store and logginglevel types to the command line parser's
-	list of available types."""
-	TYPES = optparse.Option.TYPES + ("key_store","logginglevel",)
-	TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
-	TYPE_CHECKER["key_store"] = _check_key_store
-	TYPE_CHECKER["logginglevel"] = clparserutil.check_logging_level
-
-#-------------------------------------------------------------------------------
-
 class CommandLineParser(optparse.OptionParser):
 	"""This class parses the key server's command line."""
 
@@ -35,7 +16,7 @@ class CommandLineParser(optparse.OptionParser):
 		optparse.OptionParser.__init__(
 			self,
 			"usage: %prog [options]",
-			option_class=_Option)
+			option_class=clparserutil.Option)
 
 		self.add_option(
 			"--log",
@@ -58,7 +39,7 @@ class CommandLineParser(optparse.OptionParser):
 			action="store",
 			dest="key_store",
 			default="localhost:5984/creds",
-			type="key_store",
+			type="couchdb",
 			help="key store - host:port/database - default = localhost:5984/creds" )
 
 #------------------------------------------------------------------- End-of-File
