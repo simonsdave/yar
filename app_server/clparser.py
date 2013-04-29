@@ -11,22 +11,13 @@ import clparserutil
 
 #-------------------------------------------------------------------------------
 
-class _Option(optparse.Option):
-	"""Adds logging_level types to the command line parser's
-	list of available types."""
-	TYPES = optparse.Option.TYPES + ("logginglevel",)
-	TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
-	TYPE_CHECKER["logginglevel"] = clparserutil.check_logging_level
-
-#-------------------------------------------------------------------------------
-
 class CommandLineParser(optparse.OptionParser):
 
 	def __init__(self):
 		optparse.OptionParser.__init__(
 			self,
 			"usage: %prog [options]",
-			option_class=_Option)
+			option_class=clparserutil.Option)
 
 		self.add_option(
 			"--log",
