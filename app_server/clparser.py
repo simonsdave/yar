@@ -33,6 +33,6 @@ class CommandLineParser(optparse.OptionParser):
 			dest="port",
 			default=8080,
 			type=int,
-			help="port" )
+			help="port - default = 8080" )
 
 #------------------------------------------------------------------- End-of-File
