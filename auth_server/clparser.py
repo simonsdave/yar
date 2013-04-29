@@ -8,16 +8,6 @@ import clparserutil
 
 #-------------------------------------------------------------------------------
 
-class _Option(optparse.Option):
-	"""Adds hostcolonport and logginglevel types to the command line parser's
-	list of available types."""
-	TYPES = optparse.Option.TYPES + ("hostcolonport","logginglevel",)
-	TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
-	TYPE_CHECKER["hostcolonport"] = clparserutil.check_host_colon_port
-	TYPE_CHECKER["logginglevel"] = clparserutil.check_logging_level
-
-#-------------------------------------------------------------------------------
-
 class CommandLineParser(optparse.OptionParser):
 	"""This class parses the auth server's command line."""
 
@@ -25,7 +15,7 @@ class CommandLineParser(optparse.OptionParser):
 		optparse.OptionParser.__init__(
 			self,
 			"usage: %prog [options]",
-			option_class=_Option)
+			option_class=clparserutil.Option)
 
 		self.add_option(
 			"--log",
