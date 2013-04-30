@@ -41,11 +41,18 @@ class RequestHandler(tornado.web.RequestHandler):
 			str(uuid.uuid4()).replace("-",""))
 		self.set_header("Location", location_url)
 		self.set_status(httplib.CREATED)
+		self.get()
 
 	def put(self):
 		self.get()
 
 	def delete(self):
+		self.get()
+
+	def head(self):
+		self._get(False)
+
+	def options(self):
 		self.get()
 
 #-------------------------------------------------------------------------------
