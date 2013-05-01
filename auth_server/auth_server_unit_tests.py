@@ -2,7 +2,7 @@
 """This module contains the auth server's unit tests."""
 
 import logging
-logging.basicConfig(level=logging.FATAL)
+logging.basicConfig(level=logging.INFO)
 import unittest
 import httplib
 import httplib2
@@ -89,7 +89,7 @@ class TestCase(testcase.TestCase):
 			host,
 			port,
 			mac.Ext(content_type, body))
-		my_mac = mac.MAC(
+		my_mac = mac.MAC.compute(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
@@ -137,7 +137,7 @@ class TestCase(testcase.TestCase):
 			host,
 			port,
 			mac.Ext(content_type, body))
-		my_mac = mac.MAC(
+		my_mac = mac.MAC.compute(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
@@ -185,7 +185,7 @@ class TestCase(testcase.TestCase):
 			host,
 			port,
 			mac.Ext(content_type, body))
-		my_mac = mac.MAC(
+		my_mac = mac.MAC.compute(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)

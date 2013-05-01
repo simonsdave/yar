@@ -36,32 +36,11 @@ class TimestampTestCase(unittest.TestCase):
 
 #-------------------------------------------------------------------------------
 
-class MacTestCase(unittest.TestCase):
+class MACTestCase(unittest.TestCase):
 
 	def _uuid(self):
 		return str(uuid.uuid4()).replace("-","")
 	
-	def test_sha1_mac_algorithm_string_ok(self):
-		my_mac = mac.MAC(
-			self._uuid(),
-			"hmac-sha-1",
-			self._uuid())
-		self.assertTrue(hashlib.sha1 == my_mac.mac_algorithm)
-
-	def test_sha256_mac_algorithm_string_ok(self):
-		my_mac = mac.MAC(
-			self._uuid(),
-			"hmac-sha-256",
-			self._uuid())
-		self.assertTrue(hashlib.sha256 == my_mac.mac_algorithm)
-
-	def test_bad_mac_algorithm_string_ok(self):
-		my_mac = mac.MAC(
-			self._uuid(),
-			self._uuid(),
-			self._uuid())
-		self.assertTrue(hashlib.sha1 == my_mac.mac_algorithm)
-
 #-------------------------------------------------------------------------------
 
 if __name__ == "__main__":

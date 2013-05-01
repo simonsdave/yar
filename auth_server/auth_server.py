@@ -138,14 +138,25 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			host,
 			port,
 			mac.Ext(content_type, body))
-		my_mac = mac.MAC(
+		my_mac = mac.MAC.compute(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
 
+		if self._parsed_auth_header_value.mac != my_mac:
+			_logger.error(
+				"For '%s' MAC in request '%s' doesn't match computed MAC '%s'",
+				self.request.uri,
+				self._parsed_auth_header_value.mac,
+				my_mac)
+			self.set_status(httplib.UNAUTHORIZED)
+			self.finish()
+			return
+
 		_logger.info(
-			"Authorization successful for '%s'",
-			self.request.full_url())
+			"Authorization successful for '%s' and MAC '%s'",
+			self.request.full_url(),
+			my_mac)
 
 		headers = tornado.httputil.HTTPHeaders(self.request.headers)
 		headers["Authorization"] = "%s %s %s" % (

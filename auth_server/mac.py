@@ -109,25 +109,35 @@ class MAC(object):
 	"""Implements concept of a message authentication code according to
 	http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02"""
 
-	def __init__(self, mac_key, mac_algorithm, normalized_request_string):
+	def __init__(self, base64_encoded_mac):
 		object.__init__(self)
+		self._base64_encoded_mac = base64_encoded_mac
 
-		self.mac_key = mac_key
-		self.mac_algorithm = \
+	@classmethod
+	def compute(cls, mac_key, mac_algorithm, normalized_request_string):
+
+		mac_algorithm = \
 			hashlib.sha256 if mac_algorithm == "hmac-sha-256" \
 			else hashlib.sha1
-		self.normalized_request_string = normalized_request_string
 
 		# :TODO: the str() on the mac key below seems required because of
         # a bug introducted in python 2.6 as per http://bugs.python.org/issue5285
-		my_hmac = hmac.new(
-			str(self.mac_key),
-			str(self.normalized_request_string),
-			self.mac_algorithm)
-		self._base64_encoded_hmac = base64.b64encode(my_hmac.digest())
+		mac = hmac.new(
+			str(mac_key),
+			str(normalized_request_string),
+			mac_algorithm)
+		base64_encoded_mac = base64.b64encode(mac.digest())
+
+		return cls(base64_encoded_mac)
 
 	def __str__(self):
-		return self._base64_encoded_hmac
+		return self._base64_encoded_mac
+
+	def __cmp__(self, other):
+		if other.__class__ != self.__class__:
+			# this catches other == None too
+			return False
+		return self._base64_encoded_mac == other._base64_encoded_mac
 			
 #-------------------------------------------------------------------------------
 
@@ -199,6 +209,7 @@ class AuthHeaderValue(object):
 		mac = match.group("mac")
 		assert mac
 		assert 0 < len(mac)
+		mac = MAC(mac)
 
 		return cls(mac_key_identifier, ts, nonce, ext, mac)
 
