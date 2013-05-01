@@ -93,8 +93,11 @@ class TestCase(testcase.TestCase):
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
-		auth_header_value = mac.AuthHeader(
+		auth_header_value = mac.AuthHeaderValue(
 			mac_key_identifier,
+			normalized_request_string.ts,
+			normalized_request_string.nonce,
+			normalized_request_string.ext,
 			my_mac)
 		auth_header_value = str(auth_header_value)
 		http_client = httplib2.Http()
@@ -138,8 +141,11 @@ class TestCase(testcase.TestCase):
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
-		auth_header_value = mac.AuthHeader(
+		auth_header_value = mac.AuthHeaderValue(
 			mac_key_identifier,
+			normalized_request_string.ts,
+			normalized_request_string.nonce,
+			normalized_request_string.ext,
 			my_mac)
 		auth_header_value = str(auth_header_value)
 		http_client = httplib2.Http()
@@ -183,8 +189,11 @@ class TestCase(testcase.TestCase):
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
-		auth_header_value = mac.AuthHeader(
+		auth_header_value = mac.AuthHeaderValue(
 			mac_key_identifier,
+			normalized_request_string.ts,
+			normalized_request_string.nonce,
+			normalized_request_string.ext,
 			my_mac)
 		auth_header_value = str(auth_header_value)
 		http_client = httplib2.Http()

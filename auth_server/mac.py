@@ -14,6 +14,7 @@ import datetime
 import hashlib
 import hmac
 import base64
+import re
 
 #-------------------------------------------------------------------------------
 
@@ -131,25 +132,75 @@ class MAC(object):
 			
 #-------------------------------------------------------------------------------
 
-class AuthHeader(object):
+class AuthHeaderValue(object):
 	"""As per http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02 create
 	the value for the HTTP Authorization header using and an existing hmac."""
 
-	def __init__(self, mac_key_identifier, mac):
+	def __init__(self, mac_key_identifier, ts, nonce, ext, mac):
 		object.__init__(self)
 
 		self.mac_key_identifier = mac_key_identifier
+		self.ts = ts
+		self.nonce = nonce
+		self.ext = ext
 		self.mac = mac
 
 		fmt = 'MAC id="%s", ts="%s", nonce="%s", ext="%s", mac="%s"'
 		self._value = fmt % (
 			self.mac_key_identifier,
-			self.mac.normalized_request_string.ts,
-			self.mac.normalized_request_string.nonce,
-			self.mac.normalized_request_string.ext,
-			self.mac)
+			self.ts,
+			self.nonce,
+			self.ext,
+			self.mac) 
 
 	def __str__(self):
 		return self._value
+
+	@classmethod
+	def parse(cls, value):
+		"""Given an authorization header value parse it and
+		create an AuthHeaderValue. If ```value``` is None or
+		in an unrecognized format return None."""
+		if not value:
+			return None
+		
+		reg_ex = re.compile(
+			'^\s*MAC\s+id\s*\=\s*"(?P<mac_key_identifier>[^"]+)"\s*\,\s*ts\s*\=\s*"(?P<ts>[^"]+)"\s*\,\s*nonce\s*\=\s*"(?P<nonce>[^"]+)"\s*\,\s*ext\s*\=\s*"(?P<ext>[^"]*)"\s*\,\s*mac\s*\=\s*"(?P<mac>[^"]+)"\s*$',
+			re.IGNORECASE)
+		match = reg_ex.match(value)
+		if not match:
+			_logger.info(
+				"Invalid format for authorization header '%s'",
+				value)
+			return False
+		_logger.info(
+			"Valid format for authorization header '%s'",
+			value)
+
+		assert 0 == match.start()
+		assert len(value) == match.end()
+		assert 5 == len(match.groups())
+
+		mac_key_identifier = match.group("mac_key_identifier")
+		assert mac_key_identifier
+		assert 0 < len(mac_key_identifier)
+
+		ts = match.group("ts")
+		assert ts
+		assert 0 < len(ts)
+
+		nonce = match.group("nonce")
+		assert nonce
+		assert 0 < len(nonce)
+
+		ext = match.group("ext")
+		assert ext is not None
+		assert 0 <= len(ext)
+
+		mac = match.group("mac")
+		assert mac
+		assert 0 < len(mac)
+
+		return cls(mac_key_identifier, ts, nonce, ext, mac)
 
 #------------------------------------------------------------------- End-of-File

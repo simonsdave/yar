@@ -16,11 +16,12 @@ import tornado.httpserver
 import tornado.httpclient
 import tornado.ioloop
 import tornado.web
+import jsonschemas
 
 from clparser import CommandLineParser
 import tsh
 import trhutil
-import jsonschemas
+import mac
 
 #-------------------------------------------------------------------------------
 
@@ -98,49 +99,6 @@ class AsyncCredsRetriever(object):
 
 class AuthRequestHandler(trhutil.RequestHandler):
 
-	def _extract_authorization_header_value(self):
-		authorization_header_value = self.request.headers.get("Authorization", None)
-		if authorization_header_value is None:
-			return False
-		
-		reg_ex = re.compile(
-			'^\s*MAC\s+id\s*\=\s*"(?P<id>[^"]+)"\s*\,\s*ts\s*\=\s*"(?P<ts>[^"]+)"\s*\,\s*nonce\s*\=\s*"(?P<nonce>[^"]+)"\s*\,\s*ext\s*\=\s*"(?P<ext>[^"]*)"\s*\,\s*mac\s*\=\s*"(?P<mac>[^"]+)"\s*$',
-			re.IGNORECASE)
-		match = reg_ex.match(authorization_header_value)
-		if not match:
-			_logger.info(
-				"Invalid format for authorization header '%s'",
-				authorization_header_value)
-			return False
-		_logger.info(
-			"Valid format for authorization header '%s'",
-			authorization_header_value)
-
-		assert 0 == match.start()
-		assert len(authorization_header_value) == match.end()
-		assert 5 == len(match.groups())
-
-		self._auth_header_id = match.group("id")
-		assert self._auth_header_id is not None
-		assert 0 < len(self._auth_header_id)
-
-		self._auth_header_ts = match.group("ts")
-		assert self._auth_header_ts is not None
-		assert 0 < len(self._auth_header_ts)
-
-		self._auth_header_nonce = match.group("nonce")
-		assert self._auth_header_nonce is not None
-		assert 0 < len(self._auth_header_nonce)
-
-		self._auth_header_ext = match.group("ext")
-		assert self._auth_header_ext is not None
-
-		self._auth_header_mac = match.group("mac")
-		assert self._auth_header_mac is not None
-		assert 0 < len(self._auth_header_mac)
-
-		return True
-
 	def _on_app_server_done(self, response):
 		if response.error:
 			self.set_status(httplib.INTERNAL_SERVER_ERROR) 
@@ -193,13 +151,17 @@ class AuthRequestHandler(trhutil.RequestHandler):
 
 	@tornado.web.asynchronous
 	def _handle_request(self):
-		if not self._extract_authorization_header_value():
+		self._parsed_auth_header_value = mac.AuthHeaderValue.parse(
+			self.request.headers.get("Authorization", None))
+		if not self._parsed_auth_header_value:
 			self.set_status(httplib.UNAUTHORIZED)
 			self.finish()
 			return
 
 		acr = AsyncCredsRetriever()
-		acr.fetch(self._on_async_creds_retriever_done, self._auth_header_id)
+		acr.fetch(
+			self._on_async_creds_retriever_done,
+			self._parsed_auth_header_value.mac_key_identifier)
 
 	def get(self):
 		self._handle_request()
