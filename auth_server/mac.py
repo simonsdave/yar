@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """This module is used to generate the message authentication code (MAC)
 used in HTTP MAC access authentication scheme. See [1] for details.
 
