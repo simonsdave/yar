@@ -10,6 +10,7 @@ logging.basicConfig(level=logging.FATAL)
 import unittest
 import string
 import time
+import uuid
 import hashlib
 
 import mac
@@ -36,42 +37,30 @@ class TimestampTestCase(unittest.TestCase):
 #-------------------------------------------------------------------------------
 
 class MacTestCase(unittest.TestCase):
+
+	def _uuid(self):
+		return str(uuid.uuid4()).replace("-","")
 	
 	def test_sha1_mac_algorithm_string_ok(self):
-		x = mac.Mac(
-			"dave",
+		my_mac = mac.MAC(
+			self._uuid(),
 			"hmac-sha-1",
-			mac.Timestamp(),
-			mac.Nonce(),
-			"GET",
-			"/dave.html",
-			"simonsfamily.ca",
-			80)
-		self.assertTrue(hashlib.sha1 == x._mac_algorithm)
+			self._uuid())
+		self.assertTrue(hashlib.sha1 == my_mac._mac_algorithm)
 
 	def test_sha256_mac_algorithm_string_ok(self):
-		x = mac.Mac(
-			"dave",
+		my_mac = mac.MAC(
+			self._uuid(),
 			"hmac-sha-256",
-			mac.Timestamp(),
-			mac.Nonce(),
-			"GET",
-			"/dave.html",
-			"simonsfamily.ca",
-			80)
-		self.assertTrue(hashlib.sha256 == x._mac_algorithm)
+			self._uuid())
+		self.assertTrue(hashlib.sha256 == my_mac._mac_algorithm)
 
-	def test_invalid_mac_algorithm(self):
-		with self.assertRaises(AssertionError):
-			x = mac.Mac(
-				"dave",
-				"hmac-sha-whatever",
-				mac.Timestamp(),
-				mac.Nonce(),
-				"GET",
-				"/dave.html",
-				"simonsfamily.ca",
-				80)
+	def test_bad_mac_algorithm_string_ok(self):
+		my_mac = mac.MAC(
+			self._uuid(),
+			self._uuid(),
+			self._uuid())
+		self.assertTrue(hashlib.sha1 == my_mac._mac_algorithm)
 
 #-------------------------------------------------------------------------------
 

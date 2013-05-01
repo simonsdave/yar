@@ -74,19 +74,28 @@ class TestCase(testcase.TestCase):
 		uri = "/whatever"
 		host = "localhost"
 		port = self.__class__.auth_server.port
+		content_type = None
+		body = None
 
 		testcase.TestCase.mac_key_in_response_to_key_server_request = mac_key
 		testcase.TestCase.mac_algorithm_response_to_key_server_request = "dave-%s" % mac_algorithm
 		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
-		auth_header_value = mac.AuthHeader(
-			mac_key_identifier,
-			mac_key,
-			mac_algorithm,
+		normalized_request_string = mac.NormalizedRequestString(
+			mac.Timestamp(),
+			mac.Nonce(),
 			http_method,
 			uri,
 			host,
-			port)
+			port,
+			mac.Ext(content_type, body))
+		my_mac = mac.MAC(
+			mac_key,
+			mac_algorithm,
+			normalized_request_string)
+		auth_header_value = mac.AuthHeader(
+			mac_key_identifier,
+			my_mac)
 		auth_header_value = str(auth_header_value)
 		http_client = httplib2.Http()
 		response, content = http_client.request(
@@ -110,19 +119,28 @@ class TestCase(testcase.TestCase):
 		uri = "/whatever"
 		host = "localhost"
 		port = self.__class__.auth_server.port
+		content_type = None
+		body = None
 
 		testcase.TestCase.mac_key_in_response_to_key_server_request = mac_key
 		testcase.TestCase.mac_algorithm_response_to_key_server_request = mac_algorithm
 		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
-		auth_header_value = mac.AuthHeader(
-			mac_key_identifier,
-			mac_key,
-			mac_algorithm,
+		normalized_request_string = mac.NormalizedRequestString(
+			mac.Timestamp(),
+			mac.Nonce(),
 			http_method,
 			uri,
 			host,
-			port)
+			port,
+			mac.Ext(content_type, body))
+		my_mac = mac.MAC(
+			mac_key,
+			mac_algorithm,
+			normalized_request_string)
+		auth_header_value = mac.AuthHeader(
+			mac_key_identifier,
+			my_mac)
 		auth_header_value = str(auth_header_value)
 		http_client = httplib2.Http()
 		response, content = http_client.request(
@@ -153,16 +171,22 @@ class TestCase(testcase.TestCase):
 		testcase.TestCase.mac_algorithm_response_to_key_server_request = mac_algorithm
 		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
-		auth_header_value = mac.AuthHeader(
-			mac_key_identifier,
-			mac_key,
-			mac_algorithm,
+		normalized_request_string = mac.NormalizedRequestString(
+			mac.Timestamp(),
+			mac.Nonce(),
 			http_method,
 			uri,
 			host,
 			port,
-			content_type,
-			body)
+			mac.Ext(content_type, body))
+		my_mac = mac.MAC(
+			mac_key,
+			mac_algorithm,
+			normalized_request_string)
+		auth_header_value = mac.AuthHeader(
+			mac_key_identifier,
+			my_mac)
+		auth_header_value = str(auth_header_value)
 		http_client = httplib2.Http()
 		headers = {
 			"Authorization": str(auth_header_value),
