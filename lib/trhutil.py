@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """This module contains a series of utilities for writing
 Tornado request handlers."""
 
