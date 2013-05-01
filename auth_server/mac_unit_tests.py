@@ -46,21 +46,21 @@ class MacTestCase(unittest.TestCase):
 			self._uuid(),
 			"hmac-sha-1",
 			self._uuid())
-		self.assertTrue(hashlib.sha1 == my_mac._mac_algorithm)
+		self.assertTrue(hashlib.sha1 == my_mac.mac_algorithm)
 
 	def test_sha256_mac_algorithm_string_ok(self):
 		my_mac = mac.MAC(
 			self._uuid(),
 			"hmac-sha-256",
 			self._uuid())
-		self.assertTrue(hashlib.sha256 == my_mac._mac_algorithm)
+		self.assertTrue(hashlib.sha256 == my_mac.mac_algorithm)
 
 	def test_bad_mac_algorithm_string_ok(self):
 		my_mac = mac.MAC(
 			self._uuid(),
 			self._uuid(),
 			self._uuid())
-		self.assertTrue(hashlib.sha1 == my_mac._mac_algorithm)
+		self.assertTrue(hashlib.sha1 == my_mac.mac_algorithm)
 
 #-------------------------------------------------------------------------------
 

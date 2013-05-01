@@ -47,6 +47,35 @@ class RequestHandler(tornado.web.RequestHandler):
 	and responses. The utility methods focus on requests and responses
 	that use JSON."""
 
+	def get_request_host_and_port(
+		self,
+		host_if_not_found=None,
+		port_if_not_found=None):
+		"""Return the request's 'Host' HTTP header parsed into its
+		host and port components."""
+		value = self.request.headers.get("Host", None)
+		if not value:
+			return (host_if_not_found, port_if_not_found)
+
+		reg_ex_pattern = r"^\s*(?P<host>[^\:])(?:\:(?P<port>[^\s]+))?\s*$"
+		reg_ex = re.compile(reg_ex_pattern)
+		match = reg_ex.match(value)
+		if not match:
+			return (host_if_not_found, port_if_not_found)
+
+		assert 0 == match.start()
+		assert len(value) == match.end()
+		number_matches = len(match.groups())
+		assert (1 == number_matches) or (2 == number_matches) 
+
+		host = match.group("host")
+		assert host
+		assert 0 < len(host)
+
+		port = port_if_not_found if 1 == number_matches else match.group("port")
+
+		return (host, port)
+
 	def get_request_body_if_exists(self, value_if_not_found=None):
 		"""Return the request's body if one exists otherwise return None."""
 		content_length = self.request.headers.get("Content-Length", 0)

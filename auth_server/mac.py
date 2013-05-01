@@ -106,24 +106,24 @@ class NormalizedRequestString(object):
 #-------------------------------------------------------------------------------
 
 class MAC(object):
-	"""Implements notion of a message authentication code according to
+	"""Implements concept of a message authentication code according to
 	http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02"""
 
 	def __init__(self, mac_key, mac_algorithm, normalized_request_string):
 		object.__init__(self)
 
 		self.mac_key = mac_key
-		self.mac_algorithm = mac_algorithm
-		self.normalized_request_string = normalized_request_string
-
-		self._mac_algorithm = \
+		self.mac_algorithm = \
 			hashlib.sha256 if mac_algorithm == "hmac-sha-256" \
 			else hashlib.sha1
+		self.normalized_request_string = normalized_request_string
 
+		# :TODO: the str() on the mac key below seems required because of
+        # a bug introducted in python 2.6 as per http://bugs.python.org/issue5285
 		my_hmac = hmac.new(
-			self.mac_key,
+			str(self.mac_key),
 			str(self.normalized_request_string),
-			self._mac_algorithm)
+			self.mac_algorithm)
 		self._base64_encoded_hmac = base64.b64encode(my_hmac.digest())
 
 	def __str__(self):

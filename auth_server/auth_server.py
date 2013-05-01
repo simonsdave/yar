@@ -127,11 +127,25 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			self.finish()
 			return
 
-		# :TODO: now that we've got the MAC credentials, use them to
-		# confirm the caller's identity
+		content_type = self.request.headers.get("Content-type", None)
+		body = self.get_request_body_if_exists(None)
+		(host, port) = self.get_request_host_and_port("localhost", 80)
+		normalized_request_string = mac.NormalizedRequestString(
+			self._parsed_auth_header_value.ts,
+			self._parsed_auth_header_value.nonce,
+			self.request.method,
+			self.request.uri,
+			host,
+			port,
+			mac.Ext(content_type, body))
+		my_mac = mac.MAC(
+			mac_key,
+			mac_algorithm,
+			normalized_request_string)
+
 		_logger.info(
 			"Authorization successful for '%s'",
-			self.request.uri)
+			self.request.full_url())
 
 		headers = tornado.httputil.HTTPHeaders(self.request.headers)
 		headers["Authorization"] = "%s %s %s" % (
@@ -144,7 +158,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			tornado.httpclient.HTTPRequest( 
 				url="http://%s%s" % (app_server, self.request.uri),
 				method=self.request.method, 
-				body=self.get_request_body_if_exists(None),
+				body=body,
 				headers=headers,
 				follow_redirects=False),
 			callback=self._on_app_server_done)
