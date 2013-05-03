@@ -46,7 +46,7 @@ curl \
   -X POST \
   -H "Content-Type: application/json; charset=utf8" \
   -d "{\"owner\":\"simonsdave@gmail.com\"}" \
-  http://localhost:6969/v1.0/creds
+  http://localhost:8070/v1.0/creds
 ~~~~~~
 To get an existing set of creditials:
 ~~~~~
