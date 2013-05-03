@@ -172,14 +172,14 @@ class TestMacCredsResource(KeyServerTestCase):
 			)
 		self.assertIsNotNone(response)
 		self.assertTrue(httplib.CREATED == response.status)
-		self.assertTrue('location' in response)
-		location = response['location']
-		self.assertIsNotNone(location)
-		self.assertIsNotNone(location.startswith(self.url()))
+		self.assertTrue('content-location' in response)
+		content_location = response['content-location']
+		self.assertIsNotNone(content_location)
+		self.assertIsNotNone(content_location.startswith(self.url()))
 
-		# based on the returned location retrieve the newly created MAC creds
+		# based on the returned content_location retrieve the newly created MAC creds
 		http_client = httplib2.Http()
-		response, content = http_client.request(location, "GET")
+		response, content = http_client.request(content_location, "GET")
 		self.assertTrue(httplib.OK == response.status)
 		self.assertTrue("content-type" in response)
 		content_type = response["content-type"]
@@ -189,12 +189,12 @@ class TestMacCredsResource(KeyServerTestCase):
 		self.assertEqual(owner, creds.get('owner', None))
 		mac_key_identifier = creds.get('mac_key_identifier', None)
 		self.assertIsNotNone(mac_key_identifier)
-		self.assertTrue(location.endswith(mac_key_identifier))
+		self.assertTrue(content_location.endswith(mac_key_identifier))
 
 		# this is really over the top but that's the way I roll:-)
 		self._get_creds(mac_key_identifier)
 
-		return (creds, location)
+		return (creds, content_location)
 
 	def _get_all_creds(self, owner=None):
 		http_client = httplib2.Http()

@@ -238,7 +238,7 @@ class RequestHandler(trhutil.RequestHandler):
 		location_url = "%s/%s" % (
 			self.request.full_url(),
 			creds["mac_key_identifier"])
-		self.set_header("Location", location_url)
+		self.set_header("Content-Location", location_url)
 		self.set_status(httplib.CREATED)
 		self.finish()
 
