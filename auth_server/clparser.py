@@ -44,9 +44,9 @@ class CommandLineParser(optparse.OptionParser):
 			"--keyserver",
 			action="store",
 			dest="key_server",
-			default="localhost:6969",
+			default="localhost:8070",
 			type="hostcolonport",
-			help="key server - default = localhost:6969" )
+			help="key server - default = localhost:8070" )
 
 		self.add_option(
 			"--appserver",
