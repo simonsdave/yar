@@ -16,6 +16,7 @@ EXT=""
 MAC=`genmac.py localhost 8000 GET $2 $TS $NONCE $EXT $MAC_KEY $MAC_ALGORITHM`
 
 curl \
+   -s \
    -v \
    -X GET \
    -H "Authorization: MAC id=\"$MAC_KEY_IDENTIFIER\", ts=\"$TS\", nonce=\"$NONCE\", ext=\"$EXT\", mac=\"$MAC\"" \
