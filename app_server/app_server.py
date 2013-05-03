@@ -31,7 +31,8 @@ class RequestHandler(tornado.web.RequestHandler):
 		dict = {
 			"status": "ok",
 			"version": __version__,
-			"when": str(datetime.datetime.now())
+			"when": str(datetime.datetime.now()),
+			"auth": self.request.headers.get("Authorization","<no auth header>"),
 		}
 		self.write(dict)
 
