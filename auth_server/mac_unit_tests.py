@@ -32,7 +32,8 @@ class NonceTestCase(unittest.TestCase):
 class TimestampTestCase(unittest.TestCase):
 	
 	def test_it(self):
-		ts1 = mac.Timestamp()
+		ts1 = mac.Timestamp(45)
+		ts2 = mac.Timestamp.compute()
 
 #-------------------------------------------------------------------------------
 

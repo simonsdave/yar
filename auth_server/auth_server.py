@@ -137,13 +137,13 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			self.request.uri,
 			host,
 			port,
-			mac.Ext(content_type, body))
+			mac.Ext.compute(content_type, body))
 		my_mac = mac.MAC.compute(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
 
-		if self._parsed_auth_header_value.mac != my_mac:
+		if self._parsed_auth_header_value.mac._base64_encoded_mac != my_mac._base64_encoded_mac:
 			_logger.error(
 				"For '%s' MAC in request '%s' doesn't match computed MAC '%s'",
 				self.request.uri,

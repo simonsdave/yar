@@ -35,23 +35,30 @@ class Nonce(str):
 
 	[1] http://stackoverflow.com/questions/2257441/python-random-string-generation-with-upper-case-letters-and-digits."""
 
-	def __new__(self):
+	def __new__(self,rstr=None):
 		""""""
-		chars = string.ascii_lowercase + string.digits
-		r = random.Random()
-		nonce_len = 8 + r.randint(0,8)
-		rstr = ''.join(random.choice(chars) for i in range(nonce_len))
+		if rstr is None:
+			chars = string.ascii_lowercase + string.digits
+			r = random.Random()
+			nonce_len = 8 + r.randint(0,8)
+			rstr = ''.join(random.choice(chars) for i in range(nonce_len))
 		return str.__new__(self, rstr)
 
 #-------------------------------------------------------------------------------
 
 class Timestamp(object):
-	"""..."""
+	"""Represents the # of seconds since 1st Jan 1970."""
 
-	def __init__(self):
+	def __init__(self, ts):
+		object.__init__(self)
+		self._ts = ts
+
+	@classmethod
+	def compute(cls):
 		epoch = datetime.datetime(1970, 1, 1, 0, 0, 0)
-		self._ts = int((datetime.datetime.utcnow() - epoch).total_seconds())
-
+		ts = int((datetime.datetime.utcnow() - epoch).total_seconds())
+		return cls(ts)
+		
 	def __str__(self):
 		return str(self._ts)
 
@@ -61,16 +68,22 @@ class Ext(object):
 	"""Implements the notion of the ext as described in
 	http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02#section-3.1"""
 
-	def __init__(self, content_type, body):
+	def __init__(self, ext):
 		object.__init__(self)
+		self._ext = ext
+
+	@classmethod
+	def compute(cls, content_type, body):
 
 		if content_type and body: 
 			hash_of_body = hashlib.new('sha1', body)
-			hash_of_body = hash_of_body.digest()
-			self._ext = "%s-%s" % (content_type, hash_of_body)
-			self._ext = base64.b64encode(self._ext)
+			ext = "%s-%s" % (
+				base64.b64encode(content_type),
+				base64.b64encode(hash_of_body.digest()))
 		else:
-			self._ext = ""
+			ext = ""
+
+		return cls(ext)
 
 	def __str__(self):
 		return self._ext
@@ -115,6 +128,9 @@ class MAC(object):
 
 	@classmethod
 	def compute(cls, mac_key, mac_algorithm, normalized_request_string):
+		"""Compute a request's MAC given a normalized request sring (aka
+		a summary of the key elements of the request, the mac key and
+		the algorithm."""
 
 		mac_algorithm = \
 			hashlib.sha256 if mac_algorithm == "hmac-sha-256" \
@@ -134,10 +150,11 @@ class MAC(object):
 		return self._base64_encoded_mac
 
 	def __cmp__(self, other):
-		if other.__class__ != self.__class__:
-			# this catches other == None too
+		if other.__class__ != self.__class__:	# this catches other == None too
 			return False
-		return self._base64_encoded_mac == other._base64_encoded_mac
+		rv = self._base64_encoded_mac.__cmp__(other._base64_encoded_mac)
+		print ">>>%s<<<>>>%s<<<%s>>>" % (self, other, rv)
+		return rv
 			
 #-------------------------------------------------------------------------------
 
@@ -197,14 +214,17 @@ class AuthHeaderValue(object):
 		ts = match.group("ts")
 		assert ts
 		assert 0 < len(ts)
+		ts = Timestamp(ts)
 
 		nonce = match.group("nonce")
 		assert nonce
 		assert 0 < len(nonce)
+		nonce = Nonce(nonce)
 
 		ext = match.group("ext")
 		assert ext is not None
 		assert 0 <= len(ext)
+		ext = Ext(ext)
 
 		mac = match.group("mac")
 		assert mac

@@ -2,7 +2,7 @@
 """This module contains the auth server's unit tests."""
 
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.FATAL)
 import unittest
 import httplib
 import httplib2
@@ -82,13 +82,13 @@ class TestCase(testcase.TestCase):
 		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
 		normalized_request_string = mac.NormalizedRequestString(
-			mac.Timestamp(),
+			mac.Timestamp.compute(),
 			mac.Nonce(),
 			http_method,
 			uri,
 			host,
 			port,
-			mac.Ext(content_type, body))
+			mac.Ext.compute(content_type, body))
 		my_mac = mac.MAC.compute(
 			mac_key,
 			mac_algorithm,
@@ -130,13 +130,13 @@ class TestCase(testcase.TestCase):
 		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
 		normalized_request_string = mac.NormalizedRequestString(
-			mac.Timestamp(),
+			mac.Timestamp.compute(),
 			mac.Nonce(),
 			http_method,
 			uri,
 			host,
 			port,
-			mac.Ext(content_type, body))
+			mac.Ext.compute(content_type, body))
 		my_mac = mac.MAC.compute(
 			mac_key,
 			mac_algorithm,
@@ -178,13 +178,13 @@ class TestCase(testcase.TestCase):
 		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
 		normalized_request_string = mac.NormalizedRequestString(
-			mac.Timestamp(),
+			mac.Timestamp.compute(),
 			mac.Nonce(),
 			http_method,
 			uri,
 			host,
 			port,
-			mac.Ext(content_type, body))
+			mac.Ext.compute(content_type, body))
 		my_mac = mac.MAC.compute(
 			mac_key,
 			mac_algorithm,
@@ -194,7 +194,7 @@ class TestCase(testcase.TestCase):
 			normalized_request_string.ts,
 			normalized_request_string.nonce,
 			normalized_request_string.ext,
-			my_mac)
+			str(my_mac))
 		auth_header_value = str(auth_header_value)
 		http_client = httplib2.Http()
 		headers = {

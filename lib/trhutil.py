@@ -57,7 +57,7 @@ class RequestHandler(tornado.web.RequestHandler):
 		if not value:
 			return (host_if_not_found, port_if_not_found)
 
-		reg_ex_pattern = r"^\s*(?P<host>[^\:])(?:\:(?P<port>[^\s]+))?\s*$"
+		reg_ex_pattern = r"^\s*(?P<host>[^\:]+)(?:\:(?P<port>\d+))?\s*$"
 		reg_ex = re.compile(reg_ex_pattern)
 		match = reg_ex.match(value)
 		if not match:
