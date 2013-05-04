@@ -12,6 +12,34 @@ import clparserutil
 
 class TestCase(unittest.TestCase):
 	
+	def test_check_couchdb(self):
+		option = clparserutil.Option(
+			"--create",
+			action="store",
+			dest="couchdb",
+			default="bindle:8909/berry",
+			type="couchdb",
+			help="whatever")
+		values = [
+			["bindle:8909/berry", "bindle:8909/berry"],
+			["b:8/y", "b:8/y"],
+
+			["dave", None],
+			["dave:89", None],
+			["89/", None],
+			["dave:89/", None],
+		]
+		type_checker = clparserutil.Option.TYPE_CHECKER["couchdb"]
+		opt_string = option.get_opt_string(),
+		for value in values:
+			if value[1] is not None:
+				msg = "Faild to parse '%s' correctly." % value[0]
+				result = type_checker(option, opt_string, value[0])
+				self.assertEqual(result, value[1], msg)
+			else:
+				with self.assertRaises(optparse.OptionValueError):
+					type_checker(option, opt_string, value[0])
+
 	def test_check_logginglevel(self):
 		option = clparserutil.Option(
 			"--create",
@@ -34,6 +62,33 @@ class TestCase(unittest.TestCase):
 			["", None],
 		]
 		type_checker = clparserutil.Option.TYPE_CHECKER["logginglevel"]
+		opt_string = option.get_opt_string(),
+		for value in values:
+			if value[1] is not None:
+				msg = "Faild to parse '%s' correctly." % value[0]
+				result = type_checker(option, opt_string, value[0])
+				self.assertEqual(result, value[1], msg)
+			else:
+				with self.assertRaises(optparse.OptionValueError):
+					type_checker(option, opt_string, value[0])
+
+	def test_check_host_colon_port(self):
+		option = clparserutil.Option(
+			"--create",
+			action="store",
+			dest="server",
+			default="bindle:8909",
+			type="hostcolonport",
+			help="whatever")
+		values = [
+			["bindle:8909", "bindle:8909"],
+			["b:8", "b:8"],
+
+			["dave", None],
+			["89", None],
+			[":89", None],
+		]
+		type_checker = clparserutil.Option.TYPE_CHECKER["hostcolonport"]
 		opt_string = option.get_opt_string(),
 		for value in values:
 			if value[1] is not None:
