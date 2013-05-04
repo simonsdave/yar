@@ -1,14 +1,15 @@
 API Management
 ==============
 
-Some code Dave is using to explore some thoughts on a simple API Management service.
+This repo is the result of Dave being convinced that it wouldn't be that
+hard to write an API Management service. Conclusion? Well, this isn't complete
+but it feels like this has gone a long way to demonstrating that a basic
+service isn't massively hard to implement.
 
 Prerequisites 
 -------------
 * code written and tested on Mac OS X 10.8.2 using Python 2.7.2 and [virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv)
-* [Tornado 2.4.1](http://www.tornadoweb.org/en/branch2.4/ "Tornado")
-* [httplib2 0.8](https://code.google.com/p/httplib2/ "httplib2")
-* [jsonschema 1.3.0](https://pypi.python.org/pypi/jsonschema "jsonschema")
+* see [requirements.txt](https://github.com/simonsdave/apimgmt/blob/master/requirements.txt "requirements.txt") for the complete list of prerequisites
 
 Authentication Server
 ---------------------
