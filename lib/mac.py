@@ -64,30 +64,26 @@ class Timestamp(object):
 
 #-------------------------------------------------------------------------------
 
-class Ext(object):
+class Ext(str):
 	"""Implements the notion of the ext as described in
 	http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02#section-3.1"""
 
-	def __init__(self, ext):
-		object.__init__(self)
-		self._ext = ext
+	def __new__(self, ext):
+		return str.__new__(self, ext)
 
 	@classmethod
 	def compute(cls, content_type, body):
 
 		if content_type and body: 
-			hash_of_body = hashlib.new('sha1', body)
-			ext = "%s-%s" % (
-				base64.b64encode(content_type),
-				base64.b64encode(hash_of_body.digest()))
+			hash_of_content_type_plus_body = hashlib.new(
+				'sha1',
+				content_type + body)
+			ext = hash_of_content_type_plus_body.hexdigest()
 		else:
 			ext = ""
 
 		return cls(ext)
 
-	def __str__(self):
-		return self._ext
-			
 #-------------------------------------------------------------------------------
 
 class NormalizedRequestString(object):

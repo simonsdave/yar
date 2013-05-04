@@ -37,6 +37,39 @@ class TimestampTestCase(unittest.TestCase):
 
 #-------------------------------------------------------------------------------
 
+class TimestampExt(unittest.TestCase):
+	
+	def test_content_type_and_body_none_is_zero_length_ext(self):
+		content_type = None
+		body = None
+		ext = mac.Ext.compute(content_type, body)
+		self.assertIsNotNone(ext)
+		self.assertEqual(ext, "")
+
+	def test_content_type_not_none_and_body_none_is_zero_length_ext(self):
+		content_type = "dave was here"
+		body = None
+		ext = mac.Ext.compute(content_type, body)
+		self.assertIsNotNone(ext)
+		self.assertEqual(ext, "")
+
+	def test_content_type_none_and_body_not_none_is_zero_length_ext(self):
+		content_type = None
+		body = "dave was here"
+		ext = mac.Ext.compute(content_type, body)
+		self.assertIsNotNone(ext)
+		self.assertEqual(ext, "")
+
+	def test_content_type_and_body_not_none_is_sha1_of_both(self):
+		content_type = "hello world!"
+		body = "dave was here"
+		ext = mac.Ext.compute(content_type, body)
+		self.assertIsNotNone(ext)
+		hash = hashlib.new('sha1', content_type + body)
+		self.assertEqual(ext, hash.hexdigest())
+
+#-------------------------------------------------------------------------------
+
 class MACTestCase(unittest.TestCase):
 
 	def _uuid(self):
