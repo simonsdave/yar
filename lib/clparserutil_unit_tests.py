@@ -12,6 +12,38 @@ import clparserutil
 
 class TestCase(unittest.TestCase):
 	
+	def test_check_logginglevel(self):
+		option = clparserutil.Option(
+			"--create",
+			action="store",
+			dest="logging_level",
+			default=logging.FATAL,
+			type="logginglevel",
+			help="whatever")
+		values = [
+			["debug", logging.DEBUG],
+			["info", logging.INFO],
+			["INFO", logging.INFO],
+			["warning", logging.WARNING],
+			["eRRor", logging.ERROR],
+			["CRITICAL", logging.CRITICAL],
+			["FATAL", logging.FATAL],
+
+			["dave", None],
+			["None", None],
+			["", None],
+		]
+		type_checker = clparserutil.Option.TYPE_CHECKER["logginglevel"]
+		opt_string = option.get_opt_string(),
+		for value in values:
+			if value[1] is not None:
+				msg = "Faild to parse '%s' correctly." % value[0]
+				result = type_checker(option, opt_string, value[0])
+				self.assertEqual(result, value[1], msg)
+			else:
+				with self.assertRaises(optparse.OptionValueError):
+					type_checker(option, opt_string, value[0])
+
 	def test_check_boolean(self):
 		option = clparserutil.Option(
 			"--create",

@@ -21,8 +21,10 @@ def _check_couchdb(option, opt, value):
 
 def _check_logging_level(option, opt, value):
 	"""Type checking function for command line parser's 'logginglevel' type."""
-	if re.match("^(DEBUG|INFO|WARNING|ERROR|CRITICAL|FATAL)$", value):
-		return getattr(logging, value)
+	reg_ex_pattern = "^(DEBUG|INFO|WARNING|ERROR|CRITICAL|FATAL)$"
+	reg_ex = re.compile(reg_ex_pattern, re.IGNORECASE)
+	if reg_ex.match(value):
+		return getattr(logging, value.upper())
 	msg = "option %s: should be one of DEBUG, INFO, WARNING, ERROR, CRITICAL or FATAL" % opt
 	raise optparse.OptionValueError(msg)
 
