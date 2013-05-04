@@ -143,6 +143,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			mac_algorithm,
 			normalized_request_string)
 
+		# :TODO: get this fixed! shouldn't be grabbing _base64_encoded_mac!!!
 		if self._parsed_auth_header_value.mac._base64_encoded_mac != my_mac._base64_encoded_mac:
 			_logger.error(
 				"For '%s' MAC in request '%s' doesn't match computed MAC '%s'",
