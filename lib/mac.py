@@ -31,27 +31,28 @@ class Nonce(str):
 	is between 8 and 16. The resulting string is intendend to be used
 	as the nonce in MAC access authenciation.
 
-	The implementation for this method was strongly influenced by [1].
+	The implementation for this class was strongly influenced by [1].
 
 	[1] http://stackoverflow.com/questions/2257441/python-random-string-generation-with-upper-case-letters-and-digits."""
 
-	def __new__(self,rstr=None):
-		""""""
-		if rstr is None:
-			chars = string.ascii_lowercase + string.digits
-			r = random.Random()
-			nonce_len = 8 + r.randint(0,8)
-			rstr = ''.join(random.choice(chars) for i in range(nonce_len))
-		return str.__new__(self, rstr)
+	def __new__(self, nonce):
+		return str.__new__(self, nonce)
+
+	@classmethod
+	def compute(cls):
+		chars = string.ascii_lowercase + string.digits
+		r = random.Random()
+		nonce_len = 8 + r.randint(0,8)
+		nonce = ''.join(random.choice(chars) for i in range(nonce_len))
+		return cls(nonce)
 
 #-------------------------------------------------------------------------------
 
-class Timestamp(object):
+class Timestamp(str):
 	"""Represents the # of seconds since 1st Jan 1970."""
 
-	def __init__(self, ts):
-		object.__init__(self)
-		self._ts = ts
+	def __new__(self, ts):
+		return str.__new__(self, ts)
 
 	@classmethod
 	def compute(cls):
@@ -59,9 +60,6 @@ class Timestamp(object):
 		ts = int((datetime.datetime.utcnow() - epoch).total_seconds())
 		return cls(ts)
 		
-	def __str__(self):
-		return str(self._ts)
-
 #-------------------------------------------------------------------------------
 
 class Ext(str):
@@ -75,9 +73,9 @@ class Ext(str):
 	def compute(cls, content_type, body):
 
 		if content_type and body: 
-			hash_of_content_type_plus_body = hashlib.new(
-				'sha1',
-				content_type + body)
+			hash_of_content_type_plus_body = hashlib.sha1(
+				content_type)
+				# content_type + body)
 			ext = hash_of_content_type_plus_body.hexdigest()
 		else:
 			ext = ""
@@ -86,41 +84,33 @@ class Ext(str):
 
 #-------------------------------------------------------------------------------
 
-class NormalizedRequestString(object):
+class NormalizedRequestString(str):
 	"""Implements the notion of a normalized request string as described in
 	http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02#section-3.2.1"""
 
-	def __init__(self, ts, nonce, http_method, uri, host, port, ext):
-		object.__init__(self)
+	def __new__(self, normalized_request_string):
+		return str.__new__(self, normalized_request_string)
 
-		self.ts = ts
-		self.nonce = nonce
-		self.http_method = http_method
-		self.uri = uri
-		self.host = host
-		self.port = port
-		self.ext = ext
+	@classmethod
+	def compute(cls, ts, nonce, http_method, uri, host, port, ext):
+		normalized_request_string = \
+			ts + '\n' + \
+			nonce + '\n' + \
+			http_method + '\n' + \
+			uri + '\n' + \
+			host + '\n' + \
+			str(port) + '\n' + \
+			ext + '\n'
+		return cls(normalized_request_string)
 
-		self._normalized_request_string = str(ts) + '\n' + \
-			str(self.nonce) + '\n' + \
-			self.http_method + '\n' + \
-			self.uri + '\n' + \
-			self.host + '\n' + \
-			str(self.port) + '\n' + \
-			str(self.ext) + '\n'
-
-	def __str__(self):
-		return self._normalized_request_string
-			
 #-------------------------------------------------------------------------------
 
-class MAC(object):
+class MAC(str):
 	"""Implements concept of a message authentication code according to
 	http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02"""
 
-	def __init__(self, base64_encoded_mac):
-		object.__init__(self)
-		self._base64_encoded_mac = base64_encoded_mac
+	def __new__(self, mac):
+		return str.__new__(self, mac)
 
 	@classmethod
 	def compute(cls, mac_key, mac_algorithm, normalized_request_string):
@@ -128,30 +118,12 @@ class MAC(object):
 		a summary of the key elements of the request, the mac key and
 		the algorithm."""
 
-		mac_algorithm = \
-			hashlib.sha256 if mac_algorithm == "hmac-sha-256" \
-			else hashlib.sha1
-
 		# :TODO: the str() on the mac key below seems required because of
         # a bug introducted in python 2.6 as per http://bugs.python.org/issue5285
-		mac = hmac.new(
-			str(mac_key),
-			str(normalized_request_string),
-			mac_algorithm)
-		base64_encoded_mac = base64.b64encode(mac.digest())
+		dm = hashlib.sha256 if mac_algorithm == "hmac-sha-256" else hashlib.sha1
+		mac = hmac.new(str(mac_key), normalized_request_string, dm)
+		return cls(mac.hexdigest())
 
-		return cls(base64_encoded_mac)
-
-	def __str__(self):
-		return self._base64_encoded_mac
-
-	def __cmp__(self, other):
-		if other.__class__ != self.__class__:	# this catches other == None too
-			return False
-		rv = self._base64_encoded_mac.__cmp__(other._base64_encoded_mac)
-		print ">>>%s<<<>>>%s<<<%s>>>" % (self, other, rv)
-		return rv
-			
 #-------------------------------------------------------------------------------
 
 class AuthHeaderValue(object):

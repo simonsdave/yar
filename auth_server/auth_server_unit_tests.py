@@ -81,23 +81,26 @@ class TestCase(testcase.TestCase):
 		testcase.TestCase.mac_algorithm_response_to_key_server_request = "dave-%s" % mac_algorithm
 		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
-		normalized_request_string = mac.NormalizedRequestString(
-			mac.Timestamp.compute(),
-			mac.Nonce(),
+		ts = mac.Timestamp.compute()
+		nonce = mac.Nonce.compute()
+		ext = mac.Ext.compute(content_type, body)
+		normalized_request_string = mac.NormalizedRequestString.compute(
+			ts,
+			nonce,
 			http_method,
 			uri,
 			host,
 			port,
-			mac.Ext.compute(content_type, body))
+			ext)
 		my_mac = mac.MAC.compute(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
 		auth_header_value = mac.AuthHeaderValue(
 			mac_key_identifier,
-			normalized_request_string.ts,
-			normalized_request_string.nonce,
-			normalized_request_string.ext,
+			ts,
+			nonce,
+			ext,
 			my_mac)
 		auth_header_value = str(auth_header_value)
 		http_client = httplib2.Http()
@@ -129,23 +132,26 @@ class TestCase(testcase.TestCase):
 		testcase.TestCase.mac_algorithm_response_to_key_server_request = mac_algorithm
 		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
-		normalized_request_string = mac.NormalizedRequestString(
-			mac.Timestamp.compute(),
-			mac.Nonce(),
+		ts = mac.Timestamp.compute()
+		nonce = mac.Nonce.compute()
+		ext = mac.Ext.compute(content_type, body)
+		normalized_request_string = mac.NormalizedRequestString.compute(
+			ts,
+			nonce,
 			http_method,
 			uri,
 			host,
 			port,
-			mac.Ext.compute(content_type, body))
+			ext)
 		my_mac = mac.MAC.compute(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
 		auth_header_value = mac.AuthHeaderValue(
 			mac_key_identifier,
-			normalized_request_string.ts,
-			normalized_request_string.nonce,
-			normalized_request_string.ext,
+			ts,
+			nonce,
+			ext,
 			my_mac)
 		auth_header_value = str(auth_header_value)
 		http_client = httplib2.Http()
@@ -177,24 +183,27 @@ class TestCase(testcase.TestCase):
 		testcase.TestCase.mac_algorithm_response_to_key_server_request = mac_algorithm
 		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
-		normalized_request_string = mac.NormalizedRequestString(
-			mac.Timestamp.compute(),
-			mac.Nonce(),
+		ts = mac.Timestamp.compute()
+		nonce = mac.Nonce.compute()
+		ext = mac.Ext.compute(content_type, body)
+		normalized_request_string = mac.NormalizedRequestString.compute(
+			ts,
+			nonce,
 			http_method,
 			uri,
 			host,
 			port,
-			mac.Ext.compute(content_type, body))
+			ext)
 		my_mac = mac.MAC.compute(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
 		auth_header_value = mac.AuthHeaderValue(
 			mac_key_identifier,
-			normalized_request_string.ts,
-			normalized_request_string.nonce,
-			normalized_request_string.ext,
-			str(my_mac))
+			ts,
+			nonce,
+			ext,
+			my_mac)
 		auth_header_value = str(auth_header_value)
 		http_client = httplib2.Http()
 		headers = {

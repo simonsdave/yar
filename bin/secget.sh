@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -xv
 
 if [ $# != 2 ]; then
     echo "usage: `basename $0` <mac key identifier> <uri>"

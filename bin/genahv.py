@@ -19,24 +19,27 @@ def _generate_authorization_header_value(
 	content_type,
 	body):
 
-	normalized_request_string = mac.NormalizedRequestString(
-		mac.Timestamp.compute(),
-		mac.Nonce(),
+	ts = mac.Timestamp.compute()
+	nonce = mac.Nonce.compute()
+	ext = mac.Ext.compute(content_type, body)
+	normalized_request_string = mac.NormalizedRequestString.compute(
+		ts,
+		nonce,
 		http_method,
 		uri,
 		host,
 		port,
-		mac.Ext.compute(content_type, body))
+		ext)
 	my_mac = mac.MAC.compute(
 		mac_key,
 		mac_algorithm,
 		normalized_request_string)
 	rv = mac.AuthHeaderValue(
 		mac_key_identifier,
-		normalized_request_string.ts,
-		normalized_request_string.nonce,
-		normalized_request_string.ext,
-		str(my_mac))
+		ts,
+		nonce,
+		ext,
+		my_mac)
 	return rv
 
 #-------------------------------------------------------------------------------
@@ -48,6 +51,10 @@ if __name__ == "__main__":
 		fmt = "usage: %s <http method> <host> <port> <uri> <mac key identifier> <mac key> <mac algorithm> [<content_type>]"
 		print fmt % filename
 		sys.exit(1)
+	# print 30*'-'
+	# for a in sys.argv:
+	# 	print ">>>%s<<<" % a
+	# print 30*'-'
 
 	if 9 == number_argvs:
 		content_type = sys.argv[8]

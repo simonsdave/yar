@@ -11,6 +11,7 @@ import logging
 import re
 import json
 import httplib
+import hashlib
 
 import tornado.httpserver
 import tornado.httpclient
@@ -127,27 +128,43 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			self.finish()
 			return
 
+		(host, port) = self.get_request_host_and_port("localhost", 80)
 		content_type = self.request.headers.get("Content-type", None)
 		body = self.get_request_body_if_exists(None)
-		(host, port) = self.get_request_host_and_port("localhost", 80)
-		normalized_request_string = mac.NormalizedRequestString(
+		ext = mac.Ext.compute(content_type, body)
+		normalized_request_string = mac.NormalizedRequestString.compute(
 			self._parsed_auth_header_value.ts,
 			self._parsed_auth_header_value.nonce,
 			self.request.method,
 			self.request.uri,
 			host,
 			port,
-			mac.Ext.compute(content_type, body))
+			ext)
 		my_mac = mac.MAC.compute(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
 
-		# :TODO: get this fixed! shouldn't be grabbing _base64_encoded_mac!!!
-		if self._parsed_auth_header_value.mac._base64_encoded_mac != my_mac._base64_encoded_mac:
+		self.set_header("X-AUTH-SERVER-MAC-KEY-IDENTIFIER", ">>>%s<<<" % mac_key_identifier)
+		self.set_header("X-AUTH-SERVER-MAC-KEY", ">>>%s<<<" % mac_key)
+		self.set_header("X-AUTH-SERVER-MAC-ALGORITHM", ">>>%s<<<" % mac_algorithm)
+		self.set_header("X-AUTH-SERVER-HOST", ">>>%s<<<" % host)
+		self.set_header("X-AUTH-SERVER-PORT", ">>>%s<<<" % port)
+		self.set_header("X-AUTH-SERVER-CONTENT-TYPE", ">>>%s<<<" % content_type)
+		self.set_header("X-AUTH-SERVER-REQUEST-METHOD", ">>>%s<<<" % self.request.method)
+		self.set_header("X-AUTH-SERVER-URI", ">>>%s<<<" % self.request.uri)
+		if body is not None:
+			self.set_header("X-AUTH-SERVER-BODY-SHA1", ">>>%s<<<" % hashlib.sha1(body).hexdigest())
+			self.set_header("X-AUTH-SERVER-BODY-LEN", len(body))
+			self.set_header("X-AUTH-SERVER-BODY", ">>>%s<<<" % body.replace('\n','\\n').replace('\r','\\r').replace('\t','\\t'))
+		self.set_header("X-AUTH-SERVER-TIMESTAMP", ">>>%s<<<" % self._parsed_auth_header_value.ts)
+		self.set_header("X-AUTH-SERVER-NONCE", ">>>%s<<<" % self._parsed_auth_header_value.nonce)
+		self.set_header("X-AUTH-SERVER-EXT", ">>>%s<<<" % ext)
+		if self._parsed_auth_header_value.mac != my_mac:
 			_logger.error(
-				"For '%s' MAC in request '%s' doesn't match computed MAC '%s'",
-				self.request.uri,
+				"For '%s' using MAC key identifier '%s' MAC in request '%s' doesn't match computed MAC '%s'",
+				self.request.full_url(),
+				mac_key_identifier,
 				self._parsed_auth_header_value.mac,
 				my_mac)
 			self.set_status(httplib.UNAUTHORIZED)
@@ -165,6 +182,12 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			owner,
 			mac_key_identifier)
 
+		if body is None:
+			_logger.fatal( "&&&&&&&&&& BODY IS NONE")
+		else:
+			_logger.fatal( "&&&&&&&&&& BODY len = %d", len(body))
+			body_to_print = body.replace('\n','\\n').replace('\r','\\r').replace('\t','\\t')
+			_logger.fatal( "&&&&&&&&&& BODY = %s", body_to_print)
 		http_client = tornado.httpclient.AsyncHTTPClient()
 		http_client.fetch(
 			tornado.httpclient.HTTPRequest( 
