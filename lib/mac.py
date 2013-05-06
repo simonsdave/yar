@@ -72,10 +72,11 @@ class Ext(str):
 	@classmethod
 	def compute(cls, content_type, body):
 
-		if content_type and body: 
+		if content_type is not None and body is not None: 
+			content_type_plus_body = content_type + body
 			hash_of_content_type_plus_body = hashlib.sha1(
 				content_type)
-				# content_type + body)
+				# content_type_plush_body)
 			ext = hash_of_content_type_plus_body.hexdigest()
 		else:
 			ext = ""
