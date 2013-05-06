@@ -16,10 +16,13 @@ CONTENT_TYPE="application/json; charset=utf-8"
 # TMP_STDIN=`mktemp -t DAS`
 # cat /dev/stdin > $TMP_STDIN
 TMP_STDIN=$3
+HOST=localhost
+PORT=8000
+HTTP_METHOD=POST
 AUTH_HEADER_CMD="$SCRIPTDIR/genahv.py \
-	GET \
-	localhost \
-	8000 \
+	$HTTP_METHOD \
+	$HOST \
+	$PORT \
 	$URI \
 	$MAC_KEY_IDENTIFIER \
 	$MAC_KEY \
@@ -30,10 +33,10 @@ AUTH_HEADER_VALUE=`eval $AUTH_HEADER_CMD`
 curl \
 	-s \
 	-v \
-	-X POST \
+	-X $HTTP_METHOD \
 	-H "Content-Type: $CONTENT_TYPE" \
 	-H "Authorization: $AUTH_HEADER_VALUE" \
-	-d @$TMP_STDIN \
-   http://localhost:8000"$URI"
+	--data-binar @$TMP_STDIN \
+   http://$HOST:$PORT"$URI"
 
 exit 0
