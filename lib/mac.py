@@ -74,10 +74,8 @@ class Ext(str):
 
 		if content_type is not None and body is not None: 
 			content_type_plus_body = content_type + body
-			hash_of_content_type_plus_body = hashlib.sha1(
-				content_type)
-				# content_type_plush_body)
-			ext = hash_of_content_type_plus_body.hexdigest()
+			content_type_plus_body_hash = hashlib.sha1(content_type_plus_body)
+			ext = content_type_plus_body_hash.hexdigest()
 		else:
 			ext = ""
 
