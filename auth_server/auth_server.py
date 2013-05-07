@@ -182,12 +182,6 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			owner,
 			mac_key_identifier)
 
-		if body is None:
-			_logger.fatal( "&&&&&&&&&& BODY IS NONE")
-		else:
-			_logger.fatal( "&&&&&&&&&& BODY len = %d", len(body))
-			body_to_print = body.replace('\n','\\n').replace('\r','\\r').replace('\t','\\t')
-			_logger.fatal( "&&&&&&&&&& BODY = %s", body_to_print)
 		http_client = tornado.httpclient.AsyncHTTPClient()
 		http_client.fetch(
 			tornado.httpclient.HTTPRequest( 
