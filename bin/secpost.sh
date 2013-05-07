@@ -36,7 +36,8 @@ curl \
 	-X $HTTP_METHOD \
 	-H "Content-Type: $CONTENT_TYPE" \
 	-H "Authorization: $AUTH_HEADER_VALUE" \
-	--data-binar @$TMP_STDIN \
+	--data-binary @$TMP_STDIN \
    http://$HOST:$PORT"$URI"
+
 
 exit 0
