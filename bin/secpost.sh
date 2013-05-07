@@ -1,7 +1,7 @@
 #!/bin/bash -xv
 
-if [ $# != 3 ]; then
-    echo "usage: `basename $0` <mac key identifier> <uri> <content>"
+if [ $# != 2 ]; then
+    echo "usage: `basename $0` <mac key identifier> <uri>"
     exit 1
 fi
 
@@ -13,9 +13,8 @@ MAC_KEY_IDENTIFIER=$1
 MAC_KEY=`$SCRIPTDIR/gmk.sh $MAC_KEY_IDENTIFIER`
 MAC_ALGORITHM=`$SCRIPTDIR/gma.sh $MAC_KEY_IDENTIFIER`
 CONTENT_TYPE="application/json; charset=utf-8"
-# TMP_STDIN=`mktemp -t DAS`
-# cat /dev/stdin > $TMP_STDIN
-TMP_STDIN=$3
+TMP_STDIN=`mktemp -t DAS`
+cat /dev/stdin > $TMP_STDIN
 HOST=localhost
 PORT=8000
 HTTP_METHOD=POST
@@ -38,6 +37,5 @@ curl \
 	-H "Authorization: $AUTH_HEADER_VALUE" \
 	--data-binary @$TMP_STDIN \
    http://$HOST:$PORT"$URI"
-
 
 exit 0
