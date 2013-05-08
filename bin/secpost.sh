@@ -55,13 +55,22 @@ if [ "POST" == "$HTTP_METHOD" ]; then
 fi
 AUTH_HEADER_VALUE=`eval $GEN_AUTH_HEADER_VALUE_CMD`
 
-curl \
-	-s \
-	-v \
-	-X $HTTP_METHOD \
-	-H "Authorization: $AUTH_HEADER_VALUE" \
-	-H "Content-Type: $CONTENT_TYPE" \
-	--data-binary @$COPY_OF_STDIN \
-   http://$HOST:$PORT"$URI"
+if [ "POST" == "$HTTP_METHOD" ]; then
+	curl \
+		-s \
+		-v \
+		-X $HTTP_METHOD \
+		-H "Authorization: $AUTH_HEADER_VALUE" \
+		-H "Content-Type: $CONTENT_TYPE" \
+		--data-binary @$COPY_OF_STDIN \
+	   http://$HOST:$PORT"$URI"
+else
+	curl \
+		-s \
+		-v \
+		-X $HTTP_METHOD \
+		-H "Authorization: $AUTH_HEADER_VALUE" \
+	   http://$HOST:$PORT"$URI"
+fi
 
 exit 0
