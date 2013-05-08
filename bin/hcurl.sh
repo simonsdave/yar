@@ -1,4 +1,10 @@
 #!/bin/bash -xv
+#-------------------------------------------------------------------------------
+#
+# A wrapper around cURL that adds an HMAC HTTP Authorization header
+# to a request directed at the auth server.
+#
+#-------------------------------------------------------------------------------
 
 usage_and_exit() {
 	echo "usage: `basename $0` [GET|POST|PUT|DELETE] <mac key identifier> <uri>"
@@ -74,3 +80,5 @@ else
 fi
 
 exit 0
+
+#------------------------------------------------------------------- End-of-File
