@@ -6,21 +6,24 @@
 #
 #-------------------------------------------------------------------------------
 
-usage_and_exit() {
-	echo "usage: `basename $0` [GET|POST|PUT|DELETE] <mac key identifier> <uri>"
-	exit 1
+CREDS_FILE=~/.das.apimgmt.keys
+
+get_creds() {
+    grep "^\\s*$1\\s*=" $CREDS_FILE | sed -e "s/^\\s*$1\\s*=\s*//"
 }
 
-if [ $# != 3 ]; then
-	usage_and_exit
+usage() {
+	echo "usage: `basename $0` [GET|POST|PUT|DELETE] <uri>"
+}
+
+if [ $# != 2 ]; then
+	usage
+	exit 1
 fi
 
 SCRIPTDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 HTTP_METHOD=`echo $1 | awk '{print toupper($0)}'`
-MAC_KEY_IDENTIFIER=$2
-URI=$3
-
 case "$HTTP_METHOD" in
         GET)
             ;;
@@ -31,20 +34,29 @@ case "$HTTP_METHOD" in
         PUT)
             ;;
         *)
-            usage_and_exit
+            usage
+			exit 1
 esac
 
-MAC_KEY=`$SCRIPTDIR/gmk.sh $MAC_KEY_IDENTIFIER`
-if [ "$MAC_KEY" == "" ]; then
-	echo "`basename $0` could not find mac key for '$MAC_KEY_IDENTIFIER'"
+MAC_KEY_IDENTIFIER=`get_creds MAC_KEY_IDENTIFIER`
+if [ "$MAC_KEY_IDENTIFIER" == "" ]; then
+	echo "`basename $0` could not find mac key identifier"
 	exit 1
 fi
 
-MAC_ALGORITHM=`$SCRIPTDIR/gma.sh $MAC_KEY_IDENTIFIER`
-if [ "$MAC_ALGORITHM" == "" ]; then
-	echo "`basename $0` could not find mac algorithm for '$MAC_KEY_IDENTIFIER'"
+MAC_KEY=`get_creds MAC_KEY`
+if [ "$MAC_KEY" == "" ]; then
+	echo "`basename $0` could not find mac key"
 	exit 1
 fi
+
+MAC_ALGORITHM=`get_creds MAC_ALGORITHM`
+if [ "$MAC_ALGORITHM" == "" ]; then
+	echo "`basename $0` could not find mac algorithm"
+	exit 1
+fi
+
+URI=$2
 
 HOST=localhost
 PORT=8000
