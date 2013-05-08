@@ -1,4 +1,4 @@
-#!/bin/bash -xv
+#!/bin/bash
 #-------------------------------------------------------------------------------
 #
 # A wrapper around cURL that adds an HMAC HTTP Authorization header
