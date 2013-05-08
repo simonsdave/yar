@@ -35,7 +35,17 @@ case "$HTTP_METHOD" in
 esac
 
 MAC_KEY=`$SCRIPTDIR/gmk.sh $MAC_KEY_IDENTIFIER`
+if [ "$MAC_KEY" == "" ]; then
+	echo "`basename $0` could not find mac key for '$MAC_KEY_IDENTIFIER'"
+	exit 1
+fi
+
 MAC_ALGORITHM=`$SCRIPTDIR/gma.sh $MAC_KEY_IDENTIFIER`
+if [ "$MAC_ALGORITHM" == "" ]; then
+	echo "`basename $0` could not find mac algorithm for '$MAC_KEY_IDENTIFIER'"
+	exit 1
+fi
+
 HOST=localhost
 PORT=8000
 
