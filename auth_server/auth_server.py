@@ -22,11 +22,12 @@ import jsonschemas
 from clparser import CommandLineParser
 import tsh
 import trhutil
+import strutil
 import mac
 
 #-------------------------------------------------------------------------------
 
-_logger = logging.getLogger("AUTHSERVER_%s" % __name__)
+_logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
 #-------------------------------------------------------------------------------
 
@@ -100,6 +101,53 @@ class AsyncCredsRetriever(object):
 
 class AuthRequestHandler(trhutil.RequestHandler):
 
+	def _set_debug_header(self, name, value):
+		"""Called by ```_set_debug_headers()``` to actually
+		set the HTTP header called ```name``` of ```value```.
+		This method is entirely about making the implementation
+		of ```_set_debug_headers()``` cleaner."""
+		value = strutil.make_http_header_value_friendly(value)
+		self.set_header(name, value)
+
+	def _set_debug_headers(
+		self,
+		mac_key_identifier,
+		mac_key,
+		mac_algorithm,
+		host,
+		port,
+		content_type,
+		http_method,
+		uri,
+		body,
+		ts,
+		nonce,
+		ext):
+		"""When an authorization failure occurs it can be super hard
+		to figure out the root cause of the error. This method is called
+		on authorization failure and, if logging is set to at least debug,
+		a whole series of HTTP headers are set to return the core elements
+		that are used to compute the HMAC."""
+
+		if not _logger.isEnabledFor(logging.INFO):
+			return
+
+		self._set_debug_header("X-AUTH-SERVER-MAC-KEY-IDENTIFIER", mac_key_identifier)
+		self._set_debug_header("X-AUTH-SERVER-MAC-KEY", mac_key)
+		self._set_debug_header("X-AUTH-SERVER-MAC-ALGORITHM", mac_algorithm)
+		self._set_debug_header("X-AUTH-SERVER-HOST", host)
+		self._set_debug_header("X-AUTH-SERVER-PORT", port)
+		self._set_debug_header("X-AUTH-SERVER-CONTENT-TYPE", content_type)
+		self._set_debug_header("X-AUTH-SERVER-REQUEST-METHOD", http_method)
+		self._set_debug_header("X-AUTH-SERVER-URI", uri)
+		if body is not None:
+			self._set_debug_header("X-AUTH-SERVER-BODY-SHA1", hashlib.sha1(body).hexdigest())
+			self._set_debug_header("X-AUTH-SERVER-BODY-LEN", len(body))
+			self._set_debug_header("X-AUTH-SERVER-BODY", body)
+		self._set_debug_header("X-AUTH-SERVER-TIMESTAMP", ts)
+		self._set_debug_header("X-AUTH-SERVER-NONCE", nonce)
+		self._set_debug_header("X-AUTH-SERVER-EXT", ext)
+
 	def _on_app_server_done(self, response):
 		if response.error:
 			self.set_status(httplib.INTERNAL_SERVER_ERROR) 
@@ -121,7 +169,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		owner=None):
 
 		if not is_ok:
-			_logger.error(
+			_logger.info(
 				"No MAC credentials found for '%s'",
 				self.request.uri)
 			self.set_status(httplib.UNAUTHORIZED)
@@ -145,28 +193,26 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			mac_algorithm,
 			normalized_request_string)
 
-		self.set_header("X-AUTH-SERVER-MAC-KEY-IDENTIFIER", ">>>%s<<<" % mac_key_identifier)
-		self.set_header("X-AUTH-SERVER-MAC-KEY", ">>>%s<<<" % mac_key)
-		self.set_header("X-AUTH-SERVER-MAC-ALGORITHM", ">>>%s<<<" % mac_algorithm)
-		self.set_header("X-AUTH-SERVER-HOST", ">>>%s<<<" % host)
-		self.set_header("X-AUTH-SERVER-PORT", ">>>%s<<<" % port)
-		self.set_header("X-AUTH-SERVER-CONTENT-TYPE", ">>>%s<<<" % content_type)
-		self.set_header("X-AUTH-SERVER-REQUEST-METHOD", ">>>%s<<<" % self.request.method)
-		self.set_header("X-AUTH-SERVER-URI", ">>>%s<<<" % self.request.uri)
-		if body is not None:
-			self.set_header("X-AUTH-SERVER-BODY-SHA1", ">>>%s<<<" % hashlib.sha1(body).hexdigest())
-			self.set_header("X-AUTH-SERVER-BODY-LEN", len(body))
-			self.set_header("X-AUTH-SERVER-BODY", ">>>%s<<<" % body.replace('\n','\\n').replace('\r','\\r').replace('\t','\\t'))
-		self.set_header("X-AUTH-SERVER-TIMESTAMP", ">>>%s<<<" % self._parsed_auth_header_value.ts)
-		self.set_header("X-AUTH-SERVER-NONCE", ">>>%s<<<" % self._parsed_auth_header_value.nonce)
-		self.set_header("X-AUTH-SERVER-EXT", ">>>%s<<<" % ext)
 		if self._parsed_auth_header_value.mac != my_mac:
-			_logger.error(
+			_logger.info(
 				"For '%s' using MAC key identifier '%s' MAC in request '%s' doesn't match computed MAC '%s'",
 				self.request.full_url(),
 				mac_key_identifier,
 				self._parsed_auth_header_value.mac,
 				my_mac)
+			self._set_debug_headers(
+				mac_key_identifier,
+				mac_key,
+				mac_algorithm,
+				host,
+				port,
+				content_type,
+				self.request.method,
+				self.request.uri,
+				body,
+				self._parsed_auth_header_value.ts,
+				self._parsed_auth_header_value.nonce,
+				ext)
 			self.set_status(httplib.UNAUTHORIZED)
 			self.finish()
 			return
