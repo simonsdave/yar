@@ -17,7 +17,7 @@ import re
 
 #-------------------------------------------------------------------------------
 
-_logger = logging.getLogger("MAC%s" % __name__)
+_logger = logging.getLogger("UTIL.%s" % __name__)
 
 #-------------------------------------------------------------------------------
 
@@ -138,23 +138,22 @@ class AuthHeaderValue(object):
 		self.ext = ext
 		self.mac = mac
 
+	def __str__(self):
 		fmt = 'MAC id="%s", ts="%s", nonce="%s", ext="%s", mac="%s"'
-		self._value = fmt % (
+		rv = fmt % (
 			self.mac_key_identifier,
 			self.ts,
 			self.nonce,
 			self.ext,
 			self.mac) 
-
-	def __str__(self):
-		return self._value
+		return rv
 
 	@classmethod
 	def parse(cls, value):
-		"""Given an authorization header value parse it and
-		create an AuthHeaderValue. If ```value``` is None or
-		in an unrecognized format return None."""
-		if not value:
+		"""Parse a string which is the value from an HTTP authorization
+		header. If parsing is successful create and return a AuthHeaderValue
+		otherwise return None."""
+		if value is None:
 			return None
 		
 		reg_ex = re.compile(
@@ -165,7 +164,7 @@ class AuthHeaderValue(object):
 			_logger.info(
 				"Invalid format for authorization header '%s'",
 				value)
-			return False
+			return None
 		_logger.info(
 			"Valid format for authorization header '%s'",
 			value)
