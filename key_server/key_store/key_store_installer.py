@@ -15,7 +15,7 @@ from clparser import CommandLineParser
 
 #-------------------------------------------------------------------------------
 
-_logger = logging.getLogger("KEYSTORE_%s" % __name__)
+_logger = logging.getLogger("KEYSTORE.%s" % __name__)
 
 #-------------------------------------------------------------------------------
 
