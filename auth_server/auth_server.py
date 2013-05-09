@@ -181,8 +181,8 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		body = self.get_request_body_if_exists(None)
 		ext = mac.Ext.compute(content_type, body)
 		normalized_request_string = mac.NormalizedRequestString.compute(
-			self._parsed_auth_header_value.ts,
-			self._parsed_auth_header_value.nonce,
+			self._auth_hdr_val.ts,
+			self._auth_hdr_val.nonce,
 			self.request.method,
 			self.request.uri,
 			host,
@@ -193,12 +193,12 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			mac_algorithm,
 			normalized_request_string)
 
-		if self._parsed_auth_header_value.mac != my_mac:
+		if self._auth_hdr_val.mac != my_mac:
 			_logger.info(
 				"For '%s' using MAC key identifier '%s' MAC in request '%s' doesn't match computed MAC '%s'",
 				self.request.full_url(),
 				mac_key_identifier,
-				self._parsed_auth_header_value.mac,
+				self._auth_hdr_val.mac,
 				my_mac)
 			self._set_debug_headers(
 				mac_key_identifier,
@@ -210,8 +210,8 @@ class AuthRequestHandler(trhutil.RequestHandler):
 				self.request.method,
 				self.request.uri,
 				body,
-				self._parsed_auth_header_value.ts,
-				self._parsed_auth_header_value.nonce,
+				self._auth_hdr_val.ts,
+				self._auth_hdr_val.nonce,
 				ext)
 			self.set_status(httplib.UNAUTHORIZED)
 			self.finish()
@@ -240,9 +240,13 @@ class AuthRequestHandler(trhutil.RequestHandler):
 
 	@tornado.web.asynchronous
 	def _handle_request(self):
-		self._parsed_auth_header_value = mac.AuthHeaderValue.parse(
-			self.request.headers.get("Authorization", None))
-		if not self._parsed_auth_header_value:
+		"""```get()```, ```post()```, ```put()```, ```options()```,
+		```delete()``` and ```head()``` requests are all forwarded
+		to this method which is responsible for kicking off the core
+		authentication logic."""
+		auth_hdr_val = self.request.headers.get("Authorization", None)
+		self._auth_hdr_val = mac.AuthHeaderValue.parse(auth_hdr_val)
+		if not self._auth_hdr_val:
 			self.set_status(httplib.UNAUTHORIZED)
 			self.finish()
 			return
@@ -250,7 +254,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		acr = AsyncCredsRetriever()
 		acr.fetch(
 			self._on_async_creds_retriever_done,
-			self._parsed_auth_header_value.mac_key_identifier)
+			self._auth_hdr_val.mac_key_identifier)
 
 	def get(self):
 		self._handle_request()
