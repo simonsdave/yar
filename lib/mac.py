@@ -8,11 +8,11 @@ used in HTTP MAC access authentication scheme. See [1] for details.
 import logging
 logging.basicConfig(level=logging.INFO)
 import string
-import random
 import datetime
 import hashlib
 import hmac
 import base64
+import os
 import re
 
 #-------------------------------------------------------------------------------
@@ -26,25 +26,16 @@ __version__ = "1.0"
 #-------------------------------------------------------------------------------
 
 class Nonce(str):
-	"""This class generates an N character random string where the characters
-	are selected from both all the lower case letters and numbers 0 to 9 and N
-	is between 8 and 16. The resulting string is intendend to be used
-	as the nonce in MAC access authenciation.
-
-	The implementation for this class was strongly influenced by [1].
-
-	[1] http://stackoverflow.com/questions/2257441/python-random-string-generation-with-upper-case-letters-and-digits."""
+	"""This class generates a 16 character random string intend
+	for use as a nonce when computing an HMAC."""
 
 	def __new__(self, nonce):
 		return str.__new__(self, nonce)
 
 	@classmethod
 	def compute(cls):
-		chars = string.ascii_lowercase + string.digits
-		r = random.Random()
-		nonce_len = 8 + r.randint(0,8)
-		nonce = ''.join(random.choice(chars) for i in range(nonce_len))
-		return cls(nonce)
+		"""Generate a nonce. Returns an instance of ```Nonce```"""
+		return cls(base64.b64encode(os.urandom(12)))
 
 #-------------------------------------------------------------------------------
 

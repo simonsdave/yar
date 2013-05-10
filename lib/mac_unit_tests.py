@@ -26,10 +26,7 @@ class NonceTestCase(unittest.TestCase):
 			nonce = mac.Nonce.compute()
 			self.assertIsNotNone(nonce)
 			self.assertEqual(nonce.__class__, mac.Nonce)
-			self.assertTrue(8 <= len(nonce))
-			self.assertTrue(len(nonce) <= 16)
-			for i in range(0,len(nonce)):
-				self.assertTrue(nonce[i] in (string.ascii_lowercase + string.digits))
+			self.assertEqual(16, len(nonce))
 
 	def test_created_with_explicit_content(self):
 		content = 'dave was here'
