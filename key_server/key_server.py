@@ -4,7 +4,6 @@
 import httplib
 import re
 import json
-import uuid
 import logging
 
 import tornado.httpserver
@@ -16,6 +15,7 @@ from clparser import CommandLineParser
 import tsh
 import trhutil
 import jsonschemas
+import mac
 
 #-------------------------------------------------------------------------------
 
@@ -46,17 +46,14 @@ class StatusRequestHandler(trhutil.RequestHandler):
 
 class AsnycCredsCreator(object):
 
-	def _uuid(self):
-		return str(uuid.uuid4()).replace("-","")
-
 	def create(self, owner, callback):
 
 		self._callback = callback
 
 		self._creds = {
 		   "owner": owner,
-		   "mac_key_identifier": self._uuid(),
-		   "mac_key": self._uuid(),
+		   "mac_key_identifier": mac.MACKeyIdentifier.compute(),
+		   "mac_key": mac.MACKey.compute(),
 		   "mac_algorithm": "hmac-sha-1",
 		   "type": "cred_v1.0",
 		   "is_deleted": False,
