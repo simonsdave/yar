@@ -11,7 +11,7 @@ import string
 import datetime
 import hashlib
 import hmac
-import base64
+import binascii
 import os
 import re
 
@@ -25,6 +25,15 @@ __version__ = "1.0"
 
 #-------------------------------------------------------------------------------
 
+def _hexify(bytes):
+	"""Super simple utility to turn an array of bytes in
+	a hex string representation of those bytes."""
+	if bytes is None:
+		return None
+	return binascii.b2a_hex(bytes)
+
+#-------------------------------------------------------------------------------
+
 class Nonce(str):
 	"""This class generates a 16 character random string intend
 	for use as a nonce when computing an HMAC."""
@@ -35,7 +44,7 @@ class Nonce(str):
 	@classmethod
 	def compute(cls):
 		"""Generate a nonce. Returns an instance of ```Nonce```"""
-		return cls(base64.b64encode(os.urandom(12)))
+		return cls(_hexify(os.urandom(8)))
 
 #-------------------------------------------------------------------------------
 
@@ -106,7 +115,7 @@ class MACKeyIdentifier(str):
 	def compute(cls):
 		"""Generate a mac key identifier. Returns an instance
 		of ```MACKeyIdentifier```"""
-		return cls(base64.b64encode(os.urandom(24)))
+		return cls(_hexify(os.urandom(16)))
 
 #-------------------------------------------------------------------------------
 
@@ -120,7 +129,7 @@ class MACKey(str):
 	@classmethod
 	def compute(cls):
 		"""Generate a mac key. Returns an instance of ```MACKey```"""
-		return cls(base64.b64encode(os.urandom(24)))
+		return cls(_hexify(os.urandom(16)))
 
 #-------------------------------------------------------------------------------
 
