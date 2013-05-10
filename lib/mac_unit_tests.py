@@ -19,6 +19,22 @@ import mac
 
 #-------------------------------------------------------------------------------
 
+class MACKeyIdentifierTestCase(unittest.TestCase):
+	
+	def test_compute_returns_non_none_MACKeyIdentifier(self):
+		mac_key_identifier = mac.MACKeyIdentifier.compute()
+		self.assertIsNotNone(mac_key_identifier)
+		self.assertEqual(mac_key_identifier.__class__, mac.MACKeyIdentifier)
+		self.assertEqual(32, len(mac_key_identifier))
+
+	def test_created_with_explicit_content(self):
+		content = 'dave was here'
+		mac_key_identifier = mac.MACKeyIdentifier(content)
+		self.assertIsNotNone(mac_key_identifier)
+		self.assertEqual(mac_key_identifier, content)
+
+#-------------------------------------------------------------------------------
+
 class NonceTestCase(unittest.TestCase):
 	
 	def test_compute_returns_non_none_Nonces(self):

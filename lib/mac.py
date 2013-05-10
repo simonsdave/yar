@@ -95,6 +95,20 @@ class NormalizedRequestString(str):
 
 #-------------------------------------------------------------------------------
 
+class MACKeyIdentifier(str):
+	"""This class generates a 32 character random string intend
+	for use as a MAC key identifier."""
+
+	def __new__(self, mac_key_identifier):
+		return str.__new__(self, mac_key_identifier)
+
+	@classmethod
+	def compute(cls):
+		"""Generate a mac key identifier. Returns an instance of ```Nonce```"""
+		return cls(base64.b64encode(os.urandom(24)))
+
+#-------------------------------------------------------------------------------
+
 class MAC(str):
 	"""Implements concept of a message authentication code according to
 	http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02"""
