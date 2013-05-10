@@ -104,7 +104,22 @@ class MACKeyIdentifier(str):
 
 	@classmethod
 	def compute(cls):
-		"""Generate a mac key identifier. Returns an instance of ```Nonce```"""
+		"""Generate a mac key identifier. Returns an instance
+		of ```MACKeyIdentifier```"""
+		return cls(base64.b64encode(os.urandom(24)))
+
+#-------------------------------------------------------------------------------
+
+class MACKey(str):
+	"""This class generates a 32 character random string intend
+	for use as a MAC key."""
+
+	def __new__(self, mac_key):
+		return str.__new__(self, mac_key)
+
+	@classmethod
+	def compute(cls):
+		"""Generate a mac key. Returns an instance of ```MACKey```"""
 		return cls(base64.b64encode(os.urandom(24)))
 
 #-------------------------------------------------------------------------------

@@ -19,6 +19,22 @@ import mac
 
 #-------------------------------------------------------------------------------
 
+class MACKeyTestCase(unittest.TestCase):
+	
+	def test_compute_returns_non_none_MACKey(self):
+		mac_key = mac.MACKey.compute()
+		self.assertIsNotNone(mac_key)
+		self.assertEqual(mac_key.__class__, mac.MACKey)
+		self.assertEqual(32, len(mac_key))
+
+	def test_created_with_explicit_content(self):
+		content = 'dave was here'
+		mac_key = mac.MACKey(content)
+		self.assertIsNotNone(mac_key)
+		self.assertEqual(mac_key, content)
+
+#-------------------------------------------------------------------------------
+
 class MACKeyIdentifierTestCase(unittest.TestCase):
 	
 	def test_compute_returns_non_none_MACKeyIdentifier(self):
