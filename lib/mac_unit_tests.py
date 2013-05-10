@@ -22,11 +22,10 @@ import mac
 class NonceTestCase(unittest.TestCase):
 	
 	def test_compute_returns_non_none_Nonces(self):
-		for i in range(0,1024):
-			nonce = mac.Nonce.compute()
-			self.assertIsNotNone(nonce)
-			self.assertEqual(nonce.__class__, mac.Nonce)
-			self.assertEqual(16, len(nonce))
+		nonce = mac.Nonce.compute()
+		self.assertIsNotNone(nonce)
+		self.assertEqual(nonce.__class__, mac.Nonce)
+		self.assertEqual(16, len(nonce))
 
 	def test_created_with_explicit_content(self):
 		content = 'dave was here'
