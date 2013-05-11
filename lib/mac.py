@@ -60,6 +60,7 @@ class Timestamp(str):
 	"""Represents the # of seconds since 1st Jan 1970."""
 
 	def __new__(self, ts):
+		int(ts)
 		return str.__new__(self, ts)
 
 	@classmethod

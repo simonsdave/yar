@@ -81,6 +81,18 @@ class TimestampTestCase(unittest.TestCase):
 		self.assertIsNotNone(ts)
 		self.assertEqual(ts, content)
 
+	def test_conversion_to_int(self):
+		value = 45
+		ts = mac.Timestamp(value)
+		self.assertIsNotNone(ts)
+		self.assertEqual(ts.__class__, mac.Timestamp)
+		self.assertEqual(int(ts), value)
+
+	def test_create_with_non_int(self):
+		with self.assertRaises(ValueError):
+			value = "dave"
+			ts = mac.Timestamp(value)
+
 #-------------------------------------------------------------------------------
 
 class ExtTestCase(unittest.TestCase):
