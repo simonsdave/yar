@@ -141,6 +141,7 @@ class MACKey(str):
 		return str.__new__(self, mac_key)
 
 	def as_keyczar_hmac_key(self):
+		"""Decode self into a instance of ```keyczar.keys.HmacKey```."""
 		key_as_json_str = _dehexify(self)
 		key = keyczar.keys.HmacKey.Read(key_as_json_str)
 		return key
@@ -165,9 +166,19 @@ class MAC(str):
 	def __new__(self, mac):
 		return str.__new__(self, mac)
 
+	def verify(self, mac_key, mac_algorithm, normalized_request_string):
+		"""Generate a MAC for ```normalized_request_string``` and compare
+		it to ```other_mac```. If the MACs are equal return True otherwise
+		return False.
+
+		To prevent timing attacks this method is should be instead of
+		direct MAC comparision."""
+		keyczar_hmac_key = mac_key.as_keyczar_hmac_key()
+		return keyczar_hmac_key.Verify(normalized_request_string, _dehexify(self))
+
 	@classmethod
 	def generate(cls, mac_key, mac_algorithm, normalized_request_string):
-		"""Compute a request's MAC given a normalized request sring (aka
+		"""Generate a request's MAC given a normalized request sring (aka
 		a summary of the key elements of the request, the mac key and
 		the algorithm."""
 		if normalized_request_string is None:

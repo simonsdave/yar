@@ -188,18 +188,17 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			host,
 			port,
 			ext)
-		my_mac = mac.MAC.generate(
+
+		macs_equal = self._auth_hdr_val.mac.verify(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
-
-		if self._auth_hdr_val.mac != my_mac:
+		if not macs_equal:
 			_logger.info(
-				"For '%s' using MAC key identifier '%s' MAC in request '%s' doesn't match computed MAC '%s'",
+				"For '%s' using MAC key identifier '%s' MAC in request '%s' doesn't match computed MAC",
 				self.request.full_url(),
 				mac_key_identifier,
-				self._auth_hdr_val.mac,
-				my_mac)
+				self._auth_hdr_val.mac)
 			self._set_debug_headers(
 				mac_key_identifier,
 				mac_key,
@@ -220,7 +219,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		_logger.info(
 			"Authorization successful for '%s' and MAC '%s'",
 			self.request.full_url(),
-			my_mac)
+			self._auth_hdr_val.mac)
 
 		headers = tornado.httputil.HTTPHeaders(self.request.headers)
 		headers["Authorization"] = "%s %s %s" % (
