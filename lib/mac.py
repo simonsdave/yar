@@ -142,17 +142,17 @@ class MACKey(str):
 
 	def as_keyczar_hmac_key(self):
 		"""Decode self into a instance of ```keyczar.keys.HmacKey```."""
-		key_as_json_str = _dehexify(self)
-		key = keyczar.keys.HmacKey.Read(key_as_json_str)
-		return key
+		keyczar_hmac_key = keyczar.keys.HmacKey(
+			_dehexify(self),
+			self.__class__._key_size_in_bits)
+		return keyczar_hmac_key
 
 	@classmethod
 	def generate(cls):
 		"""Generate a mac key. Returns an instance of ```MACKey```"""
 		key = keyczar.keys.HmacKey.Generate(cls._key_size_in_bits)
-		key_as_json_str = str(key)
-		key_as_encoded_json_str = _hexify(key_as_json_str)
-		return cls(key_as_encoded_json_str)
+		hex_encoded_key_string = _hexify(key.key_string)
+		return cls(hex_encoded_key_string)
 
 #-------------------------------------------------------------------------------
 
@@ -185,7 +185,7 @@ class MAC(str):
 			return None
 
 		keyczar_hmac_key = mac_key.as_keyczar_hmac_key()
-		return _hexify(keyczar_hmac_key.Sign(normalized_request_string))
+		return cls(_hexify(keyczar_hmac_key.Sign(normalized_request_string)))
 
 #-------------------------------------------------------------------------------
 

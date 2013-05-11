@@ -289,6 +289,54 @@ class AuthHeaderValueTestCase(unittest.TestCase):
 
 #-------------------------------------------------------------------------------
 
+class MACTestCase(unittest.TestCase):
+	
+	def test_content_type_and_body_none_is_zero_length_ext(self):
+		ts = mac.Timestamp.generate()
+		nonce = mac.Nonce.generate()
+		http_method = "POST"
+		uri = "/whatever"
+		host = "localhost"
+		port = 8080
+		content_type = "application/json;charset=utf-8"
+		body = json.dumps({"dave": "was", "there": "you", "are": 42})
+		ext = mac.Ext.generate(content_type, body)
+		normalized_request_string = mac.NormalizedRequestString.generate(
+			ts,
+			nonce,
+			http_method,
+			uri,
+			host,
+			port,
+			ext)
+		mac_key = mac.MACKey.generate()
+		self.assertIsNotNone(mac_key)
+		my_mac = mac.MAC.generate(
+			mac_key,
+		 	mac.MAC.algorithm,
+			normalized_request_string)
+		self.assertIsNotNone(my_mac)
+		verify_rv = my_mac.verify(
+			mac_key,
+		 	mac.MAC.algorithm,
+			normalized_request_string)
+		self.assertTrue(verify_rv)
+		normalized_request_string = mac.NormalizedRequestString.generate(
+			ts,
+			nonce,
+			http_method,
+			uri,
+			host,
+			port + 1,
+			ext)
+		verify_rv = my_mac.verify(
+			mac_key,
+		 	mac.MAC.algorithm,
+			normalized_request_string)
+		self.assertFalse(verify_rv)
+
+#-------------------------------------------------------------------------------
+
 if __name__ == "__main__":
 	unittest.main()
 
