@@ -19,10 +19,10 @@ def _generate_authorization_header_value(
 	content_type,
 	body):
 
-	ts = mac.Timestamp.compute()
-	nonce = mac.Nonce.compute()
-	ext = mac.Ext.compute(content_type, body)
-	normalized_request_string = mac.NormalizedRequestString.compute(
+	ts = mac.Timestamp.generate()
+	nonce = mac.Nonce.generate()
+	ext = mac.Ext.generate(content_type, body)
+	normalized_request_string = mac.NormalizedRequestString.generate(
 		ts,
 		nonce,
 		http_method,
@@ -30,7 +30,7 @@ def _generate_authorization_header_value(
 		host,
 		port,
 		ext)
-	my_mac = mac.MAC.compute(
+	my_mac = mac.MAC.generate(
 		mac_key,
 		mac_algorithm,
 		normalized_request_string)

@@ -91,10 +91,10 @@ class AsyncCredsRetriever(object):
 
 		self._callback(
 			True,
-			self._mac_key_identifier,
+			mac.MACKeyIdentifier(self._mac_key_identifier),
 			body["is_deleted"],
 			body["mac_algorithm"],
-			body["mac_key"],
+			mac.MACKey(body["mac_key"]),
 			body["owner"])
 
 #-------------------------------------------------------------------------------
@@ -127,7 +127,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		to figure out the root cause of the error. This method is called
 		on authorization failure and, if logging is set to at least debug,
 		a whole series of HTTP headers are set to return the core elements
-		that are used to compute the HMAC."""
+		that are used to generate the HMAC."""
 
 		if not _logger.isEnabledFor(logging.INFO):
 			return
@@ -171,7 +171,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		if not is_ok:
 			_logger.info(
 				"No MAC credentials found for '%s'",
-				self.request.uri)
+				self.request.full_url())
 			self.set_status(httplib.UNAUTHORIZED)
 			self.finish()
 			return
@@ -179,8 +179,8 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		(host, port) = self.get_request_host_and_port("localhost", 80)
 		content_type = self.request.headers.get("Content-type", None)
 		body = self.get_request_body_if_exists(None)
-		ext = mac.Ext.compute(content_type, body)
-		normalized_request_string = mac.NormalizedRequestString.compute(
+		ext = mac.Ext.generate(content_type, body)
+		normalized_request_string = mac.NormalizedRequestString.generate(
 			self._auth_hdr_val.ts,
 			self._auth_hdr_val.nonce,
 			self.request.method,
@@ -188,7 +188,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			host,
 			port,
 			ext)
-		my_mac = mac.MAC.compute(
+		my_mac = mac.MAC.generate(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)

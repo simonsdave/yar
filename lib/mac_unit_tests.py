@@ -21,11 +21,10 @@ import mac
 
 class MACKeyTestCase(unittest.TestCase):
 	
-	def test_compute_returns_non_none_MACKey(self):
-		mac_key = mac.MACKey.compute()
+	def test_generate_returns_non_none_MACKey(self):
+		mac_key = mac.MACKey.generate()
 		self.assertIsNotNone(mac_key)
 		self.assertEqual(mac_key.__class__, mac.MACKey)
-		self.assertEqual(32, len(mac_key))
 
 	def test_created_with_explicit_content(self):
 		content = 'dave was here'
@@ -37,8 +36,8 @@ class MACKeyTestCase(unittest.TestCase):
 
 class MACKeyIdentifierTestCase(unittest.TestCase):
 	
-	def test_compute_returns_non_none_MACKeyIdentifier(self):
-		mac_key_identifier = mac.MACKeyIdentifier.compute()
+	def test_generate_returns_non_none_MACKeyIdentifier(self):
+		mac_key_identifier = mac.MACKeyIdentifier.generate()
 		self.assertIsNotNone(mac_key_identifier)
 		self.assertEqual(mac_key_identifier.__class__, mac.MACKeyIdentifier)
 		self.assertEqual(32, len(mac_key_identifier))
@@ -53,8 +52,8 @@ class MACKeyIdentifierTestCase(unittest.TestCase):
 
 class NonceTestCase(unittest.TestCase):
 	
-	def test_compute_returns_non_none_Nonces(self):
-		nonce = mac.Nonce.compute()
+	def test_generate_returns_non_none_Nonces(self):
+		nonce = mac.Nonce.generate()
 		self.assertIsNotNone(nonce)
 		self.assertEqual(nonce.__class__, mac.Nonce)
 		self.assertEqual(16, len(nonce))
@@ -69,8 +68,8 @@ class NonceTestCase(unittest.TestCase):
 
 class TimestampTestCase(unittest.TestCase):
 	
-	def test_compute_returns_non_none_Timestamp_which_represents_integer(self):
-		ts = mac.Timestamp.compute()
+	def test_generate_returns_non_none_Timestamp_which_represents_integer(self):
+		ts = mac.Timestamp.generate()
 		self.assertIsNotNone(ts)
 		self.assertEqual(ts.__class__, mac.Timestamp)
 		self.assertTrue(0 < len(ts))
@@ -89,28 +88,28 @@ class ExtTestCase(unittest.TestCase):
 	def test_content_type_and_body_none_is_zero_length_ext(self):
 		content_type = None
 		body = None
-		ext = mac.Ext.compute(content_type, body)
+		ext = mac.Ext.generate(content_type, body)
 		self.assertIsNotNone(ext)
 		self.assertEqual(ext, "")
 
 	def test_content_type_not_none_and_body_none_is_zero_length_ext(self):
 		content_type = "dave was here"
 		body = None
-		ext = mac.Ext.compute(content_type, body)
+		ext = mac.Ext.generate(content_type, body)
 		self.assertIsNotNone(ext)
 		self.assertEqual(ext, "")
 
 	def test_content_type_none_and_body_not_none_is_zero_length_ext(self):
 		content_type = None
 		body = "dave was here"
-		ext = mac.Ext.compute(content_type, body)
+		ext = mac.Ext.generate(content_type, body)
 		self.assertIsNotNone(ext)
 		self.assertEqual(ext, "")
 
 	def test_content_type_and_body_not_none_is_sha1_of_both(self):
 		content_type = "hello world!"
 		body = "dave was here"
-		ext = mac.Ext.compute(content_type, body)
+		ext = mac.Ext.generate(content_type, body)
 		self.assertIsNotNone(ext)
 		hash = hashlib.new('sha1', content_type + body)
 		self.assertEqual(ext, hash.hexdigest())
@@ -146,16 +145,16 @@ class AuthHeaderValueTestCase(unittest.TestCase):
 		self.assertEqual(ah.mac, my_mac)
 
 	def test_parse_generated_value_for_get(self):
-		ts = mac.Timestamp.compute()
-		nonce = mac.Nonce.compute()
+		ts = mac.Timestamp.generate()
+		nonce = mac.Nonce.generate()
 		http_method = "GET"
 		uri = "/whatever"
 		host = "localhost"
 		port = 8080
 		content_type = None
 		body = None
-		ext = mac.Ext.compute(content_type, body)
-		normalized_request_string = mac.NormalizedRequestString.compute(
+		ext = mac.Ext.generate(content_type, body)
+		normalized_request_string = mac.NormalizedRequestString.generate(
 			ts,
 			nonce,
 			http_method,
@@ -163,13 +162,13 @@ class AuthHeaderValueTestCase(unittest.TestCase):
 			host,
 			port,
 			ext)
-		mac_key = self._uuid()
-		mac_algorithm = "hmac-sha-1"
-		my_mac = mac.MAC.compute(
+		mac_key = mac.MACKey.generate()
+		mac_algorithm = mac.MAC.algorithm
+		my_mac = mac.MAC.generate(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
-		mac_key_identifier = self._uuid()
+		mac_key_identifier = mac.MACKeyIdentifier.generate()
 		ahv = mac.AuthHeaderValue(
 			mac_key_identifier,
 			ts,
@@ -185,16 +184,16 @@ class AuthHeaderValueTestCase(unittest.TestCase):
 		self.assertEqual(pahv.mac, ahv.mac)
 
 	def test_parse_generated_value_for_post(self):
-		ts = mac.Timestamp.compute()
-		nonce = mac.Nonce.compute()
+		ts = mac.Timestamp.generate()
+		nonce = mac.Nonce.generate()
 		http_method = "POST"
 		uri = "/whatever"
 		host = "localhost"
 		port = 8080
 		content_type = "application/json;charset=utf-8"
 		body = json.dumps({"dave": "was", "there": "you", "are": 42})
-		ext = mac.Ext.compute(content_type, body)
-		normalized_request_string = mac.NormalizedRequestString.compute(
+		ext = mac.Ext.generate(content_type, body)
+		normalized_request_string = mac.NormalizedRequestString.generate(
 			ts,
 			nonce,
 			http_method,
@@ -202,13 +201,13 @@ class AuthHeaderValueTestCase(unittest.TestCase):
 			host,
 			port,
 			ext)
-		mac_key = self._uuid()
-		mac_algorithm = "hmac-sha-1"
-		my_mac = mac.MAC.compute(
+		mac_key = mac.MACKey.generate()
+		mac_algorithm = mac.MAC.algorithm
+		my_mac = mac.MAC.generate(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
-		mac_key_identifier = self._uuid()
+		mac_key_identifier = mac.MACKeyIdentifier.generate()
 		ahv = mac.AuthHeaderValue(
 			mac_key_identifier,
 			ts,

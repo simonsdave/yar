@@ -66,9 +66,9 @@ class TestCase(testcase.TestCase):
 		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
 
 	def test_invalid_mac_algorithm_returned_from_key_server(self):
-		mac_key_identifier = str(uuid.uuid4())
-		mac_key = str(uuid.uuid4())
-		mac_algorithm = "hmac-sha-1"
+		mac_key_identifier = mac.MACKeyIdentifier.generate()
+		mac_key = mac.MACKey.generate()
+		mac_algorithm = mac.MAC.algorithm
 		owner = str(uuid.uuid4())
 		http_method = "GET"
 		uri = "/whatever"
@@ -81,10 +81,10 @@ class TestCase(testcase.TestCase):
 		testcase.TestCase.mac_algorithm_response_to_key_server_request = "dave-%s" % mac_algorithm
 		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
-		ts = mac.Timestamp.compute()
-		nonce = mac.Nonce.compute()
-		ext = mac.Ext.compute(content_type, body)
-		normalized_request_string = mac.NormalizedRequestString.compute(
+		ts = mac.Timestamp.generate()
+		nonce = mac.Nonce.generate()
+		ext = mac.Ext.generate(content_type, body)
+		normalized_request_string = mac.NormalizedRequestString.generate(
 			ts,
 			nonce,
 			http_method,
@@ -92,7 +92,7 @@ class TestCase(testcase.TestCase):
 			host,
 			port,
 			ext)
-		my_mac = mac.MAC.compute(
+		my_mac = mac.MAC.generate(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
@@ -117,9 +117,9 @@ class TestCase(testcase.TestCase):
 			mac_key_identifier)
 
 	def test_all_good_on_get(self):
-		mac_key_identifier = str(uuid.uuid4())
-		mac_key = str(uuid.uuid4())
-		mac_algorithm = "hmac-sha-1"
+		mac_key_identifier = mac.MACKeyIdentifier.generate()
+		mac_key = mac.MACKey.generate()
+		mac_algorithm = mac.MAC.algorithm
 		owner = str(uuid.uuid4())
 		http_method = "GET"
 		uri = "/whatever"
@@ -132,10 +132,10 @@ class TestCase(testcase.TestCase):
 		testcase.TestCase.mac_algorithm_response_to_key_server_request = mac_algorithm
 		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
-		ts = mac.Timestamp.compute()
-		nonce = mac.Nonce.compute()
-		ext = mac.Ext.compute(content_type, body)
-		normalized_request_string = mac.NormalizedRequestString.compute(
+		ts = mac.Timestamp.generate()
+		nonce = mac.Nonce.generate()
+		ext = mac.Ext.generate(content_type, body)
+		normalized_request_string = mac.NormalizedRequestString.generate(
 			ts,
 			nonce,
 			http_method,
@@ -143,7 +143,7 @@ class TestCase(testcase.TestCase):
 			host,
 			port,
 			ext)
-		my_mac = mac.MAC.compute(
+		my_mac = mac.MAC.generate(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)
@@ -168,9 +168,9 @@ class TestCase(testcase.TestCase):
 			mac_key_identifier)
 
 	def test_all_good_on_post(self):
-		mac_key_identifier = str(uuid.uuid4())
-		mac_key = str(uuid.uuid4())
-		mac_algorithm = "hmac-sha-1"
+		mac_key_identifier = mac.MACKeyIdentifier.generate()
+		mac_key = mac.MACKey.generate()
+		mac_algorithm = mac.MAC.algorithm
 		owner = str(uuid.uuid4())
 		http_method = "POST"
 		uri = "/isallokonpost"
@@ -183,10 +183,10 @@ class TestCase(testcase.TestCase):
 		testcase.TestCase.mac_algorithm_response_to_key_server_request = mac_algorithm
 		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
-		ts = mac.Timestamp.compute()
-		nonce = mac.Nonce.compute()
-		ext = mac.Ext.compute(content_type, body)
-		normalized_request_string = mac.NormalizedRequestString.compute(
+		ts = mac.Timestamp.generate()
+		nonce = mac.Nonce.generate()
+		ext = mac.Ext.generate(content_type, body)
+		normalized_request_string = mac.NormalizedRequestString.generate(
 			ts,
 			nonce,
 			http_method,
@@ -194,7 +194,7 @@ class TestCase(testcase.TestCase):
 			host,
 			port,
 			ext)
-		my_mac = mac.MAC.compute(
+		my_mac = mac.MAC.generate(
 			mac_key,
 			mac_algorithm,
 			normalized_request_string)

@@ -52,9 +52,9 @@ class AsnycCredsCreator(object):
 
 		self._creds = {
 		   "owner": owner,
-		   "mac_key_identifier": mac.MACKeyIdentifier.compute(),
-		   "mac_key": mac.MACKey.compute(),
-		   "mac_algorithm": "hmac-sha-1",
+		   "mac_key_identifier": mac.MACKeyIdentifier.generate(),
+		   "mac_key": mac.MACKey.generate(),
+		   "mac_algorithm": mac.MAC.algorithm,
 		   "type": "cred_v1.0",
 		   "is_deleted": False,
 		}

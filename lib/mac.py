@@ -15,6 +15,8 @@ import binascii
 import os
 import re
 
+from keyczar import keyczar
+
 #-------------------------------------------------------------------------------
 
 _logger = logging.getLogger("UTIL.%s" % __name__)
@@ -32,6 +34,12 @@ def _hexify(bytes):
 		return None
 	return binascii.b2a_hex(bytes)
 
+def _dehexify(bytes_encoded_as_hex_string):
+	"""Super simple utility to do the reverse of ```_hexify()```"""
+	if bytes_encoded_as_hex_string is None:
+		return None
+	return binascii.a2b_hex(bytes_encoded_as_hex_string)
+
 #-------------------------------------------------------------------------------
 
 class Nonce(str):
@@ -42,7 +50,7 @@ class Nonce(str):
 		return str.__new__(self, nonce)
 
 	@classmethod
-	def compute(cls):
+	def generate(cls):
 		"""Generate a nonce. Returns an instance of ```Nonce```"""
 		return cls(_hexify(os.urandom(8)))
 
@@ -55,7 +63,8 @@ class Timestamp(str):
 		return str.__new__(self, ts)
 
 	@classmethod
-	def compute(cls):
+	def generate(cls):
+		"""Generate a timestamp. Returns an instance of ```Timestamp```"""
 		epoch = datetime.datetime(1970, 1, 1, 0, 0, 0)
 		ts = int((datetime.datetime.utcnow() - epoch).total_seconds())
 		return cls(ts)
@@ -70,8 +79,8 @@ class Ext(str):
 		return str.__new__(self, ext)
 
 	@classmethod
-	def compute(cls, content_type, body):
-
+	def generate(cls, content_type, body):
+		"""Generate an ext. Returns an instance of ```Ext```"""
 		if content_type is not None and body is not None: 
 			content_type_plus_body = content_type + body
 			content_type_plus_body_hash = hashlib.sha1(content_type_plus_body)
@@ -91,7 +100,9 @@ class NormalizedRequestString(str):
 		return str.__new__(self, normalized_request_string)
 
 	@classmethod
-	def compute(cls, ts, nonce, http_method, uri, host, port, ext):
+	def generate(cls, ts, nonce, http_method, uri, host, port, ext):
+		"""Generate a normalized request string.
+		Returns an instance of ```NormalizedRequestString```"""
 		normalized_request_string = \
 			ts + '\n' + \
 			nonce + '\n' + \
@@ -112,7 +123,7 @@ class MACKeyIdentifier(str):
 		return str.__new__(self, mac_key_identifier)
 
 	@classmethod
-	def compute(cls):
+	def generate(cls):
 		"""Generate a mac key identifier. Returns an instance
 		of ```MACKeyIdentifier```"""
 		return cls(_hexify(os.urandom(16)))
@@ -123,13 +134,24 @@ class MACKey(str):
 	"""This class generates a 32 character random string intend
 	for use as a MAC key."""
 
+	"""# of bits in the generated key."""
+	_key_size_in_bits = 256
+
 	def __new__(self, mac_key):
 		return str.__new__(self, mac_key)
 
+	def as_keyczar_hmac_key(self):
+		key_as_json_str = _dehexify(self)
+		key = keyczar.keys.HmacKey.Read(key_as_json_str)
+		return key
+
 	@classmethod
-	def compute(cls):
+	def generate(cls):
 		"""Generate a mac key. Returns an instance of ```MACKey```"""
-		return cls(_hexify(os.urandom(16)))
+		key = keyczar.keys.HmacKey.Generate(cls._key_size_in_bits)
+		key_as_json_str = str(key)
+		key_as_encoded_json_str = _hexify(key_as_json_str)
+		return cls(key_as_encoded_json_str)
 
 #-------------------------------------------------------------------------------
 
@@ -137,20 +159,22 @@ class MAC(str):
 	"""Implements concept of a message authentication code according to
 	http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02"""
 
+	"""Name of algorithm used to compute the MAC."""
+	algorithm = "hmac-sha-1"
+
 	def __new__(self, mac):
 		return str.__new__(self, mac)
 
 	@classmethod
-	def compute(cls, mac_key, mac_algorithm, normalized_request_string):
+	def generate(cls, mac_key, mac_algorithm, normalized_request_string):
 		"""Compute a request's MAC given a normalized request sring (aka
 		a summary of the key elements of the request, the mac key and
 		the algorithm."""
+		if normalized_request_string is None:
+			return None
 
-		# :TODO: the str() on the mac key below seems required because of
-        # a bug introducted in python 2.6 as per http://bugs.python.org/issue5285
-		dm = hashlib.sha256 if mac_algorithm == "hmac-sha-256" else hashlib.sha1
-		mac = hmac.new(str(mac_key), normalized_request_string, dm)
-		return cls(mac.hexdigest())
+		keyczar_hmac_key = mac_key.as_keyczar_hmac_key()
+		return _hexify(keyczar_hmac_key.Sign(normalized_request_string))
 
 #-------------------------------------------------------------------------------
 
