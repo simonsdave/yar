@@ -45,10 +45,6 @@ def _generate_authorization_header_value(
 #-------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-	# print 30*'-'
-	# for a in sys.argv:
-	# 	print ">>>%s<<<" % a
-	# print 30*'-'
 	number_argvs = len(sys.argv)
 	if 8 != number_argvs and 9 != number_argvs:
 		filename = os.path.split(sys.argv[0])[1]
@@ -56,6 +52,13 @@ if __name__ == "__main__":
 		print fmt % filename
 		sys.exit(1)
 
+	http_method = sys.argv[1]
+	host = sys.argv[2]
+	port = sys.argv[3]
+	uri = sys.argv[4]
+	mac_key_identifier = mac.MACKeyIdentifier(sys.argv[5])
+	mac_key = mac.MACKey(sys.argv[6])
+	mac_algorithm = sys.argv[7]
 	if 9 == number_argvs:
 		content_type = sys.argv[8]
 		body = sys.stdin.read()
@@ -64,13 +67,13 @@ if __name__ == "__main__":
 		body = None
 
 	authorization_header_value = _generate_authorization_header_value(
-		sys.argv[1],
-		sys.argv[2],
-		sys.argv[3],
-		sys.argv[4],
-		sys.argv[5],
-		sys.argv[6],
-		sys.argv[7],
+		http_method,
+		host,
+		port,
+		uri,
+		mac_key_identifier,
+		mac_key,
+		mac_algorithm,
 		content_type,
 		body)
 	print authorization_header_value
