@@ -134,7 +134,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		a whole series of HTTP headers are set to return the core elements
 		that are used to generate the HMAC."""
 
-		if not _logger.isEnabledFor(logging.INFO):
+		if not _logger.isEnabledFor(logging.DEBUG):
 			return
 
 		self._set_debug_header("X-AUTH-SERVER-MAC-KEY-IDENTIFIER", mac_key_identifier)
