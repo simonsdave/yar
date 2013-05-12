@@ -28,6 +28,7 @@ import mac
 #-------------------------------------------------------------------------------
 
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
+_logger.addHandler(logging.NullHandler())
 
 #-------------------------------------------------------------------------------
 
@@ -241,7 +242,6 @@ class AuthRequestHandler(trhutil.RequestHandler):
 				follow_redirects=False),
 			callback=self._on_app_server_done)
 
-	@tornado.web.asynchronous
 	def _handle_request(self):
 		"""```get()```, ```post()```, ```put()```, ```options()```,
 		```delete()``` and ```head()``` requests are all forwarded
@@ -281,21 +281,27 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			self._on_async_creds_retriever_done,
 			self._auth_hdr_val.mac_key_identifier)
 
+	@tornado.web.asynchronous
 	def get(self):
 		self._handle_request()
 
+	@tornado.web.asynchronous
 	def post(self):
 		self._handle_request()
 
+	@tornado.web.asynchronous
 	def put(self):
 		self._handle_request()
 
+	@tornado.web.asynchronous
 	def delete(self):
 		self._handle_request()
 
+	@tornado.web.asynchronous
 	def head(self):
 		self._handle_request()
 
+	@tornado.web.asynchronous
 	def options(self):
 		self._handle_request()
 
