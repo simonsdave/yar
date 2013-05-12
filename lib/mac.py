@@ -6,7 +6,6 @@ used in HTTP MAC access authentication scheme. See [1] for details.
 #-------------------------------------------------------------------------------
 
 import logging
-logging.basicConfig(level=logging.INFO)
 import string
 import datetime
 import hashlib
