@@ -56,4 +56,12 @@ class CommandLineParser(optparse.OptionParser):
 			type="hostcolonport",
 			help="app server - default = localhost:8080" )
 
+		self.add_option(
+			"--maxage",
+			action="store",
+			dest="maxage",
+			default=30,
+			type=int,
+			help="max age of valid request - default = 30" )
+
 #------------------------------------------------------------------- End-of-File

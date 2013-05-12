@@ -55,13 +55,45 @@ class TestCase(testcase.TestCase):
 
 	def test_get_with_unknonwn_mac_key_identifier(self):
 		testcase.TestCase.status_code_of_response_to_key_server_request = httplib.NOT_FOUND
-		mac_key_identifier = str(uuid.uuid4())
-		auth_header_value = 'MAC id="%s", ts="890", nonce="98", ext="def", mac="bindle"' % mac_key_identifier
+
+		mac_key_identifier = mac.MACKeyIdentifier.generate()
+		mac_key = mac.MACKey.generate()
+		mac_algorithm = mac.MAC.algorithm
+		owner = str(uuid.uuid4())
+		http_method = "GET"
+		uri = "/whatever"
+		host = "localhost"
+		port = self.__class__.auth_server.port
+		content_type = None
+		body = None
+
+		ts = mac.Timestamp.generate()
+		nonce = mac.Nonce.generate()
+		ext = mac.Ext.generate(content_type, body)
+		normalized_request_string = mac.NormalizedRequestString.generate(
+			ts,
+			nonce,
+			http_method,
+			uri,
+			host,
+			port,
+			ext)
+		my_mac = mac.MAC.generate(
+			mac_key,
+			mac_algorithm,
+			normalized_request_string)
+		auth_header_value = mac.AuthHeaderValue(
+			mac_key_identifier,
+			ts,
+			nonce,
+			ext,
+			my_mac)
+
 		http_client = httplib2.Http()
 		response, content = http_client.request(
-			"http://localhost:%d/whatever" % self.__class__.auth_server.port,
+			"http://localhost:%d%s" % (self.__class__.auth_server.port, uri),
 			"GET",
-			headers={"Authorization": auth_header_value})
+			headers={"Authorization": str(auth_header_value)})
 		self.assertTrue(response.status == httplib.UNAUTHORIZED)
 		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
 
@@ -222,6 +254,96 @@ class TestCase(testcase.TestCase):
 			self.__class__.app_server_auth_method,
 			owner,
 			mac_key_identifier)
+
+	def _send_get_to_auth_server(
+		self,
+		mac_key_identifier,
+		mac_key,
+		mac_algorithm,
+		owner,
+		seconds_to_subtract_from_ts=None):
+		"""Utility method for issuing HTTP GETs to the auth server
+		with the provided credentials."""
+
+		http_method = "GET"
+		uri = "/whatever"
+		host = "localhost"
+		port = self.__class__.auth_server.port
+		content_type = None
+		body = None
+
+		ts = mac.Timestamp.generate()
+		if seconds_to_subtract_from_ts is not None:
+			ts = mac.Timestamp(int(ts) - seconds_to_subtract_from_ts)
+		nonce = mac.Nonce.generate()
+		ext = mac.Ext.generate(content_type, body)
+		normalized_request_string = mac.NormalizedRequestString.generate(
+			ts,
+			nonce,
+			http_method,
+			uri,
+			host,
+			port,
+			ext)
+		my_mac = mac.MAC.generate(
+			mac_key,
+			mac_algorithm,
+			normalized_request_string)
+		auth_header_value = mac.AuthHeaderValue(
+			mac_key_identifier,
+			ts,
+			nonce,
+			ext,
+			my_mac)
+
+		http_client = httplib2.Http()
+		response, content = http_client.request(
+			"http://localhost:%d%s" % (self.__class__.auth_server.port, uri),
+			"GET",
+			headers={"Authorization": str(auth_header_value)})
+		return (response, content)
+
+	def test_get_with_old_timestamp(self):
+		# establish credentials
+		mac_key_identifier = mac.MACKeyIdentifier.generate()
+		mac_key = mac.MACKey.generate()
+		mac_algorithm = mac.MAC.algorithm
+		owner = str(uuid.uuid4())
+
+		# configure mock key server with established credentials
+		testcase.TestCase.mac_key_in_response_to_key_server_request = mac_key
+		testcase.TestCase.mac_algorithm_response_to_key_server_request = mac_algorithm
+		testcase.TestCase.owner_in_response_to_key_server_request = owner
+
+		# initially confirm all good with a simple GET request
+		response, content = self._send_get_to_auth_server(
+			mac_key_identifier,
+			mac_key,
+			mac_algorithm,
+			owner)
+		self.assertTrue(response.status == httplib.OK)
+
+		# now repeat the all good GET but this time ask for the request's
+		# timestamp to be reduced by # of seconds in one year
+		one_year_in_seconds = 365*24*60
+		response, content = self._send_get_to_auth_server(
+			mac_key_identifier,
+			mac_key,
+			mac_algorithm,
+			owner,
+			seconds_to_subtract_from_ts=one_year_in_seconds)
+		self.assertTrue(response.status == httplib.UNAUTHORIZED)
+
+		# now repeat the all good GET but this time ask for the request's
+		# timestamp to be advanced by one day
+		one_day_in_seconds = 24*60
+		response, content = self._send_get_to_auth_server(
+			mac_key_identifier,
+			mac_key,
+			mac_algorithm,
+			owner,
+			seconds_to_subtract_from_ts=-one_day_in_seconds)
+		self.assertTrue(response.status == httplib.UNAUTHORIZED)
 
 #-------------------------------------------------------------------------------
 

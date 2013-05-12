@@ -49,6 +49,10 @@ uses the authorization method described by ```app_server_auth_method```
 and the the credential's owner."""
 app_server_auth_method = "DAS"
 
+"""To help prevent reply attacks the timestamp of all requests can
+be no older than ```maxage``` seconds before the current timestamp."""
+maxage = 30
+
 #-------------------------------------------------------------------------------
 
 class AsyncCredsRetriever(object):
@@ -245,11 +249,33 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		authentication logic."""
 		auth_hdr_val = self.request.headers.get("Authorization", None)
 		self._auth_hdr_val = mac.AuthHeaderValue.parse(auth_hdr_val)
-		if not self._auth_hdr_val:
+		if self._auth_hdr_val is None:
 			self.set_status(httplib.UNAUTHORIZED)
 			self.finish()
 			return
 
+		# confirm the request isn't old which is important in protecting
+		# against reply attacks - also requests with timestamps in the
+		# future are also 
+		now = mac.Timestamp.generate()
+		age = int(now) - int(self._auth_hdr_val.ts)
+		if age < 0:
+			# :TODO: timestamp in the future - bad - clocks out of sync?
+			# do we want to allow clocks to be a wee bit ouf of sync?
+			self.set_status(httplib.UNAUTHORIZED)
+			self.finish()
+			return
+
+		if maxage < age:
+			self.set_status(httplib.UNAUTHORIZED)
+			self.finish()
+			return
+
+		# basic request looks good = authentication header found and format
+		# is valid plus the request's timestamp is recent. next steps is
+		# to retrieve the credentials associated with the request's
+		# mac key identifier and confirm the request's MAC is valid thus
+		# confirming the sender's identity
 		acr = AsyncCredsRetriever()
 		acr.fetch(
 			self._on_async_creds_retriever_done,
@@ -296,6 +322,7 @@ if __name__ == "__main__":
 	key_server = clo.key_server
 	app_server = clo.app_server
 	auth_method = clo.app_server_auth_method
+	maxage = clo.maxage
 
 	http_server = tornado.httpserver.HTTPServer(_tornado_app)
 	http_server.listen(clo.port)
