@@ -111,6 +111,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		set the HTTP header called ```name``` of ```value```.
 		This method is entirely about making the implementation
 		of ```_set_debug_headers()``` cleaner."""
+		name = "X-AUTH-SERVER-%s" % name
 		value = strutil.make_http_header_value_friendly(value)
 		self.set_header(name, value)
 
@@ -137,21 +138,21 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		if not _logger.isEnabledFor(logging.DEBUG):
 			return
 
-		self._set_debug_header("X-AUTH-SERVER-MAC-KEY-IDENTIFIER", mac_key_identifier)
-		self._set_debug_header("X-AUTH-SERVER-MAC-KEY", mac_key)
-		self._set_debug_header("X-AUTH-SERVER-MAC-ALGORITHM", mac_algorithm)
-		self._set_debug_header("X-AUTH-SERVER-HOST", host)
-		self._set_debug_header("X-AUTH-SERVER-PORT", port)
-		self._set_debug_header("X-AUTH-SERVER-CONTENT-TYPE", content_type)
-		self._set_debug_header("X-AUTH-SERVER-REQUEST-METHOD", http_method)
-		self._set_debug_header("X-AUTH-SERVER-URI", uri)
+		self._set_debug_header("MAC-KEY-IDENTIFIER", mac_key_identifier)
+		self._set_debug_header("MAC-KEY", mac_key)
+		self._set_debug_header("MAC-ALGORITHM", mac_algorithm)
+		self._set_debug_header("HOST", host)
+		self._set_debug_header("PORT", port)
+		self._set_debug_header("CONTENT-TYPE", content_type)
+		self._set_debug_header("REQUEST-METHOD", http_method)
+		self._set_debug_header("URI", uri)
 		if body is not None:
-			self._set_debug_header("X-AUTH-SERVER-BODY-SHA1", hashlib.sha1(body).hexdigest())
-			self._set_debug_header("X-AUTH-SERVER-BODY-LEN", len(body))
-			self._set_debug_header("X-AUTH-SERVER-BODY", body)
-		self._set_debug_header("X-AUTH-SERVER-TIMESTAMP", ts)
-		self._set_debug_header("X-AUTH-SERVER-NONCE", nonce)
-		self._set_debug_header("X-AUTH-SERVER-EXT", ext)
+			self._set_debug_header("BODY-SHA1", hashlib.sha1(body).hexdigest())
+			self._set_debug_header("BODY-LEN", len(body))
+			self._set_debug_header("BODY", body)
+		self._set_debug_header("TIMESTAMP", ts)
+		self._set_debug_header("NONCE", nonce)
+		self._set_debug_header("EXT", ext)
 
 	def _on_app_server_done(self, response):
 		if response.error:
