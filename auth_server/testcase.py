@@ -176,6 +176,7 @@ class AuthenticationServer(Server):
 		auth_server.key_server = "localhost:%d" % key_server.port
 		auth_server.app_server = "localhost:%d" % app_server.port
 		auth_server.app_server_auth_method = app_server_auth_method
+		auth_server.include_auth_failure_detail = True
 
 		http_server = tornado.httpserver.HTTPServer(auth_server._tornado_app)
 		http_server.add_sockets([self.socket])

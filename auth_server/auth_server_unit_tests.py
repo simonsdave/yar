@@ -38,12 +38,19 @@ class TestCase(testcase.TestCase):
 		cls.io_loop.stop()
 		cls.io_loop = None
 
+	def assertAuthFailure(self, response, detail):
+		self.assertEqual(response.status, httplib.UNAUTHORIZED)
+		header_name = "x-auth-server-auth-failure-detail"
+		self.assertIn(header_name, response)
+		value = response.get(header_name, None)
+		self.assertEqual(value, detail)
+
 	def test_get_with_no_authorization_header(self):
 		http_client = httplib2.Http()
 		response, content = http_client.request(
 			"http://localhost:%d/whatever" % self.__class__.auth_server.port,
 			"GET")
-		self.assertTrue(response.status == httplib.UNAUTHORIZED)
+		self.assertAuthFailure(response, auth_server.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
 
 	def test_get_with_invalid_authorization_header(self):
 		http_client = httplib2.Http()
@@ -51,51 +58,7 @@ class TestCase(testcase.TestCase):
 			"http://localhost:%d/whatever" % self.__class__.auth_server.port,
 			"GET",
 			headers={"Authorization": 'MAC id="", ts="890", nonce="98", ext="abc", mac="bindle"'})
-		self.assertTrue(response.status == httplib.UNAUTHORIZED)
-
-	def test_get_with_unknonwn_mac_key_identifier(self):
-		testcase.TestCase.status_code_of_response_to_key_server_request = httplib.NOT_FOUND
-
-		mac_key_identifier = mac.MACKeyIdentifier.generate()
-		mac_key = mac.MACKey.generate()
-		mac_algorithm = mac.MAC.algorithm
-		owner = str(uuid.uuid4())
-		http_method = "GET"
-		uri = "/whatever"
-		host = "localhost"
-		port = self.__class__.auth_server.port
-		content_type = None
-		body = None
-
-		ts = mac.Timestamp.generate()
-		nonce = mac.Nonce.generate()
-		ext = mac.Ext.generate(content_type, body)
-		normalized_request_string = mac.NormalizedRequestString.generate(
-			ts,
-			nonce,
-			http_method,
-			uri,
-			host,
-			port,
-			ext)
-		my_mac = mac.MAC.generate(
-			mac_key,
-			mac_algorithm,
-			normalized_request_string)
-		auth_header_value = mac.AuthHeaderValue(
-			mac_key_identifier,
-			ts,
-			nonce,
-			ext,
-			my_mac)
-
-		http_client = httplib2.Http()
-		response, content = http_client.request(
-			"http://localhost:%d%s" % (self.__class__.auth_server.port, uri),
-			"GET",
-			headers={"Authorization": str(auth_header_value)})
-		self.assertTrue(response.status == httplib.UNAUTHORIZED)
-		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
+		self.assertAuthFailure(response, auth_server.AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER)
 
 	def test_invalid_mac_algorithm_returned_from_key_server(self):
 		mac_key_identifier = mac.MACKeyIdentifier.generate()
@@ -111,57 +74,6 @@ class TestCase(testcase.TestCase):
 
 		testcase.TestCase.mac_key_in_response_to_key_server_request = mac_key
 		testcase.TestCase.mac_algorithm_response_to_key_server_request = "dave-%s" % mac_algorithm
-		testcase.TestCase.owner_in_response_to_key_server_request = owner
-
-		ts = mac.Timestamp.generate()
-		nonce = mac.Nonce.generate()
-		ext = mac.Ext.generate(content_type, body)
-		normalized_request_string = mac.NormalizedRequestString.generate(
-			ts,
-			nonce,
-			http_method,
-			uri,
-			host,
-			port,
-			ext)
-		my_mac = mac.MAC.generate(
-			mac_key,
-			mac_algorithm,
-			normalized_request_string)
-		auth_header_value = mac.AuthHeaderValue(
-			mac_key_identifier,
-			ts,
-			nonce,
-			ext,
-			my_mac)
-		auth_header_value = str(auth_header_value)
-		http_client = httplib2.Http()
-		response, content = http_client.request(
-			"http://%s:%d%s" % (host, port, uri),
-			http_method,
-			headers={"Authorization": auth_header_value})
-		self.assertTrue(response.status == httplib.OK)
-		self.assertAppServerRequest(get=True)
-		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
-		self.assertAuthorizationHeaderInAppServerRequest(
-			self.__class__.app_server_auth_method,
-			owner,
-			mac_key_identifier)
-
-	def test_all_good_on_get(self):
-		mac_key_identifier = mac.MACKeyIdentifier.generate()
-		mac_key = mac.MACKey.generate()
-		mac_algorithm = mac.MAC.algorithm
-		owner = str(uuid.uuid4())
-		http_method = "GET"
-		uri = "/whatever"
-		host = "localhost"
-		port = self.__class__.auth_server.port
-		content_type = None
-		body = None
-
-		testcase.TestCase.mac_key_in_response_to_key_server_request = mac_key
-		testcase.TestCase.mac_algorithm_response_to_key_server_request = mac_algorithm
 		testcase.TestCase.owner_in_response_to_key_server_request = owner
 
 		ts = mac.Timestamp.generate()
@@ -301,6 +213,19 @@ class TestCase(testcase.TestCase):
 			"http://localhost:%d%s" % (self.__class__.auth_server.port, uri),
 			"GET",
 			headers={"Authorization": str(auth_header_value)})
+
+		self.assertAppServerRequest(get=True)
+		self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
+		self.assertAuthorizationHeaderInAppServerRequest(
+			self.__class__.app_server_auth_method,
+			owner,
+			mac_key_identifier)
+		if response.status == httplib.OK:
+			self.assertAuthorizationHeaderInAppServerRequest(
+				self.__class__.app_server_auth_method,
+				owner,
+				mac_key_identifier)
+
 		return (response, content)
 
 	def test_get_with_old_timestamp(self):
@@ -332,7 +257,7 @@ class TestCase(testcase.TestCase):
 			mac_algorithm,
 			owner,
 			seconds_to_subtract_from_ts=one_year_in_seconds)
-		self.assertTrue(response.status == httplib.UNAUTHORIZED)
+		self.assertAuthFailure(response, auth_server.AUTH_FAILURE_DETAIL_TS_OLD)
 
 		# now repeat the all good GET but this time ask for the request's
 		# timestamp to be advanced by one day
@@ -343,7 +268,38 @@ class TestCase(testcase.TestCase):
 			mac_algorithm,
 			owner,
 			seconds_to_subtract_from_ts=-one_day_in_seconds)
-		self.assertTrue(response.status == httplib.UNAUTHORIZED)
+		self.assertAuthFailure(response, auth_server.AUTH_FAILURE_DETAIL_TS_IN_FUTURE)
+
+	def test_get_with_unknonwn_mac_key_identifier(self):
+		# establish credentials
+		mac_key_identifier = mac.MACKeyIdentifier.generate()
+		mac_key = mac.MACKey.generate()
+		mac_algorithm = mac.MAC.algorithm
+		owner = str(uuid.uuid4())
+
+		# configure mock key server with established credentials
+		testcase.TestCase.mac_key_in_response_to_key_server_request = mac_key
+		testcase.TestCase.mac_algorithm_response_to_key_server_request = mac_algorithm
+		testcase.TestCase.owner_in_response_to_key_server_request = owner
+
+		# initially confirm all good with a simple GET request
+		response, content = self._send_get_to_auth_server(
+			mac_key_identifier,
+			mac_key,
+			mac_algorithm,
+			owner)
+		self.assertTrue(response.status == httplib.OK)
+
+		# now repeat the all good GET but this time tell the mock key server
+		# to claim it doesn't have creds for the mac key identifier
+		testcase.TestCase.status_code_of_response_to_key_server_request = httplib.NOT_FOUND
+
+		response, content = self._send_get_to_auth_server(
+			mac_key_identifier,
+			mac_key,
+			mac_algorithm,
+			owner)
+		self.assertAuthFailure(response, auth_server.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
 
 #-------------------------------------------------------------------------------
 

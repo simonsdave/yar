@@ -54,6 +54,25 @@ app_server_auth_method = "DAS"
 be no older than ```maxage``` seconds before the current timestamp."""
 maxage = 30
 
+"""There are a billion ways in which authorization can fail. When
+writing tests you want to know and should now in detail why things
+fail but when running in production mode this detailed info should
+not be returned to the caller. This switch controls if the HTTP
+header X-AUTH-SERVER-AUTH-FAILURE-DETAIL is included in the server's
+response when authorization fails."""
+include_auth_failure_detail = False
+
+#-------------------------------------------------------------------------------
+
+# this section declares all of the constants used to indicate the details
+# of why authorization failed.
+
+AUTH_FAILURE_DETAIL_TS_IN_FUTURE =			str(0x0001)
+AUTH_FAILURE_DETAIL_TS_OLD =				str(0x0002)
+AUTH_FAILURE_DETAIL_NO_AUTH_HEADER =		str(0x0003)
+AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER =	str(0x0004)
+AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND =		str(0x0005)
+
 #-------------------------------------------------------------------------------
 
 class AsyncCredsRetriever(object):
@@ -115,6 +134,12 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		value = strutil.make_http_header_value_friendly(value)
 		self.set_header(name, value)
 
+	def _set_auth_failure_detail(self, detail):
+		"""For details on this method see the comments associated with
+		declaration of the include_auth_failure_detail global."""
+		if include_auth_failure_detail:
+			self.set_header("X-AUTH-SERVER-AUTH-FAILURE-DETAIL", detail)
+
 	def _on_app_server_done(self, response):
 		if response.error:
 			self.set_status(httplib.INTERNAL_SERVER_ERROR) 
@@ -139,6 +164,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
 			_logger.info(
 				"No MAC credentials found for '%s'",
 				self.request.full_url())
+			self._set_auth_failure_detail(AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
 			self.set_status(httplib.UNAUTHORIZED)
 			self.finish()
 			return
@@ -219,8 +245,15 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		to this method which is responsible for kicking off the core
 		authentication logic."""
 		auth_hdr_val = self.request.headers.get("Authorization", None)
+		if auth_hdr_val is None:
+			self._set_auth_failure_detail(AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
+			self.set_status(httplib.UNAUTHORIZED)
+			self.finish()
+			return
+
 		self._auth_hdr_val = mac.AuthHeaderValue.parse(auth_hdr_val)
 		if self._auth_hdr_val is None:
+			self._set_auth_failure_detail(AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER)
 			self.set_status(httplib.UNAUTHORIZED)
 			self.finish()
 			return
@@ -233,11 +266,13 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		if age < 0:
 			# :TODO: timestamp in the future - bad - clocks out of sync?
 			# do we want to allow clocks to be a wee bit ouf of sync?
+			self._set_auth_failure_detail(AUTH_FAILURE_DETAIL_TS_IN_FUTURE)
 			self.set_status(httplib.UNAUTHORIZED)
 			self.finish()
 			return
 
 		if maxage < age:
+			self._set_auth_failure_detail(AUTH_FAILURE_DETAIL_TS_OLD)
 			self.set_status(httplib.UNAUTHORIZED)
 			self.finish()
 			return
