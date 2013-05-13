@@ -137,8 +137,16 @@ class MACKey(str):
 	"""# of bits in the generated key."""
 	_key_size_in_bits = 256
 
-	def __new__(self, mac_key):
-		return str.__new__(self, mac_key)
+	def __new__(self, value):
+		# all of this checking of 'value' argument is here so
+		# _dehexify() doesn't fail in as_keyczar_hmac_key()
+		if value is None:
+			raise ValueError("'value' error: must be string, not None")
+		try:
+			_dehexify(value)
+		except TypeError as ex:
+			raise ValueError("'value' error: %s" % str(ex))
+		return str.__new__(self, value)
 
 	def as_keyczar_hmac_key(self):
 		"""Decode self into a instance of ```keyczar.keys.HmacKey```."""
@@ -168,13 +176,16 @@ class MAC(str):
 
 	def verify(self, mac_key, mac_algorithm, normalized_request_string):
 		"""Generate a MAC for ```normalized_request_string``` and compare
-		it to ```other_mac```. If the MACs are equal return True otherwise
+		it to ```self```. If the MACs are equal return True otherwise
 		return False.
 
 		To prevent timing attacks this method is should be instead of
 		direct MAC comparision."""
 		keyczar_hmac_key = mac_key.as_keyczar_hmac_key()
-		return keyczar_hmac_key.Verify(normalized_request_string, _dehexify(self))
+		rv = keyczar_hmac_key.Verify(
+			normalized_request_string,
+			_dehexify(self))
+		return rv
 
 	@classmethod
 	def generate(cls, mac_key, mac_algorithm, normalized_request_string):

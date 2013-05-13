@@ -26,11 +26,26 @@ class MACKeyTestCase(unittest.TestCase):
 		self.assertIsNotNone(mac_key)
 		self.assertEqual(mac_key.__class__, mac.MACKey)
 
-	def test_created_with_explicit_content(self):
-		content = 'dave was here'
-		mac_key = mac.MACKey(content)
+	def test_created_with_explicit_good_value(self):
+		value = '90aB4f'
+		mac_key = mac.MACKey(value)
 		self.assertIsNotNone(mac_key)
-		self.assertEqual(mac_key, content)
+		self.assertEqual(mac_key, value)
+
+	def test_created_with_explicit_non_hex_value(self):
+		with self.assertRaises(ValueError):
+			value = 'dave'
+			mac_key = mac.MACKey(value)
+
+	def test_created_with_explicit_old_length_value(self):
+		with self.assertRaises(ValueError):
+			value = '12a'
+			mac_key = mac.MACKey(value)
+
+	def test_created_with_explicit_none_value(self):
+		with self.assertRaises(ValueError):
+			value = None
+			mac_key = mac.MACKey(value)
 
 #-------------------------------------------------------------------------------
 
@@ -339,7 +354,7 @@ class MACTestCase(unittest.TestCase):
 			http_method,
 			uri,
 			host,
-			port + 1,
+			port + 1,	# <<< note this change
 			ext)
 		verify_rv = my_mac.verify(
 			mac_key,
