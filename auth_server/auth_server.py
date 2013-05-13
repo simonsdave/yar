@@ -115,45 +115,6 @@ class AuthRequestHandler(trhutil.RequestHandler):
 		value = strutil.make_http_header_value_friendly(value)
 		self.set_header(name, value)
 
-	def _set_debug_headers(
-		self,
-		mac_key_identifier,
-		mac_key,
-		mac_algorithm,
-		host,
-		port,
-		content_type,
-		http_method,
-		uri,
-		body,
-		ts,
-		nonce,
-		ext):
-		"""When an authorization failure occurs it can be super hard
-		to figure out the root cause of the error. This method is called
-		on authorization failure and, if logging is set to at least debug,
-		a whole series of HTTP headers are set to return the core elements
-		that are used to generate the HMAC."""
-
-		if not _logger.isEnabledFor(logging.DEBUG):
-			return
-
-		self._set_debug_header("MAC-KEY-IDENTIFIER", mac_key_identifier)
-		self._set_debug_header("MAC-KEY", mac_key)
-		self._set_debug_header("MAC-ALGORITHM", mac_algorithm)
-		self._set_debug_header("HOST", host)
-		self._set_debug_header("PORT", port)
-		self._set_debug_header("CONTENT-TYPE", content_type)
-		self._set_debug_header("REQUEST-METHOD", http_method)
-		self._set_debug_header("URI", uri)
-		if body is not None:
-			self._set_debug_header("BODY-SHA1", hashlib.sha1(body).hexdigest())
-			self._set_debug_header("BODY-LEN", len(body))
-			self._set_debug_header("BODY", body)
-		self._set_debug_header("TIMESTAMP", ts)
-		self._set_debug_header("NONCE", nonce)
-		self._set_debug_header("EXT", ext)
-
 	def _on_app_server_done(self, response):
 		if response.error:
 			self.set_status(httplib.INTERNAL_SERVER_ERROR) 
@@ -205,19 +166,28 @@ class AuthRequestHandler(trhutil.RequestHandler):
 				self.request.full_url(),
 				mac_key_identifier,
 				self._auth_hdr_val.mac)
-			self._set_debug_headers(
-				mac_key_identifier,
-				mac_key,
-				mac_algorithm,
-				host,
-				port,
-				content_type,
-				self.request.method,
-				self.request.uri,
-				body,
-				self._auth_hdr_val.ts,
-				self._auth_hdr_val.nonce,
-				ext)
+			# When an authorization failure occurs it can be super hard
+			# to figure out the root cause of the error. This method is called
+			# on authorization failure and, if logging is set to at least debug,
+			# a whole series of HTTP headers are set to return the core elements
+			# that are used to generate the HMAC.
+			if _logger.isEnabledFor(logging.DEBUG):
+				if body is not None:
+					self._set_debug_header("BODY-SHA1", hashlib.sha1(body).hexdigest())
+					self._set_debug_header("BODY-LEN", len(body))
+					self._set_debug_header("BODY", body)
+				self._set_debug_header("MAC-KEY-IDENTIFIER", mac_key_identifier)
+				self._set_debug_header("MAC-KEY", mac_key)
+				self._set_debug_header("MAC-ALGORITHM", mac_algorithm)
+				self._set_debug_header("HOST", host)
+				self._set_debug_header("PORT", port)
+				self._set_debug_header("CONTENT-TYPE", content_type)
+				self._set_debug_header("REQUEST-METHOD", self.request.method)
+				self._set_debug_header("URI", self.request.uri)
+				self._set_debug_header("TIMESTAMP", self._auth_hdr_val.ts)
+				self._set_debug_header("NONCE", self._auth_hdr_val.nonce)
+				self._set_debug_header("EXT", ext)
+			# end of pumping out debug headers - returning to regular headers
 			self.set_status(httplib.UNAUTHORIZED)
 			self.finish()
 			return
