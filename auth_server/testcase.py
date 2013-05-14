@@ -20,8 +20,8 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.options
 import tornado.web
-import tornado.netutil
 
+import testutil
 import auth_server
 
 #-------------------------------------------------------------------------------
@@ -43,11 +43,7 @@ class Server(object):
 		port property."""
 		object.__init__(self)
 
-		[self.socket] = tornado.netutil.bind_sockets(
-			0,
-			"localhost",
-			family=socket.AF_INET)
-		self.port = self.socket.getsockname()[1]
+		(self.socket, self.port) = testutil.get_available_port()
 
 #-------------------------------------------------------------------------------
 
@@ -201,7 +197,7 @@ class IOLoop(threading.Thread):
 
 #-------------------------------------------------------------------------------
 
-class TestCase(unittest.TestCase):
+class TestCase(testutil.TestCase):
 	
 	"""When KeyServerRequestHandler's get() is given a valid
 	mac key identifier, _mac_key_identifier_in_key_server_request
@@ -275,15 +271,6 @@ class TestCase(unittest.TestCase):
 		TestCase.app_server_received_delete = False
 		TestCase.app_server_received_head = False
 		TestCase.app_server_received_options = False
-
-	def assertIsJsonUtf8ContentType(self, content_type):
-		"""Allows the caller to assert if ```content_type```
-		is valid for specifying utf8 json content in an http header. """
-		self.assertIsNotNone(content_type)
-		json_utf8_content_type_reg_ex = re.compile(
-			"^\s*application/json;\s+charset\=utf-{0,1}8\s*$",
-			re.IGNORECASE )
-		self.assertIsNotNone(json_utf8_content_type_reg_ex.match(content_type))
 
 	def assertMACKeyIdentifierInKeyServerRequest(self, mac_key_identifier):
 		"""The unit test that was just run caused the authentication server

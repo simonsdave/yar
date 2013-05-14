@@ -19,6 +19,7 @@ import tornado.options
 import tornado.web
 import tornado.netutil
 
+import testutil
 import key_server
 import key_store.key_store_installer
 
@@ -26,25 +27,16 @@ import key_store.key_store_installer
 
 class KeyServer(threading.Thread):
 
-	@classmethod
-	def _get_socket(cls):
-		[sock] = tornado.netutil.bind_sockets(
-			0,
-			"localhost",
-			family=socket.AF_INET)
-		return sock
-
 	def __init__(self, key_store):
 		threading.Thread.__init__(self)
 		self.daemon = True
 
 		key_server._key_store = key_store
 
-		sock = self.__class__._get_socket()
-		self.port = sock.getsockname()[1]
+		(self.socket, self.port) = testutil.get_available_port()
 
 		http_server = tornado.httpserver.HTTPServer(key_server._tornado_app)
-		http_server.add_sockets([sock])
+		http_server.add_sockets([self.socket])
 
 		# this might not be required but want to give the server 
 		# a bit of time to get itself settled
@@ -58,12 +50,8 @@ class KeyServer(threading.Thread):
 
 #-------------------------------------------------------------------------------
 
-class KeyServerTestCase(unittest.TestCase):
+class KeyServerTestCase(testutil.TestCase):
 	
-	_json_utf8_content_type_reg_ex = re.compile(
-		"^\s*application/json;\s+charset\=utf-{0,1}8\s*$",
-		re.IGNORECASE )
-
 	_database_name = None
 
 	@classmethod
@@ -82,14 +70,6 @@ class KeyServerTestCase(unittest.TestCase):
 
 	def url(self):
 		return "http://localhost:%s" % self.__class__._key_server.port
-
-	"""
-	method name/style chosen for consistency with unittest.TestCase
-	"""
-	def assertIsJsonUtf8ContentType(self,content_type):
-		self.assertIsNotNone(content_type)
-		json_utf8_content_type_reg_ex = self.__class__._json_utf8_content_type_reg_ex
-		self.assertIsNotNone(json_utf8_content_type_reg_ex.match(content_type))
 
 #-------------------------------------------------------------------------------
 
