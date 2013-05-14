@@ -84,7 +84,7 @@ fi
 GEN_AUTH_HEADER_VALUE_CMD="$GEN_AUTH_HEADER_VALUE_CMD 2> /dev/null"
 AUTH_HEADER_VALUE=`eval $GEN_AUTH_HEADER_VALUE_CMD` 
 if [ "$AUTH_HEADER_VALUE" == "" ]; then
-	echo "`basename $0` could not generate auth header value"
+	echo "`basename $0` could not generate auth header value - check $CREDS_FILE"
 	exit 1
 fi
 
