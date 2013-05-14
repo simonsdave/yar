@@ -81,7 +81,12 @@ GEN_AUTH_HEADER_VALUE_CMD="$SCRIPTDIR/genahv.py \
 if [ "POST" == "$HTTP_METHOD" ]; then
     GEN_AUTH_HEADER_VALUE_CMD="$GEN_AUTH_HEADER_VALUE_CMD '$CONTENT_TYPE' < $COPY_OF_STDIN"
 fi
-AUTH_HEADER_VALUE=`eval $GEN_AUTH_HEADER_VALUE_CMD`
+GEN_AUTH_HEADER_VALUE_CMD="$GEN_AUTH_HEADER_VALUE_CMD 2> /dev/null"
+AUTH_HEADER_VALUE=`eval $GEN_AUTH_HEADER_VALUE_CMD` 
+if [ "$AUTH_HEADER_VALUE" == "" ]; then
+	echo "`basename $0` could not generate auth header value"
+	exit 1
+fi
 
 if [ "POST" == "$HTTP_METHOD" ]; then
 	curl \
