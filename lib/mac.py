@@ -39,6 +39,13 @@ def _dehexify(bytes_encoded_as_hex_string):
 		return None
 	return binascii.a2b_hex(bytes_encoded_as_hex_string)
 
+def _is_dehexifyable(value):
+	"""A simple function() to allow the caller to determine if
+	a call to _dehexity() with ```value``` would succeed."""
+	if value is None:
+		return False
+	return not(re.match("^(?:[a-f0-9][a-f0-9])+$", value) is None)
+
 #-------------------------------------------------------------------------------
 
 class Nonce(str):
@@ -140,12 +147,8 @@ class MACKey(str):
 	def __new__(self, value):
 		# all of this checking of 'value' argument is here so
 		# _dehexify() doesn't fail in as_keyczar_hmac_key()
-		if value is None:
-			raise ValueError("'value' error: must be string, not None")
-		try:
-			_dehexify(value)
-		except TypeError as ex:
-			raise ValueError("'value' error: %s" % str(ex))
+		if not _is_dehexifyable(value):
+			raise ValueError("'value' error: must be non-zero length hex string")
 		return str.__new__(self, value)
 
 	def as_keyczar_hmac_key(self):
