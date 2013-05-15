@@ -8,7 +8,10 @@ service isn't massively hard to implement.
 
 Prerequisites 
 -------------
-* code written and tested on Mac OS X 10.8.2 using Python 2.7.2 and [virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv)
+* code written and tested on Mac OS X 10.8.2 using
+Python 2.7.2,
+[nose 1.3.0](https://github.com/nose-devs/nose)
+and [virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv)
 * see [requirements.txt](https://github.com/simonsdave/apimgmt/blob/master/requirements.txt "requirements.txt") for the complete list of prerequisites
 
 Authentication Server
