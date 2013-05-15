@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """This module contains the auth server's unit tests."""
 
 import logging
@@ -606,10 +605,5 @@ class TestCase(testutil.TestCase):
 			mac_algorithm,
 			owner)
 		self.assertAuthFailure(response, auth_server.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
-
-#-------------------------------------------------------------------------------
-
-if __name__ == "__main__":
-	unittest.main()
 
 #------------------------------------------------------------------- End-of-File

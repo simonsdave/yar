@@ -1,9 +1,5 @@
-#!/usr/bin/env python
-#-------------------------------------------------------------------------------
-#
-# mac_unit_tests.py
-#
-#-------------------------------------------------------------------------------
+"""This module contains a series of unit tests which
+validate lib/mac.py"""
 
 import logging
 logging.basicConfig(level=logging.FATAL)
@@ -366,10 +362,5 @@ class MACTestCase(unittest.TestCase):
 		 	mac.MAC.algorithm,
 			normalized_request_string)
 		self.assertFalse(verify_rv)
-
-#-------------------------------------------------------------------------------
-
-if __name__ == "__main__":
-	unittest.main()
 
 #------------------------------------------------------------------- End-of-File

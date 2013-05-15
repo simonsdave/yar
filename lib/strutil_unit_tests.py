@@ -1,9 +1,5 @@
-#!/usr/bin/env python
-#-------------------------------------------------------------------------------
-#
-# strutil_unit_tests.py
-#
-#-------------------------------------------------------------------------------
+"""This module contains a collection of unit tests which
+validate lib/strutil.py"""
 
 import unittest
 
@@ -30,11 +26,6 @@ class MakeHttpHeaderValueTestCase(unittest.TestCase):
 		hv = strutil.make_http_header_value_friendly(v)
 		self.assertIsNotNone(hv)
 		self.assertEqual(hv, "dave\\t\\nwas")
-
-#-------------------------------------------------------------------------------
-
-if __name__ == "__main__":
-	unittest.main()
 
 #------------------------------------------------------------------- End-of-File
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """This module contains the clparserutil's unit tests."""
 
 import logging
@@ -142,10 +141,5 @@ class TestCase(unittest.TestCase):
 			else:
 				with self.assertRaises(optparse.OptionValueError):
 					type_checker(option, opt_string, value[0])
-
-#-------------------------------------------------------------------------------
-
-if __name__ == "__main__":
-	unittest.main()
 
 #------------------------------------------------------------------- End-of-File

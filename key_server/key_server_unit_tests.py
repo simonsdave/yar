@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """This module implements the key server's unit tests."""
 
 import logging
@@ -375,10 +374,5 @@ class TestMacCredsResource(KeyServerTestCase):
 		self._delete_creds(mac_key_identifier)
 		self._get_creds(mac_key_identifier, expected_to_be_found=False)
 		self._get_creds(mac_key_identifier, get_deleted=True)
-
-#-------------------------------------------------------------------------------
-
-if __name__ == "__main__":
-	unittest.main()
 
 #------------------------------------------------------------------- End-of-File

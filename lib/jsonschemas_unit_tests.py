@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+"""This module contains a collection of unit tests which
+validate lib/jsonschemas.py"""
 
 import unittest
 import json
@@ -131,10 +132,4 @@ class KeyServerGetCredsResponseTestCase(unittest.TestCase):
 		with self.assertRaises(jsonschema.ValidationError):
 			self._validate(response)
 
-#-------------------------------------------------------------------------------
-
-if __name__ == "__main__":
-	unittest.main()
-
 #------------------------------------------------------------------- End-of-File
-
