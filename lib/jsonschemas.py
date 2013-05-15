@@ -32,9 +32,9 @@ key_server_get_creds_response = {
 		},
 		"mac_algorithm": {
 			"type": "string",
-			"anyOf": [
-				{"required":["hmac-sha-1"]},
-				{"required":["hmac-sha-256"]},
+			"enum": [
+				"hmac-sha-1",
+				"hmac-sha-256",
 			],
 		},
 		"mac_key": {
