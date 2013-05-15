@@ -3,7 +3,7 @@ JSON request and response bodies between the various services in
 the API management solution."""
 
 #-------------------------------------------------------------------------------
-"""```key_server_requent``` is a JSON schema used to validate
+"""```key_server_create_creds_request``` is a JSON schema used to validate
 create credentials requests to the key server."""
 
 key_server_create_creds_request = {
@@ -21,7 +21,7 @@ key_server_create_creds_request = {
 }
 
 #-------------------------------------------------------------------------------
-"""```key_server_response``` is a JSON schema used to validate
+"""```key_server_get_creds_response``` is a JSON schema used to validate
 the key server's response to get creds request."""
 
 key_server_get_creds_response = {
@@ -59,5 +59,11 @@ key_server_get_creds_response = {
 	],
 	"additionalProperties": False,
 }
+
+#-------------------------------------------------------------------------------
+"""```key_server_create_creds_response``` is a JSON schema used to validate
+the key server's response to create creds request."""
+
+key_server_create_creds_response = key_server_get_creds_response
 
 #------------------------------------------------------------------- End-of-File

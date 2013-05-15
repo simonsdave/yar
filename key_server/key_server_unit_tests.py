@@ -18,8 +18,10 @@ import tornado.ioloop
 import tornado.options
 import tornado.web
 import tornado.netutil
+import jsonschema
 
 import testutil
+import jsonschemas
 import key_server
 import key_store.key_store_installer
 
@@ -133,6 +135,9 @@ class TestMacCredsResource(KeyServerTestCase):
 		content_type = response["content-type"]
 		self.assertIsJsonUtf8ContentType(content_type)
 		creds = json.loads(content)
+		jsonschema.validate(
+            creds,
+            jsonschemas.key_server_get_creds_response)
 		self.assertIsNotNone(creds)
 		self.assertTrue("mac_key_identifier" in creds)
 		self.assertEqual(mac_key_identifier, creds["mac_key_identifier"])
@@ -166,6 +171,9 @@ class TestMacCredsResource(KeyServerTestCase):
 		self.assertIsJsonUtf8ContentType(content_type)
 		creds = json.loads(content)
 		self.assertIsNotNone(creds)
+		jsonschema.validate(
+            creds,
+            jsonschemas.key_server_create_creds_response)
 		self.assertEqual(owner, creds.get('owner', None))
 		mac_key_identifier = creds.get('mac_key_identifier', None)
 		self.assertIsNotNone(mac_key_identifier)
