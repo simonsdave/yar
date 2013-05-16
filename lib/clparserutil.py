@@ -10,6 +10,14 @@ import optparse
 
 #-------------------------------------------------------------------------------
 
+_logger = logging.getLogger("UTIL.%s" % __name__)
+
+#-------------------------------------------------------------------------------
+
+__version__ = "1.0"
+
+#-------------------------------------------------------------------------------
+
 def _check_couchdb(option, opt, value):
     """Type checking function for command line parser's 'couchdb' type."""
     reg_ex_pattern = "^[^\s]+\:\d+\/[^\s]+$"
@@ -43,23 +51,6 @@ def _check_host_colon_port(option, opt, value):
 
 #-------------------------------------------------------------------------------
 
-def _check_host_colon_port_list(option, opt, values):
-	"""Type checking function for command line parser's
-	'hostcolonportlist' type."""
-	split_reg_ex_pattern = "\s*,\s*"
-	split_reg_ex = re.compile(split_reg_ex_pattern)
-	split_values = split_reg_ex.split(value)
-	if split_values is not None:
-		for value in split_values:
-			host_colon_port_reg_ex_pattern = "^[^\s]+\:\d+$"
-			host_colon_port_reg_ex = re.compile(host_colon_port_reg_ex_pattern)
-			if host_colon_port_reg_ex.match(value):
-				return value
-	msg = "option %s: should be 'host:port, host:port, ... host:port' format" % opt
-	raise optparse.OptionValueError(msg)
-
-#-------------------------------------------------------------------------------
-
 def _check_boolean(option, opt, value):
 	"""Type checking function for command line parser's 'boolean' type."""
 	true_reg_ex_pattern = "^(true|t|y|yes|1)$"
@@ -82,7 +73,6 @@ class Option(optparse.Option):
     TYPES = optparse.Option.TYPES + new_types
     TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
     TYPE_CHECKER["hostcolonport"] = _check_host_colon_port
-    TYPE_CHECKER["hostcolonportlist"] = _check_host_colon_port_list
     TYPE_CHECKER["logginglevel"] = _check_logging_level
     TYPE_CHECKER["boolean"] = _check_boolean
     TYPE_CHECKER["couchdb"] = _check_couchdb

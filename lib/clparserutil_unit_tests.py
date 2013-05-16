@@ -2,7 +2,6 @@
 
 import logging
 import optparse
-logging.basicConfig(level=logging.FATAL)
 import unittest
 
 import clparserutil
@@ -91,33 +90,6 @@ class TestCase(unittest.TestCase):
 		]
 		type_checker = clparserutil.Option.TYPE_CHECKER["hostcolonport"]
 		self.assertIsNotNone(type_checker)
-		opt_string = option.get_opt_string(),
-		for value in values:
-			if value[1] is not None:
-				msg = "Faild to parse '%s' correctly." % value[0]
-				result = type_checker(option, opt_string, value[0])
-				self.assertEqual(result, value[1], msg)
-			else:
-				with self.assertRaises(optparse.OptionValueError):
-					type_checker(option, opt_string, value[0])
-
-	def test_check_host_colon_port_list(self):
-		option = clparserutil.Option(
-			"--memcached",
-			action="store",
-			dest="memcached",
-			default="bindle:8909",
-			type="hostcolonportlist",
-			help="whatever")
-		values = [
-			["bindle:8909", ["bindle:8909"]],
-			["bindle:8909, dave:42", ["bindle:8909", "dave:42"]],
-
-			["dave", None],
-			["89", None],
-			[":89", None],
-		]
-		type_checker = clparserutil.Option.TYPE_CHECKER["hostcolonportlist"]
 		opt_string = option.get_opt_string(),
 		for value in values:
 			if value[1] is not None:
