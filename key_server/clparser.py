@@ -7,39 +7,46 @@ import logging
 
 import clparserutil
 
-#-------------------------------------------------------------------------------
 
 class CommandLineParser(optparse.OptionParser):
-	"""This class parses the key server's command line."""
+    """This class parses the key server's command line."""
 
-	def __init__(self):
-		optparse.OptionParser.__init__(
-			self,
-			"usage: %prog [options]",
-			option_class=clparserutil.Option)
+    def __init__(self):
+        optparse.OptionParser.__init__(
+            self,
+            "usage: %prog [options]",
+            option_class=clparserutil.Option)
 
-		self.add_option(
-			"--log",
-			action="store",
-			dest="logging_level",
-			default=logging.ERROR,
-			type="logginglevel",
-			help="logging level [DEBUG,INFO,WARNING,ERROR,CRITICAL,FATAL] - default = ERRROR" )
+        help = (
+            "logging level "
+            "[DEBUG,INFO,WARNING,ERROR,CRITICAL,FATAL]"
+            " - default = ERRROR"
+        )
+        self.add_option(
+            "--log",
+            action="store",
+            dest="logging_level",
+            default=logging.ERROR,
+            type="logginglevel",
+            help=help)
 
-		self.add_option(
-			"--port",
-			action="store",
-			dest="port",
-			default=8070,
-			type=int,
-			help="port - default = 8070" )
+        self.add_option(
+            "--port",
+            action="store",
+            dest="port",
+            default=8070,
+            type=int,
+            help="port - default = 8070")
 
-		self.add_option(
-			"--key_store",
-			action="store",
-			dest="key_store",
-			default="localhost:5984/creds",
-			type="couchdb",
-			help="key store - host:port/database - default = localhost:5984/creds" )
-
-#------------------------------------------------------------------- End-of-File
+        help = (
+            "key store - "
+            "host:port/database"
+            " - default = localhost:5984/creds"
+        )
+        self.add_option(
+            "--key_store",
+            action="store",
+            dest="key_store",
+            default="localhost:5984/creds",
+            type="couchdb",
+            help=help)
