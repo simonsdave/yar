@@ -1,7 +1,7 @@
 """This module contains the auth server's unit tests."""
 
 import logging
-logging.basicConfig(level=logging.FATAL)
+logging.basicConfig(level=logging.INFO)
 import unittest
 import httplib
 import httplib2
@@ -42,7 +42,7 @@ class AppServerRequestHandler(tornado.web.RequestHandler):
     handler only implements HTTP GET."""
 
     def _save_authorization_header_value(self):
-        TestCase.authorization_header_in_request_to_app_server = \
+        TestCase.auth_hdr_in_req_to_app_server = \
             self.request.headers.get("Authorization", None)
 
     def get(self):
@@ -109,9 +109,13 @@ class KeyServerRequestHandler(tornado.web.RequestHandler):
             assert mac_key_identifier is not None
             assert 0 < len(mac_key_identifier)
 
-            TestCase._mac_key_identifier_in_key_server_request = mac_key_identifier
+            TestCase._mac_key_identifier_in_key_server_request = \
+                mac_key_identifier
 
-            status = TestCase.status_code_of_response_to_key_server_request or httplib.OK
+            status = \
+                TestCase.status_code_of_response_to_key_server_request \
+                or \
+                httplib.OK
             self.set_status(status)
 
             if status == httplib.OK:
@@ -233,8 +237,8 @@ class TestCase(testutil.TestCase):
 
     """When the auth server forwards a request to the app server the
     request's authorization header contained the value found
-    in '''authorization_header_in_request_to_app_server```."""
-    authorization_header_in_request_to_app_server = None
+    in '''auth_hdr_in_req_to_app_server```."""
+    auth_hdr_in_req_to_app_server = None
 
     """When the app server recieves a GET it sets
     ```app_server_received_post``` to True."""
@@ -269,7 +273,7 @@ class TestCase(testutil.TestCase):
         self.__class__.mac_key_in_response_to_key_server_request = None
         self.__class__.mac_algorithm_response_to_key_server_request = None
         self.__class__.owner_in_response_to_key_server_request = None
-        self.__class__.authorization_header_in_request_to_app_server = None
+        self.__class__.auth_hdr_in_req_to_app_server = None
         self.__class__.app_server_received_get = False
         self.__class__.app_server_received_post = False
         self.__class__.app_server_received_put = False
@@ -284,13 +288,14 @@ class TestCase(testutil.TestCase):
         allows to caller to assert which MAC key identifier was sent to the
         key server."""
         if mac_key_identifier is None:
-            self.assertIsNone(self.__class__._mac_key_identifier_in_key_server_request)
+            self.assertIsNone(
+                self.__class__._mac_key_identifier_in_key_server_request)
         else:
             self.assertEqual(
                 self.__class__._mac_key_identifier_in_key_server_request,
                 mac_key_identifier)
 
-    def assertAuthorizationHeaderInAppServerRequest(
+    def assertAuthHdrInReqToAppServer(
         self,
         expected_auth_method,
         expected_owner,
@@ -298,16 +303,21 @@ class TestCase(testutil.TestCase):
         """The unit test that was just run caused the authentication server
         to forward a request to the app server. The authentication server
         made this call with a particular authorization header. This method
-        allows to caller to assert that the format and content of the authorization
-        header was as expected."""
-        self.assertIsNotNone(self.__class__.authorization_header_in_request_to_app_server)
-        reg_ex = re.compile(
-            '^\s*(?P<auth_method>[^\s]+)\s+(?P<owner>[^\s]+)\s+(?P<id>[^\s]+)\s*$$',
-            re.IGNORECASE)
-        match = reg_ex.match(self.__class__.authorization_header_in_request_to_app_server)
+        allows to caller to assert that the format and content of the
+        authorization header was as expected."""
+        self.assertIsNotNone(self.__class__.auth_hdr_in_req_to_app_server)
+        reg_ex_pattern = (
+            '^\s*'
+            '(?P<auth_method>[^\s]+)\s+'
+            '(?P<owner>[^\s]+)\s+'
+            '(?P<id>[^\s]+)\s*'
+            '$'
+        )
+        reg_ex = re.compile(reg_ex_pattern, re.IGNORECASE)
+        match = reg_ex.match(self.__class__.auth_hdr_in_req_to_app_server)
         self.assertIsNotNone(match)
         assert 0 == match.start()
-        assert len(self.__class__.authorization_header_in_request_to_app_server) == match.end()
+        assert len(self.__class__.auth_hdr_in_req_to_app_server) == match.end()
         assert 3 == len(match.groups())
         auth_method = match.group("auth_method")
         assert auth_method is not None
@@ -322,7 +332,14 @@ class TestCase(testutil.TestCase):
         self.assertEqual(owner, expected_owner)
         self.assertEqual(id, expected_id)
 
-    def assertAppServerRequest(self, get=False, post=False, delete=False, put=False, head=False, options=False):
+    def assertAppServerRequest(
+        self,
+        get=False,
+        post=False,
+        delete=False,
+        put=False,
+        head=False,
+        options=False):
         """The unit test that was just run caused the authentication server
         to forward a request to the app server. This method allows the caller
         to assert that the app server recieved the correct request."""
@@ -345,15 +362,22 @@ class TestCase(testutil.TestCase):
         response, content = http_client.request(
             "http://localhost:%d/whatever" % self.__class__.auth_server.port,
             "GET")
-        self.assertAuthFailure(response, auth_server.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
+        self.assertAuthFailure(
+            response,
+            auth_server.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
 
     def test_get_with_invalid_authorization_header(self):
         http_client = httplib2.Http()
         response, content = http_client.request(
             "http://localhost:%d/whatever" % self.__class__.auth_server.port,
             "GET",
-            headers={"Authorization": 'MAC id="", ts="890", nonce="98", ext="abc", mac="bindle"'})
-        self.assertAuthFailure(response, auth_server.AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER)
+            headers={
+                "Authorization":
+                'MAC id="", ts="890", nonce="98", ext="abc", mac="bindle"'
+            })
+        self.assertAuthFailure(
+            response,
+            auth_server.AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER)
 
     def test_invalid_mac_algorithm_returned_from_key_server(self):
         mac_key_identifier = mac.MACKeyIdentifier.generate()
@@ -368,7 +392,8 @@ class TestCase(testutil.TestCase):
         body = None
 
         self.__class__.mac_key_in_response_to_key_server_request = mac_key
-        self.__class__.mac_algorithm_response_to_key_server_request = "dave-%s" % mac_algorithm
+        self.__class__.mac_algorithm_response_to_key_server_request = \
+            "dave-%s" % mac_algorithm
         self.__class__.owner_in_response_to_key_server_request = owner
 
         ts = mac.Timestamp.generate()
@@ -401,7 +426,7 @@ class TestCase(testutil.TestCase):
         self.assertTrue(response.status == httplib.OK)
         self.assertAppServerRequest(get=True)
         self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
-        self.assertAuthorizationHeaderInAppServerRequest(
+        self.assertAuthHdrInReqToAppServer(
             self.__class__.app_server_auth_method,
             owner,
             mac_key_identifier)
@@ -419,7 +444,8 @@ class TestCase(testutil.TestCase):
         body = json.dumps({"dave": "was", "here": "today"})
 
         self.__class__.mac_key_in_response_to_key_server_request = mac_key
-        self.__class__.mac_algorithm_response_to_key_server_request = mac_algorithm
+        self.__class__.mac_algorithm_response_to_key_server_request = \
+            mac_algorithm
         self.__class__.owner_in_response_to_key_server_request = owner
 
         ts = mac.Timestamp.generate()
@@ -457,7 +483,7 @@ class TestCase(testutil.TestCase):
         self.assertTrue(response.status == httplib.OK)
         self.assertAppServerRequest(post=True)
         self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
-        self.assertAuthorizationHeaderInAppServerRequest(
+        self.assertAuthHdrInReqToAppServer(
             self.__class__.app_server_auth_method,
             owner,
             mac_key_identifier)
@@ -511,12 +537,12 @@ class TestCase(testutil.TestCase):
 
         self.assertAppServerRequest(get=True)
         self.assertMACKeyIdentifierInKeyServerRequest(mac_key_identifier)
-        self.assertAuthorizationHeaderInAppServerRequest(
+        self.assertAuthHdrInReqToAppServer(
             self.__class__.app_server_auth_method,
             owner,
             mac_key_identifier)
         if response.status == httplib.OK:
-            self.assertAuthorizationHeaderInAppServerRequest(
+            self.assertAuthHdrInReqToAppServer(
                 self.__class__.app_server_auth_method,
                 owner,
                 mac_key_identifier)
@@ -532,7 +558,8 @@ class TestCase(testutil.TestCase):
 
         # configure mock key server with established credentials
         self.__class__.mac_key_in_response_to_key_server_request = mac_key
-        self.__class__.mac_algorithm_response_to_key_server_request = mac_algorithm
+        self.__class__.mac_algorithm_response_to_key_server_request = \
+            mac_algorithm
         self.__class__.owner_in_response_to_key_server_request = owner
 
         # initially confirm all good with a simple GET request
@@ -552,7 +579,9 @@ class TestCase(testutil.TestCase):
             mac_algorithm,
             owner,
             seconds_to_subtract_from_ts=one_year_in_seconds)
-        self.assertAuthFailure(response, auth_server.AUTH_FAILURE_DETAIL_TS_OLD)
+        self.assertAuthFailure(
+            response,
+            auth_server.AUTH_FAILURE_DETAIL_TS_OLD)
 
         # now repeat the all good GET but this time ask for the request's
         # timestamp to be advanced by one day
@@ -563,7 +592,9 @@ class TestCase(testutil.TestCase):
             mac_algorithm,
             owner,
             seconds_to_subtract_from_ts=-one_day_in_seconds)
-        self.assertAuthFailure(response, auth_server.AUTH_FAILURE_DETAIL_TS_IN_FUTURE)
+        self.assertAuthFailure(
+            response,
+            auth_server.AUTH_FAILURE_DETAIL_TS_IN_FUTURE)
 
     def test_get_with_unknonwn_mac_key_identifier(self):
         # establish credentials
@@ -574,7 +605,8 @@ class TestCase(testutil.TestCase):
 
         # configure mock key server with established credentials
         self.__class__.mac_key_in_response_to_key_server_request = mac_key
-        self.__class__.mac_algorithm_response_to_key_server_request = mac_algorithm
+        self.__class__.mac_algorithm_response_to_key_server_request = \
+            mac_algorithm
         self.__class__.owner_in_response_to_key_server_request = owner
 
         # initially confirm all good with a simple GET request
@@ -587,11 +619,14 @@ class TestCase(testutil.TestCase):
 
         # now repeat the all good GET but this time tell the mock key server
         # to claim it doesn't have creds for the mac key identifier
-        self.__class__.status_code_of_response_to_key_server_request = httplib.NOT_FOUND
+        self.__class__.status_code_of_response_to_key_server_request = \
+            httplib.NOT_FOUND
 
         response, content = self._send_get_to_auth_server(
             mac_key_identifier,
             mac_key,
             mac_algorithm,
             owner)
-        self.assertAuthFailure(response, auth_server.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
+        self.assertAuthFailure(
+            response,
+            auth_server.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
