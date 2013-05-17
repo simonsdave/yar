@@ -45,7 +45,10 @@ class RequestHandler(tornado.web.RequestHandler):
     and responses. The utility methods focus on requests and responses
     that use JSON."""
 
-    def get_request_host_and_port(self, host_if_not_found=None, port_if_not_found=None):
+    def get_request_host_and_port(
+        self,
+        host_if_not_found=None,
+        port_if_not_found=None):
 
         """Return the request's 'Host' HTTP header parsed into its
         host and port components."""
