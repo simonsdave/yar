@@ -48,6 +48,23 @@ def _check_host_colon_port(option, opt, value):
     raise optparse.OptionValueError(msg)
 
 
+def _check_memcached(option, opt, value):
+    """Type checking function for command line parser's
+    'memcached' type."""
+    split_reg_ex = re.compile("\s*\,\s*")
+    host_colon_port_reg_ex = re.compile("^[^\:]+\:\d+$")
+    rv = []
+    for server in split_reg_ex.split(value.strip()):
+        if not host_colon_port_reg_ex.match(server):
+            fmt = (
+                "option %s: should be 'host:port, host:port, ... "
+                "host:port' format"
+            )
+            raise optparse.OptionValueError(fmt % opt)
+        rv.append(server)
+    return rv
+
+
 def _check_boolean(option, opt, value):
     """Type checking function for command line parser's 'boolean' type."""
     true_reg_ex_pattern = "^(true|t|y|yes|1)$"
@@ -69,7 +86,8 @@ class Option(optparse.Option):
         "hostcolonport",
         "logginglevel",
         "boolean",
-        "couchdb"
+        "couchdb",
+        "memcached",
     )
     TYPES = optparse.Option.TYPES + new_types
     TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
@@ -77,3 +95,4 @@ class Option(optparse.Option):
     TYPE_CHECKER["logginglevel"] = _check_logging_level
     TYPE_CHECKER["boolean"] = _check_boolean
     TYPE_CHECKER["couchdb"] = _check_couchdb
+    TYPE_CHECKER["memcached"] = _check_memcached

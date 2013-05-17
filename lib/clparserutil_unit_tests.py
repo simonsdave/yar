@@ -31,7 +31,7 @@ class TestCase(unittest.TestCase):
         opt_string = option.get_opt_string(),
         for value in values:
             if value[1] is not None:
-                msg = "Faild to parse '%s' correctly." % value[0]
+                msg = "Failed to parse '%s' correctly." % value[0]
                 result = type_checker(option, opt_string, value[0])
                 self.assertEqual(result, value[1], msg)
             else:
@@ -64,7 +64,7 @@ class TestCase(unittest.TestCase):
         opt_string = option.get_opt_string(),
         for value in values:
             if value[1] is not None:
-                msg = "Faild to parse '%s' correctly." % value[0]
+                msg = "Failed to parse '%s' correctly." % value[0]
                 result = type_checker(option, opt_string, value[0])
                 self.assertEqual(result, value[1], msg)
             else:
@@ -92,7 +92,37 @@ class TestCase(unittest.TestCase):
         opt_string = option.get_opt_string(),
         for value in values:
             if value[1] is not None:
-                msg = "Faild to parse '%s' correctly." % value[0]
+                msg = "Failed to parse '%s' correctly." % value[0]
+                result = type_checker(option, opt_string, value[0])
+                self.assertEqual(result, value[1], msg)
+            else:
+                with self.assertRaises(optparse.OptionValueError):
+                    type_checker(option, opt_string, value[0])
+
+    def test_check_memcached(self):
+        option = clparserutil.Option(
+            "--memcached",
+            action="store",
+            dest="cluster",
+            default="localhost:8909",
+            type="memcached",
+            help="whatever")
+        values = [
+            ["bindle:8909", ["bindle:8909"]],
+            ["b:8, d:89", ["b:8", "d:89"]],
+            ["b:8 , d:89", ["b:8", "d:89"]],
+            [" b:8 ,d:89", ["b:8", "d:89"]],
+
+            ["dave", None],
+            ["89", None],
+            [":89", None],
+        ]
+        type_checker = clparserutil.Option.TYPE_CHECKER["memcached"]
+        self.assertIsNotNone(type_checker)
+        opt_string = option.get_opt_string(),
+        for value in values:
+            if value[1] is not None:
+                msg = "Failed to parse '%s' correctly." % value[0]
                 result = type_checker(option, opt_string, value[0])
                 self.assertEqual(result, value[1], msg)
             else:
@@ -136,7 +166,7 @@ class TestCase(unittest.TestCase):
         opt_string = option.get_opt_string(),
         for value in values:
             if value[1] is not None:
-                msg = "Faild to parse '%s' correctly." % value[0]
+                msg = "Failed to parse '%s' correctly." % value[0]
                 result = type_checker(option, opt_string, value[0])
                 self.assertEqual(result, value[1], msg)
             else:
