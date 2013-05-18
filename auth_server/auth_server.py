@@ -13,6 +13,7 @@ import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 import jsonschemas
+import tornadoasyncmemcache as memcache
 
 from clparser import CommandLineParser
 import tsh
@@ -22,7 +23,6 @@ import mac
 
 
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
-_logger.addHandler(logging.NullHandler())
 
 
 __version__ = "1.0"
@@ -46,6 +46,9 @@ app_server_auth_method = "DAS"
 be no older than ```maxage``` seconds before the current timestamp."""
 maxage = 30
 
+"""..."""
+nonce_store = None
+
 """There are a billion ways in which authorization can fail. When
 writing tests you want to know and should now in detail why things
 fail but when running in production mode this detailed info should
@@ -54,14 +57,50 @@ header X-AUTH-SERVER-AUTH-FAILURE-DETAIL is included in the server's
 response when authorization fails."""
 include_auth_failure_detail = False
 
-
-# this section declares all of the constants used to indicate the details
-# of why authorization failed.
+# these constants define detailed authorization failure reasons
 AUTH_FAILURE_DETAIL_TS_IN_FUTURE = str(0x0001)
 AUTH_FAILURE_DETAIL_TS_OLD = str(0x0002)
 AUTH_FAILURE_DETAIL_NO_AUTH_HEADER = str(0x0003)
 AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER = str(0x0004)
 AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND = str(0x0005)
+AUTH_FAILURE_DETAIL_NONCE_REUSED = str(0x0006)
+
+
+class AsyncNonceChecker(object):
+    """Wraps the gory details of async'ing confirming that a
+    nonce + mac_key_identifer pair isn't known to the nonce
+    store (which is a memcached cluster)."""
+
+    _ccs = None
+
+    def fetch(self, callback, mac_key_identifier, nonce):
+        """...  and when done call ```callback```."""
+        if self.__class__._ccs is None:
+            self.__class__._ccs = memcache.ClientPool(
+                nonce_store,
+                maxclients=100)
+
+        self._callback = callback
+        self._mac_key_identifier = mac_key_identifier
+        self._nonce = nonce
+        
+        self._key = "%s-%s" % (self._mac_key_identifier, self._nonce)
+
+        self.__class__._ccs.get(
+            self._key,
+            callback=self._on_async_get_done)
+
+    def _on_async_get_done(self, data):
+        if data is not None:
+            self._callback(False)
+        else:
+            self.__class__._ccs.set(
+                self._key,
+                "1",
+                callback=self._on_async_set_done)
+
+    def _on_async_set_done(self, data):
+        self._callback(True)
 
 
 class AsyncCredsRetriever(object):
@@ -260,6 +299,32 @@ class AuthRequestHandler(trhutil.RequestHandler):
                 follow_redirects=False),
             callback=self._on_app_server_done)
 
+    def _on_async_nonce_checker_done(self, is_ok):
+        """this callback is invoked when AsyncNonceChecker has finished.
+        ```is_ok``` will be ```True`` AsyncNonceChecker has confirmed that
+         the curent request's nonce+mac_key_identifier pair hasn't been
+        seen before."""
+        if not is_ok:
+            self._set_auth_failure_detail(AUTH_FAILURE_DETAIL_NONCE_REUSED)
+            self.set_status(httplib.UNAUTHORIZED)
+            self.finish()
+            return
+
+        # basic request looks good
+        #
+        # 1/ authentication header found and format is valid
+        # 2/ timestamp is recent
+        # 3/ nonce has not previous been used by the mac key identifier
+        #
+        # next steps is to retrieve the credentials associated with
+        # the request's mac key identifier and confirm the request's
+        # MAC is valid ie. final step in confirming the sender's identity
+        acr = AsyncCredsRetriever()
+        acr.fetch(
+            self._on_async_creds_retriever_done,
+            self._auth_hdr_val.mac_key_identifier)
+
+
     def _handle_request(self):
         """```get()```, ```post()```, ```put()```, ```options()```,
         ```delete()``` and ```head()``` requests are all forwarded
@@ -299,15 +364,15 @@ class AuthRequestHandler(trhutil.RequestHandler):
             self.finish()
             return
 
-        # basic request looks good = authentication header found and format
-        # is valid plus the request's timestamp is recent. next steps is
-        # to retrieve the credentials associated with the request's
-        # mac key identifier and confirm the request's MAC is valid thus
-        # confirming the sender's identity
-        acr = AsyncCredsRetriever()
-        acr.fetch(
-            self._on_async_creds_retriever_done,
-            self._auth_hdr_val.mac_key_identifier)
+        # time to confirm if the nonce in the request has been used
+        # before. this means async'ly calling out to the memcached
+        # cluster which stores previously used nonce+mac_key_identifer
+        # combinations
+        anc = AsyncNonceChecker()
+        anc.fetch(
+            self._on_async_nonce_checker_done,
+            self._auth_hdr_val.mac_key_identifier,
+            self._auth_hdr_val.nonce)
 
     @tornado.web.asynchronous
     def get(self):
@@ -356,6 +421,7 @@ if __name__ == "__main__":
     app_server = clo.app_server
     auth_method = clo.app_server_auth_method
     maxage = clo.maxage
+    nonce_store = clo.nonce_store
 
     http_server = tornado.httpserver.HTTPServer(_tornado_app)
     http_server.listen(clo.port)
