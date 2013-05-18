@@ -5,3 +5,6 @@ python-keyczar==0.71c
 nose==1.3.0
 nose-cov==1.6
 pep8==1.4.5
+# wanted to pip install https://github.com/dpnova/tornado-memcache
+# but not available on a PyPI server. so, hacked the bin/cfg4dev
+# to do a git clone https://github.com/dpnova/tornado-memcache.git
