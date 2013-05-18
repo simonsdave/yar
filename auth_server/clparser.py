@@ -16,11 +16,13 @@ class CommandLineParser(optparse.OptionParser):
             "usage: %prog [options]",
             option_class=clparserutil.Option)
 
-        help = (
+        default = logging.ERROR
+        fmt = (
             "logging level "
             "[DEBUG,INFO,WARNING,ERROR,CRITICAL,FATAL]"
-            " - default = ERRROR"
+            " - default = %s"
         )
+        help = fmt % logging.getLevelName(default)
         self.add_option(
             "--log",
             action="store",
@@ -29,41 +31,61 @@ class CommandLineParser(optparse.OptionParser):
             type="logginglevel",
             help=help)
 
+        default = 8000
+        help = "port - default = %d" % default
         self.add_option(
             "--port",
             action="store",
             dest="port",
-            default="8000",
+            default=default,
             type=int,
-            help="port - default = 8000")
+            help=help)
 
+        default = "DAS",
+        help = "app server's authorization method - default = %s" % default
         self.add_option(
             "--authmethod",
             action="store",
             dest="app_server_auth_method",
-            default="DAS",
-            help="app server's authorization method - default = DAS")
+            default=default,
+            help=help)
 
+        default = "localhost:8070"
+        help = "key server - default = %s" % default
         self.add_option(
             "--keyserver",
             action="store",
             dest="key_server",
-            default="localhost:8070",
+            default=default,
             type="hostcolonport",
-            help="key server - default = localhost:8070")
+            help=help)
 
+        default = "localhost:8080"
+        help = "app server - default = %s" % default
         self.add_option(
             "--appserver",
             action="store",
             dest="app_server",
-            default="localhost:8080",
+            default=default,
             type="hostcolonport",
-            help="app server - default = localhost:8080")
+            help=help)
 
+        default = 30
+        help = "max age (in seconds) of valid request - default = %d" % default
         self.add_option(
             "--maxage",
             action="store",
             dest="maxage",
-            default=30,
+            default=default,
             type=int,
-            help="max age of valid request - default = 30")
+            help=help)
+
+        default = ["localhost:11212"]
+        help = "memcached servers for nonce store - default = %s" % default
+        self.add_option(
+            "--noncestore",
+            action="store",
+            dest="nonce_store",
+            default=default,
+            type="memcached",
+            help=help)
