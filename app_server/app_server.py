@@ -41,7 +41,7 @@ class RequestHandler(tornado.web.RequestHandler):
         location_url = "%s/%s" % (
             self.request.full_url(),
             str(uuid.uuid4()).replace("-", ""))
-        self.set_header("Content-Location", location_url)
+        self.set_header("Location", location_url)
         self.set_status(httplib.CREATED)
         self.get()
 
