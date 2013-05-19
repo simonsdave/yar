@@ -75,32 +75,46 @@ class AsyncNonceChecker(object):
 
     def fetch(self, callback, mac_key_identifier, nonce):
         """...  and when done call ```callback```."""
-        if self.__class__._ccs is None:
-            self.__class__._ccs = memcache.ClientPool(
-                nonce_store,
-                maxclients=100)
+        try:
+            if self.__class__._ccs is None:
+                _logger.info(
+                    "Creating 'memcache.ClientPool()' for cluster '%s'",
+                    nonce_store)
+                self.__class__._ccs = memcache.ClientPool(
+                    nonce_store,
+                    maxclients=100)
+                _logger.error(self.__class__._ccs)
 
-        self._callback = callback
-        self._mac_key_identifier = mac_key_identifier
-        self._nonce = nonce
+            self._callback = callback
+            self._mac_key_identifier = mac_key_identifier
+            self._nonce = nonce
         
-        self._key = "%s-%s" % (self._mac_key_identifier, self._nonce)
-
-        self.__class__._ccs.get(
-            self._key,
-            callback=self._on_async_get_done)
+            self._key = "%s-%s" % (self._mac_key_identifier, self._nonce)
+            self.__class__._ccs.get(
+                self._key,
+                callback=self._on_async_get_done)
+        except Exception as ex:
+            _logger.error(ex)
+            self.callback(False)
 
     def _on_async_get_done(self, data):
-        if data is not None:
+        try:
+            if data is not None:
+                self._callback(False)
+            else:
+                self.__class__._ccs.set(
+                    self._key,
+                    "1",
+                    callback=self._on_async_set_done)
+        except Exception as ex:
+            _logger.error(ex)
             self._callback(False)
-        else:
-            self.__class__._ccs.set(
-                self._key,
-                "1",
-                callback=self._on_async_set_done)
 
     def _on_async_set_done(self, data):
-        self._callback(True)
+        try:
+            self._callback(True)
+        except Exception as ex:
+            _logger.error(ex)
 
 
 class AsyncCredsRetriever(object):
