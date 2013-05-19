@@ -1,7 +1,6 @@
 """This module contains the auth server's unit tests."""
 
 import logging
-logging.basicConfig(level=logging.INFO)
 import unittest
 import httplib
 import httplib2
