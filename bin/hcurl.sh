@@ -25,13 +25,14 @@ SCRIPTDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 HTTP_METHOD=`echo $1 | awk '{print toupper($0)}'`
 case "$HTTP_METHOD" in
-        GET)
+        GET|DELETE)
+			CONTENT_TYPE=""
+			COPY_OF_STDIN=/dev/null
             ;;
-        POST)
-            ;;
-        DELETE)
-            ;;
-        PUT)
+        PUT|POST)
+			CONTENT_TYPE="application/json; charset=utf-8"
+			COPY_OF_STDIN=`mktemp -t DAS`
+			cat /dev/stdin > $COPY_OF_STDIN
             ;;
         *)
             usage
@@ -61,15 +62,6 @@ URI=$2
 HOST=localhost
 PORT=8000
 
-if [ "POST" == "$HTTP_METHOD" ]; then
-	CONTENT_TYPE="application/json; charset=utf-8"
-	COPY_OF_STDIN=`mktemp -t DAS`
-	cat /dev/stdin > $COPY_OF_STDIN
-else
-	CONTENT_TYPE=""
-	COPY_OF_STDIN=/dev/null
-fi
-
 GEN_AUTH_HEADER_VALUE_CMD="$SCRIPTDIR/genahv.py \
     $HTTP_METHOD \
     $HOST \
@@ -78,7 +70,7 @@ GEN_AUTH_HEADER_VALUE_CMD="$SCRIPTDIR/genahv.py \
     $MAC_KEY_IDENTIFIER \
     $MAC_KEY \
     $MAC_ALGORITHM"
-if [ "POST" == "$HTTP_METHOD" ]; then
+if [ "" != "$CONTENT_TYPE" ]; then
     GEN_AUTH_HEADER_VALUE_CMD="$GEN_AUTH_HEADER_VALUE_CMD '$CONTENT_TYPE' < $COPY_OF_STDIN"
 fi
 GEN_AUTH_HEADER_VALUE_CMD="$GEN_AUTH_HEADER_VALUE_CMD 2> /dev/null"
