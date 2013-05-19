@@ -313,15 +313,17 @@ class AuthHeaderValueTestCase(unittest.TestCase):
 
 class MACTestCase(unittest.TestCase):
 
-    def test_content_type_and_body_none_is_zero_length_ext(self):
+    def _core_test_logic(
+        self,
+        http_method,
+        body,
+        content_type):
+
         ts = mac.Timestamp.generate()
         nonce = mac.Nonce.generate()
-        http_method = "POST"
         uri = "/whatever"
         host = "localhost"
         port = 8080
-        content_type = "application/json;charset=utf-8"
-        body = json.dumps({"dave": "was", "there": "you", "are": 42})
         ext = mac.Ext.generate(content_type, body)
         normalized_request_string = mac.NormalizedRequestString.generate(
             ts,
@@ -356,3 +358,12 @@ class MACTestCase(unittest.TestCase):
             mac.MAC.algorithm,
             normalized_request_string)
         self.assertFalse(verify_rv)
+
+    def test_it(self):
+        content_type = "application/json;charset=utf-8"
+        body = json.dumps({"dave": "was", "there": "you", "are": 42})
+
+        self._core_test_logic("POST", body, content_type)
+        self._core_test_logic("GET", None, None)
+        self._core_test_logic("PUT", body, content_type)
+        self._core_test_logic("DELETE", None, None)
