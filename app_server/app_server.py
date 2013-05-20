@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """This module contains a super simple app server to be used for testing."""
 
-
 import logging
 import os
 import sys
@@ -46,7 +45,7 @@ class RequestHandler(tornado.web.RequestHandler):
         self.get()
 
     def put(self):
-        self.get()
+        self.post()
 
     def delete(self):
         self.get()
