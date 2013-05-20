@@ -83,21 +83,25 @@ class AsyncNonceChecker(object):
                 self.__class__._ccs = memcache.ClientPool(
                     nonce_store,
                     maxclients=100)
-                _logger.error(self.__class__._ccs)
 
             self._callback = callback
             self._mac_key_identifier = mac_key_identifier
             self._nonce = nonce
         
             self._key = "%s-%s" % (self._mac_key_identifier, self._nonce)
+            _logger.info("Asking for nonce key '%s'", self._key)
             self.__class__._ccs.get(
                 self._key,
                 callback=self._on_async_get_done)
         except Exception as ex:
             _logger.error(ex)
-            self.callback(False)
+            self._callback(False)
 
     def _on_async_get_done(self, data):
+        _logger.info(
+            "Answer from asking for nonce key '%s' = '%s'",
+            self._key,
+            data)
         try:
             if data is not None:
                 self._callback(False)
