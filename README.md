@@ -20,7 +20,19 @@ To start the authorization server:
 ~~~~~
 ./auth_server.py --port=8000 --key_server=localhost:6969 --app_server=localhost:8080
 ~~~~~
-To make a request to the app server thru the authentication server:
+
+For a complete list of the auth server's command line options try:
+
+~~~~~
+./auth_server.py --help
+~~~~~
+
+The auth server is configured using command line options.
+No configuration file is used.
+
+Instead of using cURL request to the app server thru the auth server it's
+recommended that bin/hcurl.sh be used. hcurl.sh is a very simple bash
+script that computes the correct value for the HTTP Authorization header.
 ~~~~~
 curl \
   -v \
@@ -44,6 +56,9 @@ For a complete list of the key server's command line options try:
 ~~~~~
 ./key_server.py --help
 ~~~~~
+
+The key server is configured using command line options.
+No configuration file is used.
 
 To get all MAC credentials currently saved in the key store:
 ~~~~~~
