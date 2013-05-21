@@ -145,10 +145,12 @@ class AsyncCredsRetriever(object):
         response = trhutil.Response(response)
         body = response.get_json_body()
         if not body:
-            self._callback(None)
+            self._callback(None, None)
             return
 
+        is_creds_collection = None
         if 'rows' in body:
+            is_creds_collection = True
             rv = []
             for row in body['rows']:
                 doc = row['value']
@@ -159,14 +161,16 @@ class AsyncCredsRetriever(object):
                     doc = _filter_out_non_model_creds_properties(doc)
                 rv.append(doc)
         else:
+            is_creds_collection = False
             if body.get("is_deleted", False) and self._is_filter_out_deleted:
                 rv = None
             else:
                 if self._is_filter_out_non_model_properties:
                     body = _filter_out_non_model_creds_properties(body)
                 rv = body
+        assert is_creds_collection is not None
 
-        self._callback(rv)
+        self._callback(rv, is_creds_collection)
 
 
 class AsyncCredsDeleter(object):
@@ -174,10 +178,12 @@ class AsyncCredsDeleter(object):
     def _on_response_from_key_store_to_put_for_delete(self, response):
         self._callback(response.code == httplib.CREATED)
 
-    def _on_async_creds_retriever_done(self, creds):
+    def _on_async_creds_retriever_done(self, creds, is_creds_collection):
         if creds is None:
             self._callback(False)
             return
+
+        assert not is_creds_collection
 
         if creds.get("is_deleted", False):
             self._callback(True)
@@ -214,14 +220,15 @@ class AsyncCredsDeleter(object):
 
 class RequestHandler(trhutil.RequestHandler):
 
-    def _on_async_creds_retrieve_done(self, creds):
+    def _on_async_creds_retrieve_done(self, creds, is_creds_collection):
         if creds is None:
             self.set_status(httplib.NOT_FOUND)
             self.finish()
             return
 
-        self.write(json.dumps(creds))
-        self.set_header("Content-Type", "application/json; charset=utf8")
+        if is_creds_collection:
+            creds = {"creds": creds}
+        self.write(creds)
         self.finish()
 
     @tornado.web.asynchronous
@@ -247,8 +254,7 @@ class RequestHandler(trhutil.RequestHandler):
         assert mac_key_identifier is not None
         location = "%s/%s" % (self.request.full_url(), mac_key_identifier)
         self.set_header("Location", location)
-        self.write(json.dumps(creds))
-        self.set_header("Content-Type", "application/json; charset=utf8")
+        self.write(creds)
         self.set_status(httplib.CREATED)
         self.finish()
 
