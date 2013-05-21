@@ -200,7 +200,8 @@ class TestMacCredsResource(KeyServerTestCase):
         self.assertEqual(content_length, len(content))
         creds = json.loads(content)
         self.assertIsNotNone(creds)
-        return creds
+        self.assertTrue("creds" in creds)
+        return creds["creds"]
 
     def _delete_creds(self, mac_key_identifier):
         self.assertIsNotNone(mac_key_identifier)
