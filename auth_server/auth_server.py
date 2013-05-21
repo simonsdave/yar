@@ -427,9 +427,15 @@ if __name__ == "__main__":
 
     fmt = (
         "Auth Server listening on %d "
-        "using Key Server '%s' and App Server '%s'"
+        "using Nonce Store '%s', "
+        "Key Server '%s' and App Server '%s'"
     )
-    _logger.info(fmt, clo.port, clo.key_server, clo.app_server)
+    _logger.info(
+        fmt,
+        clo.port,
+        clo.nonce_store,
+        clo.key_server,
+        clo.app_server)
 
     key_server = clo.key_server
     app_server = clo.app_server
