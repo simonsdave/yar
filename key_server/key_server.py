@@ -37,7 +37,27 @@ class StatusRequestHandler(trhutil.RequestHandler):
         self.write(status)
 
 
-class AsnycCredsCreator(object):
+def _filter_out_non_model_creds_properties(creds):
+    """When a dictionary representing a set of credentials
+    is created, the dictionary may contain entries that are
+    no part of the externally exposed model. This function
+    takes a dictionary (```dict```), selects only the
+    model properties in ```dict``` and returns a new
+    dictionary containing only the model properties."""
+    rv = {}
+    keys = [
+        "is_deleted",
+        "mac_algorithm",
+        "mac_key",
+        "mac_key_identifier",
+        "owner"
+    ]
+    for key in keys:
+        if key in creds:
+            rv[key] = creds[key]
+    return rv
+
+class AsyncCredsCreator(object):
 
     def create(self, owner, callback):
 
@@ -73,7 +93,8 @@ class AsnycCredsCreator(object):
             self._callback(None)
             return
 
-        self._callback(self._creds)
+        creds = _filter_out_non_model_creds_properties(self._creds)
+        self._callback(creds)
 
 
 class AsyncCredsRetriever(object):
@@ -135,31 +156,17 @@ class AsyncCredsRetriever(object):
                     if self._is_filter_out_deleted:
                         continue
                 if self._is_filter_out_non_model_properties:
-                    doc = self._filter_out_non_model_properties(doc)
+                    doc = _filter_out_non_model_creds_properties(doc)
                 rv.append(doc)
         else:
             if body.get("is_deleted", False) and self._is_filter_out_deleted:
                 rv = None
             else:
                 if self._is_filter_out_non_model_properties:
-                    body = self._filter_out_non_model_properties(body)
+                    body = _filter_out_non_model_creds_properties(body)
                 rv = body
 
         self._callback(rv)
-
-    def _filter_out_non_model_properties(self, dict):
-        rv = {}
-        keys = [
-            "is_deleted",
-            "mac_algorithm",
-            "mac_key",
-            "mac_key_identifier",
-            "owner"
-        ]
-        for key in keys:
-            if key in dict:
-                rv[key] = dict[key]
-        return rv
 
 
 class AsyncCredsDeleter(object):
@@ -236,10 +243,12 @@ class RequestHandler(trhutil.RequestHandler):
             self.finish()
             return
 
-        location_url = "%s/%s" % (
-            self.request.full_url(),
-            creds["mac_key_identifier"])
-        self.set_header("Location", location_url)
+        mac_key_identifier = creds.get("mac_key_identifier", None)
+        assert mac_key_identifier is not None
+        location = "%s/%s" % (self.request.full_url(), mac_key_identifier)
+        self.set_header("Location", location)
+        self.write(json.dumps(creds))
+        self.set_header("Content-Type", "application/json; charset=utf8")
         self.set_status(httplib.CREATED)
         self.finish()
 
@@ -258,7 +267,7 @@ class RequestHandler(trhutil.RequestHandler):
             self.finish()
             return
 
-        acc = AsnycCredsCreator()
+        acc = AsyncCredsCreator()
         acc.create(
             body["owner"],
             self._on_async_creds_create_done)
