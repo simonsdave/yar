@@ -6,7 +6,7 @@
 #
 #-------------------------------------------------------------------------------
 
-CREDS_FILE=~/.das.apimgmt.keys
+CREDS_FILE=~/.yar.keys
 
 get_creds() {
     grep "^\\s*$1\\s*=" $CREDS_FILE | sed -e "s/^\\s*$1\\s*=\s*//"
