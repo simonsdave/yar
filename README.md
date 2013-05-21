@@ -1,6 +1,6 @@
 This repo is the result of Dave being convinced that it wouldn't be that
 hard to write an API Management service.
-See the [wiki](https://github.com/simonsdave/yar/wiki) for a more complete description and discussion of yar.
+See the [Wiki](https://github.com/simonsdave/yar/wiki) for a more complete description and discussion of yar.
 
 Prerequisites 
 -------------
@@ -12,17 +12,25 @@ and [virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv)
 
 Development
 -----------
-The following brief set of instructions describe how to setup a yar development environment.
-The sets below are expected to be executed in your
+The following (brief) instructions describe how to setup a yar development environment and
+issue your first request through the infrastructure.
+The commands below are expected to be executed in your
 favorite terminal emulator ([iTerm2](http://www.iterm2.com/) happens to be Dave's favorite).
 In the instructions below it's assumed yar is installed to your home directory.
 * get the source code by running the following in a new terminal window
 
 ~~~~~
-* cd; git clone https://github.com/simonsdave/yar.git
+cd; git clone https://github.com/simonsdave/yar.git
 ~~~~~
 
-* start Key Store - if CouchDB isn't already running, in a new terminal window start CouchDB using
+* start the App Server with the following in a new terminal window
+(this app server is only for testing/development - you wouldn't use this in a production deployment):
+
+~~~~~
+cd; cd yar; source bin/cfg4dev; cd app_server; ./app_server.py --log=info
+~~~~~
+
+* start the Key Store - if CouchDB isn't already running, in a new terminal window start CouchDB using
 
 ~~~~~
 couchdb
@@ -41,6 +49,26 @@ cd; cd yar; source bin/cfg4dev; cd key_server/key_store/; ./key_store_installer.
 cd; cd yar; source bin/cfg4dev; cd key_server; ./key_server.py --log=info
 ~~~~~
 
+* generating an inital set of credentials: in any available terminal window (feel free to use your own e-mail address):
+
+~~~~~
+curl \
+  -v \
+  -X POST \
+  -H "Content-Type: application/json; charset=utf8" \
+  -d "{\"owner\":\"simonsdave@gmail.com\"}" \
+  http://localhost:8070/v1.0/creds
+~~~~~
+
+* using the credentials returned by the above cURL request, create a new file called ~/.yar.keys
+in the following format (this file will be used in a bit by the hcurl.sh utility):
+
+~~~~~
+MAC_KEY_IDENTIFIER=484e15185fd50b7292f4b3ae08d45576
+MAC_KEY=6b656577695f4361474578704436552d50706541444172476c776d6b64754f704545786e65613976595734
+MAC_ALGORITHM=hmac-sha-1
+~~~~~
+
 * start Nonce Store: if memcached isn't already running, in a new terminal window start memcached using
 
 ~~~~~
@@ -51,5 +79,20 @@ memcached -vv
 
 ~~~~~
 cd; cd yar; source bin/cfg4dev; cd auth_server; ./auth_server.py --log=info
+~~~~~
+
+* Okay, all of your infrastructure should not be running!
+Time to issue your first request to the app server thru the authentication server.
+In a new terminal window issue the following commands to setup your PATH:
+
+~~~~~
+cd; cd yar; source bin/cfg4dev
+~~~~~
+
+* In the same window that you executed the above commands, you'll now use the hcurl.sh utility
+to issue a request to the authentication server:
+
+~~~~~
+hcurl.sh GET /das.html
 ~~~~~
 
