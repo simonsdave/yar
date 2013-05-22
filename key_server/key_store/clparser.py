@@ -11,46 +11,68 @@ import clparserutil
 class CommandLineParser(optparse.OptionParser):
 
     def __init__(self):
+
+        description = (
+            "The Key Store Installer is a utility used to create "
+            "and/or delete the CouchDB database that implements "
+            "yar's Key Store."
+        )
         optparse.OptionParser.__init__(
             self,
             "usage: %prog [options]",
+            description=description,
             option_class=clparserutil.Option)
 
+        default = logging.ERROR
+        fmt = (
+            "logging level [DEBUG,INFO,WARNING,ERROR,CRITICAL,FATAL] - "
+            "default = %s"
+        )
+        help = fmt % logging.getLevelName(default)
         self.add_option(
             "--log",
             action="store",
             dest="logging_level",
-            default=logging.ERROR,
+            default=default,
             type="logginglevel",
-            help="logging level [DEBUG,INFO,WARNING,ERROR,CRITICAL,FATAL] - default = ERRROR")
+            help=help)
 
+        default = "localhost:5984"
+        help = "where's CouchDB running - default = %s" % default
         self.add_option(
             "--host",
             action="store",
             dest="host",
-            default="localhost:5984",
+            default=default,
             type="hostcolonport",
-            help="where's CouchDB running - default = localhost:5984")
+            help=help)
 
+        default = "creds"
+        help = "database - default = %s" % default
         self.add_option(
             "--database",
             action="store",
             dest="database",
-            default="creds",
-            help="database - default = creds")
+            default=default,
+            type="string",
+            help=help)
 
+        default = False
+        help = "delete before creating key store - default = %s" % default
         self.add_option(
             "--delete",
             action="store",
             dest="delete",
-            default=False,
+            default=default,
             type="boolean",
-            help="delete before creating key store - default = False")
+            help=help)
 
+        default = True,
+        help = "create key store - default = %s" % default
         self.add_option(
             "--create",
             action="store",
             dest="create",
-            default=True,
+            default=default,
             type="boolean",
-            help="create key store - default = True")
+            help=help)
