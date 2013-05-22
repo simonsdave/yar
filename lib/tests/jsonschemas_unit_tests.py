@@ -1,10 +1,12 @@
 """This module contains a collection of unit tests which
 validate lib/jsonschemas.py"""
 
-
 import unittest
 import json
 import uuid
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import jsonschema
 

@@ -1,9 +1,7 @@
 """This module contains a series of unit tests which
 validate lib/mac.py"""
 
-
 import logging
-logging.basicConfig(level=logging.FATAL)
 import unittest
 import string
 import time
@@ -11,6 +9,9 @@ import uuid
 import hashlib
 import base64
 import json
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import mac
 
