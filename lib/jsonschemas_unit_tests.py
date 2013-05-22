@@ -64,7 +64,12 @@ class KeyServerGetCredsResponseTestCase(unittest.TestCase):
             "mac_key": str(mac.MACKey.generate()),
             "mac_key_identifier": str(mac.MACKeyIdentifier.generate()),
             "owner": "simonsdave@gmail.com",
-        }
+            "links": {
+                "self": {
+                    "href": "http://localhost:8070/v1.0/creds/f274d56f213faa731e97735f790ddc89"
+                    }
+                }
+            }
 
     def _validate(self, response):
         jsonschema.validate(
@@ -121,6 +126,17 @@ class KeyServerGetCredsResponseTestCase(unittest.TestCase):
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(response)
         del response["owner"]
+        with self.assertRaises(jsonschema.ValidationError):
+            self._validate(response)
+
+    def test_invalid_links(self):
+        # :TODO: this should be a more exhaustive test
+        response = self._good_response()
+        self._validate(response)
+        response["links"] = ""
+        with self.assertRaises(jsonschema.ValidationError):
+            self._validate(response)
+        del response["links"]
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(response)
 

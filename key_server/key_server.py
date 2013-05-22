@@ -227,7 +227,11 @@ class RequestHandler(trhutil.RequestHandler):
             return
 
         if is_creds_collection:
+            for each_creds in creds:
+                self._add_links_to_creds_dict(each_creds)
             creds = {"creds": creds}
+        else:
+            self._add_links_to_creds_dict(creds)
         self.write(creds)
         self.finish()
 
@@ -244,15 +248,21 @@ class RequestHandler(trhutil.RequestHandler):
             is_filter_out_deleted=is_filter_out_deleted,
             is_filter_out_non_model_properties=True)
 
+    def _add_links_to_creds_dict(self, creds):
+        assert creds is not None
+        mac_key_identifier = creds.get("mac_key_identifier", None)
+        assert mac_key_identifier is not None
+        location = "%s/%s" % (self.request.full_url(), mac_key_identifier)
+        creds["links"] = {"self": {"href": location}}
+        return location
+        
     def _on_async_creds_create_done(self, creds):
         if creds is None:
             self.set_status(httplib.INTERNAL_SERVER_ERROR)
             self.finish()
             return
 
-        mac_key_identifier = creds.get("mac_key_identifier", None)
-        assert mac_key_identifier is not None
-        location = "%s/%s" % (self.request.full_url(), mac_key_identifier)
+        location = self._add_links_to_creds_dict(creds)
         self.set_header("Location", location)
         self.write(creds)
         self.set_status(httplib.CREATED)
@@ -282,10 +292,7 @@ class RequestHandler(trhutil.RequestHandler):
         if isok is None:
             status = httplib.INTERNAL_SERVER_ERROR
         else:
-            if isok:
-                status = httplib.OK
-            else:
-                status = httplib.NOT_FOUND
+            status = httplib.OK if isok else httplib.NOT_FOUND
 
         self.set_status(status)
         self.finish()

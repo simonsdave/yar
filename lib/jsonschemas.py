@@ -49,6 +49,20 @@ key_server_get_creds_response = {
             "type": "string",
             "minLength": 1
         },
+        "links": {
+            "type": "object",
+            "properties": {
+                "self": {
+                    "type": "object",
+                    "properties": {
+                        "href": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    }
+                }
+            }
+        },
     },
     "required": [
         "is_deleted",
@@ -56,6 +70,7 @@ key_server_get_creds_response = {
         "mac_key",
         "mac_key_identifier",
         "owner",
+        "links",
     ],
     "additionalProperties": False,
 }
