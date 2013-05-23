@@ -6,9 +6,13 @@ Prerequisites
 -------------
 * code written and tested on Mac OS X 10.8.2 using
 Python 2.7.2,
-[nose 1.3.0](https://github.com/nose-devs/nose)
-and [virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv)
-* see [requirements.txt](https://github.com/simonsdave/yar/blob/master/requirements.txt "requirements.txt") for the complete list of prerequisites
+[virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv),
+[CouchDB 1.2.1](http://couchdb.apache.org/)
+and
+[memcached 1.4.13](http://memcached.org/)
+* see
+[requirements.txt](https://github.com/simonsdave/yar/blob/master/requirements.txt "requirements.txt")
+for the complete list of python packages on which yar depends
 
 Development
 -----------
