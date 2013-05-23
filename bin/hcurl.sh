@@ -2,14 +2,12 @@
 #-------------------------------------------------------------------------------
 #
 # A wrapper around cURL that adds an HMAC HTTP Authorization header
-# to a request directed at the auth server.
+# to a request directed at yar's auth server.
 #
 #-------------------------------------------------------------------------------
 
-CREDS_FILE=~/.yar.keys
-
 get_creds() {
-    grep "^\\s*$1\\s*=" $CREDS_FILE | sed -e "s/^\\s*$1\\s*=\s*//"
+    grep "^\\s*$1\\s*=" $YAR_CREDS | sed -e "s/^\\s*$1\\s*=\s*//"
 }
 
 usage() {
@@ -18,6 +16,15 @@ usage() {
 
 if [ $# != 2 ]; then
 	usage
+	exit 1
+fi
+
+if [ "$YAR_CREDS" == "" ]; then
+	YAR_CREDS=~/.yar.creds
+fi
+
+if [ ! -f $YAR_CREDS ]; then
+	echo "`basename $0`: can't read from creds file '$YAR_CREDS'"
 	exit 1
 fi
 
@@ -76,7 +83,7 @@ fi
 GEN_AUTH_HEADER_VALUE_CMD="$GEN_AUTH_HEADER_VALUE_CMD 2> /dev/null"
 AUTH_HEADER_VALUE=`eval $GEN_AUTH_HEADER_VALUE_CMD` 
 if [ "$AUTH_HEADER_VALUE" == "" ]; then
-	echo "`basename $0` could not generate auth header value - check $CREDS_FILE"
+	echo "`basename $0` could not generate auth header value - check $YAR_CREDS"
 	exit 1
 fi
 
