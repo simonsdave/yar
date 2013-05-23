@@ -60,8 +60,9 @@ curl \
   http://localhost:8070/v1.0/creds
 ~~~~~
 
-* using the credentials returned by the above cURL request, create a new file called ~/.yar.keys
-in the following format (this file will be used in a bit by the hcurl.sh utility):
+* using the credentials returned by the above cURL request, create a new file called ~/.yar.creds
+in the following format (this file will be used in a bit by
+[yarcurl.sh](https://github.com/simonsdave/yar/wiki/Utilities#yarcurlsh)):
 
 ~~~~~
 MAC_KEY_IDENTIFIER=484e15185fd50b7292f4b3ae08d45576
@@ -89,10 +90,11 @@ In a new terminal window issue the following commands to setup your PATH:
 cd; cd yar; source bin/cfg4dev
 ~~~~~
 
-* In the same window that you executed the above commands, you'll now use the hcurl.sh utility
-to issue a request to the authentication server:
+* In the same window that you executed the above commands, you'll now use
+[yarcurl.sh](https://github.com/simonsdave/yar/wiki/Utilities#yarcurlsh) 
+to issue a request to the app server via the auth server:
 
 ~~~~~
-hcurl.sh GET /das.html
+yarcurl.sh GET /das.html
 ~~~~~
 
