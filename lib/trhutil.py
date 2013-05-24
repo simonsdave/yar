@@ -78,22 +78,25 @@ class RequestHandler(tornado.web.RequestHandler):
         return (host, port)
 
     def get_request_body_if_exists(self, value_if_not_found=None):
-        """Return the request's body if one exists otherwise return None."""
-        content_length = self.request.headers.get("Content-Length", 0)
-        if 0 == content_length:
+        """Return the request's body if one exists otherwise
+        return ```value_if_not_found```."""
+        content_length = self.request.headers.get("Content-Length", None)
+        if content_length is None:
             transfer_encoding = self.request.headers.get(
                 "Transfer-Encoding",
                 None)
             if not transfer_encoding:
                 return value_if_not_found
-        if not self.request.body:
+        if self.request.body is None:
             return value_if_not_found
         return self.request.body
 
     def get_json_request_body(self, value_if_not_found=None, schema=None):
         """Get the request's JSON body and convert it into a dict.
-        If there's not body, the body isn't JSON, etc then return
-        None otherwise return the dict."""
+        If there's no body, the body isn't JSON, etc then return
+        ```value_if_not_found``  otherwise return the dict.
+        If ```schema``` is not None the JSON body is also validated
+        against that jsonschema."""
         body = self.get_request_body_if_exists(None)
         if body is None:
             return value_if_not_found
