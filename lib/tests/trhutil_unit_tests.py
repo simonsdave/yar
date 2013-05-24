@@ -164,6 +164,11 @@ class GetRequestBodyIfExistsRequestHandler(trhutil.RequestHandler):
 
     body_if_not_found = _uuid()
     def post(self):
+        delete_content_length = self.get_argument(
+            "delete_content_length",
+            False)
+        if delete_content_length:
+            del self.request.headers["Content-length"]
         response_body = self.get_request_body_if_exists(
             self.__class__.body_if_not_found)
         self.write(response_body)
@@ -176,14 +181,14 @@ class GetRequestBodyIfExistsTestCase(tornado.testing.AsyncHTTPTestCase):
         app = tornado.web.Application(handlers=handlers)
         return app
 
-    def _do_it(self, body, expected_body):
-        # headers = {"Content-length": len(body)}
-        headers = {}
+    def _do_it(self, body, expected_body, delete_content_length=False):
+        query_string = ""
+        if delete_content_length:
+            query_string = "?delete_content_length=1"
         self.http_client.fetch(
-            self.get_url(""), 
+            self.get_url(query_string),
             self.stop,
             method="POST",
-            headers=tornado.httputil.HTTPHeaders(headers),
             body=body)
         response = self.wait()
         self.assertIsNotNone(response)
@@ -197,3 +202,10 @@ class GetRequestBodyIfExistsTestCase(tornado.testing.AsyncHTTPTestCase):
     def test_all_good_zero_length_body(self):
         body = ""
         self._do_it(body, body)
+
+    def test_no_content_length_header(self):
+        body = ""
+        self._do_it(
+            body,
+            GetRequestBodyIfExistsRequestHandler.body_if_not_found,
+            delete_content_length=True)
