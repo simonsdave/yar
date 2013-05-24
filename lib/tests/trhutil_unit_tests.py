@@ -1,3 +1,6 @@
+"""This module contains a collection of unit tests
+for the ```trhutil``` module."""
+
 import json
 import httplib
 import unittest
@@ -14,7 +17,10 @@ class RequestHandler(trhutil.RequestHandler):
 
     def get(self):
         (host, port) = self.get_request_host_and_port()
-        body = {"host": host, "port": port}
+        body = {
+            "host": host,
+            "port": port
+        }
         self.write(body)
         self.set_status(httplib.OK)
 
@@ -36,4 +42,4 @@ class AsyncAppTestCase(tornado.testing.AsyncHTTPTestCase):
         self.assertTrue("host" in response_as_dict)
         self.assertEquals(response_as_dict["host"], "localhost")
         self.assertTrue("port" in response_as_dict)
-        self.assertEquals(int(response_as_dict["port"]), self._port)
+        self.assertEquals(response_as_dict["port"], self._port)
