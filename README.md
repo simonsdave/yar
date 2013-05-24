@@ -6,9 +6,13 @@ Prerequisites
 -------------
 * code written and tested on Mac OS X 10.8.2 using
 Python 2.7.2,
-[nose 1.3.0](https://github.com/nose-devs/nose)
-and [virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv)
-* see [requirements.txt](https://github.com/simonsdave/yar/blob/master/requirements.txt "requirements.txt") for the complete list of prerequisites
+[virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv),
+[CouchDB 1.2.1](http://couchdb.apache.org/)
+and
+[memcached 1.4.13](http://memcached.org/)
+* see
+[requirements.txt](https://github.com/simonsdave/yar/blob/master/requirements.txt "requirements.txt")
+for the complete list of python packages on which yar depends
 
 Development
 -----------
@@ -60,8 +64,9 @@ curl \
   http://localhost:8070/v1.0/creds
 ~~~~~
 
-* using the credentials returned by the above cURL request, create a new file called ~/.yar.keys
-in the following format (this file will be used in a bit by the hcurl.sh utility):
+* using the credentials returned by the above cURL request, create a new file called ~/.yar.creds
+in the following format (this file will be used in a bit by
+[yarcurl.sh](https://github.com/simonsdave/yar/wiki/Utilities#yarcurlsh)):
 
 ~~~~~
 MAC_KEY_IDENTIFIER=484e15185fd50b7292f4b3ae08d45576
@@ -89,10 +94,11 @@ In a new terminal window issue the following commands to setup your PATH:
 cd; cd yar; source bin/cfg4dev
 ~~~~~
 
-* In the same window that you executed the above commands, you'll now use the hcurl.sh utility
-to issue a request to the authentication server:
+* In the same window that you executed the above commands, you'll now use
+[yarcurl.sh](https://github.com/simonsdave/yar/wiki/Utilities#yarcurlsh) 
+to issue a request to the app server via the auth server:
 
 ~~~~~
-hcurl.sh GET /das.html
+yarcurl.sh GET /das.html
 ~~~~~
 
