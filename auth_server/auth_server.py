@@ -248,7 +248,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
             # debug, a whole series of HTTP headers are set to return the
             # core elements that are used to generate the HMAC.
             if _logger.isEnabledFor(logging.DEBUG):
-                if body is not None:
+                if body:
                     self._set_debug_header(
                         "BODY-SHA1",
                         hashlib.sha1(body).hexdigest())
@@ -258,6 +258,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
                     self._set_debug_header(
                         "BODY",
                         body)
+
                 self._set_debug_header(
                     "MAC-KEY-IDENTIFIER",
                     mac_key_identifier)
