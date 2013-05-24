@@ -53,7 +53,7 @@ class RequestHandler(tornado.web.RequestHandler):
         """Return the request's 'Host' HTTP header parsed into its
         host and port components."""
         value = self.request.headers.get("Host", None)
-        if not value:
+        if value is None:
             return (host_if_not_found, port_if_not_found)
 
         reg_ex_pattern = r"^\s*(?P<host>[^\:]+)(?:\:(?P<port>\d+))?\s*$"
@@ -71,7 +71,9 @@ class RequestHandler(tornado.web.RequestHandler):
         assert host
         assert 0 < len(host)
 
-        port = port_if_not_found if 1 == num_matches else match.group("port")
+        port = match.group("port")
+        if port is None:
+            port = port_if_not_found
 
         return (host, port)
 
