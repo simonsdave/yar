@@ -2,5 +2,5 @@
 *pyc
 *.swp
 .coverage
-htmlcov
+coverage_report
 env
