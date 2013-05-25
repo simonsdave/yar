@@ -87,7 +87,7 @@ if [ "$AUTH_HEADER_VALUE" == "" ]; then
 	exit 1
 fi
 
-if [ "POST" == "$HTTP_METHOD" ]; then
+if [ "" != "$CONTENT_TYPE" ]; then
 	curl \
 		-s \
 		-v \
