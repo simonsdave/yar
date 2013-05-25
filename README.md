@@ -5,7 +5,8 @@ See the [Wiki](https://github.com/simonsdave/yar/wiki) for a more complete descr
 Prerequisites 
 -------------
 * code written and tested on Mac OS X 10.8.2 using
-Python 2.7.2,
+[git 1.7.12.4](http://git-scm.com/),
+[Python 2.7.2](http://www.python.org/),
 [virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv),
 [CouchDB 1.2.1](http://couchdb.apache.org/)
 and
