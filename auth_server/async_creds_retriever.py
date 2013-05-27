@@ -1,4 +1,5 @@
-"""..."""
+"""This module hides the gory details of async'ly interacting
+with the key store to retrieve credentials."""
 
 import httplib
 import logging
