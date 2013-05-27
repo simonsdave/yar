@@ -16,6 +16,7 @@ import jsonschemas
 import tornadoasyncmemcache as memcache
 
 from clparser import CommandLineParser
+import async_creds_retriever
 import tsh
 import trhutil
 import strutil
@@ -31,9 +32,6 @@ __version__ = "1.0"
 """Once a request has been authenticated, the request is forwarded
 to the app server as defined by this host:port combination."""
 app_server = None
-
-"""This host:port combination define the location of the key server."""
-key_server = None
 
 """Once the auth server has verified the sender's identity the request
 is forwarded to the app server. The forward to the app server does not
@@ -119,54 +117,6 @@ class AsyncNonceChecker(object):
             self._callback(True)
         except Exception as ex:
             _logger.error(ex)
-
-
-class AsyncCredsRetriever(object):
-    """Wraps the gory details of async crednetials retrieval."""
-
-    def fetch(self, callback, mac_key_identifier):
-        """Retrieve the credentials for ```mac_key_identifier```
-        and when done call ```callback```."""
-
-        self._callback = callback
-        self._mac_key_identifier = mac_key_identifier
-
-        url = "http://%s/v1.0/creds/%s" % (
-            key_server,
-            self._mac_key_identifier)
-        http_client = tornado.httpclient.AsyncHTTPClient()
-        http_client.fetch(
-            tornado.httpclient.HTTPRequest(
-                url=url,
-                method="GET",
-                follow_redirects=False),
-            callback=self._my_callback)
-
-    def _my_callback(self, response):
-        """Called when request to the key server returns."""
-        if response.code != httplib.OK:
-            self._callback(False, self._mac_key_identifier)
-            return
-
-        response = trhutil.Response(response)
-        body = response.get_json_body(
-            jsonschemas.key_server_get_creds_response)
-        if body is None:
-            self._callback(False, self._mac_key_identifier)
-            return
-
-        _logger.info(
-            "For mac key identifier '%s' retrieved credentials '%s'",
-            self._mac_key_identifier,
-            body)
-
-        self._callback(
-            True,
-            mac.MACKeyIdentifier(self._mac_key_identifier),
-            body["is_deleted"],
-            body["mac_algorithm"],
-            mac.MACKey(body["mac_key"]),
-            body["owner"])
 
 
 class AuthRequestHandler(trhutil.RequestHandler):
@@ -338,7 +288,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
         # next steps is to retrieve the credentials associated with
         # the request's mac key identifier and confirm the request's
         # MAC is valid ie. final step in confirming the sender's identity
-        acr = AsyncCredsRetriever()
+        acr = async_creds_retriever.AsyncCredsRetriever()
         acr.fetch(
             self._on_async_creds_retriever_done,
             self._auth_hdr_val.mac_key_identifier)
@@ -409,14 +359,6 @@ class AuthRequestHandler(trhutil.RequestHandler):
     def delete(self):
         self._handle_request()
 
-    @tornado.web.asynchronous
-    def head(self):
-        self._handle_request()
-
-    @tornado.web.asynchronous
-    def options(self):
-        self._handle_request()
-
 
 _handlers = [(r".*", AuthRequestHandler), ]
 _tornado_app = tornado.web.Application(handlers=_handlers)
@@ -442,7 +384,7 @@ if __name__ == "__main__":
         clo.key_server,
         clo.app_server)
 
-    key_server = clo.key_server
+    async_creds_retriever.key_server = clo.key_server
     app_server = clo.app_server
     auth_method = clo.app_server_auth_method
     maxage = clo.maxage
