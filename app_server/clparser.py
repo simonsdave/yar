@@ -1,10 +1,9 @@
 """This module contains all the logic required to parse the app
 server's command line."""
 
-
-import re
 import logging
 import optparse
+import re
 
 import clparserutil
 
@@ -17,23 +16,27 @@ class CommandLineParser(optparse.OptionParser):
             "usage: %prog [options]",
             option_class=clparserutil.Option)
 
-        help = (
+        default = logging.ERROR
+        fmt = (
             "logging level "
             "[DEBUG,INFO,WARNING,ERROR,CRITICAL,FATAL]"
-            " - default = ERRROR"
+            " - default = %s"
         )
+        help = fmt % logging.getLevelName(default)
         self.add_option(
             "--log",
             action="store",
             dest="logging_level",
-            default=logging.ERROR,
+            default=default,
             type="logginglevel",
             help=help)
 
+        default = 8000
+        help="port - default = %d" % default
         self.add_option(
             "--port",
             action="store",
             dest="port",
-            default=8080,
+            default=default,
             type=int,
-            help="port - default = 8080")
+            help=help)
