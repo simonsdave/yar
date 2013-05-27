@@ -31,7 +31,7 @@ class CommandLineParser(optparse.OptionParser):
             type="logginglevel",
             help=help)
 
-        default = 8000
+        default = 8080
         help="port - default = %d" % default
         self.add_option(
             "--port",
