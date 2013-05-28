@@ -16,6 +16,8 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 
+import async_creds_retriever
+import async_nonce_checker
 import auth_server
 import testutil
 import mac
@@ -161,12 +163,12 @@ class AuthenticationServer(Server):
         server listenting on a random, available port."""
         Server.__init__(self)
 
-        auth_server.key_server = "localhost:%d" % key_server.port
+        async_creds_retriever.key_server = "localhost:%d" % key_server.port
         auth_server.app_server = "localhost:%d" % app_server.port
         auth_server.app_server_auth_method = app_server_auth_method
         auth_server.include_auth_failure_detail = True
         # :TODO: ...
-        auth_server.nonce_store = ["localhost:11211"]
+        async_nonce_checker.nonce_store = ["localhost:11211"]
         # :TODO: ...
 
         http_server = tornado.httpserver.HTTPServer(auth_server._tornado_app)
