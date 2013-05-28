@@ -315,16 +315,12 @@ if __name__ == "__main__":
     logging.basicConfig(level=clo.logging_level)
 
     fmt = (
-        "Auth Server listening on %d "
-        "using Nonce Store '%s', "
-        "Key Server '%s' and App Server '%s'"
+        "Auth Server listening on {clo.port} "
+        "using Nonce Store {clo.nonce_store}, "
+        "Key Server '{clo.app_server}' "
+        "and App Server '{clo.app_server}'"
     )
-    _logger.info(
-        fmt,
-        clo.port,
-        clo.nonce_store,
-        clo.key_server,
-        clo.app_server)
+    _logger.info(fmt.format(clo=clo))
 
     async_creds_retriever.key_server = clo.key_server
     app_server = clo.app_server
