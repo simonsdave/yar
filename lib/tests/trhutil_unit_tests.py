@@ -163,6 +163,7 @@ class GetRequestHostAndPortTestCase(tornado.testing.AsyncHTTPTestCase):
 class GetRequestBodyIfExistsRequestHandler(trhutil.RequestHandler):
 
     body_if_not_found = _uuid()
+
     def post(self):
         delete_content_length = self.get_argument(
             "delete_content_length",
@@ -209,3 +210,47 @@ class GetRequestBodyIfExistsTestCase(tornado.testing.AsyncHTTPTestCase):
             body,
             GetRequestBodyIfExistsRequestHandler.body_if_not_found,
             delete_content_length=True)
+
+class GetJSONRequestBodyRequestHandler(trhutil.RequestHandler):
+
+    body_if_not_found = json.dumps({"uuid": _uuid()})
+
+    def post(self):
+        delete_content_length = self.get_argument(
+            "delete_content_length",
+            False)
+        if delete_content_length:
+            del self.request.headers["Content-length"]
+        response_body = self.get_json_request_body(
+            self.__class__.body_if_not_found)
+        self.write(response_body)
+        self.set_status(httplib.OK)
+
+# class GetJSONRequestBodyIfExistsTestCase(tornado.testing.AsyncHTTPTestCase):
+class GetJSONRequestBodyIfExistsTestCase(object):
+
+    def get_app(self):
+        handlers = [(r".*", GetJSONRequestBodyRequestHandler), ]
+        app = tornado.web.Application(handlers=handlers)
+        return app
+
+    def _do_it(self, body, expected_body=None, delete_content_length=False):
+        query_string = ""
+        if delete_content_length:
+            query_string = "?delete_content_length=1"
+        body = json.dumps(body)
+        self.http_client.fetch(
+            self.get_url(query_string),
+            self.stop,
+            method="POST",
+            body=body)
+        response = self.wait()
+        self.assertIsNotNone(response)
+        self.assertEqual(response.code, httplib.OK)
+        if expected_body is None:
+            expected_body = body
+        self.assertEqual(response.body, expected_body)
+
+    def test_all_good_non_zero_length_body(self):
+        body = {"dave": "was", "here": 42}
+        self._do_it(body)
