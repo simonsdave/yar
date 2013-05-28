@@ -13,9 +13,10 @@ import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 import jsonschemas
-import tornadoasyncmemcache as memcache
 
 from clparser import CommandLineParser
+import async_creds_retriever
+import async_nonce_checker
 import tsh
 import trhutil
 import strutil
@@ -32,9 +33,6 @@ __version__ = "1.0"
 to the app server as defined by this host:port combination."""
 app_server = None
 
-"""This host:port combination define the location of the key server."""
-key_server = None
-
 """Once the auth server has verified the sender's identity the request
 is forwarded to the app server. The forward to the app server does not
 contain the original request's HTTP Authorization header but instead
@@ -45,9 +43,6 @@ app_server_auth_method = "DAS"
 """To help prevent reply attacks the timestamp of all requests can
 be no older than ```maxage``` seconds before the current timestamp."""
 maxage = 30
-
-"""..."""
-nonce_store = None
 
 """There are a billion ways in which authorization can fail. When
 writing tests you want to know and should now in detail why things
@@ -66,110 +61,7 @@ AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND = str(0x0005)
 AUTH_FAILURE_DETAIL_NONCE_REUSED = str(0x0006)
 
 
-class AsyncNonceChecker(object):
-    """Wraps the gory details of async'ing confirming that a
-    nonce + mac_key_identifer pair isn't known to the nonce
-    store (which is a memcached cluster)."""
-
-    _ccs = None
-
-    def fetch(self, callback, mac_key_identifier, nonce):
-        """...  and when done call ```callback```."""
-        try:
-            if self.__class__._ccs is None:
-                _logger.info(
-                    "Creating 'memcache.ClientPool()' for cluster '%s'",
-                    nonce_store)
-                self.__class__._ccs = memcache.ClientPool(
-                    nonce_store,
-                    maxclients=100)
-
-            self._callback = callback
-            self._mac_key_identifier = mac_key_identifier
-            self._nonce = nonce
-        
-            self._key = "%s-%s" % (self._mac_key_identifier, self._nonce)
-            _logger.info("Asking for nonce key '%s'", self._key)
-            self.__class__._ccs.get(
-                self._key,
-                callback=self._on_async_get_done)
-        except Exception as ex:
-            _logger.error(ex)
-            self._callback(False)
-
-    def _on_async_get_done(self, data):
-        _logger.info(
-            "Answer from asking for nonce key '%s' = '%s'",
-            self._key,
-            data)
-        try:
-            if data is not None:
-                self._callback(False)
-            else:
-                self.__class__._ccs.set(
-                    self._key,
-                    "1",
-                    callback=self._on_async_set_done)
-        except Exception as ex:
-            _logger.error(ex)
-            self._callback(False)
-
-    def _on_async_set_done(self, data):
-        try:
-            self._callback(True)
-        except Exception as ex:
-            _logger.error(ex)
-
-
-class AsyncCredsRetriever(object):
-    """Wraps the gory details of async crednetials retrieval."""
-
-    def fetch(self, callback, mac_key_identifier):
-        """Retrieve the credentials for ```mac_key_identifier```
-        and when done call ```callback```."""
-
-        self._callback = callback
-        self._mac_key_identifier = mac_key_identifier
-
-        url = "http://%s/v1.0/creds/%s" % (
-            key_server,
-            self._mac_key_identifier)
-        http_client = tornado.httpclient.AsyncHTTPClient()
-        http_client.fetch(
-            tornado.httpclient.HTTPRequest(
-                url=url,
-                method="GET",
-                follow_redirects=False),
-            callback=self._my_callback)
-
-    def _my_callback(self, response):
-        """Called when request to the key server returns."""
-        if response.code != httplib.OK:
-            self._callback(False, self._mac_key_identifier)
-            return
-
-        response = trhutil.Response(response)
-        body = response.get_json_body(
-            jsonschemas.key_server_get_creds_response)
-        if body is None:
-            self._callback(False, self._mac_key_identifier)
-            return
-
-        _logger.info(
-            "For mac key identifier '%s' retrieved credentials '%s'",
-            self._mac_key_identifier,
-            body)
-
-        self._callback(
-            True,
-            mac.MACKeyIdentifier(self._mac_key_identifier),
-            body["is_deleted"],
-            body["mac_algorithm"],
-            mac.MACKey(body["mac_key"]),
-            body["owner"])
-
-
-class AuthRequestHandler(trhutil.RequestHandler):
+class RequestHandler(trhutil.RequestHandler):
 
     def _set_debug_header(self, name, value):
         """Called by ```_set_debug_headers()``` to actually
@@ -338,7 +230,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
         # next steps is to retrieve the credentials associated with
         # the request's mac key identifier and confirm the request's
         # MAC is valid ie. final step in confirming the sender's identity
-        acr = AsyncCredsRetriever()
+        acr = async_creds_retriever.AsyncCredsRetriever()
         acr.fetch(
             self._on_async_creds_retriever_done,
             self._auth_hdr_val.mac_key_identifier)
@@ -387,7 +279,7 @@ class AuthRequestHandler(trhutil.RequestHandler):
         # before. this means async'ly calling out to the memcached
         # cluster which stores previously used nonce+mac_key_identifer
         # combinations
-        anc = AsyncNonceChecker()
+        anc = async_nonce_checker.AsyncNonceChecker()
         anc.fetch(
             self._on_async_nonce_checker_done,
             self._auth_hdr_val.mac_key_identifier,
@@ -409,16 +301,8 @@ class AuthRequestHandler(trhutil.RequestHandler):
     def delete(self):
         self._handle_request()
 
-    @tornado.web.asynchronous
-    def head(self):
-        self._handle_request()
 
-    @tornado.web.asynchronous
-    def options(self):
-        self._handle_request()
-
-
-_handlers = [(r".*", AuthRequestHandler), ]
+_handlers = [(r".*", RequestHandler), ]
 _tornado_app = tornado.web.Application(handlers=_handlers)
 
 
@@ -431,22 +315,18 @@ if __name__ == "__main__":
     logging.basicConfig(level=clo.logging_level)
 
     fmt = (
-        "Auth Server listening on %d "
-        "using Nonce Store '%s', "
-        "Key Server '%s' and App Server '%s'"
+        "Auth Server listening on {clo.port} "
+        "using Nonce Store {clo.nonce_store}, "
+        "Key Server '{clo.app_server}' "
+        "and App Server '{clo.app_server}'"
     )
-    _logger.info(
-        fmt,
-        clo.port,
-        clo.nonce_store,
-        clo.key_server,
-        clo.app_server)
+    _logger.info(fmt.format(clo=clo))
 
-    key_server = clo.key_server
+    async_creds_retriever.key_server = clo.key_server
     app_server = clo.app_server
     auth_method = clo.app_server_auth_method
     maxage = clo.maxage
-    nonce_store = clo.nonce_store
+    async_nonce_checker.nonce_store = clo.nonce_store
 
     http_server = tornado.httpserver.HTTPServer(_tornado_app)
     http_server.listen(clo.port)
