@@ -226,23 +226,32 @@ class GetJSONRequestBodyRequestHandler(trhutil.RequestHandler):
         self.write(response_body)
         self.set_status(httplib.OK)
 
-# class GetJSONRequestBodyIfExistsTestCase(tornado.testing.AsyncHTTPTestCase):
-class GetJSONRequestBodyIfExistsTestCase(object):
+class GetJSONRequestBodyIfExistsTestCase(tornado.testing.AsyncHTTPTestCase):
 
     def get_app(self):
         handlers = [(r".*", GetJSONRequestBodyRequestHandler), ]
         app = tornado.web.Application(handlers=handlers)
         return app
 
-    def _do_it(self, body, expected_body=None, delete_content_length=False):
+    def _do_it(
+        self,
+        body,
+        expected_body=None,
+        content_type="application/json; charset=utf8",
+        delete_content_length=False):
+
         query_string = ""
         if delete_content_length:
             query_string = "?delete_content_length=1"
+        headers = {}
+        if content_type is not None:
+            headers["Content-type"] = content_type
         body = json.dumps(body)
         self.http_client.fetch(
             self.get_url(query_string),
             self.stop,
             method="POST",
+            headers=tornado.httputil.HTTPHeaders(headers),
             body=body)
         response = self.wait()
         self.assertIsNotNone(response)
@@ -254,3 +263,17 @@ class GetJSONRequestBodyIfExistsTestCase(object):
     def test_all_good_non_zero_length_body(self):
         body = {"dave": "was", "here": 42}
         self._do_it(body)
+
+    def test_no_content_type(self):
+        body = {"dave": "was", "here": 42}
+        self._do_it(
+            body,
+            expected_body=GetJSONRequestBodyRequestHandler.body_if_not_found,
+            content_type=None)
+
+    def test_invalid_content_type(self):
+        body = {"dave": "was", "here": 42}
+        self._do_it(
+            body,
+            expected_body=GetJSONRequestBodyRequestHandler.body_if_not_found,
+            content_type="dave")
