@@ -1,15 +1,16 @@
 """This module contains the auth server's unit tests."""
 
-import logging
-import unittest
 import httplib
 import httplib2
 import json
-import uuid
-import threading
+import logging
+import os
 import re
 import sys
-import os
+import subprocess
+import threading
+import uuid
+import unittest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import tornado.httpserver
@@ -19,8 +20,8 @@ import tornado.web
 import async_creds_retriever
 import async_nonce_checker
 import auth_server
-import testutil
 import mac
+import testutil
 
 _logger = logging.getLogger(__name__)
 
@@ -39,6 +40,53 @@ class Server(object):
         object.__init__(self)
 
         (self.socket, self.port) = testutil.get_available_port()
+
+    def shutdown(self):
+        """Can be overriden by derived classes to perform server
+        type specific shutdown. This method is a no-op but derived
+        classes should call this method in case this is not a no-op
+        in the future."""
+        pass
+
+class NonceStore(Server):
+    """The mock app server."""
+
+    def __init__(self):
+        """Starts memcached on a random but available port.
+        Yes this class really does spawn a memcached process.
+        :TODO: Is there a way to start an in-memory or mock
+        version of memcached?"""
+        Server.__init__(self)
+
+        args = ["memcached", "-vv", "-p", str(self.port)]
+        self._process = subprocess.Popen(args)
+
+        _logger.info(
+            "Started nonce store on %s",
+            self.memcached_cluster)
+
+    def shutdown(self):
+        """Terminate the memcached process implementing the
+        nonce store."""
+        Server.shutdown(self)
+
+        if self._process:
+            self._process.terminate()
+            self._process = None
+
+    @property
+    def memcached_cluster(self):
+        """memcached clients reference a memcached cluster
+        with knowledge of entire cluster's ip+port pairs.
+        While ```NonceStore``` implements a cluster
+        of a single memcached instance, the array of ip+port
+        pairs still needs to be passed to memcached clients.
+        This is a convience method for constructing the
+        array of which describes to memcached clients how
+        a memcached client can access the nonce store
+        cluster."""
+        me = "localhost:%d" % self.port
+        return [me]
 
 
 class AppServerRequestHandler(tornado.web.RequestHandler):
@@ -158,7 +206,7 @@ class KeyServer(Server):
 class AuthenticationServer(Server):
     """Mock authentication server."""
 
-    def __init__(self, key_server, app_server, app_server_auth_method):
+    def __init__(self, nonce_store, key_server, app_server, app_server_auth_method):
         """Creates an instance of the auth server and starts the
         server listenting on a random, available port."""
         Server.__init__(self)
@@ -167,9 +215,7 @@ class AuthenticationServer(Server):
         auth_server.app_server = "localhost:%d" % app_server.port
         auth_server.app_server_auth_method = app_server_auth_method
         auth_server.include_auth_failure_detail = True
-        # :TODO: ...
-        async_nonce_checker.nonce_store = ["localhost:11211"]
-        # :TODO: ...
+        async_nonce_checker.nonce_store = nonce_store.memcached_cluster
 
         http_server = tornado.httpserver.HTTPServer(auth_server._tornado_app)
         http_server.add_sockets([self.socket])
@@ -198,8 +244,10 @@ class TestCase(testutil.TestCase):
     def setUpClass(cls):
         cls.app_server = AppServer()
         cls.app_server_auth_method = str(uuid.uuid4()).replace("-", "")
+        cls.nonce_store = NonceStore()
         cls.key_server = KeyServer()
         cls.auth_server = AuthenticationServer(
+            cls.nonce_store,
             cls.key_server,
             cls.app_server,
             cls.app_server_auth_method)
@@ -209,11 +257,16 @@ class TestCase(testutil.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.app_server = None
-        cls.auth_server = None
-        cls.key_server = None
         cls.io_loop.stop()
         cls.io_loop = None
+        cls.auth_server.shutdown()
+        cls.auth_server = None
+        cls.key_server.shutdown()
+        cls.key_server = None
+        cls.nonce_store.shutdown()
+        cls.nonce_store = None
+        cls.app_server.shutdown()
+        cls.app_server = None
 
     """When KeyServerRequestHandler's get() is given a valid
     mac key identifier, _mac_key_identifier_in_key_server_request
