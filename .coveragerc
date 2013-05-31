@@ -2,7 +2,6 @@
 branch = True
 include =
 	lib/*
-	lib/testutil*
 	auth_server/*
 	key_server/*
 omit =
