@@ -2,5 +2,6 @@
 *pyc
 *.swp
 .coverage
+.DS_Store
 coverage_report
 env
