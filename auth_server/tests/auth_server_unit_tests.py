@@ -6,13 +6,15 @@ import json
 import logging
 import os
 import re
-import sys
 import subprocess
+import sys
 import threading
+import time
 import uuid
 import unittest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+import memcache
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
@@ -58,8 +60,40 @@ class NonceStore(Server):
         version of memcached?"""
         Server.__init__(self)
 
-        args = ["memcached", "-vv", "-p", str(self.port)]
-        self._process = subprocess.Popen(args)
+        args = [
+            "memcached",
+            "-vv",
+            "-p",
+            str(self.port),
+            "-U",
+            str(self.port),
+            "-l",
+            "localhost"
+        ]
+        self._process = subprocess.Popen(args, shell=False)
+
+        key = "some_key"
+        value = None
+        number_attempts = 10
+        for attempt in range(0, number_attempts):
+            mc = memcache.Client(self.memcached_cluster, debug=1)
+            mc.set(key, "some value")
+            if mc.get(key):
+                break
+            sys.stderr.write(
+                "%d: Attempt to connect to nonce store %s failed:-(\n" % (
+                attempt,
+                self.memcached_cluster))
+            time.sleep(1)
+        else:
+            sys.stderr.write(
+                "Failed to connect to nonce store %s after %d attempts:-(\n" % (
+                self.memcached_cluster,
+                number_attempts))
+
+        sys.stderr.write(
+            "Started nonce store on %s\n" %
+            self.memcached_cluster)
 
         _logger.info(
             "Started nonce store on %s",
@@ -85,8 +119,7 @@ class NonceStore(Server):
         array of which describes to memcached clients how
         a memcached client can access the nonce store
         cluster."""
-        me = "localhost:%d" % self.port
-        return [me]
+        return ["localhost:%d" % self.port]
 
 
 class AppServerRequestHandler(tornado.web.RequestHandler):
