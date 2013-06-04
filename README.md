@@ -1,5 +1,10 @@
 This repo is the result of Dave being convinced that it wouldn't be that
-hard to write an API Management service.
+hard to write an API Management solution. Why? Because it felt like so much
+of the required open source componentry already existed and all that was necessary
+was assembling this pre-existing componentry into an appropriate solution and,
+once assembly was complete, providing a suite of automated tests to validate
+the solution's correctness. 
+
 See the [Wiki](https://github.com/simonsdave/yar/wiki) for a more complete description and discussion of yar.
 
 Prerequisites 
