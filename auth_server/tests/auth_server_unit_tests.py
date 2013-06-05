@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import re
+import socket
 import subprocess
 import sys
 import threading
@@ -35,13 +36,20 @@ class Server(object):
     save that port & associated socket object in the socket and
     port properties."""
 
-    def __init__(self):
+    def __init__(self, is_in_process=True):
         """Opens a random but available socket and assigns it to the
         socket property. The socket's port is also assigned to the
         port property."""
         object.__init__(self)
 
-        (self.socket, self.port) = testutil.get_available_port()
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket.bind(('', 0))
+        self.port = self.socket.getsockname()[1]
+
+        if not is_in_process:
+            self.socket.close()
+            self.socket = None
 
     def shutdown(self):
         """Can be overriden by derived classes to perform server
@@ -51,14 +59,20 @@ class Server(object):
         pass
 
 class NonceStore(Server):
-    """The mock app server."""
+    """The mock nonce store."""
+
+    # """
+    @property
+    def port(self):
+        return 49251
+    # """
 
     def __init__(self):
         """Starts memcached on a random but available port.
         Yes this class really does spawn a memcached process.
         :TODO: Is there a way to start an in-memory or mock
         version of memcached?"""
-        Server.__init__(self)
+        # Server.__init__(self, is_in_process=False)
 
         args = [
             "memcached",
