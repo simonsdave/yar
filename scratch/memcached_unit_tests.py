@@ -37,6 +37,11 @@ class NonceStore(object):
                 break
             time.sleep(1)
 
+        sys.stderr.write(
+            "Started memcached - pid = %d, port = %d\n" % (
+            self.process.pid,
+            port))
+
     def shutdown(self):
         sys.stderr.write("Shutting down memcached\n")
         self.process.terminate()
