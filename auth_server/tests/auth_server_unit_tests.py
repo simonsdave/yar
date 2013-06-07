@@ -25,40 +25,12 @@ import async_nonce_checker
 import auth_server
 import mac
 import testutil
+import auth_server_testutil
 
 _logger = logging.getLogger(__name__)
 
 
-class Server(object):
-    """An abstract base class for mock auth server, key server and
-    app server. The primary reason for this class to exist is so the
-    constructor can find an available port for the server to run and
-    save that port & associated socket object in the socket and
-    port properties."""
-
-    def __init__(self, is_in_process=True):
-        """Opens a random but available socket and assigns it to the
-        socket property. The socket's port is also assigned to the
-        port property."""
-        object.__init__(self)
-
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.socket.bind(('', 0))
-        self.port = self.socket.getsockname()[1]
-
-        if not is_in_process:
-            self.socket.close()
-            self.socket = None
-
-    def shutdown(self):
-        """Can be overriden by derived classes to perform server
-        type specific shutdown. This method is a no-op but derived
-        classes should call this method in case this is not a no-op
-        in the future."""
-        pass
-
-class NonceStore(Server):
+class NonceStore(auth_server_testutil.Server):
     """The mock nonce store."""
 
     """
@@ -72,11 +44,11 @@ class NonceStore(Server):
         Yes this class really does spawn a memcached process.
         :TODO: Is there a way to start an in-memory or mock
         version of memcached?"""
-        Server.__init__(self, is_in_process=False)
+        auth_server_testutil.Server.__init__(self, is_in_process=False)
 
         args = [
             "memcached",
-            # "-vv",
+            "-vv",
             "-p",
             str(self.port),
             "-U",
@@ -116,7 +88,7 @@ class NonceStore(Server):
     def shutdown(self):
         """Terminate the memcached process implementing the
         nonce store."""
-        Server.shutdown(self)
+        auth_server_testutil.Server.shutdown(self)
 
         if self._process:
             self._process.terminate()
@@ -169,13 +141,13 @@ class AppServerRequestHandler(tornado.web.RequestHandler):
         self.set_status(httplib.OK)
 
 
-class AppServer(Server):
+class AppServer(auth_server_testutil.Server):
     """The mock app server."""
 
     def __init__(self):
         """Creates an instance of the mock app server and starts the
         server listenting on a random, available port."""
-        Server.__init__(self)
+        auth_server_testutil.Server.__init__(self)
 
         handlers = [(r".*", AppServerRequestHandler)]
         app = tornado.web.Application(handlers=handlers)
@@ -236,13 +208,13 @@ class KeyServerRequestHandler(tornado.web.RequestHandler):
                     "Content-Type", "application/json; charset=utf8")
 
 
-class KeyServer(Server):
+class KeyServer(auth_server_testutil.Server):
     """The mock key server."""
 
     def __init__(self):
         """Creates an instance of the mock key server and starts the
         server listenting on a random, available port."""
-        Server.__init__(self)
+        auth_server_testutil.Server.__init__(self)
 
         handlers = [(r".*", KeyServerRequestHandler)]
         app = tornado.web.Application(handlers=handlers)
@@ -250,13 +222,13 @@ class KeyServer(Server):
         http_server.add_sockets([self.socket])
 
 
-class AuthenticationServer(Server):
+class AuthenticationServer(auth_server_testutil.Server):
     """Mock authentication server."""
 
     def __init__(self, nonce_store, key_server, app_server, app_server_auth_method):
         """Creates an instance of the auth server and starts the
         server listenting on a random, available port."""
-        Server.__init__(self)
+        auth_server_testutil.Server.__init__(self)
 
         async_creds_retriever.key_server = "localhost:%d" % key_server.port
         auth_server.app_server = "localhost:%d" % app_server.port
