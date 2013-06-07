@@ -61,22 +61,22 @@ class Server(object):
 class NonceStore(Server):
     """The mock nonce store."""
 
-    # """
+    """
     @property
     def port(self):
         return 49251
-    # """
+    """
 
     def __init__(self):
         """Starts memcached on a random but available port.
         Yes this class really does spawn a memcached process.
         :TODO: Is there a way to start an in-memory or mock
         version of memcached?"""
-        # Server.__init__(self, is_in_process=False)
+        Server.__init__(self, is_in_process=False)
 
         args = [
             "memcached",
-            "-vv",
+            # "-vv",
             "-p",
             str(self.port),
             "-U",
@@ -279,28 +279,31 @@ class IOLoop(threading.Thread):
         self.daemon = True
 
     def run(self):
+        sys.stderr.write("starting ioloop\n")
         tornado.ioloop.IOLoop.instance().start()
+        sys.stderr.write("started ioloop\n")
 
     def stop(self):
+        sys.stderr.write("stopping ioloop\n")
         tornado.ioloop.IOLoop.instance().stop()
+        sys.stderr.write("stopped ioloop\n")
 
 
 class TestCase(testutil.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.io_loop = IOLoop()
+        cls.io_loop.start()
         cls.app_server = AppServer()
         cls.app_server_auth_method = str(uuid.uuid4()).replace("-", "")
-        cls.nonce_store = NonceStore()
         cls.key_server = KeyServer()
+        cls.nonce_store = NonceStore()
         cls.auth_server = AuthenticationServer(
             cls.nonce_store,
             cls.key_server,
             cls.app_server,
             cls.app_server_auth_method)
-
-        cls.io_loop = IOLoop()
-        cls.io_loop.start()
 
     @classmethod
     def tearDownClass(cls):
@@ -308,10 +311,10 @@ class TestCase(testutil.TestCase):
         cls.io_loop = None
         cls.auth_server.shutdown()
         cls.auth_server = None
-        cls.key_server.shutdown()
-        cls.key_server = None
         cls.nonce_store.shutdown()
         cls.nonce_store = None
+        cls.key_server.shutdown()
+        cls.key_server = None
         cls.app_server.shutdown()
         cls.app_server = None
 
