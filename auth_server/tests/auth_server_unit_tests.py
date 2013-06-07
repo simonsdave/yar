@@ -6,10 +6,8 @@ import json
 import logging
 import os
 import re
-import socket
 import subprocess
 import sys
-import threading
 import time
 import uuid
 import unittest
@@ -17,7 +15,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 import memcache
 import tornado.httpserver
-import tornado.ioloop
 import tornado.web
 
 import async_creds_retriever
@@ -240,32 +237,11 @@ class AuthenticationServer(auth_server_testutil.Server):
         http_server.add_sockets([self.socket])
 
 
-class IOLoop(threading.Thread):
-    """This class makes it easy for a test case's `setUpClass()` to start
-    a Tornado io loop on the non-main thread so that the io loop, auth server
-    key server and app server can operate 'in the background' while the
-    unit test runs on the main thread."""
-
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.daemon = True
-
-    def run(self):
-        sys.stderr.write("starting ioloop\n")
-        tornado.ioloop.IOLoop.instance().start()
-        sys.stderr.write("started ioloop\n")
-
-    def stop(self):
-        sys.stderr.write("stopping ioloop\n")
-        tornado.ioloop.IOLoop.instance().stop()
-        sys.stderr.write("stopped ioloop\n")
-
-
 class TestCase(testutil.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.io_loop = IOLoop()
+        cls.io_loop = testutil.IOLoop()
         cls.io_loop.start()
         cls.app_server = AppServer()
         cls.app_server_auth_method = str(uuid.uuid4()).replace("-", "")
