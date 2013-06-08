@@ -3,6 +3,7 @@ when writing unit tests for various components of the API management
 solution."""
 
 
+import httplib
 import logging
 import socket
 import re
@@ -139,3 +140,73 @@ class NonceStore(Server):
         a memcached client can access the nonce store
         cluster."""
         return ["localhost:%d" % self.port]
+
+
+class AppServerRequestState(object):
+
+    def __init__(self):
+        object.__init__(self)
+
+    def reset(self):
+        """When the auth server forwards a request to the app server the
+        request's authorization header contained the value found
+        in '''auth_hdr_in_req```."""
+        self.auth_hdr_in_req = None
+        """When the app server recieves a GET it sets
+        ```received_post``` to True."""
+        self.received_get = False
+        """When the app server recieves a POST it sets
+        ```received_post``` to True."""
+        self.received_post = False
+        """When the app server recieves a PUT it sets
+        ```received_post``` to True."""
+        self.received_put = False
+        """When the app server recieves a DELETE it sets
+        ```received_delete``` to True."""
+        self.received_delete = False
+
+
+class AppServerRequestHandler(tornado.web.RequestHandler):
+    """Tornado request handler for use by the mock app server. This request
+    handler only implements HTTP GET."""
+
+    asrs = None
+
+    def _handle_request(self, get=False, post=False, put=False, delete=False):
+        asrs = self.__class__.asrs
+        asrs.auth_hdr_in_req = self.request.headers.get(
+            "Authorization",
+            None)
+        asrs.received_post = post
+        asrs.received_get = get
+        asrs.received_put = put
+        asrs.received_delete = delete
+        self.set_status(httplib.OK)
+
+    def get(self):
+        self._handle_request(get=True)
+
+    def post(self):
+        self._handle_request(post=True)
+
+    def put(self):
+        self._handle_request(put=True)
+
+    def delete(self):
+        self._handle_request(delete=True)
+
+
+class AppServer(Server):
+    """The mock app server."""
+
+    def __init__(self, asrs):
+        """Creates an instance of the mock app server and starts the
+        server listenting on a random, available port."""
+        Server.__init__(self)
+
+        handler_cls = AppServerRequestHandler
+        handler_cls.asrs = asrs
+        handlers = [(r".*", handler_cls)]
+        app = tornado.web.Application(handlers=handlers)
+        http_server = tornado.httpserver.HTTPServer(app)
+        http_server.add_sockets([self.socket])

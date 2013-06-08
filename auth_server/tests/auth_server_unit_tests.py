@@ -24,53 +24,6 @@ import testutil
 _logger = logging.getLogger(__name__)
 
 
-class AppServerRequestHandler(tornado.web.RequestHandler):
-    """Tornado request handler for use by the mock app server. This request
-    handler only implements HTTP GET."""
-
-    def _save_authorization_header_value(self):
-        TestCase.auth_hdr_in_req_to_app_server = \
-            self.request.headers.get("Authorization", None)
-
-    def get(self):
-        """Implements HTTP GET for the mock app server."""
-        TestCase.app_server_received_get = True
-        self._save_authorization_header_value()
-        self.set_status(httplib.OK)
-
-    def post(self):
-        """Implements HTTP POST for the mock app server."""
-        TestCase.app_server_received_post = True
-        self._save_authorization_header_value()
-        self.set_status(httplib.OK)
-
-    def put(self):
-        """Implements HTTP PUT for the mock app server."""
-        TestCase.app_server_received_put = True
-        self._save_authorization_header_value()
-        self.set_status(httplib.OK)
-
-    def delete(self):
-        """Implements HTTP DELETE for the mock app server."""
-        TestCase.app_server_received_delete = True
-        self._save_authorization_header_value()
-        self.set_status(httplib.OK)
-
-
-class AppServer(testutil.Server):
-    """The mock app server."""
-
-    def __init__(self):
-        """Creates an instance of the mock app server and starts the
-        server listenting on a random, available port."""
-        testutil.Server.__init__(self)
-
-        handlers = [(r".*", AppServerRequestHandler)]
-        app = tornado.web.Application(handlers=handlers)
-        http_server = tornado.httpserver.HTTPServer(app)
-        http_server.add_sockets([self.socket])
-
-
 class KeyServerRequestHandler(tornado.web.RequestHandler):
     """Tornado request handler for use by the mock key server. This request
     handler only implements HTTP GET since that's the only type of request the
@@ -162,7 +115,8 @@ class TestCase(testutil.TestCase):
     def setUpClass(cls):
         cls.io_loop = testutil.IOLoop()
         cls.io_loop.start()
-        cls.app_server = AppServer()
+        cls.asrs = testutil.AppServerRequestState()
+        cls.app_server = testutil.AppServer(cls.asrs)
         cls.app_server_auth_method = str(uuid.uuid4()).replace("-", "")
         cls.key_server = KeyServer()
         cls.nonce_store = testutil.NonceStore()
@@ -184,6 +138,7 @@ class TestCase(testutil.TestCase):
         cls.key_server = None
         cls.app_server.shutdown()
         cls.app_server = None
+        cls.asrs = None
 
     """When KeyServerRequestHandler's get() is given a valid
     mac key identifier, _mac_key_identifier_in_key_server_request
@@ -212,35 +167,6 @@ class TestCase(testutil.TestCase):
     is used for the owner attribute."""
     owner_in_response_to_key_server_request = None
 
-    """When the auth server forwards a request to the app server the
-    request's authorization header contained the value found
-    in '''auth_hdr_in_req_to_app_server```."""
-    auth_hdr_in_req_to_app_server = None
-
-    """When the app server recieves a GET it sets
-    ```app_server_received_post``` to True."""
-    app_server_received_get = None
-
-    """When the app server recieves a POST it sets
-    ```app_server_received_post``` to True."""
-    app_server_received_post = None
-
-    """When the app server recieves a PUT it sets
-    ```app_server_received_post``` to True."""
-    app_server_received_put = None
-
-    """When the app server recieves a DELETE it sets
-    ```app_server_received_delete``` to True."""
-    app_server_received_delete = None
-
-    """When the app server recieves a HEAD it sets
-    ```app_server_received_head``` to True."""
-    app_server_received_head = None
-
-    """When the app server recieves a OPTIONS it sets
-    ```app_server_received_options``` to True."""
-    app_server_received_options = None
-
     def setUp(self):
         testutil.TestCase.setUp(self)
         self.__class__._mac_key_identifier_in_key_server_request = None
@@ -250,13 +176,7 @@ class TestCase(testutil.TestCase):
         self.__class__.mac_key_in_response_to_key_server_request = None
         self.__class__.mac_algorithm_response_to_key_server_request = None
         self.__class__.owner_in_response_to_key_server_request = None
-        self.__class__.auth_hdr_in_req_to_app_server = None
-        self.__class__.app_server_received_get = False
-        self.__class__.app_server_received_post = False
-        self.__class__.app_server_received_put = False
-        self.__class__.app_server_received_delete = False
-        self.__class__.app_server_received_head = False
-        self.__class__.app_server_received_options = False
+        self.__class__.asrs.reset()
 
     def assertMACKeyIdentifierInKeyServerRequest(self, mac_key_identifier):
         """The unit test that was just run caused the authentication server
@@ -282,7 +202,7 @@ class TestCase(testutil.TestCase):
         made this call with a particular authorization header. This method
         allows to caller to assert that the format and content of the
         authorization header was as expected."""
-        self.assertIsNotNone(self.__class__.auth_hdr_in_req_to_app_server)
+        self.assertIsNotNone(self.__class__.asrs.auth_hdr_in_req)
         reg_ex_pattern = (
             '^\s*'
             '(?P<auth_method>[^\s]+)\s+'
@@ -291,10 +211,10 @@ class TestCase(testutil.TestCase):
             '$'
         )
         reg_ex = re.compile(reg_ex_pattern, re.IGNORECASE)
-        match = reg_ex.match(self.__class__.auth_hdr_in_req_to_app_server)
+        match = reg_ex.match(self.__class__.asrs.auth_hdr_in_req)
         self.assertIsNotNone(match)
         assert 0 == match.start()
-        assert len(self.__class__.auth_hdr_in_req_to_app_server) == match.end()
+        assert len(self.__class__.asrs.auth_hdr_in_req) == match.end()
         assert 3 == len(match.groups())
         auth_method = match.group("auth_method")
         assert auth_method is not None
@@ -314,18 +234,14 @@ class TestCase(testutil.TestCase):
         get=False,
         post=False,
         delete=False,
-        put=False,
-        head=False,
-        options=False):
+        put=False):
         """The unit test that was just run caused the authentication server
         to forward a request to the app server. This method allows the caller
         to assert that the app server recieved the correct request."""
-        self.assertEqual(self.__class__.app_server_received_get, get)
-        self.assertEqual(self.__class__.app_server_received_post, post)
-        self.assertEqual(self.__class__.app_server_received_put, put)
-        self.assertEqual(self.__class__.app_server_received_delete, delete)
-        self.assertEqual(self.__class__.app_server_received_head, head)
-        self.assertEqual(self.__class__.app_server_received_options, options)
+        self.assertEqual(self.__class__.asrs.received_get, get)
+        self.assertEqual(self.__class__.asrs.received_post, post)
+        self.assertEqual(self.__class__.asrs.received_put, put)
+        self.assertEqual(self.__class__.asrs.received_delete, delete)
 
     def assertAuthFailure(self, response, detail):
         self.assertEqual(response.status, httplib.UNAUTHORIZED)
