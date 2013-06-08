@@ -6,14 +6,12 @@ import json
 import logging
 import os
 import re
-import subprocess
 import sys
 import time
 import uuid
 import unittest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import memcache
 import tornado.httpserver
 import tornado.web
 
@@ -24,60 +22,6 @@ import mac
 import testutil
 
 _logger = logging.getLogger(__name__)
-
-
-class NonceStore(testutil.Server):
-    """The mock nonce store."""
-
-    def __init__(self):
-        """Starts memcached on a random but available port.
-        Yes this class really does spawn a memcached process.
-        :TODO: Is there a way to start an in-memory or mock
-        version of memcached?"""
-        testutil.Server.__init__(self, is_in_process=False)
-
-        args = [
-            "memcached",
-            # "-vv",
-            "-p",
-            str(self.port),
-            "-U",
-            str(self.port),
-            "-l",
-            "localhost"
-        ]
-        self._process = subprocess.Popen(args, shell=False)
-
-        key = "some_key"
-        value = None
-        number_attempts = 10
-        for attempt in range(0, number_attempts):
-            mc = memcache.Client(self.memcached_cluster, debug=1)
-            mc.set(key, "some value")
-            if mc.get(key):
-                break
-
-    def shutdown(self):
-        """Terminate the memcached process implementing the
-        nonce store."""
-        if self._process:
-            self._process.terminate()
-            self._process = None
-
-        testutil.Server.shutdown(self)
-
-    @property
-    def memcached_cluster(self):
-        """memcached clients reference a memcached cluster
-        with knowledge of entire cluster's ip+port pairs.
-        While ```NonceStore``` implements a cluster
-        of a single memcached instance, the array of ip+port
-        pairs still needs to be passed to memcached clients.
-        This is a convience method for constructing the
-        array of which describes to memcached clients how
-        a memcached client can access the nonce store
-        cluster."""
-        return ["localhost:%d" % self.port]
 
 
 class AppServerRequestHandler(tornado.web.RequestHandler):
@@ -221,7 +165,7 @@ class TestCase(testutil.TestCase):
         cls.app_server = AppServer()
         cls.app_server_auth_method = str(uuid.uuid4()).replace("-", "")
         cls.key_server = KeyServer()
-        cls.nonce_store = NonceStore()
+        cls.nonce_store = testutil.NonceStore()
         cls.auth_server = AuthenticationServer(
             cls.nonce_store,
             cls.key_server,
