@@ -23,23 +23,24 @@ import testutil
 
 _logger = logging.getLogger(__name__)
 
-
 class KeyServerRequestHandler(tornado.web.RequestHandler):
     """Tornado request handler for use by the mock key server. This request
     handler only implements HTTP GET since that's the only type of request the
     auth server issues to the key server."""
 
+    ksrs = None
+
     def get(self):
         """Implements HTTP GET for the mock key server."""
-        _logger.info(
-            "Mock Key Server GET %s",
-            self.request.uri)
+
+        ksrs = self.__class__.ksrs
+
         uri_reg_ex = re.compile(
             '^/v1\.0/creds/(?P<mac_key_identifier>.+)$',
             re.IGNORECASE)
         match = uri_reg_ex.match(self.request.uri)
         if not match:
-            TestCase._mac_key_identifier_in_key_server_request = None
+            ksrs.mac_key_identifier_in_request = None
             self.set_status(httplib.BAD_REQUEST)
         else:
             assert 0 == match.start()
@@ -49,30 +50,29 @@ class KeyServerRequestHandler(tornado.web.RequestHandler):
             assert mac_key_identifier is not None
             assert 0 < len(mac_key_identifier)
 
-            TestCase._mac_key_identifier_in_key_server_request = \
-                mac_key_identifier
+            ksrs.mac_key_identifier_in_request = mac_key_identifier
 
             status = \
-                TestCase.status_code_of_response_to_key_server_request \
+                ksrs.status_code_of_response \
                 or \
                 httplib.OK
             self.set_status(status)
 
             if status == httplib.OK:
-                dict = TestCase.body_of_response_to_key_server_request \
+                dict = ksrs.body_of_response \
                     or \
                     {
                         "is_deleted": False,
-                        "mac_algorithm": TestCase.mac_algorithm_response_to_key_server_request,
-                        "mac_key": TestCase.mac_key_in_response_to_key_server_request,
+                        "mac_algorithm": ksrs.mac_algorithm_in_response,
+                        "mac_key": ksrs.mac_key_in_response,
                         "mac_key_identifier": mac_key_identifier,
-                        "owner": TestCase.owner_in_response_to_key_server_request or str(uuid.uuid4()),
+                        "owner": ksrs.owner_in_response or str(uuid.uuid4()),
                     }
                 body = json.dumps(dict)
                 self.write(body)
 
                 self.set_header(
-                    TestCase.content_type_of_response_to_key_server_request
+                    ksrs.content_type_of_response
                     or
                     "Content-Type", "application/json; charset=utf8")
 
@@ -80,12 +80,14 @@ class KeyServerRequestHandler(tornado.web.RequestHandler):
 class KeyServer(testutil.Server):
     """The mock key server."""
 
-    def __init__(self):
+    def __init__(self, ksrs):
         """Creates an instance of the mock key server and starts the
         server listenting on a random, available port."""
         testutil.Server.__init__(self)
 
-        handlers = [(r".*", KeyServerRequestHandler)]
+        handler_cls = KeyServerRequestHandler
+        handler_cls.ksrs = ksrs
+        handlers = [(r".*", handler_cls)]
         app = tornado.web.Application(handlers=handlers)
         http_server = tornado.httpserver.HTTPServer(app)
         http_server.add_sockets([self.socket])
@@ -118,7 +120,8 @@ class TestCase(testutil.TestCase):
         cls.asrs = testutil.AppServerRequestState()
         cls.app_server = testutil.AppServer(cls.asrs)
         cls.app_server_auth_method = str(uuid.uuid4()).replace("-", "")
-        cls.key_server = KeyServer()
+        cls.ksrs = testutil.KeyServerRequestState()
+        cls.key_server = KeyServer(cls.ksrs)
         cls.nonce_store = testutil.NonceStore()
         cls.auth_server = AuthenticationServer(
             cls.nonce_store,
@@ -140,43 +143,11 @@ class TestCase(testutil.TestCase):
         cls.app_server = None
         cls.asrs = None
 
-    """When KeyServerRequestHandler's get() is given a valid
-    mac key identifier, _mac_key_identifier_in_key_server_request
-    is set to the mac key identifier in the handler.
-    See TestCase's assertMACKeyIdentifierInKeyServerRequest()
-    for when _mac_key_identifier_in_key_server_request is used."""
-    _mac_key_identifier_in_key_server_request = None
-
-    """..."""
-    status_code_of_response_to_key_server_request = None
-
-    """..."""
-    content_type_of_response_to_key_server_request = None
-
-    """..."""
-    body_of_response_to_key_server_request = None
-
-    """..."""
-    mac_key_in_response_to_key_server_request = None
-
-    """..."""
-    mac_algorithm_response_to_key_server_request = None
-
-    """When the mock key server responds to the auth server's request
-    for credentials, ```owner_in_response_to_key_server_request```
-    is used for the owner attribute."""
-    owner_in_response_to_key_server_request = None
-
     def setUp(self):
         testutil.TestCase.setUp(self)
-        self.__class__._mac_key_identifier_in_key_server_request = None
-        self.__class__.status_code_of_response_to_key_server_request = None
-        self.__class__.content_type_of_response_to_key_server_request = None
-        self.__class__.body_of_response_to_key_server_request = None
-        self.__class__.mac_key_in_response_to_key_server_request = None
-        self.__class__.mac_algorithm_response_to_key_server_request = None
-        self.__class__.owner_in_response_to_key_server_request = None
+
         self.__class__.asrs.reset()
+        self.__class__.ksrs.reset()
 
     def assertMACKeyIdentifierInKeyServerRequest(self, mac_key_identifier):
         """The unit test that was just run caused the authentication server
@@ -184,12 +155,12 @@ class TestCase(testutil.TestCase):
         made this call with a particular MAC key identifier. This method
         allows to caller to assert which MAC key identifier was sent to the
         key server."""
+        ksrs = self.__class__.ksrs
         if mac_key_identifier is None:
-            self.assertIsNone(
-                self.__class__._mac_key_identifier_in_key_server_request)
+            self.assertIsNone(ksrs.mac_key_identifier_in_request)
         else:
             self.assertEqual(
-                self.__class__._mac_key_identifier_in_key_server_request,
+                ksrs.mac_key_identifier_in_request,
                 mac_key_identifier)
 
     def assertAuthHdrInReqToAppServer(
@@ -284,10 +255,10 @@ class TestCase(testutil.TestCase):
         content_type = None
         body = None
 
-        self.__class__.mac_key_in_response_to_key_server_request = mac_key
-        self.__class__.mac_algorithm_response_to_key_server_request = \
-            "dave-%s" % mac_algorithm
-        self.__class__.owner_in_response_to_key_server_request = owner
+        ksrs = self.__class__.ksrs
+        ksrs.mac_key_in_response = mac_key
+        ksrs.mac_algorithm_in_response = "dave-%s" % mac_algorithm
+        ksrs.owner_in_response = owner
 
         ts = mac.Timestamp.generate()
         nonce = mac.Nonce.generate()
@@ -336,10 +307,10 @@ class TestCase(testutil.TestCase):
         content_type = "application/json; charset=utf-8"
         body = json.dumps({"dave": "was", "here": "today"})
 
-        self.__class__.mac_key_in_response_to_key_server_request = mac_key
-        self.__class__.mac_algorithm_response_to_key_server_request = \
-            mac_algorithm
-        self.__class__.owner_in_response_to_key_server_request = owner
+        ksrs = self.__class__.ksrs
+        ksrs.mac_key_in_response = mac_key
+        ksrs.mac_algorithm_in_response = mac_algorithm
+        ksrs.owner_in_response = owner
 
         ts = mac.Timestamp.generate()
         nonce = mac.Nonce.generate()
@@ -450,10 +421,10 @@ class TestCase(testutil.TestCase):
         owner = str(uuid.uuid4())
 
         # configure mock key server with established credentials
-        self.__class__.mac_key_in_response_to_key_server_request = mac_key
-        self.__class__.mac_algorithm_response_to_key_server_request = \
-            mac_algorithm
-        self.__class__.owner_in_response_to_key_server_request = owner
+        ksrs = self.__class__.ksrs
+        ksrs.mac_key_in_response = mac_key
+        ksrs.mac_algorithm_in_response = mac_algorithm
+        ksrs.owner_in_response = owner
 
         # initially confirm all good with a simple GET request
         response, content = self._send_get_to_auth_server(
@@ -496,11 +467,12 @@ class TestCase(testutil.TestCase):
         mac_algorithm = mac.MAC.algorithm
         owner = str(uuid.uuid4())
 
+        ksrs = self.__class__.ksrs
+
         # configure mock key server with established credentials
-        self.__class__.mac_key_in_response_to_key_server_request = mac_key
-        self.__class__.mac_algorithm_response_to_key_server_request = \
-            mac_algorithm
-        self.__class__.owner_in_response_to_key_server_request = owner
+        ksrs.mac_key_in_response = mac_key
+        ksrs.mac_algorithm_in_response = mac_algorithm
+        ksrs.owner_in_response = owner
 
         # initially confirm all good with a simple GET request
         response, content = self._send_get_to_auth_server(
@@ -512,8 +484,7 @@ class TestCase(testutil.TestCase):
 
         # now repeat the all good GET but this time tell the mock key server
         # to claim it doesn't have creds for the mac key identifier
-        self.__class__.status_code_of_response_to_key_server_request = \
-            httplib.NOT_FOUND
+        ksrs.status_code_of_response = httplib.NOT_FOUND
 
         response, content = self._send_get_to_auth_server(
             mac_key_identifier,

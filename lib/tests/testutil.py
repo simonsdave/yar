@@ -148,21 +148,10 @@ class AppServerRequestState(object):
         object.__init__(self)
 
     def reset(self):
-        """When the auth server forwards a request to the app server the
-        request's authorization header contained the value found
-        in '''auth_hdr_in_req```."""
         self.auth_hdr_in_req = None
-        """When the app server recieves a GET it sets
-        ```received_post``` to True."""
         self.received_get = False
-        """When the app server recieves a POST it sets
-        ```received_post``` to True."""
         self.received_post = False
-        """When the app server recieves a PUT it sets
-        ```received_post``` to True."""
         self.received_put = False
-        """When the app server recieves a DELETE it sets
-        ```received_delete``` to True."""
         self.received_delete = False
 
 
@@ -210,3 +199,20 @@ class AppServer(Server):
         app = tornado.web.Application(handlers=handlers)
         http_server = tornado.httpserver.HTTPServer(app)
         http_server.add_sockets([self.socket])
+
+
+class KeyServerRequestState(object):
+
+    def __init__(self):
+        object.__init__(self)
+
+        self.reset()
+
+    def reset(self):
+        self.mac_key_identifier_in_request = None
+        self.status_code_of_response = None
+        self.content_type_of_response = None
+        self.body_of_response = None
+        self.mac_key_in_response = None
+        self.mac_algorithm_in_response = None
+        self.owner_in_response = None
