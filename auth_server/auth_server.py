@@ -237,10 +237,9 @@ class RequestHandler(trhutil.RequestHandler):
 
 
     def _handle_request(self):
-        """```get()```, ```post()```, ```put()```, ```options()```,
-        ```delete()``` and ```head()``` requests are all forwarded
-        to this method which is responsible for kicking off the core
-        authentication logic."""
+        """```get()```, ```post()```, ```put()``` & ```delete()```
+        requests are all forwarded to this method which is
+        responsible for kicking off the core authentication logic."""
         auth_hdr_val = self.request.headers.get("Authorization", None)
         if auth_hdr_val is None:
             self._set_auth_failure_detail(AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
@@ -303,7 +302,7 @@ class RequestHandler(trhutil.RequestHandler):
 
 
 _handlers = [(r".*", RequestHandler), ]
-_tornado_app = tornado.web.Application(handlers=_handlers)
+_app = tornado.web.Application(handlers=_handlers)
 
 
 if __name__ == "__main__":
@@ -328,6 +327,6 @@ if __name__ == "__main__":
     maxage = clo.maxage
     async_nonce_checker.nonce_store = clo.nonce_store
 
-    http_server = tornado.httpserver.HTTPServer(_tornado_app)
+    http_server = tornado.httpserver.HTTPServer(_app)
     http_server.listen(clo.port)
     tornado.ioloop.IOLoop.instance().start()

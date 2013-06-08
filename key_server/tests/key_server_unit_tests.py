@@ -1,58 +1,43 @@
 """This module implements the key server's unit tests."""
 
-import logging
-logging.basicConfig(level=logging.FATAL)
-import time
-import socket
-import threading
-import unittest
-import re
 import httplib
 import httplib2
 import json
-import uuid
-import sys
+import logging
+import re
 import os
+import socket
+import sys
+import time
+import unittest
+import uuid
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+import jsonschema
 import tornado.httpserver
 import tornado.ioloop
+import tornado.netutil
 import tornado.options
 import tornado.web
-import tornado.netutil
-import jsonschema
 
-import testutil
 import jsonschemas
 import key_server
 import key_store.key_store_installer
+import testutil
 
 
-class KeyServer(threading.Thread):
+class KeyServer(testutil.Server):
 
     def __init__(self, key_store):
-        threading.Thread.__init__(self)
-        self.daemon = True
+        testutil.Server.__init__(self)
 
         key_server._key_store = key_store
-
-        (self.socket, self.port) = testutil.get_available_port()
 
         http_server = tornado.httpserver.HTTPServer(key_server._tornado_app)
         http_server.add_sockets([self.socket])
 
-        # this might not be required but want to give the server
-        # a bit of time to get itself settled
-        time.sleep(1)
 
-    def run(self):
-        tornado.ioloop.IOLoop.instance().start()
-
-    def stop(self):
-        tornado.ioloop.IOLoop.instance().stop()
-
-
-class KeyServerTestCase(testutil.TestCase):
+class TestCase(testutil.TestCase):
 
     _database_name = None
 
@@ -61,11 +46,13 @@ class KeyServerTestCase(testutil.TestCase):
         cls._database_name = "das%s" % str(uuid.uuid4()).replace("-", "")[:7]
         key_store.key_store_installer.create(cls._database_name)
         cls._key_server = KeyServer("localhost:5984/%s" % cls._database_name)
-        cls._key_server.start()
+        cls._ioloop = testutil.IOLoop()
+        cls._ioloop.start()
 
     @classmethod
     def tearDownClass(cls):
-        cls._key_server.stop()
+        cls._ioloop.stop()
+        cls._key_server.shutdown()
         cls._key_server = None
         key_store.key_store_installer.delete(cls._database_name)
         cls._database_name = None
@@ -74,10 +61,10 @@ class KeyServerTestCase(testutil.TestCase):
         return "http://localhost:%s" % self.__class__._key_server.port
 
 
-class TestStatusResource(KeyServerTestCase):
+class TestStatusResource(TestCase):
 
     def url(self):
-        return "%s/status" % KeyServerTestCase.url(self)
+        return "%s/status" % TestCase.url(self)
 
     def test_get(self):
         http_client = httplib2.Http()
@@ -112,10 +99,10 @@ class TestStatusResource(KeyServerTestCase):
         self._test_bad_method("DELETE")
 
 
-class TestMacCredsResource(KeyServerTestCase):
+class TestMacCredsResource(TestCase):
 
     def url(self):
-        return "%s/v1.0/creds" % KeyServerTestCase.url(self)
+        return "%s/v1.0/creds" % TestCase.url(self)
 
     def _get_creds(self, mac_key_identifier, expected_to_be_found=True, get_deleted=False):
         self.assertIsNotNone(mac_key_identifier)

@@ -22,30 +22,23 @@ import async_nonce_checker
 import auth_server
 import mac
 import testutil
-import auth_server_testutil
 
 _logger = logging.getLogger(__name__)
 
 
-class NonceStore(auth_server_testutil.Server):
+class NonceStore(testutil.Server):
     """The mock nonce store."""
-
-    """
-    @property
-    def port(self):
-        return 49251
-    """
 
     def __init__(self):
         """Starts memcached on a random but available port.
         Yes this class really does spawn a memcached process.
         :TODO: Is there a way to start an in-memory or mock
         version of memcached?"""
-        auth_server_testutil.Server.__init__(self, is_in_process=False)
+        testutil.Server.__init__(self, is_in_process=False)
 
         args = [
             "memcached",
-            "-vv",
+            # "-vv",
             "-p",
             str(self.port),
             "-U",
@@ -63,33 +56,15 @@ class NonceStore(auth_server_testutil.Server):
             mc.set(key, "some value")
             if mc.get(key):
                 break
-            sys.stderr.write(
-                "%d: Attempt to connect to nonce store %s failed:-(\n" % (
-                attempt,
-                self.memcached_cluster))
-            time.sleep(1)
-        else:
-            sys.stderr.write(
-                "Failed to connect to nonce store %s after %d attempts:-(\n" % (
-                self.memcached_cluster,
-                number_attempts))
-
-        sys.stderr.write(
-            "Started nonce store on %s\n" %
-            self.memcached_cluster)
-
-        _logger.info(
-            "Started nonce store on %s",
-            self.memcached_cluster)
 
     def shutdown(self):
         """Terminate the memcached process implementing the
         nonce store."""
-        auth_server_testutil.Server.shutdown(self)
-
         if self._process:
             self._process.terminate()
             self._process = None
+
+        testutil.Server.shutdown(self)
 
     @property
     def memcached_cluster(self):
@@ -138,13 +113,13 @@ class AppServerRequestHandler(tornado.web.RequestHandler):
         self.set_status(httplib.OK)
 
 
-class AppServer(auth_server_testutil.Server):
+class AppServer(testutil.Server):
     """The mock app server."""
 
     def __init__(self):
         """Creates an instance of the mock app server and starts the
         server listenting on a random, available port."""
-        auth_server_testutil.Server.__init__(self)
+        testutil.Server.__init__(self)
 
         handlers = [(r".*", AppServerRequestHandler)]
         app = tornado.web.Application(handlers=handlers)
@@ -205,13 +180,13 @@ class KeyServerRequestHandler(tornado.web.RequestHandler):
                     "Content-Type", "application/json; charset=utf8")
 
 
-class KeyServer(auth_server_testutil.Server):
+class KeyServer(testutil.Server):
     """The mock key server."""
 
     def __init__(self):
         """Creates an instance of the mock key server and starts the
         server listenting on a random, available port."""
-        auth_server_testutil.Server.__init__(self)
+        testutil.Server.__init__(self)
 
         handlers = [(r".*", KeyServerRequestHandler)]
         app = tornado.web.Application(handlers=handlers)
@@ -219,13 +194,13 @@ class KeyServer(auth_server_testutil.Server):
         http_server.add_sockets([self.socket])
 
 
-class AuthenticationServer(auth_server_testutil.Server):
+class AuthenticationServer(testutil.Server):
     """Mock authentication server."""
 
     def __init__(self, nonce_store, key_server, app_server, app_server_auth_method):
         """Creates an instance of the auth server and starts the
         server listenting on a random, available port."""
-        auth_server_testutil.Server.__init__(self)
+        testutil.Server.__init__(self)
 
         async_creds_retriever.key_server = "localhost:%d" % key_server.port
         auth_server.app_server = "localhost:%d" % app_server.port
@@ -233,7 +208,7 @@ class AuthenticationServer(auth_server_testutil.Server):
         auth_server.include_auth_failure_detail = True
         async_nonce_checker.nonce_store = nonce_store.memcached_cluster
 
-        http_server = tornado.httpserver.HTTPServer(auth_server._tornado_app)
+        http_server = tornado.httpserver.HTTPServer(auth_server._app)
         http_server.add_sockets([self.socket])
 
 

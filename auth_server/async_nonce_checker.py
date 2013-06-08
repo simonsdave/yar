@@ -35,13 +35,6 @@ class AsyncNonceChecker(object):
         takes a single boolean argument that is True if
         ```nonce``` has not been used by ```mac_key_identifier```
         and otherwise False."""
-
-        # :TODO: remove this short circuit which is hear because
-        # dave can't get the auth server unit tests working with
-        # an externally spawned memcached.
-        callback(True)
-        return
-        # :TODO: 
         try:
             if self.__class__._ccs is None:
                 _logger.info(

@@ -18,16 +18,6 @@ _logger = logging.getLogger("UTIL.%s" % __name__)
 __version__ = "1.0"
 
 
-def get_available_port():
-    """Return an available socket and the associated port."""
-    [avail_socket] = tornado.netutil.bind_sockets(
-        0,
-        "localhost",
-        family=socket.AF_INET)
-    avail_port = avail_socket.getsockname()[1]
-    return (avail_socket, avail_port)
-
-
 class TestCase(unittest.TestCase):
 
     def assertIsJsonUtf8ContentType(self, content_type):
@@ -51,11 +41,45 @@ class IOLoop(threading.Thread):
         self.daemon = True
 
     def run(self):
-        sys.stderr.write("starting ioloop\n")
         tornado.ioloop.IOLoop.instance().start()
-        sys.stderr.write("started ioloop\n")
 
     def stop(self):
-        sys.stderr.write("stopping ioloop\n")
         tornado.ioloop.IOLoop.instance().stop()
-        sys.stderr.write("stopped ioloop\n")
+
+
+class Server(object):
+    """An abstract base class for mock auth server, key server and
+    app server. The primary reason for this class to exist is so the
+    constructor can find an available port for the server to run and
+    save that port & associated socket object in the socket and
+    port properties."""
+
+    def __init__(self, is_in_process=True):
+        """Opens a random but available socket and assigns it to the
+        socket property. The socket's port is also assigned to the
+        port property."""
+        object.__init__(self)
+
+        if is_in_process:
+            [self.socket] = tornado.netutil.bind_sockets(
+                0,
+                "localhost",
+                family=socket.AF_INET)
+            self.port = self.socket.getsockname()[1]
+        else:
+            # :TODO: there has to be a better way to do this.
+            # Original motivation for this was the desire to
+            # start a memcached process on an available port.
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.socket.bind(('', 0))
+            self.port = self.socket.getsockname()[1]
+            self.socket.close()
+            self.socket = None
+
+    def shutdown(self):
+        """Can be overriden by derived classes to perform server
+        type specific shutdown. This method is a no-op but derived
+        classes should call this method in case this is not a no-op
+        in the future."""
+        pass
