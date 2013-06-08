@@ -4,6 +4,7 @@ solution."""
 
 
 import httplib
+import json
 import logging
 import socket
 import re
@@ -216,3 +217,73 @@ class KeyServerRequestState(object):
         self.mac_key_in_response = None
         self.mac_algorithm_in_response = None
         self.owner_in_response = None
+
+
+class KeyServerRequestHandler(tornado.web.RequestHandler):
+    """Tornado request handler for use by the mock key server. This request
+    handler only implements HTTP GET since that's the only type of request the
+    auth server issues to the key server."""
+
+    ksrs = None
+
+    def get(self):
+        """Implements HTTP GET for the mock key server."""
+
+        ksrs = self.__class__.ksrs
+
+        uri_reg_ex = re.compile(
+            '^/v1\.0/creds/(?P<mac_key_identifier>.+)$',
+            re.IGNORECASE)
+        match = uri_reg_ex.match(self.request.uri)
+        if not match:
+            ksrs.mac_key_identifier_in_request = None
+            self.set_status(httplib.BAD_REQUEST)
+        else:
+            assert 0 == match.start()
+            assert len(self.request.uri) == match.end()
+            assert 1 == len(match.groups())
+            mac_key_identifier = match.group("mac_key_identifier")
+            assert mac_key_identifier is not None
+            assert 0 < len(mac_key_identifier)
+
+            ksrs.mac_key_identifier_in_request = mac_key_identifier
+
+            status = \
+                ksrs.status_code_of_response \
+                or \
+                httplib.OK
+            self.set_status(status)
+
+            if status == httplib.OK:
+                dict = ksrs.body_of_response \
+                    or \
+                    {
+                        "is_deleted": False,
+                        "mac_algorithm": ksrs.mac_algorithm_in_response,
+                        "mac_key": ksrs.mac_key_in_response,
+                        "mac_key_identifier": mac_key_identifier,
+                        "owner": ksrs.owner_in_response or str(uuid.uuid4()),
+                    }
+                body = json.dumps(dict)
+                self.write(body)
+
+                self.set_header(
+                    ksrs.content_type_of_response
+                    or
+                    "Content-Type", "application/json; charset=utf8")
+
+
+class KeyServer(Server):
+    """The mock key server."""
+
+    def __init__(self, ksrs):
+        """Creates an instance of the mock key server and starts the
+        server listenting on a random, available port."""
+        Server.__init__(self)
+
+        handler_cls = KeyServerRequestHandler
+        handler_cls.ksrs = ksrs
+        handlers = [(r".*", handler_cls)]
+        app = tornado.web.Application(handlers=handlers)
+        http_server = tornado.httpserver.HTTPServer(app)
+        http_server.add_sockets([self.socket])
