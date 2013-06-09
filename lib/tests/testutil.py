@@ -15,8 +15,9 @@ import unittest
 
 import memcache
 import tornado.httpserver
-import tornado.netutil
 import tornado.ioloop
+import tornado.netutil
+import tornado.web
 
 _logger = logging.getLogger("UTIL.%s" % __name__)
 

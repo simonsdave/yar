@@ -3,14 +3,15 @@ used in HTTP MAC access authentication scheme. See [1] for details.
 
 [1] http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01"""
 
-import logging
-import string
+import binascii
 import datetime
 import hashlib
 import hmac
-import binascii
+import logging
 import os
 import re
+import string
+import uuid
 
 from keyczar import keyczar
 
@@ -122,8 +123,16 @@ class MACKeyIdentifier(str):
     @classmethod
     def generate(cls):
         """Generate a mac key identifier. Returns an instance
-        of ```MACKeyIdentifier```"""
-        return cls(_hexify(os.urandom(16)))
+        of ```MACKeyIdentifier```. There have been a few different
+        implementations of this method. os.random() was used for
+        a while but in the end the current implementation seemed
+        to make the most sense because (i) nothing about the mac
+        key identifier needs to be 'secure' (ii) wanted to be able
+        to run a cluster of key servers to generate mac key identifers
+        across multiple data centers so needed an approach which
+        saw a very high probability that generated mac key identifiers
+        where unique."""
+        return cls(str(uuid.uuid4()).replace("-", ""))
 
 
 class MACKey(str):
