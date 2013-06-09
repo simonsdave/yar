@@ -69,6 +69,7 @@ class TestCase(testutil.TestCase):
         cls.nonce_store = None
         cls.key_server.shutdown()
         cls.key_server = None
+        cls.ksrs = None
         cls.app_server.shutdown()
         cls.app_server = None
         cls.asrs = None
