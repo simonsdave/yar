@@ -14,6 +14,7 @@ import threading
 import unittest
 
 import memcache
+import tornado.httpserver
 import tornado.netutil
 import tornado.ioloop
 
