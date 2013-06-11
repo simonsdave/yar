@@ -11,8 +11,17 @@ get_creds() {
 }
 
 usage() {
-	echo "usage: `basename $0` [GET|POST|PUT|DELETE] <uri>"
+	echo "usage: `basename $0` [-v] [GET|POST|PUT|DELETE] <uri>"
 }
+
+CURL_VERBOSE=""
+if [ 2 -lt $# ]; then
+	if [ "-v" == $1 ]; then
+		CURL_VERBOSE=-v
+		shift
+	fi
+fi
+echo $CURL_VERBOSE
 
 if [ $# != 2 ]; then
 	usage
@@ -90,7 +99,7 @@ fi
 if [ "" != "$CONTENT_TYPE" ]; then
 	curl \
 		-s \
-		-v \
+		$CURL_VERBOSE \
 		-X $HTTP_METHOD \
 		-H "Authorization: $AUTH_HEADER_VALUE" \
 		-H "Content-Type: $CONTENT_TYPE" \
@@ -99,7 +108,7 @@ if [ "" != "$CONTENT_TYPE" ]; then
 else
 	curl \
 		-s \
-		-v \
+		$CURL_VERBOSE \
 		-X $HTTP_METHOD \
 		-H "Authorization: $AUTH_HEADER_VALUE" \
 	   http://$HOST:$PORT"$URI"
