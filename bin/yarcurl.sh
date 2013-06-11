@@ -21,7 +21,6 @@ if [ 2 -lt $# ]; then
 		shift
 	fi
 fi
-echo $CURL_VERBOSE
 
 if [ $# != 2 ]; then
 	usage
