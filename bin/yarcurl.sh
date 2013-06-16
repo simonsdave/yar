@@ -6,8 +6,10 @@
 #
 #-------------------------------------------------------------------------------
 
-get_creds() {
-    grep "^\\s*$1\\s*=" $YAR_CREDS | sed -e "s/^\\s*$1\\s*=\s*//"
+hexify() {
+	for (( i=0; i<${#1}; i++ )); do
+	 	printf "%x" "'${1:$i:1}"
+	done
 }
 
 usage() {
@@ -54,6 +56,10 @@ case "$HTTP_METHOD" in
 			exit 1
 esac
 
+get_creds() {
+    grep "^\\s*$1\\s*=" $YAR_CREDS | sed -e "s/^\\s*$1\\s*=\s*//"
+}
+
 MAC_KEY_IDENTIFIER=`get_creds MAC_KEY_IDENTIFIER`
 if [ "$MAC_KEY_IDENTIFIER" == "" ]; then
 	echo "`basename $0` could not find mac key identifier"
@@ -72,28 +78,51 @@ if [ "$MAC_ALGORITHM" == "" ]; then
 	exit 1
 fi
 
-URI=$2
+URL=$(echo $2 | sed -e "s/^\\s*//")
 
-HOST=localhost
-PORT=8000
+SCHEME=$(echo $URL | sed -e "s/:.*//")
 
-GEN_AUTH_HEADER_VALUE_CMD="$SCRIPTDIR/genahv.py \
-    $HTTP_METHOD \
-    $HOST \
-    $PORT \
-    $URI \
-    $MAC_KEY_IDENTIFIER \
-    $MAC_KEY \
-    $MAC_ALGORITHM"
-if [ "" != "$CONTENT_TYPE" ]; then
-    GEN_AUTH_HEADER_VALUE_CMD="$GEN_AUTH_HEADER_VALUE_CMD '$CONTENT_TYPE' < $COPY_OF_STDIN"
-fi
-GEN_AUTH_HEADER_VALUE_CMD="$GEN_AUTH_HEADER_VALUE_CMD 2> /dev/null"
-AUTH_HEADER_VALUE=`eval $GEN_AUTH_HEADER_VALUE_CMD` 
-if [ "$AUTH_HEADER_VALUE" == "" ]; then
-	echo "`basename $0` could not generate auth header value - check $YAR_CREDS"
-	exit 1
-fi
+HOST=$(echo $URL | sed -e "s/^$SCHEME\:\/\///")
+HOST=$(echo $HOST | sed -e "s/:.*$//")
+
+PORT=$(echo $URL | sed -e "s/^$SCHEME\:\/\/$HOST\://")
+PORT=$(echo $PORT | sed -e "s/\/.*//")
+
+URI=$(echo $URL | sed -e "s/^$SCHEME\:\/\/$HOST\:$PORT//")
+
+TIMESTAMP=$(date +%s)
+NONCE=$(openssl rand -hex 16)
+
+get_ext() {
+	CONTENT_TYPE=${1:-}
+	BODY=${2:-}
+	if [ "$CONTENT_TYPE" == "" ] || [ "$BODY" == "" ]; then
+		echo ""
+	else
+		echo -n $CONTENT_TYPE$BODY | openssl sha1 -hex
+	fi
+}
+EXT=$(get_ext $CONTENT_TYPE $COPY_OF_STDIN0)
+
+printf \
+	'%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
+	$TIMESTAMP \
+	$NONCE \
+	$HTTP_METHOD \
+	$URI \
+	$HOST \
+	$PORT \
+	$EXT >& ~/ooo
+MAC=$(openssl dgst -sha1 -hmac "$MAC_KEY" < ~/ooo)
+
+printf \
+	-v AUTH_HEADER_VALUE \
+	'MAC id="%s", ts="%s", nonce="%s", ext="%s", mac="%s"' \
+	"$MAC_KEY_IDENTIFIER" \
+	"$TIMESTAMP" \
+	"$NONCE" \
+	"$EXT" \
+	"$MAC"
 
 if [ "" != "$CONTENT_TYPE" ]; then
 	curl \
@@ -103,14 +132,14 @@ if [ "" != "$CONTENT_TYPE" ]; then
 		-H "Authorization: $AUTH_HEADER_VALUE" \
 		-H "Content-Type: $CONTENT_TYPE" \
 		--data-binary @$COPY_OF_STDIN \
-	   http://$HOST:$PORT"$URI"
+	   $URL
 else
 	curl \
 		-s \
 		$CURL_VERBOSE \
 		-X $HTTP_METHOD \
 		-H "Authorization: $AUTH_HEADER_VALUE" \
-	   http://$HOST:$PORT"$URI"
+	   $URL
 fi
 
 exit 0
