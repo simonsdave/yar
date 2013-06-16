@@ -6,12 +6,6 @@
 #
 #-------------------------------------------------------------------------------
 
-hexify() {
-	for (( i=0; i<${#1}; i++ )); do
-	 	printf "%x" "'${1:$i:1}"
-	done
-}
-
 usage() {
 	echo "usage: `basename $0` [-v] [GET|POST|PUT|DELETE] <uri>"
 }
