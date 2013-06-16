@@ -98,6 +98,7 @@ get_ext() {
 }
 EXT=$(get_ext $CONTENT_TYPE $COPY_OF_STDIN0)
 
+NRS=`mktemp -t DAS`
 printf \
 	'%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
 	$TIMESTAMP \
@@ -106,8 +107,9 @@ printf \
 	$URI \
 	$HOST \
 	$PORT \
-	$EXT >& ~/ooo
-MAC=$(openssl dgst -sha1 -hmac "$MAC_KEY" < ~/ooo)
+	$EXT >& $NRS
+MAC=$(openssl dgst -sha1 -hmac "$MAC_KEY" < $NRS)
+rm -f $NRS >& /dev/null
 
 printf \
 	-v AUTH_HEADER_VALUE \
