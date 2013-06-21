@@ -184,6 +184,13 @@ class RequestHandler(trhutil.RequestHandler):
                 self._set_debug_header(
                     "EXT",
                     ext)
+                self._set_debug_header(
+                    "MAC",
+                    mac.MAC.generate(
+                        mac_key,
+                        mac_algorithm,
+                        normalized_request_string))
+
             # end of pumping out debug headers - returning to regular headers
             self.set_status(httplib.UNAUTHORIZED)
             self.finish()
