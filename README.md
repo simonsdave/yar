@@ -1,21 +1,21 @@
-This repo is the result of Dave being convinced that it wouldn't be that
+This repo is the result of being convinced that it wouldn't be that
 hard to write an API Management solution. Why? Because it felt like so much
-of the required open source componentry already existed and all that was necessary
-was assembling this pre-existing componentry into an appropriate solution and,
-once assembly was complete, providing a suite of automated tests to validate
-the solution's correctness. 
+componentry already existed in the open source community. All that should be necessary
+was assembling this pre-existing componentry into a solution and
+providing a suite of automated tests to validate the solution's correctness. 
 
 See the [Wiki](https://github.com/simonsdave/yar/wiki) for a more complete description and discussion of yar.
 
 Prerequisites 
 -------------
-* code written and tested on Mac OS X 10.8.2 using
+* code written and tested on Mac OS X 10.8.4 using
 [git 1.7.12.4](http://git-scm.com/),
 [Python 2.7.2](http://www.python.org/),
 [virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv),
-[CouchDB 1.2.1](http://couchdb.apache.org/)
-and
+[CouchDB 1.2.1](http://couchdb.apache.org/),
 [memcached 1.4.13](http://memcached.org/)
+and
+[command line tools (OS X Mountain Lion) for Xcode - April 2013](https://developer.apple.com/downloads/index.action)
 * see
 [requirements.txt](https://github.com/simonsdave/yar/blob/master/requirements.txt "requirements.txt")
 for the complete list of python packages on which yar depends
@@ -25,8 +25,14 @@ Development
 The following (brief) instructions describe how to setup a yar development environment and
 issue your first request through the infrastructure.
 The commands below are expected to be executed in your
-favorite terminal emulator ([iTerm2](http://www.iterm2.com/) happens to be Dave's favorite).
+favorite terminal emulator ([iTerm2](http://www.iterm2.com/) happens to be my favorite).
 In the instructions below it's assumed yar is installed to your home directory.
+
+> Before you start working through the instructions below make sure you
+> have installed the components described above. In particular, if you don't install
+> [command line tools (OS X Mountain Lion) for Xcode - April 2013](https://developer.apple.com/downloads/index.action)
+> you'll find it hard to debug the error messages produced by **source bin/cfg4dev**. 
+
 * get the source code by running the following in a new terminal window
 
 ~~~~~
