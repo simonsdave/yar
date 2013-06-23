@@ -98,7 +98,7 @@ memcached -vv
 cd; cd yar; source bin/cfg4dev; cd auth_server; ./auth_server.py --log=info
 ~~~~~
 
-* Okay, all of your infrastructure should not be running!
+* Okay, all of your infrastructure should now be running!
 Time to issue your first request to the app server thru the authentication server.
 In a new terminal window issue the following commands to setup your PATH:
 
@@ -111,6 +111,6 @@ cd; cd yar; source bin/cfg4dev
 to issue a request to the app server via the auth server:
 
 ~~~~~
-yarcurl.sh GET /das.html
+yarcurl.sh GET http://localhost:8000/dave-was-here.html
 ~~~~~
 
