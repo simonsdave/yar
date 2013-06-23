@@ -81,8 +81,8 @@ in the following format (this file will be used in a bit by
 [yarcurl.sh](https://github.com/simonsdave/yar/wiki/Utilities#yarcurlsh)):
 
 ~~~~~
-MAC_KEY_IDENTIFIER=484e15185fd50b7292f4b3ae08d45576
-MAC_KEY=6b656577695f4361474578704436552d50706541444172476c776d6b64754f704545786e65613976595734
+MAC_KEY_IDENTIFIER=35c3913e63ce451d9f58fed1125a2594
+MAC_KEY=d9c_PQf58YF-c30TrfBsgY_lMRirNg93qgKBkMN2Fak
 MAC_ALGORITHM=hmac-sha-1
 ~~~~~
 
