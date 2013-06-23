@@ -65,6 +65,9 @@ if [ "$MAC_KEY" == "" ]; then
 	echo "`basename $0` could not find mac key"
 	exit 1
 fi
+# Uses URL-safe alphabet: - replaces +, _ replaces /.
+MAC_KEY=$(echo -n $MAC_KEY | sed -e "s/\-/\+/g" | sed -e "s/\_/\//g")=
+MAC_KEY=$(echo -n $MAC_KEY | base64 --decode)
 
 MAC_ALGORITHM=`get_creds MAC_ALGORITHM`
 if [ "$MAC_ALGORITHM" == "" ]; then
@@ -89,14 +92,18 @@ NONCE=$(openssl rand -hex 16)
 
 get_ext() {
 	CONTENT_TYPE=${1:-}
-	BODY=${2:-}
-	if [ "$CONTENT_TYPE" == "" ] || [ "$BODY" == "" ]; then
+	COPY_OF_STDIN=${2:-}
+	if [ "$CONTENT_TYPE" == "" ] || [ "$COPY_OF_STDIN" == "" ]; then
 		echo ""
 	else
-		echo -n $CONTENT_TYPE$BODY | openssl sha1 -hex
+		CONTENT_TYPE_PLUS_COPY_OF_STDIN=`mktemp -t DAS`
+		echo -n $CONTENT_TYPE > $CONTENT_TYPE_PLUS_COPY_OF_STDIN
+		cat $COPY_OF_STDIN >> $CONTENT_TYPE_PLUS_COPY_OF_STDIN
+		openssl sha1 < $CONTENT_TYPE_PLUS_COPY_OF_STDIN
+		rm $CONTENT_TYPE_PLUS_COPY_OF_STDIN
 	fi
 }
-EXT=$(get_ext $CONTENT_TYPE $COPY_OF_STDIN0)
+EXT=$(get_ext "$CONTENT_TYPE" "$COPY_OF_STDIN")
 
 NRS=`mktemp -t DAS`
 printf \

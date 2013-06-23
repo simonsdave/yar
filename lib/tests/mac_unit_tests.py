@@ -24,14 +24,14 @@ class MACKeyTestCase(unittest.TestCase):
         self.assertEqual(mac_key.__class__, mac.MACKey)
 
     def test_created_with_explicit_good_value(self):
-        value = '90ac4f'
+        value = "0"*43
         mac_key = mac.MACKey(value)
         self.assertIsNotNone(mac_key)
         self.assertEqual(mac_key, value)
 
-    def test_created_with_explicit_non_hex_value(self):
+    def test_created_with_explicit_invalid_characters(self):
         with self.assertRaises(ValueError):
-            value = 'dave'
+            value = ")"*43
             mac_key = mac.MACKey(value)
 
     def test_created_with_zero_length_value(self):
@@ -39,9 +39,9 @@ class MACKeyTestCase(unittest.TestCase):
             value = ""
             mac_key = mac.MACKey(value)
 
-    def test_created_with_explicit_old_length_value(self):
+    def test_created_with_explicit_fifty_three_character_string(self):
         with self.assertRaises(ValueError):
-            value = '12a'
+            value = "1"*53
             mac_key = mac.MACKey(value)
 
     def test_created_with_explicit_none_value(self):

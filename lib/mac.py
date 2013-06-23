@@ -35,20 +35,12 @@ def _dehexify(bytes_encoded_as_hex_string):
     return binascii.a2b_hex(bytes_encoded_as_hex_string)
 
 
-def _is_dehexifyable(value):
-    """A simple function() to allow the caller to determine if
-    a call to _dehexity() with ```value``` would succeed."""
-    if value is None:
-        return False
-    return not(re.match("^(?:[a-f0-9][a-f0-9])+$", value) is None)
-
-
 class Nonce(str):
     """This class generates a 16 character random string intend
     for use as a nonce when computing an HMAC."""
 
-    def __new__(self, nonce):
-        return str.__new__(self, nonce)
+    def __new__(cls, nonce):
+        return str.__new__(cls, nonce)
 
     @classmethod
     def generate(cls):
@@ -59,9 +51,9 @@ class Nonce(str):
 class Timestamp(str):
     """Represents the # of seconds since 1st Jan 1970."""
 
-    def __new__(self, ts):
+    def __new__(cls, ts):
         int(ts)
-        return str.__new__(self, ts)
+        return str.__new__(cls, ts)
 
     @classmethod
     def generate(cls):
@@ -75,8 +67,8 @@ class Ext(str):
     """Implements the notion of the ext as described in
     http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02#section-3.1"""
 
-    def __new__(self, ext):
-        return str.__new__(self, ext)
+    def __new__(cls, ext):
+        return str.__new__(cls, ext)
 
     @classmethod
     def generate(cls, content_type, body):
@@ -95,8 +87,8 @@ class NormalizedRequestString(str):
     """Implements the notion of a normalized request string as described in
     http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02#section-3.2.1"""
 
-    def __new__(self, normalized_request_string):
-        return str.__new__(self, normalized_request_string)
+    def __new__(cls, normalized_request_string):
+        return str.__new__(cls, normalized_request_string)
 
     @classmethod
     def generate(cls, ts, nonce, http_method, uri, host, port, ext):
@@ -117,8 +109,8 @@ class MACKeyIdentifier(str):
     """This class generates a 32 character random string intend
     for use as a MAC key identifier."""
 
-    def __new__(self, mac_key_identifier):
-        return str.__new__(self, mac_key_identifier)
+    def __new__(cls, mac_key_identifier):
+        return str.__new__(cls, mac_key_identifier)
 
     @classmethod
     def generate(cls):
@@ -142,18 +134,27 @@ class MACKey(str):
     """# of bits in the generated key."""
     _key_size_in_bits = 256
 
-    def __new__(self, value):
+    @classmethod
+    def _is_value_ok(cls, value):
+        if value is None:
+            return False
+        # Uses URL-safe alphabet: - replaces +, _ replaces /.
+        if not re.match("^[0-9a-zA-Z\_\-]{43}$", value):
+            return False
+        return True
+
+    def __new__(cls, value):
         # all of this checking of 'value' argument is here so
         # _dehexify() doesn't fail in as_keyczar_hmac_key()
-        if not _is_dehexifyable(value):
-            msg = "'value' error: must be non-zero length hex string"
+        if not cls._is_value_ok(value):
+            msg = "'value' error: must be a 43 character string"
             raise ValueError(msg)
-        return str.__new__(self, value)
+        return str.__new__(cls, value)
 
     def as_keyczar_hmac_key(self):
         """Decode self into a instance of ```keyczar.keys.HmacKey```."""
         keyczar_hmac_key = keyczar.keys.HmacKey(
-            _dehexify(self),
+            self,
             self.__class__._key_size_in_bits)
         return keyczar_hmac_key
 
@@ -161,8 +162,7 @@ class MACKey(str):
     def generate(cls):
         """Generate a mac key. Returns an instance of ```MACKey```"""
         key = keyczar.keys.HmacKey.Generate(cls._key_size_in_bits)
-        hex_encoded_key_string = _hexify(key.key_string)
-        return cls(hex_encoded_key_string)
+        return cls(key.key_string)
 
 
 class MAC(str):
@@ -172,8 +172,8 @@ class MAC(str):
     """Name of algorithm used to compute the MAC."""
     algorithm = "hmac-sha-1"
 
-    def __new__(self, mac):
-        return str.__new__(self, mac)
+    def __new__(cls, mac):
+        return str.__new__(cls, mac)
 
     def verify(self, mac_key, mac_algorithm, normalized_request_string):
         """Generate a MAC for ```normalized_request_string``` and compare
