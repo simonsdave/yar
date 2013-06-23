@@ -39,14 +39,16 @@ In the instructions below it's assumed yar is installed to your home directory.
 cd; git clone https://github.com/simonsdave/yar.git
 ~~~~~
 
-* start the App Server with the following in a new terminal window
-(this app server is only for testing/development - you wouldn't use this in a production deployment):
+* start the App Server with the following in a new terminal window - by default the app
+server listens on port 8080 - this app server is only for testing/development - you wouldn't
+use this in a production deployment:
 
 ~~~~~
 cd; cd yar; source bin/cfg4dev; cd app_server; ./app_server.py --log=info
 ~~~~~
 
-* start the Key Store - if CouchDB isn't already running, in a new terminal window start CouchDB using
+* start the Key Store - if CouchDB isn't already running, in a new terminal window start CouchDB
+using the following command - by default CouchDB listens on port 5984
 
 ~~~~~
 couchdb
@@ -59,13 +61,14 @@ by running the following in a new terminal window
 cd; cd yar; source bin/cfg4dev; cd key_server/key_store/; ./key_store_installer.py --log=info --create=true
 ~~~~~
 
-* start the Key Server: in a new terminal window run the following to start the Key Server
+* start the Key Server: in a new terminal window run the following to start the Key Server - by
+default the Key Server will listen on port 8070
 
 ~~~~~
 cd; cd yar; source bin/cfg4dev; cd key_server; ./key_server.py --log=info
 ~~~~~
 
-* generating an inital set of credentials: in any available terminal window (feel free to use your own e-mail address):
+* generate an inital set of credentials by issuing the follow cURL request:
 
 ~~~~~
 curl \
@@ -87,12 +90,14 @@ MAC_ALGORITHM=hmac-sha-1
 ~~~~~
 
 * start Nonce Store: if memcached isn't already running, in a new terminal window start memcached using
+the following command - by default memcached listens on port 11211
 
 ~~~~~
 memcached -vv
 ~~~~~
 
-* start the Authentication Server by running the following in a new terminal window
+* start the Authentication Server by running the following in a new terminal window - by
+default, the Autentication Server listens on port 8000
 
 ~~~~~
 cd; cd yar; source bin/cfg4dev; cd auth_server; ./auth_server.py --log=info
