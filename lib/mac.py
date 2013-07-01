@@ -22,17 +22,26 @@ __version__ = "1.0"
 
 def _hexify(bytes):
     """Super simple utility to turn an array of bytes in
-    a hex string representation of those bytes."""
+    a hex string representation of those bytes.
+    On success returns a non-None byte array.
+    On failure returns None.
+    Returns None if ```bytes``` is None."""
     if bytes is None:
         return None
-    return binascii.b2a_hex(bytes)
+    try:
+        return binascii.b2a_hex(bytes)
+    except TypeError:
+        return None
 
 
 def _dehexify(bytes_encoded_as_hex_string):
     """Super simple utility to do the reverse of ```_hexify()```"""
     if bytes_encoded_as_hex_string is None:
         return None
-    return binascii.a2b_hex(bytes_encoded_as_hex_string)
+    try:
+        return binascii.a2b_hex(bytes_encoded_as_hex_string)
+    except TypeError:
+        return None
 
 
 class Nonce(str):
@@ -183,9 +192,12 @@ class MAC(str):
         To prevent timing attacks this method is should be instead of
         direct MAC comparision."""
         keyczar_hmac_key = mac_key.as_keyczar_hmac_key()
+        dehexified_self = _dehexify(self)
+        if not dehexified_self:
+            return False
         rv = keyczar_hmac_key.Verify(
             normalized_request_string,
-            _dehexify(self))
+            dehexified_self)
         return rv
 
     @classmethod
