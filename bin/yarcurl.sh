@@ -10,10 +10,10 @@ usage() {
 	echo "usage: `basename $0` [-v] [GET|POST|PUT|DELETE] <uri>"
 }
 
-CURL_VERBOSE=""
+VERBOSE=0
 if [ 2 -lt $# ]; then
 	if [ "-v" == $1 ]; then
-		CURL_VERBOSE=-v
+		VERBOSE=1
 		shift
 	fi
 fi
@@ -65,7 +65,6 @@ if [ "$MAC_KEY" == "" ]; then
 	echo "`basename $0` could not find mac key"
 	exit 1
 fi
-# Uses URL-safe alphabet: - replaces +, _ replaces /.
 MAC_KEY=$(echo -n $MAC_KEY | sed -e "s/\-/\+/g" | sed -e "s/\_/\//g")=
 MAC_KEY=$(echo -n $MAC_KEY | base64 --decode)
 
@@ -120,30 +119,50 @@ rm -f $NRS >& /dev/null
 
 printf \
 	-v AUTH_HEADER_VALUE \
-	'MAC id="%s", ts="%s", nonce="%s", ext="%s", mac="%s"' \
+	'MAC id=\"%s\", ts=\"%s\", nonce=\"%s\", ext=\"%s\", mac=\"%s\"' \
 	"$MAC_KEY_IDENTIFIER" \
 	"$TIMESTAMP" \
 	"$NONCE" \
 	"$EXT" \
 	"$MAC"
 
-if [ "" != "$CONTENT_TYPE" ]; then
-	curl \
-		-s \
-		$CURL_VERBOSE \
-		-X $HTTP_METHOD \
-		-H "Authorization: $AUTH_HEADER_VALUE" \
-		-H "Content-Type: $CONTENT_TYPE" \
-		--data-binary @$COPY_OF_STDIN \
-	   $URL
+if [ $VERBOSE -eq 1 ]; then
+	CURL_VERBOSE=-v
 else
-	curl \
-		-s \
-		$CURL_VERBOSE \
-		-X $HTTP_METHOD \
-		-H "Authorization: $AUTH_HEADER_VALUE" \
-	   $URL
+	CURL_VERBOSE=""
 fi
+
+if [ "" != "$CONTENT_TYPE" ]; then
+	CURL_CMD="curl
+		-s
+		$CURL_VERBOSE
+		-X $HTTP_METHOD
+		-H \"Authorization: \$AUTH_HEADER_VALUE\"
+		-H \"Content-Type: $CONTENT_TYPE\"
+		--data-binary @$COPY_OF_STDIN
+	   $URL"
+else
+	CURL_CMD="curl
+		-s
+		$CURL_VERBOSE
+		-X $HTTP_METHOD
+		-H \"Authorization: \$AUTH_HEADER_VALUE\"
+	   $URL"
+fi
+
+# if [ $VERBOSE -eq 1 ]; then
+#	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+#	eval echo $CURL_CMD
+#	echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+# fi
+
+# if [ $VERBOSE -eq 1 ]; then
+# 	set -x verbose
+# fi
+# eval $CURL_CMD > ~/ooo 2>&1
+
+# eval echo $CURL_CMD
+eval $CURL_CMD
 
 exit 0
 
