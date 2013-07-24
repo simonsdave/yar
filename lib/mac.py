@@ -81,13 +81,38 @@ class Ext(str):
 
     @classmethod
     def generate(cls, content_type, body):
-        """Generate an ext. Returns an instance of ```Ext```"""
-        if content_type is not None and body is not None:
-            content_type_plus_body = content_type + body
-            content_type_plus_body_hash = hashlib.sha1(content_type_plus_body)
-            ext = content_type_plus_body_hash.hexdigest()
-        else:
+        """Generate an "ext". Returns an instance of ```Ext```.
+
+        The key concept behind the value of the Ext is we don't
+        want to allow someone to take a correctly signed request,
+        change a fundamental element of the request and then
+        resend the request. The normalized request string described
+        in the  MAC standard covers most of key elements of a request
+        except for the request's body and content type. In this
+        implementation of the MAC standard we have choose to generate
+        an ext using a combination of the content type and request
+        body. The algorithm for generating the ext is:
+
+            if content_type and body are None then ext = ""
+            if content_type is None then content_type = ""
+            if body is None then body = ""
+            ext = hex encoding of(content_type + body)
+
+        If ```content_type``` is None it is assumed to mean that no
+        content type header was supplied in the request.
+
+        If ```body``` is None it is assumed to mean that no
+        body was supplied in the request."""
+        if content_type is None and body is None:
             ext = ""
+        else:
+            content_type_plus_body = \
+                (content_type if content_type is not None else "") \
+                + \
+                (body if body is not None else "")
+            content_type_plus_body_hash = hashlib.sha1(content_type_plus_body)
+            print content_type_plus_body
+            ext = content_type_plus_body_hash.hexdigest()
 
         return cls(ext)
 

@@ -122,28 +122,46 @@ class ExtTestCase(unittest.TestCase):
         body = None
         ext = mac.Ext.generate(content_type, body)
         self.assertIsNotNone(ext)
-        self.assertEqual(ext, "")
+        hash = hashlib.sha1(content_type)
+        self.assertEqual(ext, hash.hexdigest())
 
     def test_content_type_none_and_body_not_none_is_zero_length_ext(self):
         content_type = None
         body = "dave was here"
         ext = mac.Ext.generate(content_type, body)
         self.assertIsNotNone(ext)
-        self.assertEqual(ext, "")
+        hash = hashlib.sha1(body)
+        self.assertEqual(ext, hash.hexdigest())
 
     def test_content_type_and_body_not_none_is_sha1_of_both(self):
         content_type = "hello world!"
         body = "dave was here"
         ext = mac.Ext.generate(content_type, body)
         self.assertIsNotNone(ext)
-        hash = hashlib.new('sha1', content_type + body)
+        hash = hashlib.sha1(content_type + body)
+        self.assertEqual(ext, hash.hexdigest())
+
+    def test_content_type_zero_length_and_body_none(self):
+        content_type = ""
+        body = None
+        ext = mac.Ext.generate(content_type, body)
+        self.assertIsNotNone(ext)
+        hash = hashlib.sha1(content_type)
+        self.assertEqual(ext, hash.hexdigest())
+
+    def test_content_type_none_and_body_zero_length(self):
+        content_type = None
+        body = ""
+        ext = mac.Ext.generate(content_type, body)
+        self.assertIsNotNone(ext)
+        hash = hashlib.sha1(body)
         self.assertEqual(ext, hash.hexdigest())
 
     def test_created_with_explicit_content(self):
         content = "abc"
         ext = mac.Ext(content)
         self.assertIsNotNone(ext)
-        self.assertEqual(content, ext)
+        self.assertEqual(ext, content)
 
 
 class AuthHeaderValueTestCase(unittest.TestCase):
