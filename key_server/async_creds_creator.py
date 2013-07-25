@@ -17,6 +17,7 @@ _logger = logging.getLogger("KEYSERVER.%s" % __name__)
 class AsyncCredsCreator(object):
 
     def __init__(self, key_store):
+        object.__init__(self)
         self._key_store = key_store
 
     def create(self, owner, callback):

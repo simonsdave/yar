@@ -18,6 +18,7 @@ import mac
 
 from clparser import CommandLineParser
 from async_creds_creator import AsyncCredsCreator
+from async_creds_retriever import AsyncCredsRetriever
 from ks_util import _filter_out_non_model_creds_properties
 
 """Format of this string is host:port/database. It's used to construct
@@ -27,82 +28,6 @@ _key_store = "localhost:5984/creds"
 __version__ = "1.0"
 
 _logger = logging.getLogger("KEYSERVER.%s" % __name__)
-
-
-class AsyncCredsRetriever(object):
-
-    def fetch(
-        self,
-        callback,
-        mac_key_identifier=None,
-        owner=None,
-        is_filter_out_deleted=True,
-        is_filter_out_non_model_properties=False):
-
-        object.__init__(self)
-
-        self._callback = callback
-        self._is_filter_out_non_model_properties = \
-            is_filter_out_non_model_properties
-        self._is_filter_out_deleted = is_filter_out_deleted
-
-        if mac_key_identifier:
-            url = "http://%s/%s" % (_key_store, mac_key_identifier)
-        else:
-            if owner:
-                fmt = (
-                    'http://%s/_design/creds/_view/by_owner?'
-                    'startkey="%s"'
-                    '&'
-                    'endkey="%s"'
-                )
-                url = fmt % (_key_store, owner, owner)
-            else:
-                url = "http://%s/_design/creds/_view/all" % _key_store
-
-        headers = {
-            "Accept": "application/json",
-            "Accept-Encoding": "charset=utf8",
-        }
-        http_client = tornado.httpclient.AsyncHTTPClient()
-        http_client.fetch(
-            tornado.httpclient.HTTPRequest(
-                url,
-                method="GET",
-                headers=headers,
-                follow_redirects=False),
-            callback=self._my_callback)
-
-    def _my_callback(self, response):
-        response = trhutil.Response(response)
-        body = response.get_json_body()
-        if not body:
-            self._callback(None, None)
-            return
-
-        is_creds_collection = None
-        if 'rows' in body:
-            is_creds_collection = True
-            rv = []
-            for row in body['rows']:
-                doc = row['value']
-                if doc.get("is_deleted", False):
-                    if self._is_filter_out_deleted:
-                        continue
-                if self._is_filter_out_non_model_properties:
-                    doc = _filter_out_non_model_creds_properties(doc)
-                rv.append(doc)
-        else:
-            is_creds_collection = False
-            if body.get("is_deleted", False) and self._is_filter_out_deleted:
-                rv = None
-            else:
-                if self._is_filter_out_non_model_properties:
-                    body = _filter_out_non_model_creds_properties(body)
-                rv = body
-        assert is_creds_collection is not None
-
-        self._callback(rv, is_creds_collection)
 
 
 class AsyncCredsDeleter(object):
@@ -143,7 +68,7 @@ class AsyncCredsDeleter(object):
     def delete(self, mac_key_identifier, callback):
         self._callback = callback
 
-        acr = AsyncCredsRetriever()
+        acr = AsyncCredsRetriever(_key_store)
         acr.fetch(
             self._on_async_creds_retriever_done,
             mac_key_identifier=mac_key_identifier,
@@ -172,7 +97,7 @@ class RequestHandler(trhutil.RequestHandler):
         is_filter_out_deleted = False \
             if self.get_argument("deleted", None) \
             else True
-        acr = AsyncCredsRetriever()
+        acr = AsyncCredsRetriever(_key_store)
         acr.fetch(
             self._on_async_creds_retrieve_done,
             mac_key_identifier=mac_key_identifier,
