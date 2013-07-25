@@ -11,12 +11,14 @@ import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 
-from clparser import CommandLineParser
 import tsh
 import trhutil
 import jsonschemas
 import mac
 
+from clparser import CommandLineParser
+from async_creds_creator import AsyncCredsCreator
+from ks_util import _filter_out_non_model_creds_properties
 
 """Format of this string is host:port/database. It's used to construct
 a URL when talking to the key store."""
@@ -35,66 +37,6 @@ class StatusRequestHandler(trhutil.RequestHandler):
             "version": __version__,
         }
         self.write(status)
-
-
-def _filter_out_non_model_creds_properties(creds):
-    """When a dictionary representing a set of credentials
-    is created, the dictionary may contain entries that are
-    no part of the externally exposed model. This function
-    takes a dictionary (```dict```), selects only the
-    model properties in ```dict``` and returns a new
-    dictionary containing only the model properties."""
-    rv = {}
-    keys = [
-        "is_deleted",
-        "mac_algorithm",
-        "mac_key",
-        "mac_key_identifier",
-        "owner"
-    ]
-    for key in keys:
-        if key in creds:
-            rv[key] = creds[key]
-    return rv
-
-class AsyncCredsCreator(object):
-
-    def create(self, owner, callback):
-
-        self._callback = callback
-
-        self._creds = {
-            "owner": owner,
-            "mac_key_identifier": mac.MACKeyIdentifier.generate(),
-            "mac_key": mac.MACKey.generate(),
-            "mac_algorithm": mac.MAC.algorithm,
-            "type": "cred_v1.0",
-            "is_deleted": False,
-        }
-        headers = {
-            "Content-Type": "application/json; charset=utf8",
-            "Accept": "application/json",
-            "Accept-Encoding": "charset=utf8"
-        }
-        url = "http://%s/%s" % (
-            _key_store,
-            self._creds["mac_key_identifier"])
-        http_client = tornado.httpclient.AsyncHTTPClient()
-        http_client.fetch(
-            tornado.httpclient.HTTPRequest(
-                url,
-                method="PUT",
-                headers=tornado.httputil.HTTPHeaders(headers),
-                body=json.dumps(self._creds)),
-            callback=self._my_callback)
-
-    def _my_callback(self, response):
-        if response.code != httplib.CREATED:
-            self._callback(None)
-            return
-
-        creds = _filter_out_non_model_creds_properties(self._creds)
-        self._callback(creds)
 
 
 class AsyncCredsRetriever(object):
@@ -283,7 +225,7 @@ class RequestHandler(trhutil.RequestHandler):
             self.finish()
             return
 
-        acc = AsyncCredsCreator()
+        acc = AsyncCredsCreator(_key_store)
         acc.create(
             body["owner"],
             self._on_async_creds_create_done)
