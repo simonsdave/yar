@@ -29,16 +29,6 @@ __version__ = "1.0"
 _logger = logging.getLogger("KEYSERVER.%s" % __name__)
 
 
-class StatusRequestHandler(trhutil.RequestHandler):
-
-    def get(self):
-        status = {
-            "status": "ok",
-            "version": __version__,
-        }
-        self.write(status)
-
-
 class AsyncCredsRetriever(object):
 
     def fetch(
@@ -253,7 +243,6 @@ class RequestHandler(trhutil.RequestHandler):
 
 
 _tornado_handlers = [
-    (r"/(?:status)?", StatusRequestHandler),
     (r"/v1.0/creds(?:/([^/]+))?", RequestHandler),
 ]
 

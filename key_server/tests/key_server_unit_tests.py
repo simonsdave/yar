@@ -61,44 +61,6 @@ class TestCase(testutil.TestCase):
         return "http://localhost:%s" % self.__class__._key_server.port
 
 
-class TestStatusResource(TestCase):
-
-    def url(self):
-        return "%s/status" % TestCase.url(self)
-
-    def test_get(self):
-        http_client = httplib2.Http()
-        response, content = http_client.request(self.url(), "GET")
-
-        self.assertIsNotNone(response)
-        self.assertTrue(httplib.OK == response.status)
-        self.assertTrue("content-type" in response)
-        content_type = response["content-type"]
-        self.assertIsJsonUtf8ContentType(content_type)
-
-        self.assertIsNotNone(content)
-        content = json.loads(content)
-        self.assertTrue("status" in content)
-        self.assertTrue(content["status"] == "ok")
-        self.assertTrue("version" in content)
-        self.assertTrue(content["version"] == "1.0")
-
-    def _test_bad_method(self, method):
-        http_client = httplib2.Http()
-        response, content = http_client.request(self.url(), method)
-        self.assertIsNotNone(response)
-        self.assertTrue(httplib.METHOD_NOT_ALLOWED == response.status)
-
-    def test_post(self):
-        self._test_bad_method("POST")
-
-    def test_put(self):
-        self._test_bad_method("PUT")
-
-    def test_delete(self):
-        self._test_bad_method("DELETE")
-
-
 class TestMacCredsResource(TestCase):
 
     def url(self):
