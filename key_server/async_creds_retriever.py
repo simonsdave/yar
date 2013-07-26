@@ -1,23 +1,18 @@
 """This module contains functionality to async'ly retrieve
 credentials from the key store."""
 
-import tornado.httpclient
-
 import logging
 
 import trhutil
 
 from ks_util import _filter_out_non_model_creds_properties
+from ks_util import AsyncAction
 
 
 _logger = logging.getLogger("KEYSERVER.%s" % __name__)
 
 
-class AsyncCredsRetriever(object):
-
-    def __init__(self, key_store):
-        object.__init__(self)
-        self._key_store = key_store
+class AsyncCredsRetriever(AsyncAction):
 
     def fetch(
         self,
@@ -33,7 +28,7 @@ class AsyncCredsRetriever(object):
         self._is_filter_out_deleted = is_filter_out_deleted
 
         if mac_key_identifier:
-            url = "http://%s/%s" % (self._key_store, mac_key_identifier)
+            url = "http://%s/%s" % (self.key_store, mac_key_identifier)
         else:
             if owner:
                 fmt = (
@@ -42,22 +37,15 @@ class AsyncCredsRetriever(object):
                     '&'
                     'endkey="%s"'
                 )
-                url = fmt % (self._key_store, owner, owner)
+                url = fmt % (self.key_store, owner, owner)
             else:
-                url = "http://%s/_design/creds/_view/all" % self._key_store
+                url = "http://%s/_design/creds/_view/all" % self.key_store
 
-        headers = {
-            "Accept": "application/json",
-            "Accept-Encoding": "charset=utf8",
-        }
-        http_client = tornado.httpclient.AsyncHTTPClient()
-        http_client.fetch(
-            tornado.httpclient.HTTPRequest(
-                url,
-                method="GET",
-                headers=headers,
-                follow_redirects=False),
-            callback=self._my_callback)
+        self.issue_async_http_request_to_key_store(
+            url,
+            "GET",
+            None,
+            self._my_callback)
 
     def _my_callback(self, response):
         response = trhutil.Response(response)

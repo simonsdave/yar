@@ -2,24 +2,18 @@
 credentials from the key store."""
 
 import httplib
-import json
 import logging
-
-import tornado.httpclient
 
 import mac
 
 from ks_util import _filter_out_non_model_creds_properties
+from ks_util import AsyncAction
 
 
 _logger = logging.getLogger("KEYSERVER.%s" % __name__)
 
 
-class AsyncCredsCreator(object):
-
-    def __init__(self, key_store):
-        object.__init__(self)
-        self._key_store = key_store
+class AsyncCredsCreator(AsyncAction):
 
     def create(self, owner, callback):
 
@@ -33,22 +27,14 @@ class AsyncCredsCreator(object):
             "type": "cred_v1.0",
             "is_deleted": False,
         }
-        headers = {
-            "Content-Type": "application/json; charset=utf8",
-            "Accept": "application/json",
-            "Accept-Encoding": "charset=utf8"
-        }
         url = "http://%s/%s" % (
-            self._key_store,
+            self.key_store,
             self._creds["mac_key_identifier"])
-        http_client = tornado.httpclient.AsyncHTTPClient()
-        http_client.fetch(
-            tornado.httpclient.HTTPRequest(
-                url,
-                method="PUT",
-                headers=tornado.httputil.HTTPHeaders(headers),
-                body=json.dumps(self._creds)),
-            callback=self._my_callback)
+        self.issue_async_http_request_to_key_store(
+            url,
+            "PUT",
+            self._creds,
+            self._my_callback)
 
     def _my_callback(self, response):
         if response.code != httplib.CREATED:
