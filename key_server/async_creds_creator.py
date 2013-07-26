@@ -1,4 +1,5 @@
-"""This module contains the core key server logic."""
+"""This module contains functionality to async'ly create
+credentials from the key store."""
 
 import httplib
 import json

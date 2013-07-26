@@ -19,6 +19,7 @@ import mac
 from clparser import CommandLineParser
 from async_creds_creator import AsyncCredsCreator
 from async_creds_retriever import AsyncCredsRetriever
+from async_creds_deleter import AsyncCredsDeleter
 from ks_util import _filter_out_non_model_creds_properties
 
 """Format of this string is host:port/database. It's used to construct
@@ -28,51 +29,6 @@ _key_store = "localhost:5984/creds"
 __version__ = "1.0"
 
 _logger = logging.getLogger("KEYSERVER.%s" % __name__)
-
-
-class AsyncCredsDeleter(object):
-
-    def _on_response_from_key_store_to_put_for_delete(self, response):
-        self._callback(response.code == httplib.CREATED)
-
-    def _on_async_creds_retriever_done(self, creds, is_creds_collection):
-        if creds is None:
-            self._callback(False)
-            return
-
-        assert not is_creds_collection
-
-        if creds.get("is_deleted", False):
-            self._callback(True)
-            return
-
-        creds["is_deleted"] = True
-
-        headers = {
-            "Content-Type": "application/json; charset=utf8",
-            "Accept": "application/json",
-            "Accept-Encoding": "charset=utf8",
-        }
-        url = "http://%s/%s" % (
-            _key_store,
-            creds["mac_key_identifier"])
-        http_client = tornado.httpclient.AsyncHTTPClient()
-        http_client.fetch(
-            tornado.httpclient.HTTPRequest(
-                url,
-                method="PUT",
-                headers=tornado.httputil.HTTPHeaders(headers),
-                body=json.dumps(creds)),
-            callback=self._on_response_from_key_store_to_put_for_delete)
-
-    def delete(self, mac_key_identifier, callback):
-        self._callback = callback
-
-        acr = AsyncCredsRetriever(_key_store)
-        acr.fetch(
-            self._on_async_creds_retriever_done,
-            mac_key_identifier=mac_key_identifier,
-            is_filter_out_deleted=False)
 
 
 class RequestHandler(trhutil.RequestHandler):
@@ -161,7 +117,7 @@ class RequestHandler(trhutil.RequestHandler):
             self.finish()
             return
 
-        acd = AsyncCredsDeleter()
+        acd = AsyncCredsDeleter(_key_store)
         acd.delete(
             mac_key_identifier,
             self._on_async_creds_delete_done)
