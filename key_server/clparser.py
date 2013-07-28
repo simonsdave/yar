@@ -2,7 +2,6 @@
 server's command line."""
 
 import optparse
-import re
 import logging
 
 import clparserutil
