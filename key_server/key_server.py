@@ -2,19 +2,14 @@
 """This module contains the core key server logic."""
 
 import httplib
-import re
-import json
 import logging
 
-import tornado.httpserver
-import tornado.httpclient
-import tornado.ioloop
 import tornado.web
+import tornado.httpserver
 
+import jsonschemas
 import tsh
 import trhutil
-import jsonschemas
-import mac
 
 from clparser import CommandLineParser
 from async_creds_creator import AsyncCredsCreator
