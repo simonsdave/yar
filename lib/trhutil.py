@@ -38,6 +38,53 @@ def _is_json_utf8_content_type(content_type):
     return True
 
 
+def get_request_host_and_port(
+    request,
+    host_if_not_found=None,
+    port_if_not_found=None):
+    """Return the request's 'Host' HTTP header parsed into its
+    host and port components."""
+    value = request.headers.get("Host", None)
+    if value is None:
+        return (host_if_not_found, port_if_not_found)
+
+    reg_ex_pattern = r"^\s*(?P<host>[^\:]+)(?:\:(?P<port>\d+))?\s*$"
+    reg_ex = re.compile(reg_ex_pattern)
+    match = reg_ex.match(value)
+    if not match:
+        return (host_if_not_found, port_if_not_found)
+
+    assert 0 == match.start()
+    assert len(value) == match.end()
+    num_matches = len(match.groups())
+    assert (1 == num_matches) or (2 == num_matches)
+
+    host = match.group("host")
+    assert host
+    assert 0 < len(host)
+
+    port = match.group("port")
+    if port is None:
+        port = port_if_not_found
+
+    return (host, port)
+
+
+def get_request_body_if_exists(request, value_if_not_found=None):
+    """Return the request's body if one exists otherwise
+    return ```value_if_not_found```."""
+    content_length = request.headers.get("Content-Length", None)
+    if content_length is None:
+        transfer_encoding = request.headers.get(
+            "Transfer-Encoding",
+            None)
+        if not transfer_encoding:
+            return value_if_not_found
+    if request.body is None:
+        return value_if_not_found
+    return request.body
+
+
 class RequestHandler(tornado.web.RequestHandler):
     """When a request handler uses this as its base class rather than
     tornado.web.RequestHandler the request handler gains access to
@@ -49,47 +96,21 @@ class RequestHandler(tornado.web.RequestHandler):
         self,
         host_if_not_found=None,
         port_if_not_found=None):
-
         """Return the request's 'Host' HTTP header parsed into its
         host and port components."""
-        value = self.request.headers.get("Host", None)
-        if value is None:
-            return (host_if_not_found, port_if_not_found)
-
-        reg_ex_pattern = r"^\s*(?P<host>[^\:]+)(?:\:(?P<port>\d+))?\s*$"
-        reg_ex = re.compile(reg_ex_pattern)
-        match = reg_ex.match(value)
-        if not match:
-            return (host_if_not_found, port_if_not_found)
-
-        assert 0 == match.start()
-        assert len(value) == match.end()
-        num_matches = len(match.groups())
-        assert (1 == num_matches) or (2 == num_matches)
-
-        host = match.group("host")
-        assert host
-        assert 0 < len(host)
-
-        port = match.group("port")
-        if port is None:
-            port = port_if_not_found
-
-        return (host, port)
+        rv = get_request_host_and_port(
+            self.request, 
+            host_if_not_found,
+            port_if_not_found)
+        return rv
 
     def get_request_body_if_exists(self, value_if_not_found=None):
         """Return the request's body if one exists otherwise
         return ```value_if_not_found```."""
-        content_length = self.request.headers.get("Content-Length", None)
-        if content_length is None:
-            transfer_encoding = self.request.headers.get(
-                "Transfer-Encoding",
-                None)
-            if not transfer_encoding:
-                return value_if_not_found
-        if self.request.body is None:
-            return value_if_not_found
-        return self.request.body
+        rv = get_request_body_if_exists(
+            self.request,
+            value_if_not_found)
+        return rv
 
     def get_json_request_body(self, value_if_not_found=None, schema=None):
         """Get the request's JSON body and convert it into a dict.
