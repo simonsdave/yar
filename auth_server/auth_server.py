@@ -66,7 +66,7 @@ class RequestHandler(trhutil.RequestHandler):
         auth_failure_detail=None,
         debug_headers=None,
         owner=None,
-        identifying_key=None):
+        identifier=None):
 
         if not is_auth_ok:
 
@@ -96,7 +96,7 @@ class RequestHandler(trhutil.RequestHandler):
         headers["Authorization"] = "%s %s %s" % (
             app_server_auth_method,
             owner,
-            identifying_key)
+            identifier)
 
         http_request = tornado.httpclient.HTTPRequest(
             url="http://%s%s" % (app_server, self.request.uri),

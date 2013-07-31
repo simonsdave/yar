@@ -120,7 +120,7 @@ class AsyncHMACAuth(object):
         self._on_validate_done(
             True,
             owner=owner,
-            identifying_key=mac_key_identifier)
+            identifier=mac_key_identifier)
 
     def _on_async_nonce_checker_done(self, is_ok):
         """this callback is invoked when AsyncNonceChecker has finished.
