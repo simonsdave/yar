@@ -14,8 +14,14 @@ _logger = logging.getLogger("KEYSERVER.%s" % __name__)
 
 
 class AsyncCredsCreator(AsyncAction):
+    """```AsyncCredsCreator``` implements the async action
+    pattern for creating MAC credentials."""
 
     def create(self, owner, callback):
+        """Create a set of MAC credentials for ```owner```,
+        save the credentials to the key store and when all
+        of that is done call ```callback``` with a single
+        argument = the newly created credentials."""
 
         self._callback = callback
 
@@ -27,17 +33,14 @@ class AsyncCredsCreator(AsyncAction):
             "type": "cred_v1.0",
             "is_deleted": False,
         }
-        url = "http://%s/%s" % (
-            self.key_store,
-            self._creds["mac_key_identifier"])
-        self.issue_async_http_request_to_key_store(
-            url,
+        self.async_req_to_key_store(
+            self._creds["mac_key_identifier"],
             "PUT",
             self._creds,
             self._my_callback)
 
-    def _my_callback(self, response):
-        if response.code != httplib.CREATED:
+    def _my_callback(self, code, body):
+        if code != httplib.CREATED:
             self._callback(None)
             return
 

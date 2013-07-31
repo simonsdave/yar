@@ -3,8 +3,6 @@ credentials from the key store."""
 
 import logging
 
-import trhutil
-
 from ks_util import _filter_out_non_model_creds_properties
 from ks_util import AsyncAction
 
@@ -28,28 +26,26 @@ class AsyncCredsRetriever(AsyncAction):
         self._is_filter_out_deleted = is_filter_out_deleted
 
         if mac_key_identifier:
-            url = "http://%s/%s" % (self.key_store, mac_key_identifier)
+            path = mac_key_identifier
         else:
             if owner:
                 fmt = (
-                    'http://%s/_design/creds/_view/by_owner?'
+                    '_design/creds/_view/by_owner?'
                     'startkey="%s"'
                     '&'
                     'endkey="%s"'
                 )
-                url = fmt % (self.key_store, owner, owner)
+                path = fmt % (owner, owner)
             else:
-                url = "http://%s/_design/creds/_view/all" % self.key_store
+                path = "_design/creds/_view/all"
 
-        self.issue_async_http_request_to_key_store(
-            url,
+        self.async_req_to_key_store(
+            path,
             "GET",
             None,
             self._my_callback)
 
-    def _my_callback(self, response):
-        response = trhutil.Response(response)
-        body = response.get_json_body()
+    def _my_callback(self, code, body):
         if not body:
             self._callback(None, None)
             return
