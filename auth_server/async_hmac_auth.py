@@ -10,22 +10,6 @@ from trhutil import get_request_body_if_exists
 from async_creds_retriever import AsyncCredsRetriever
 from async_nonce_checker import AsyncNonceChecker
 
-"""
-import re
-import json
-import httplib
-import hashlib
-
-import tornado.httpserver
-import tornado.httpclient
-import tornado.ioloop
-import tornado.web
-import jsonschemas
-
-import tsh
-import strutil
-"""
-
 """To help prevent reply attacks the timestamp of all requests can
 be no older than ```maxage``` seconds before the current timestamp."""
 maxage = 30
@@ -41,13 +25,15 @@ AUTH_FAILURE_DETAIL_NO_AUTH_HEADER =            0x0003
 AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER =       0x0004
 AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND =           0x0005
 AUTH_FAILURE_DETAIL_NONCE_REUSED =              0x0006
+AUTH_FAILURE_DETAIL_HMACS_DO_NOT_MATCH =        0x0007
 
 
 class AsyncHMACAuth(object):
 
-    def __init__(self, request):
+    def __init__(self, request, generate_debug_headers):
         object.__init__(self)
         self._request = request
+        self._generate_debug_headers = generate_debug_headers
 
     def _on_async_creds_retriever_done(
         self,
@@ -98,7 +84,7 @@ class AsyncHMACAuth(object):
             # debug, a whole series of HTTP headers are set to return the
             # core elements that are used to generate the HMAC.
             debug_headers = {}
-            if _logger.isEnabledFor(logging.DEBUG):
+            if self._generate_debug_headers:
                 if body:
                     debug_headers["BODY-SHA1"] = hashlib.sha1(body).hexdigest()
                     debug_headers["BODY-LEN"] = len(body)
@@ -120,7 +106,10 @@ class AsyncHMACAuth(object):
                     normalized_request_string)
 
             # end of pumping out debug headers - returning to regular headers
-            self._on_validate_done(False, None, debug_headers)
+            self._on_validate_done(
+                False,
+                auth_failure_detail=AUTH_FAILURE_DETAIL_HMACS_DO_NOT_MATCH,
+                debug_headers=debug_headers)
             return
 
         _logger.info(
@@ -139,6 +128,7 @@ class AsyncHMACAuth(object):
          the curent request's nonce+mac_key_identifier pair hasn't been
         seen before."""
         if not is_ok:
+            _logger.info("Nonce '%s' reused", self._auth_hdr_val.nonce)
             self._on_validate_done(False, AUTH_FAILURE_DETAIL_NONCE_REUSED)
             return
 
