@@ -10,9 +10,9 @@ import tornado.httpclient
 import mac
 import trhutil
 
-__version__ = "1.0"
 
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
+
 
 """This host:port combination define the location of the key server."""
 key_server = None

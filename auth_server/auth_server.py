@@ -22,9 +22,6 @@ from clparser import CommandLineParser
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
 
-__version__ = "1.0"
-
-
 """When authentication fails and the auth server's logging is set
 to a debug level responses will contain a series of HTTP headers
 that provide additional detail on why the authentication failed.

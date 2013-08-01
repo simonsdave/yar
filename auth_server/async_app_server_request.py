@@ -26,9 +26,6 @@ from clparser import CommandLineParser
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
 
-__version__ = "1.0"
-
-
 """Once a request has been authenticated, the request is forwarded
 to the app server as defined by this host:port combination."""
 app_server = None
