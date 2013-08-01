@@ -16,6 +16,8 @@ import tornado.web
 
 import async_creds_retriever
 import async_nonce_checker
+import async_hmac_auth
+import async_app_server_request
 import auth_server
 import mac
 import testutil
@@ -32,8 +34,9 @@ class AuthenticationServer(testutil.Server):
         testutil.Server.__init__(self)
 
         async_creds_retriever.key_server = "localhost:%d" % key_server.port
-        auth_server.app_server = "localhost:%d" % app_server.port
-        auth_server.app_server_auth_method = app_server_auth_method
+        async_hmac_auth.maxage = 30
+        async_app_server_request.app_server = "localhost:%d" % app_server.port
+        async_app_server_request.app_server_auth_method = app_server_auth_method
         auth_server.include_auth_failure_detail = True
         async_nonce_checker.nonce_store = nonce_store.memcached_cluster
 
@@ -145,12 +148,14 @@ class TestCase(testutil.TestCase):
         self.assertEqual(self.__class__.asrs.received_put, put)
         self.assertEqual(self.__class__.asrs.received_delete, delete)
 
-    def assertAuthFailure(self, response, detail):
+    def assertAuthFailure(self, response, detail_code):
         self.assertEqual(response.status, httplib.UNAUTHORIZED)
         header_name = "x-auth-server-auth-failure-detail"
         self.assertIn(header_name, response)
         value = response.get(header_name, None)
-        self.assertEqual(value, detail)
+        self.assertIsNotNone(value)
+        self.assertTrue(value.isdigit())
+        self.assertEqual(int(value), detail_code)
 
     def test_get_with_no_authorization_header(self):
         http_client = httplib2.Http()
@@ -159,7 +164,7 @@ class TestCase(testutil.TestCase):
             "GET")
         self.assertAuthFailure(
             response,
-            auth_server.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
+            async_hmac_auth.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
 
     def test_get_with_invalid_authorization_header(self):
         http_client = httplib2.Http()
@@ -172,7 +177,7 @@ class TestCase(testutil.TestCase):
             })
         self.assertAuthFailure(
             response,
-            auth_server.AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER)
+            async_hmac_auth.AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER)
 
     def test_invalid_mac_algorithm_returned_from_key_server(self):
         mac_key_identifier = mac.MACKeyIdentifier.generate()
@@ -376,7 +381,7 @@ class TestCase(testutil.TestCase):
             seconds_to_subtract_from_ts=one_year_in_seconds)
         self.assertAuthFailure(
             response,
-            auth_server.AUTH_FAILURE_DETAIL_TS_OLD)
+            async_hmac_auth.AUTH_FAILURE_DETAIL_TS_OLD)
 
         # now repeat the all good GET but this time ask for the request's
         # timestamp to be advanced by one day
@@ -389,7 +394,7 @@ class TestCase(testutil.TestCase):
             seconds_to_subtract_from_ts=-one_day_in_seconds)
         self.assertAuthFailure(
             response,
-            auth_server.AUTH_FAILURE_DETAIL_TS_IN_FUTURE)
+            async_hmac_auth.AUTH_FAILURE_DETAIL_TS_IN_FUTURE)
 
     def test_get_with_unknonwn_mac_key_identifier(self):
         # establish credentials
@@ -424,4 +429,4 @@ class TestCase(testutil.TestCase):
             owner)
         self.assertAuthFailure(
             response,
-            auth_server.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
+            async_hmac_auth.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
