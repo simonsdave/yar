@@ -15,6 +15,7 @@ import tsh
 import async_creds_retriever
 import async_nonce_checker
 import async_hmac_auth
+import async_app_server_request
 from clparser import CommandLineParser
 
 
@@ -23,17 +24,6 @@ _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
 __version__ = "1.0"
 
-
-"""Once a request has been authenticated, the request is forwarded
-to the app server as defined by this host:port combination."""
-app_server = None
-
-"""Once the auth server has verified the sender's identity the request
-is forwarded to the app server. The forward to the app server does not
-contain the original request's HTTP Authorization header but instead
-uses the authorization method described by ```app_server_auth_method```
-and the the credential's owner."""
-app_server_auth_method = "DAS"
 
 """When authentication fails and the auth server's logging is set
 to a debug level responses will contain a series of HTTP headers
@@ -49,15 +39,21 @@ generate_debug_headers = False
 
 class RequestHandler(trhutil.RequestHandler):
 
-    def _on_app_server_done(self, response):
-        if response.error:
+    def _on_app_server_done(
+        self,
+        is_ok,
+        http_status_code=None,
+        headers=None,
+        body=None):
+
+        if not is_ok:
             self.set_status(httplib.INTERNAL_SERVER_ERROR)
         else:
-            self.set_status(response.code)
-            for (name, value) in response.headers.items():
+            self.set_status(http_status_code)
+            for (name, value) in headers.items():
                 self.set_header(name, value)
-            if 0 < response.headers.get("Content-Length", 0):
-                self.write(response.body)
+            if body is not None:
+                self.write(body)
         self.finish()
 
     def _on_auth_done(
@@ -87,28 +83,12 @@ class RequestHandler(trhutil.RequestHandler):
             
             return
 
-        #
-        # milestone! request has just passed authorization:-)
-        # next step is to forward the request to the application
-        # server.
-        #
-        headers = tornado.httputil.HTTPHeaders(self.request.headers)
-        headers["Authorization"] = "%s %s %s" % (
-            app_server_auth_method,
+        aasr = async_app_server_request.AsyncAppServerRequest()
+        aasr.forward(
+            self.request,
             owner,
-            identifier)
-
-        http_request = tornado.httpclient.HTTPRequest(
-            url="http://%s%s" % (app_server, self.request.uri),
-            method=self.request.method,
-            body=self.get_request_body_if_exists(),
-            headers=headers,
-            follow_redirects=False)
-
-        http_client = tornado.httpclient.AsyncHTTPClient()
-        http_client.fetch(
-            http_request,
-            callback=self._on_app_server_done)
+            identifier,
+            self._on_app_server_done)
 
     def _handle_request(self):
         aha = async_hmac_auth.AsyncHMACAuth(
@@ -154,12 +134,12 @@ if __name__ == "__main__":
     _logger.info(fmt.format(clo=clo))
 
     generate_debug_headers = _logger.isEnabledFor(logging.DEBUG)
-    app_server = clo.app_server
-    auth_method = clo.app_server_auth_method
 
     async_creds_retriever.key_server = clo.key_server
     async_hmac_auth.maxage = clo.maxage
     async_nonce_checker.nonce_store = clo.nonce_store
+    async_app_server_request.app_server = clo.app_server
+    async_app_server_request.auth_method = clo.app_server_auth_method
 
     http_server = tornado.httpserver.HTTPServer(_app)
     http_server.listen(clo.port)
