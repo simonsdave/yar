@@ -8,20 +8,7 @@ import tornado.httputil
 import tornado.httpclient
 
 from trhutil import get_request_body_if_exists
-"""
-import httplib
 
-import tornado.httpserver
-import tornado.web
-
-import strutil
-import tsh
-
-import async_creds_retriever
-import async_nonce_checker
-import async_hmac_auth
-from clparser import CommandLineParser
-"""
 
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
