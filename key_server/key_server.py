@@ -21,7 +21,6 @@ from ks_util import _filter_out_non_model_creds_properties
 a URL when talking to the key store."""
 _key_store = "localhost:5984/creds"
 
-__version__ = "1.0"
 
 _logger = logging.getLogger("KEYSERVER.%s" % __name__)
 
