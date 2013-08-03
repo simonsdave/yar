@@ -2,6 +2,7 @@
 """This module contains the logic for async forwarding
 of requests to the app server."""
 
+
 import logging
 
 import tornado.httputil
@@ -65,4 +66,4 @@ class AsyncAppServerRequest(object):
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_client.fetch(
             http_request,
-            callback=self._on_forward_done)
+            self._on_forward_done)

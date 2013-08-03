@@ -31,22 +31,22 @@ class AsyncCredsRetriever(object):
         url = "http://%s/v1.0/creds/%s" % (
             key_server,
             self._mac_key_identifier)
+        http_request = tornado.httpclient.HTTPRequest(
+            url=url,
+            method="GET",
+            follow_redirects=False)
         http_client = tornado.httpclient.AsyncHTTPClient()
-        http_client.fetch(
-            tornado.httpclient.HTTPRequest(
-                url=url,
-                method="GET",
-                follow_redirects=False),
-            callback=self._my_callback)
+        http_client.fetch(http_request, self._my_callback)
 
     def _my_callback(self, response):
         """Called when request to the key server returns."""
-        if response.code != httplib.OK:
+        if response.error or response.code != httplib.OK:
             self._callback(False, self._mac_key_identifier)
             return
 
         response = trhutil.Response(response)
         body = response.get_json_body(
+            None,
             jsonschemas.key_server_get_creds_response)
         if body is None:
             self._callback(False, self._mac_key_identifier)
