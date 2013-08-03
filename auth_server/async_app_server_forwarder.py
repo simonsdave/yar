@@ -26,7 +26,7 @@ and the the credential's owner."""
 app_server_auth_method = "DAS"
 
 
-class AsyncAppServerRequest(object):
+class AsyncAppServerForwarder(object):
 
     def _on_forward_done(self, response):
         if response.error:

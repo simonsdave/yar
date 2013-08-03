@@ -15,7 +15,7 @@ import tsh
 import async_creds_retriever
 import async_nonce_checker
 import async_hmac_auth
-import async_app_server_request
+import async_app_server_forwarder
 from clparser import CommandLineParser
 
 
@@ -80,8 +80,8 @@ class RequestHandler(trhutil.RequestHandler):
             
             return
 
-        aasr = async_app_server_request.AsyncAppServerRequest()
-        aasr.forward(
+        aasf = async_app_server_forwarder.AsyncAppServerForwarder()
+        aasf.forward(
             self.request,
             owner,
             identifier,
@@ -135,8 +135,8 @@ if __name__ == "__main__":
     async_creds_retriever.key_server = clo.key_server
     async_hmac_auth.maxage = clo.maxage
     async_nonce_checker.nonce_store = clo.nonce_store
-    async_app_server_request.app_server = clo.app_server
-    async_app_server_request.auth_method = clo.app_server_auth_method
+    async_app_server_forwarder.app_server = clo.app_server
+    async_app_server_forwarder.auth_method = clo.app_server_auth_method
 
     http_server = tornado.httpserver.HTTPServer(_app)
     http_server.listen(clo.port)
