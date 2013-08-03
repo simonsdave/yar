@@ -58,7 +58,6 @@ class AsyncAction(object):
 
         url = "http://%s/%s" % (self.key_store, path)
         headers = tornado.httputil.HTTPHeaders({
-            "Content-Type": "application/json; charset=utf8",
             "Accept": "application/json",
             "Accept-Encoding": "charset=utf8"
         })
