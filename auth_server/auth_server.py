@@ -82,7 +82,10 @@ class RequestHandler(trhutil.RequestHandler):
 
         aasf = async_app_server_forwarder.AsyncAppServerForwarder()
         aasf.forward(
-            self.request,
+            self.request.method,
+            self.request.uri,
+            self.request.headers,
+            self.get_request_body_if_exists(),
             owner,
             identifier,
             self._on_app_server_done)

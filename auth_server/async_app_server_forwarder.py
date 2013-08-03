@@ -31,35 +31,39 @@ class AsyncAppServerForwarder(object):
     def _on_forward_done(self, response):
         if response.error:
             self._callback(False)
-        else:
-            body = None
-            if 0 <= response.headers.get("Content-Length", 0):
-                body = response.body 
-            self._callback(
-                True,
-                response.code,
-                response.headers,
-                body)
+            return
+
+        body = None
+        if 0 <= response.headers.get("Content-Length", 0):
+            body = response.body 
+        self._callback(
+            True,
+            response.code,
+            response.headers,
+            body)
 
     def forward(
         self,
-        request,
+        method,
+        uri,
+        headers,
+        body,
         owner,
         identifier,
         callback):
 
         self._callback = callback
 
-        headers = tornado.httputil.HTTPHeaders(request.headers)
+        headers = tornado.httputil.HTTPHeaders(headers)
         headers["Authorization"] = "%s %s %s" % (
             app_server_auth_method,
             owner,
             identifier)
 
         http_request = tornado.httpclient.HTTPRequest(
-            url="http://%s%s" % (app_server, request.uri),
-            method=request.method,
-            body=get_request_body_if_exists(request),
+            url="http://%s%s" % (app_server, uri),
+            method=method,
+            body=body,
             headers=headers,
             follow_redirects=False)
 
