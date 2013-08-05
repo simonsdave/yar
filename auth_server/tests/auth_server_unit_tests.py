@@ -80,25 +80,12 @@ class TestCase(yar_test_util.TestCase):
             callback(True, owner=the_owner, identifier=the_identifier)
 
         with mock.patch("async_hmac_auth.AsyncHMACAuth.validate", validate_patch):
-            def forward_patch(
-                ignore_this_async_app_server_forwarder,
-                method,
-                uri,
-                headers,
-                body,
-                owner,
-                identifier,
-                callback):
-
-                self.assertIsNotNone(owner)
-                self.assertEqual(owner, the_owner)
-
-                self.assertIsNotNone(identifier)
-                self.assertEqual(identifier, the_identifier)
-
+            def forward_patch(ignore_async_app_server_forwarder, callback):
+                self.assertIsNotNone(callback)
                 callback(False)
 
-            with mock.patch("async_app_server_forwarder.AsyncAppServerForwarder.forward", forward_patch):
+            method_name_to_patch = "async_app_server_forwarder.AsyncAppServerForwarder.forward"
+            with mock.patch(method_name_to_patch, forward_patch):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
                     "http://localhost:%d/whatever" % self.__class__.auth_server.port,

@@ -112,15 +112,14 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_app_server_forwarder_forward_patch):
-            aasf = async_app_server_forwarder.AsyncAppServerForwarder()
-            aasf.forward(
+            aasf = async_app_server_forwarder.AsyncAppServerForwarder(
                 the_request_method,
                 the_request_uri,
                 the_request_headers,
                 the_request_body,
                 the_request_owner,
-                the_request_identifier,
-                on_async_app_server_forward_done)
+                the_request_identifier)
+            aasf.forward(on_async_app_server_forward_done)
 
     def test_all_good_001(self):
         """Validate ```async_app_server_forwarder.AsyncAppServerForwarder```
@@ -266,12 +265,11 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_app_server_forwarder_forward_patch):
-            aasf = async_app_server_forwarder.AsyncAppServerForwarder()
-            aasf.forward(
+            aasf = async_app_server_forwarder.AsyncAppServerForwarder(
                 the_request_method,
                 the_request_uri,
                 the_request_headers,
                 the_request_body,
                 the_request_owner,
-                the_request_identifier,
-                on_async_app_server_forward_done)
+                the_request_identifier)
+            aasf.forward(on_async_app_server_forward_done)

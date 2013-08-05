@@ -28,6 +28,37 @@ app_server_auth_method = "DAS"
 
 class AsyncAppServerForwarder(object):
 
+    def __init__(self, method, uri, headers, body, owner, identifier):
+        object.__init__(self)
+        self._method = method
+        self._uri = uri
+        self._headers = headers
+        self._body = body
+        self._owner = owner
+        self._identifier = identifier
+
+    def forward(self, callback):
+
+        self._callback = callback
+
+        headers = tornado.httputil.HTTPHeaders(self._headers)
+        headers["Authorization"] = "%s %s %s" % (
+            app_server_auth_method,
+            self._owner,
+            self._identifier)
+
+        http_request = tornado.httpclient.HTTPRequest(
+            url="http://%s%s" % (app_server, self._uri),
+            method=self._method,
+            body=self._body,
+            headers=headers,
+            follow_redirects=False)
+
+        http_client = tornado.httpclient.AsyncHTTPClient()
+        http_client.fetch(
+            http_request,
+            self._on_forward_done)
+
     def _on_forward_done(self, response):
         if response.error:
             self._callback(False)
@@ -41,33 +72,3 @@ class AsyncAppServerForwarder(object):
             response.code,
             response.headers,
             body)
-
-    def forward(
-        self,
-        method,
-        uri,
-        headers,
-        body,
-        owner,
-        identifier,
-        callback):
-
-        self._callback = callback
-
-        headers = tornado.httputil.HTTPHeaders(headers)
-        headers["Authorization"] = "%s %s %s" % (
-            app_server_auth_method,
-            owner,
-            identifier)
-
-        http_request = tornado.httpclient.HTTPRequest(
-            url="http://%s%s" % (app_server, uri),
-            method=method,
-            body=body,
-            headers=headers,
-            follow_redirects=False)
-
-        http_client = tornado.httpclient.AsyncHTTPClient()
-        http_client.fetch(
-            http_request,
-            self._on_forward_done)

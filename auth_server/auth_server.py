@@ -80,15 +80,14 @@ class RequestHandler(trhutil.RequestHandler):
             
             return
 
-        aasf = async_app_server_forwarder.AsyncAppServerForwarder()
-        aasf.forward(
+        aasf = async_app_server_forwarder.AsyncAppServerForwarder(
             self.request.method,
             self.request.uri,
             self.request.headers,
             self.get_request_body_if_exists(),
             owner,
-            identifier,
-            self._on_app_server_done)
+            identifier)
+        aasf.forward(self._on_app_server_done)
 
     def _handle_request(self):
         aha = async_hmac_auth.AsyncHMACAuth(
