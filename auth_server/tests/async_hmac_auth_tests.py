@@ -229,3 +229,111 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                     request=request,
                     generate_debug_headers=False)
                 aha.validate(on_auth_done)
+
+    def _test_mac_good_or_bad(self, the_bad_mac):
+        """When a request contains an Authorization HTTP header that
+        correctly authenticates a caller."""
+
+        the_owner = "das@example.com"
+        the_mac_key_identifier = mac.MACKeyIdentifier.generate()
+        the_mac_key = mac.MACKey.generate()
+        the_mac_algorithm = mac.MAC.algorithm
+        the_ts = mac.Timestamp.generate()
+        the_nonce = mac.Nonce.generate()
+        the_body = None
+        the_content_type = None
+        the_ext = mac.Ext.generate(the_content_type, the_body)
+        the_host="localhost"
+        the_port=8080
+        the_method="GET"
+        the_uri="/whatever.html"
+        the_normalized_request_string = mac.NormalizedRequestString.generate(
+            the_ts,
+            the_nonce,
+            the_method,
+            the_uri,
+            the_host,
+            the_port,
+            the_ext)
+        if the_bad_mac is None:
+            the_mac = mac.MAC.generate(
+                the_mac_key,
+                the_mac_algorithm,
+                the_normalized_request_string)
+        else:
+            the_mac = the_bad_mac
+
+        def async_nonce_checker_fetch_patch(
+            ignore_async_nonce_checker,
+            callback,
+            mac_key_identifier,
+            nonce):
+            callback(True)
+
+        name_of_method_to_patch = "async_nonce_checker.AsyncNonceChecker.fetch"
+        with mock.patch(name_of_method_to_patch, async_nonce_checker_fetch_patch):
+
+            def async_creds_retriever_fetch_patch(
+                ignore_async_creds_retriever,
+                callback,
+                mac_key_identifier):
+
+                self.assertEqual(mac_key_identifier, the_mac_key_identifier)
+
+                is_ok = True if the_bad_mac is None else False
+                is_deleted = False,
+                callback(
+                    is_ok,
+                    the_mac_key_identifier,
+                    is_deleted,
+                    the_mac_algorithm,
+                    the_mac_key,
+                    the_owner)
+
+            name_of_method_to_patch = "async_creds_retriever.AsyncCredsRetriever.fetch"
+            with mock.patch(name_of_method_to_patch, async_creds_retriever_fetch_patch):
+
+                auth_header_value = mac.AuthHeaderValue(
+                    the_mac_key_identifier,
+                    the_ts,
+                    the_nonce,
+                    the_ext,
+                    the_mac)
+
+                request = mock.Mock()
+                request.method = the_method
+                request.uri = the_uri
+                request.headers = tornado.httputil.HTTPHeaders({
+                    "Host": ("%s:%d" % (the_host, the_port)),
+                    "Authorization": str(auth_header_value),
+                })
+                
+                def on_auth_done(
+                    is_auth_ok,
+                    auth_failure_detail=None,
+                    owner=None,
+                    identifier=None):
+
+                    self.assertIsNotNone(is_auth_ok)
+
+                    if the_bad_mac is None:
+                        self.assertTrue(is_auth_ok)
+
+                        self.assertIsNotNone(owner)
+                        self.assertEqual(owner, the_owner)
+
+                        self.assertIsNotNone(identifier)
+                        self.assertEqual(identifier, the_mac_key_identifier)
+                    else:
+                        self.assertFalse(is_auth_ok)
+
+                aha = async_hmac_auth.AsyncHMACAuth(
+                    request=request,
+                    generate_debug_headers=False)
+                aha.validate(on_auth_done)
+
+    def test_mac_bad(self):
+        self._test_mac_good_or_bad("dave")
+
+    def test_mac_good(self):
+        self._test_mac_good_or_bad(None)
