@@ -21,12 +21,15 @@ key_server = None
 class AsyncCredsRetriever(object):
     """Wraps the gory details of async crednetials retrieval."""
 
-    def fetch(self, callback, mac_key_identifier):
+    def __init__(self, mac_key_identifier):
+        object.__init__(self)
+        self._mac_key_identifier = mac_key_identifier
+
+    def fetch(self, callback):
         """Retrieve the credentials for ```mac_key_identifier```
         and when done call ```callback```."""
 
         self._callback = callback
-        self._mac_key_identifier = mac_key_identifier
 
         url = "http://%s/v1.0/creds/%s" % (
             key_server,

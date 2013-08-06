@@ -62,8 +62,8 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
-            acr = async_creds_retriever.AsyncCredsRetriever()
-            acr.fetch(on_async_creds_retriever_done, the_mac_key_identifier)
+            acr = async_creds_retriever.AsyncCredsRetriever(the_mac_key_identifier)
+            acr.fetch(on_async_creds_retriever_done)
 
     def test_key_server_tornado_http_error_response(self):
         """Confirm that when the key server returns an http error (as
@@ -88,8 +88,8 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
-            acr = async_creds_retriever.AsyncCredsRetriever()
-            acr.fetch(on_async_creds_retriever_done, the_mac_key_identifier)
+            acr = async_creds_retriever.AsyncCredsRetriever(the_mac_key_identifier)
+            acr.fetch(on_async_creds_retriever_done)
 
     def test_key_server_returns_zero_length_response(self):
         """Confirm that when the key server returns a zero length
@@ -118,8 +118,8 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
-            acr = async_creds_retriever.AsyncCredsRetriever()
-            acr.fetch(on_async_creds_retriever_done, the_mac_key_identifier)
+            acr = async_creds_retriever.AsyncCredsRetriever(the_mac_key_identifier)
+            acr.fetch(on_async_creds_retriever_done)
 
     def test_key_server_returns_non_json_response(self):
         """Confirm that when the key server returns a non-zero length
@@ -149,8 +149,8 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
-            acr = async_creds_retriever.AsyncCredsRetriever()
-            acr.fetch(on_async_creds_retriever_done, the_mac_key_identifier)
+            acr = async_creds_retriever.AsyncCredsRetriever(the_mac_key_identifier)
+            acr.fetch(on_async_creds_retriever_done)
 
     def test_key_server_returns_an_invalid_json_response(self):
         """Confirm that when the key server returns a valid JSON document
@@ -185,8 +185,8 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
-            acr = async_creds_retriever.AsyncCredsRetriever()
-            acr.fetch(on_async_creds_retriever_done, the_mac_key_identifier)
+            acr = async_creds_retriever.AsyncCredsRetriever(the_mac_key_identifier)
+            acr.fetch(on_async_creds_retriever_done)
 
     def test_key_server_returns_all_good(self):
         """Confirm that when the key server returns a valid JSON document
@@ -253,5 +253,5 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
-            acr = async_creds_retriever.AsyncCredsRetriever()
-            acr.fetch(on_async_creds_retriever_done, the_mac_key_identifier)
+            acr = async_creds_retriever.AsyncCredsRetriever(the_mac_key_identifier)
+            acr.fetch(on_async_creds_retriever_done)

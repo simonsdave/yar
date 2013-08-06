@@ -141,10 +141,8 @@ class AsyncHMACAuth(object):
         # next steps is to retrieve the credentials associated with
         # the request's mac key identifier and confirm the request's
         # MAC is valid ie. final step in confirming the sender's identity
-        acr = AsyncCredsRetriever()
-        acr.fetch(
-            self._on_async_creds_retriever_done,
-            self._auth_hdr_val.mac_key_identifier)
+        acr = AsyncCredsRetriever(self._auth_hdr_val.mac_key_identifier)
+        acr.fetch(self._on_async_creds_retriever_done)
 
     def validate(self, on_validate_done):
         self._on_validate_done = on_validate_done
@@ -178,8 +176,7 @@ class AsyncHMACAuth(object):
         # before. this means async'ly calling out to the memcached
         # cluster which stores previously used nonce+mac_key_identifer
         # combinations
-        anc = AsyncNonceChecker()
-        anc.fetch(
-            self._on_async_nonce_checker_done,
+        anc = AsyncNonceChecker(
             self._auth_hdr_val.mac_key_identifier,
             self._auth_hdr_val.nonce)
+        anc.fetch(self._on_async_nonce_checker_done)

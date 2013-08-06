@@ -23,7 +23,13 @@ class AsyncNonceChecker(object):
 
     _ccs = None
 
-    def fetch(self, callback, mac_key_identifier, nonce):
+    def __init__(self, mac_key_identifier, nonce):
+        object.__init__(self)
+
+        self._mac_key_identifier = mac_key_identifier
+        self._nonce = nonce
+
+    def fetch(self, callback):
         """Make an async request to the nonce store to
         determine if ```nonce``` has been used for
         ```mac_key_identifier```. If ```nonce``` has **not**
@@ -45,8 +51,6 @@ class AsyncNonceChecker(object):
                     maxclients=100)
 
             self._callback = callback
-            self._mac_key_identifier = mac_key_identifier
-            self._nonce = nonce
 
             self._key = "%s-%s" % (self._mac_key_identifier, self._nonce)
             _logger.info("Asking for nonce key '%s'", self._key)

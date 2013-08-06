@@ -150,11 +150,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                 auth_failure_detail,
                 async_hmac_auth.AUTH_FAILURE_DETAIL_NONCE_REUSED)
 
-        def async_nonce_checker_fetch_patch(
-            ignore_async_nonce_checker,
-            callback,
-            mac_key_identifier,
-            nonce):
+        def async_nonce_checker_fetch_patch(anc, callback):
             callback(False)
 
         name_of_method_to_patch = "async_nonce_checker.AsyncNonceChecker.fetch"
@@ -184,6 +180,8 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         ```async_hmac_auth.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND```
         detailed error code."""
 
+        the_mac_key_identifier = mac.MACKeyIdentifier.generate()
+
         def on_auth_done(is_auth_ok, auth_failure_detail):
 
             self.assertIsNotNone(is_auth_ok)
@@ -194,27 +192,20 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                 auth_failure_detail,
                 async_hmac_auth.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
 
-        def async_nonce_checker_fetch_patch(
-            ignore_async_nonce_checker,
-            callback,
-            mac_key_identifier,
-            nonce):
+        def async_nonce_checker_fetch_patch(anc, callback):
             callback(True)
 
         name_of_method_to_patch = "async_nonce_checker.AsyncNonceChecker.fetch"
         with mock.patch(name_of_method_to_patch, async_nonce_checker_fetch_patch):
 
-            def async_creds_retriever_fetch_patch(
-                ignore_async_creds_retriever,
-                callback,
-                mac_key_identifier):
-                callback(False, mac_key_identifier)
+            def async_creds_retriever_fetch_patch(acr, callback):
+                callback(False, the_mac_key_identifier)
 
             name_of_method_to_patch = "async_creds_retriever.AsyncCredsRetriever.fetch"
             with mock.patch(name_of_method_to_patch, async_creds_retriever_fetch_patch):
 
                 auth_header_value = mac.AuthHeaderValue(
-                    mac_key_identifier=mac.MACKeyIdentifier.generate(),
+                    mac_key_identifier=the_mac_key_identifier,
                     ts=mac.Timestamp.generate(),
                     nonce=mac.Nonce.generate(),
                     ext=mac.Ext.generate(content_type=None, body=None),
@@ -263,22 +254,13 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         else:
             the_mac = the_bad_mac
 
-        def async_nonce_checker_fetch_patch(
-            ignore_async_nonce_checker,
-            callback,
-            mac_key_identifier,
-            nonce):
+        def async_nonce_checker_fetch_patch(anc, callback):
             callback(True)
 
         name_of_method_to_patch = "async_nonce_checker.AsyncNonceChecker.fetch"
         with mock.patch(name_of_method_to_patch, async_nonce_checker_fetch_patch):
 
-            def async_creds_retriever_fetch_patch(
-                ignore_async_creds_retriever,
-                callback,
-                mac_key_identifier):
-
-                self.assertEqual(mac_key_identifier, the_mac_key_identifier)
+            def async_creds_retriever_fetch_patch(acr, callback):
 
                 is_ok = True if the_bad_mac is None else False
                 is_deleted = False,
