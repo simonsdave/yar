@@ -49,7 +49,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         aha = async_hmac_auth.AsyncHMACAuth(
             request=request,
             generate_debug_headers=False)
-        aha.validate(on_auth_done)
+        aha.authorize(on_auth_done)
 
     def test_invalid_authorization_header(self):
         """When a request contains an invalid Authorization HTTP header,
@@ -76,7 +76,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         aha = async_hmac_auth.AsyncHMACAuth(
             request=request,
             generate_debug_headers=False)
-        aha.validate(on_auth_done)
+        aha.authorize(on_auth_done)
 
     def _test_timestamp(self, ts_adjustment, expected_auth_failure_detail):
         """When a request contains Authorization HTTP header with a
@@ -108,7 +108,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         aha = async_hmac_auth.AsyncHMACAuth(
             request=request,
             generate_debug_headers=False)
-        aha.validate(on_auth_done)
+        aha.authorize(on_auth_done)
 
     def test_timestamp_in_future(self):
         """When a request contains Authorization HTTP header with a
@@ -170,7 +170,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
             aha = async_hmac_auth.AsyncHMACAuth(
                 request=request,
                 generate_debug_headers=False)
-            aha.validate(on_auth_done)
+            aha.authorize(on_auth_done)
 
     def test_creds_not_found(self):
         """When a request contains Authorization HTTP header with a
@@ -219,7 +219,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                 aha = async_hmac_auth.AsyncHMACAuth(
                     request=request,
                     generate_debug_headers=False)
-                aha.validate(on_auth_done)
+                aha.authorize(on_auth_done)
 
     def _test_mac_good_or_bad(self, the_bad_mac):
         """When a request contains an Authorization HTTP header that
@@ -312,7 +312,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                 aha = async_hmac_auth.AsyncHMACAuth(
                     request=request,
                     generate_debug_headers=False)
-                aha.validate(on_auth_done)
+                aha.authorize(on_auth_done)
 
     def test_mac_bad(self):
         self._test_mac_good_or_bad("dave")

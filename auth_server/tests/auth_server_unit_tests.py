@@ -57,12 +57,12 @@ class TestCase(yar_test_util.TestCase):
         yar_test_util.TestCase.tearDown(self)
 
     def test_hmac_auth_failed(self):
-        def validate_patch(an_async_hmac_auth, callback):
+        def authorize_patch(an_async_hmac_auth, callback):
             self.assertIsNotNone(an_async_hmac_auth)
             self.assertIsNotNone(callback)
             callback(False)
 
-        with mock.patch("async_hmac_auth.AsyncHMACAuth.validate", validate_patch):
+        with mock.patch("async_hmac_auth.AsyncHMACAuth.authorize", authorize_patch):
             http_client = httplib2.Http()
             response, content = http_client.request(
                 "http://localhost:%d/whatever" % self.__class__.auth_server.port,
@@ -75,11 +75,11 @@ class TestCase(yar_test_util.TestCase):
         the_owner = str(uuid.uuid4()).replace("-", "")
         the_identifier = str(uuid.uuid4()).replace("-", "")
 
-        def validate_patch(ignore_this_async_hmac_auth, callback):
+        def authorize_patch(ignore_this_async_hmac_auth, callback):
             self.assertIsNotNone(callback)
             callback(True, owner=the_owner, identifier=the_identifier)
 
-        with mock.patch("async_hmac_auth.AsyncHMACAuth.validate", validate_patch):
+        with mock.patch("async_hmac_auth.AsyncHMACAuth.authorize", authorize_patch):
             def forward_patch(ignore_async_app_server_forwarder, callback):
                 self.assertIsNotNone(callback)
                 callback(False)

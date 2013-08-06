@@ -93,7 +93,7 @@ class RequestHandler(trhutil.RequestHandler):
         aha = async_hmac_auth.AsyncHMACAuth(
             self.request,
             generate_debug_headers)
-        aha.validate(self._on_auth_done)
+        aha.authorize(self._on_auth_done)
 
     @tornado.web.asynchronous
     def get(self):
