@@ -4,7 +4,10 @@ nonce combination has been previously used."""
 
 import logging
 
-import tornadoasyncmemcache as memcache
+import tornadoasyncmemcache
+
+
+nonce_store = ['localhost:11211']
 
 
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
@@ -44,9 +47,9 @@ class AsyncNonceChecker(object):
         try:
             if self.__class__._ccs is None:
                 _logger.info(
-                    "Creating 'memcache.ClientPool()' for cluster '%s'",
+                    "Creating 'tornadoasyncmemcache.ClientPool()' for cluster '%s'",
                     nonce_store)
-                self.__class__._ccs = memcache.ClientPool(
+                self.__class__._ccs = tornadoasyncmemcache.ClientPool(
                     nonce_store,
                     maxclients=100)
 
