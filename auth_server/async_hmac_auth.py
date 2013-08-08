@@ -1,6 +1,7 @@
 """This module contains the core logic for implemenation
 an async HMAC validation."""
 
+import hashlib
 import logging
 
 import mac
