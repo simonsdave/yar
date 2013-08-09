@@ -21,49 +21,60 @@ class TestAsyncNonceChecker(yar_test_util.TestCase):
     def setUpClass(cls):
         async_nonce_checker.nonce_store = cls._nonce_store
 
-    @classmethod
-    def tearDownClass(cls):
-        pass
-
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
+    def _assertKey(self, mac_key_identifier, nonce, key):
+        """Execute a number of asserts to gain confidence
+        that ```key``` is the correct key to use when talking
+        with memcached for ```mac_key_identifier``` and
+        ```nonce```."""
+        self.assertIsNotNone(mac_key_identifier)
+        self.assertIsNotNone(nonce)
+        expected_key = "%s-%s" % (mac_key_identifier, nonce)
+        self.assertEqual(key, expected_key)
 
     def test_all_good(self):
         """..."""
 
-        the_mac_key_identifier = mac.MACKeyIdentifier.generate()
-        the_nonce = mac.Nonce.generate()
-
+        self._mac_key_identifier = mac.MACKeyIdentifier.generate()
+        self._nonce = mac.Nonce.generate()
             
-        def tornadoasyncmemcache_ClientPool_patch(nonce_store, maxclients):
-            print "ctr() - %s - %s" % (nonce_store, maxclients)
+        self._mock = None
+
+        def client_pool_class_patch(nonce_store, maxclients):
             self.assertIsNotNone(nonce_store)
             self.assertEqual(nonce_store, self.__class__._nonce_store)
+            self.assertIsNotNone(maxclients)
 
             def patched_get(key, callback):
-                print "get() - %s - %s" % (key, callback)
+                self._assertKey(self._mac_key_identifier, self._nonce, key)
+                # print "get()"
                 callback(None)
 
             def patched_set(key, value, callback):
-                print "set() - %s - %s" % (key, value)
+                self._assertKey(self._mac_key_identifier, self._nonce, key)
+                # print "set()"
+                self.assertIsNotNone(value)
+                self.assertEqual(value, 1)
                 callback(None)
-                self.assertFalse(True)
 
-            rv = mock.Mock()
-            rv.get.side_effect = patched_get
-            rv.set.side_effect = patched_set
-            return rv
+            self.assertIsNone(self._mock)
+            self._mock = mock.Mock()
+            self._mock.get.side_effect = patched_get
+            self._mock.set.side_effect = patched_set
+            return self._mock
 
-        with mock.patch("tornadoasyncmemcache.ClientPool", tornadoasyncmemcache_ClientPool_patch):
+        name_of_class_to_patch = "tornadoasyncmemcache.ClientPool"
+        with mock.patch(name_of_class_to_patch, client_pool_class_patch):
             def on_fetch_done(is_ok):
-                print "on_fetch_done()"
                 self.assertIsNotNone(is_ok)
                 self.assertTrue(is_ok)
+                # print "done()"
 
             aasf = async_nonce_checker.AsyncNonceChecker(
-                the_mac_key_identifier,
-                the_nonce)
+                self._mac_key_identifier,
+                self._nonce)
             aasf.fetch(on_fetch_done)
+            # print ""
+            # print '&'*50
+            # print self._mock.mock_calls
+            # print '^'*50
+            # self.assertTrue(False)
