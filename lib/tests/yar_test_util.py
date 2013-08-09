@@ -1,6 +1,7 @@
 """This module implements a collection of utilities for unit testing yar"""
 
 import json
+import re
 import socket
 import threading
 import unittest
@@ -107,3 +108,12 @@ class TestCase(unittest.TestCase):
         document but is not valid according to the JSON schema ```schema```."""
         self.assertIsJSON(str_that_should_not_be_valid_json)
         self.assertFalse(self._is_valid_json(str_that_should_not_be_valid_json, schema))
+
+    def assertIsJsonUtf8ContentType(self, content_type):
+        """Allows the caller to assert if ```content_type```
+        is valid for specifying utf8 json content in an http header. """
+        self.assertIsNotNone(content_type)
+        json_utf8_content_type_reg_ex = re.compile(
+            "^\s*application/json;\s+charset\=utf-{0,1}8\s*$",
+            re.IGNORECASE)
+        self.assertIsNotNone(json_utf8_content_type_reg_ex.match(content_type))

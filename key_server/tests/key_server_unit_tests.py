@@ -23,13 +23,13 @@ import tornado.web
 import jsonschemas
 import key_server
 import key_store.key_store_installer
-import testutil
+import yar_test_util
 
 
-class KeyServer(testutil.Server):
+class KeyServer(yar_test_util.Server):
 
     def __init__(self, key_store):
-        testutil.Server.__init__(self)
+        yar_test_util.Server.__init__(self)
 
         key_server._key_store = key_store
 
@@ -37,7 +37,7 @@ class KeyServer(testutil.Server):
         http_server.add_sockets([self.socket])
 
 
-class TestCase(testutil.TestCase):
+class TestCase(yar_test_util.TestCase):
 
     _database_name = None
 
@@ -46,7 +46,7 @@ class TestCase(testutil.TestCase):
         cls._database_name = "das%s" % str(uuid.uuid4()).replace("-", "")[:7]
         key_store.key_store_installer.create(cls._database_name)
         cls._key_server = KeyServer("localhost:5984/%s" % cls._database_name)
-        cls._ioloop = testutil.IOLoop()
+        cls._ioloop = yar_test_util.IOLoop()
         cls._ioloop.start()
 
     @classmethod
