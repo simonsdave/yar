@@ -49,7 +49,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         aha = async_hmac_auth.AsyncHMACAuth(
             request=request,
             generate_debug_headers=False)
-        aha.authorize(on_auth_done)
+        aha.authenticate(on_auth_done)
 
     def test_invalid_authorization_header(self):
         """When a request contains an invalid Authorization HTTP header,
@@ -76,13 +76,13 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         aha = async_hmac_auth.AsyncHMACAuth(
             request=request,
             generate_debug_headers=False)
-        aha.authorize(on_auth_done)
+        aha.authenticate(on_auth_done)
 
     def _test_timestamp(self, ts_adjustment, expected_auth_failure_detail):
         """When a request contains Authorization HTTP header with a
         timestamp that's old or in the fture,
         confirm that ```async_hmac_auth.AsyncHMACAuth``` tags this as an
-        authorization failure with ```expected_auth_failutre_detail```
+        authentication failure with ```expected_auth_failure_detail```
         detailed error code."""
 
         def on_auth_done(is_auth_ok, auth_failure_detail):
@@ -108,13 +108,13 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         aha = async_hmac_auth.AsyncHMACAuth(
             request=request,
             generate_debug_headers=False)
-        aha.authorize(on_auth_done)
+        aha.authenticate(on_auth_done)
 
     def test_timestamp_in_future(self):
         """When a request contains Authorization HTTP header with a
         timestamp that's in the future,
         confirm that ```async_hmac_auth.AsyncHMACAuth``` tags this as an
-        authorization failure with
+        authentication failure with
         ```async_hmac_auth.AUTH_FAILURE_DETAIL_TS_IN_FUTURE```
         detailed error code."""
         self._test_timestamp(
@@ -125,7 +125,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         """When a request contains Authorization HTTP header with a
         timestamp that's in the past,
         confirm that ```async_hmac_auth.AsyncHMACAuth``` tags this as an
-        authorization failure with
+        authentication failure with
         ```async_hmac_auth.AUTH_FAILURE_DETAIL_TS_OLD```
         detailed error code."""
         self._test_timestamp(
@@ -136,7 +136,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         """When a request contains Authorization HTTP header with a
         nonce that's been seen before,
         confirm that ```async_hmac_auth.AsyncHMACAuth``` tags this as an
-        authorization failure with
+        authentication failure with
         ```async_hmac_auth.AUTH_FAILURE_DETAIL_NONCE_REUSED```
         detailed error code."""
 
@@ -170,13 +170,13 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
             aha = async_hmac_auth.AsyncHMACAuth(
                 request=request,
                 generate_debug_headers=False)
-            aha.authorize(on_auth_done)
+            aha.authenticate(on_auth_done)
 
     def test_creds_not_found(self):
         """When a request contains Authorization HTTP header with a
         mac key identifier that the key server doesn't know about,
         confirm that ```async_hmac_auth.AsyncHMACAuth``` tags this as an
-        authorization failure with
+        authentication failure with
         ```async_hmac_auth.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND```
         detailed error code."""
 
@@ -219,7 +219,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                 aha = async_hmac_auth.AsyncHMACAuth(
                     request=request,
                     generate_debug_headers=False)
-                aha.authorize(on_auth_done)
+                aha.authenticate(on_auth_done)
 
     def _test_mac_good_or_bad(self, the_method, the_bad_mac, generate_debug_headers):
         """When a request contains an Authorization HTTP header that
@@ -338,7 +338,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                 aha = async_hmac_auth.AsyncHMACAuth(
                     request=request,
                     generate_debug_headers=generate_debug_headers)
-                aha.authorize(on_auth_done)
+                aha.authenticate(on_auth_done)
 
     def test_mac_bad_and_do_not_generate_debug_headers(self):
         self._test_mac_good_or_bad(

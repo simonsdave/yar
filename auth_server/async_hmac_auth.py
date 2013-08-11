@@ -19,7 +19,7 @@ maxage = 30
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
 
-# these constants define detailed MAC authorization failure reasons
+# these constants define detailed MAC authentication failure reasons
 AUTH_FAILURE_DETAIL_TS_IN_FUTURE =              0x0001
 AUTH_FAILURE_DETAIL_TS_OLD =                    0x0002
 AUTH_FAILURE_DETAIL_NO_AUTH_HEADER =            0x0003
@@ -49,7 +49,7 @@ class AsyncHMACAuth(object):
             _logger.info(
                 "No MAC credentials found for '%s'",
                 self._request.full_url())
-            self._on_authorize_done(False, AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
+            self._on_auth_done(False, AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
             return
 
         (host, port) = get_request_host_and_port(self._request, "localhost", 80)
@@ -79,9 +79,9 @@ class AsyncHMACAuth(object):
                 self._request.full_url(),
                 mac_key_identifier,
                 self._auth_hdr_val.mac)
-            # When an authorization failure occurs it can be super hard
+            # When an authentication failure occurs it can be super hard
             # to figure out the root cause of the error. This method is called
-            # on authorization failure and, if logging is set to at least
+            # on authentication failure and, if logging is set to at least
             # debug, a whole series of HTTP headers are set to return the
             # core elements that are used to generate the HMAC.
             debug_headers = {}
@@ -107,7 +107,7 @@ class AsyncHMACAuth(object):
                     normalized_request_string)
 
             # end of pumping out debug headers - returning to regular headers
-            self._on_authorize_done(
+            self._on_auth_done(
                 False,
                 auth_failure_detail=AUTH_FAILURE_DETAIL_HMACS_DO_NOT_MATCH,
                 debug_headers=debug_headers)
@@ -118,7 +118,7 @@ class AsyncHMACAuth(object):
             self._request.full_url(),
             self._auth_hdr_val.mac)
 
-        self._on_authorize_done(
+        self._on_auth_done(
             True,
             owner=owner,
             identifier=mac_key_identifier)
@@ -130,7 +130,7 @@ class AsyncHMACAuth(object):
         seen before."""
         if not is_ok:
             _logger.info("Nonce '%s' reused", self._auth_hdr_val.nonce)
-            self._on_authorize_done(False, AUTH_FAILURE_DETAIL_NONCE_REUSED)
+            self._on_auth_done(False, AUTH_FAILURE_DETAIL_NONCE_REUSED)
             return
 
         # basic request looks good
@@ -145,17 +145,17 @@ class AsyncHMACAuth(object):
         acr = AsyncCredsRetriever(self._auth_hdr_val.mac_key_identifier)
         acr.fetch(self._on_async_creds_retriever_done)
 
-    def authorize(self, on_authorize_done):
-        self._on_authorize_done = on_authorize_done
+    def authenticate(self, on_auth_done):
+        self._on_auth_done = on_auth_done
 
         auth_hdr_val = self._request.headers.get("Authorization", None)
         if auth_hdr_val is None:
-            self._on_authorize_done(False, AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
+            self._on_auth_done(False, AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
             return
 
         self._auth_hdr_val = mac.AuthHeaderValue.parse(auth_hdr_val)
         if self._auth_hdr_val is None:
-            self._on_authorize_done(False, AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER)
+            self._on_auth_done(False, AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER)
             return
 
         # confirm the request isn't old which is important in protecting
@@ -166,11 +166,11 @@ class AsyncHMACAuth(object):
         if age < 0:
             # :TODO: timestamp in the future - bad - clocks out of sync?
             # do we want to allow clocks to be a wee bit ouf of sync?
-            self._on_authorize_done(False, AUTH_FAILURE_DETAIL_TS_IN_FUTURE)
+            self._on_auth_done(False, AUTH_FAILURE_DETAIL_TS_IN_FUTURE)
             return
 
         if maxage < age:
-            self._on_authorize_done(False, AUTH_FAILURE_DETAIL_TS_OLD)
+            self._on_auth_done(False, AUTH_FAILURE_DETAIL_TS_OLD)
             return
 
         # time to confirm if the nonce in the request has been used
