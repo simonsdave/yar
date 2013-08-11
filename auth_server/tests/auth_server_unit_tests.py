@@ -32,15 +32,37 @@ _forward_method_name_to_patch = "async_app_server_forwarder.AsyncAppServerForwar
 class AuthServer(yar_test_util.Server):
     """Mock auth server."""
 
-    def __init__(self, generate_debug_headers=False):
+    def __init__(self):
         """Creates an instance of the auth server and starts the
         server listenting on a random, available port."""
         yar_test_util.Server.__init__(self)
 
-        auth_server.generate_debug_headers = generate_debug_headers
-
         http_server = tornado.httpserver.HTTPServer(auth_server._app)
         http_server.add_sockets([self.socket])
+
+
+class DebugHeadersDict(dict):
+
+    lc_debug_header_prefix = \
+        auth_server.debug_header_prefix.lower()
+    lc_auth_failure_detail_header_name = \
+        auth_server.auth_failure_detail_header_name.lower()
+
+    def __init__(self, response):
+        dict.__init__(self)
+
+        for k, v in response.iteritems():
+            if self._is_debug_header_key(k):
+                self[k[len(self.__class__.lc_debug_header_prefix):]] = v 
+
+    def _is_debug_header_key(self, key):
+        lc_key = key.lower()
+        if not lc_key.startswith(self.__class__.lc_debug_header_prefix):
+            return False
+        if self.__class__.lc_auth_failure_detail_header_name == lc_key:
+            return False
+        return True
+
 
 class TestCase(yar_test_util.TestCase):
     """```TestCase``` contains all the unit tests for the
@@ -90,25 +112,14 @@ class TestCase(yar_test_util.TestCase):
         then assert all of these authorization failure debug HTTP headers
         and only these headers appear in ```response```."""
         self.assertIsNotNone(response)
-        # :TODO: why do I have to do this lower()?
-        debug_header_prefix_lower_case = auth_server.debug_header_prefix.lower()
-        auth_failure_detail_header_name_lower_case = auth_server.auth_failure_detail_header_name.lower()
-        def _is_debug_header_key(key):
-            key_lower_case = key.lower()
-            if not key_lower_case.startswith(debug_header_prefix_lower_case):
-                return False
-            if auth_failure_detail_header_name_lower_case == key_lower_case:
-                return False
-            return True
 
-        debug_headers_in_response = {
-            # :TODO: why do I have to do this lower()?
-            k[len(debug_header_prefix_lower_case):]: v for k, v in response.iteritems() if _is_debug_header_key(k)
-        }
+        debug_headers_in_response = DebugHeadersDict(response)
         if debug_headers is None:
-            print debug_headers_in_response
             self.assertTrue(0 == len(debug_headers_in_response))
         else:
+            # :TODO: this comparision only works because DebugHeadersDict
+            # converts keys to lowercase and ```debug_headers``` has
+            # no upper case key
             self.assertEqual(
                 debug_headers,
                 debug_headers_in_response)
@@ -179,13 +190,13 @@ class TestCase(yar_test_util.TestCase):
                     the_auth_failure_detail)
                 self.assertAuthorizationDebugHeaders(response)
 
-    def test_hmac_auth_failed_debug_headers_in_auth_server_response(self):
+    def test_auth_failure_debug_details_in_auth_server_response(self):
         """This test confirms that when the authenication
         mechanism supplies debug headers
         that the debug headers are the auth server's HTTP response."""
 
         prefix = auth_server.debug_header_prefix.lower()
-        the_debug_headers = {
+        the_auth_failure_debug_details = {
             str(uuid.uuid4()).replace("-", ""): str(uuid.uuid4()).replace("-", ""),
             str(uuid.uuid4()).replace("-", ""): str(uuid.uuid4()).replace("-", ""),
             str(uuid.uuid4()).replace("-", ""): str(uuid.uuid4()).replace("-", ""),
@@ -196,7 +207,7 @@ class TestCase(yar_test_util.TestCase):
             self.assertIsNotNone(callback)
             callback(
                 is_auth_ok=False,
-                debug_headers=the_debug_headers)
+                auth_failure_debug_details=the_auth_failure_debug_details)
 
         with mock.patch(_auth_method_name_to_patch, authenticate_patch):
             def forward_patch(ignore_async_app_server_forwarder, callback):
@@ -214,7 +225,7 @@ class TestCase(yar_test_util.TestCase):
                 self.assertAuthorizationFailureDetail(response)
                 self.assertAuthorizationDebugHeaders(
                     response,
-                    the_debug_headers)
+                    the_auth_failure_debug_details)
 
     def test_forward_to_app_server_failed(self):
         """Verify that when async the foward to the app server fails,
@@ -239,7 +250,7 @@ class TestCase(yar_test_util.TestCase):
                 self.assertIsNotNone(response)
                 self.assertEqual(response.status, httplib.INTERNAL_SERVER_ERROR)
 
-    def test_forward_all_good(self):
+    def _test_forward_all_good(self, the_method):
         """Verify that when async the foward to the app server fails,
         that the response is ```httplib.INTERNAL_SERVER_ERROR```."""
         the_owner = str(uuid.uuid4()).replace("-", "")
@@ -272,6 +283,18 @@ class TestCase(yar_test_util.TestCase):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
                     "http://localhost:%d/whatever" % self.__class__.auth_server.port,
-                    "GET")
+                    the_method)
                 self.assertIsNotNone(response)
                 self.assertEqual(response.status, the_status_code)
+
+    def test_forward_all_good_get(self):
+        self._test_forward_all_good("GET")
+
+    def test_forward_all_good_post(self):
+        self._test_forward_all_good("POST")
+
+    def test_forward_all_good_put(self):
+        self._test_forward_all_good("PUT")
+
+    def test_forward_all_good_delete(self):
+        self._test_forward_all_good("DELETE")
