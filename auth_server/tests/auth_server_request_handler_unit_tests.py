@@ -1,4 +1,5 @@
-"""This module contains unit tests for the auth server's auth_server module."""
+"""This module contains unit tests for the auth server's
+auth_server_request_handler module."""
 
 import httplib
 import logging
@@ -16,7 +17,7 @@ import tornado.web
 
 import yar_test_util
 
-import auth_server
+import auth_server_request_handler
 
 
 _logger = logging.getLogger(__name__)
@@ -25,8 +26,10 @@ _logger = logging.getLogger(__name__)
 """```_auth_method_name_to_patch``` and ```_forward_method_name_to_patch```
 are the names of methods that need to be mocked so that auth_server's
 functionality can be isolated for unit testing."""
-_auth_method_name_to_patch = "async_hmac_auth.AsyncHMACAuth.authenticate"
-_forward_method_name_to_patch = "async_app_server_forwarder.AsyncAppServerForwarder.forward"
+_auth_method_name_to_patch = \
+    "async_hmac_auth.AsyncHMACAuth.authenticate"
+_forward_method_name_to_patch = \
+    "async_app_server_forwarder.AsyncAppServerForwarder.forward"
 
 
 class AuthServer(yar_test_util.Server):
@@ -37,16 +40,20 @@ class AuthServer(yar_test_util.Server):
         server listenting on a random, available port."""
         yar_test_util.Server.__init__(self)
 
-        http_server = tornado.httpserver.HTTPServer(auth_server._app)
+        handlers = [
+            (r".*", auth_server_request_handler.RequestHandler),
+        ]
+        app = tornado.web.Application(handlers=handlers)
+        http_server = tornado.httpserver.HTTPServer(app)
         http_server.add_sockets([self.socket])
 
 
 class DebugHeadersDict(dict):
 
     lc_debug_header_prefix = \
-        auth_server.debug_header_prefix.lower()
+        auth_server_request_handler.debug_header_prefix.lower()
     lc_auth_failure_detail_header_name = \
-        auth_server.auth_failure_detail_header_name.lower()
+        auth_server_request_handler.auth_failure_detail_header_name.lower()
 
     def __init__(self, response):
         dict.__init__(self)
@@ -95,7 +102,7 @@ class TestCase(yar_test_util.TestCase):
         self.assertIsNotNone(response)
         auth_failure_detail_header_value = response.get(
             # :TODO: why do I have to do this lower()?
-            auth_server.auth_failure_detail_header_name.lower(),
+            auth_server_request_handler.auth_failure_detail_header_name.lower(),
             None)
         if auth_failure_detail is None:
             self.assertIsNone(auth_failure_detail_header_value)
@@ -195,7 +202,7 @@ class TestCase(yar_test_util.TestCase):
         mechanism supplies debug headers
         that the debug headers are the auth server's HTTP response."""
 
-        prefix = auth_server.debug_header_prefix.lower()
+        prefix = auth_server_request_handler.debug_header_prefix.lower()
         the_auth_failure_debug_details = {
             str(uuid.uuid4()).replace("-", ""): str(uuid.uuid4()).replace("-", ""),
             str(uuid.uuid4()).replace("-", ""): str(uuid.uuid4()).replace("-", ""),
