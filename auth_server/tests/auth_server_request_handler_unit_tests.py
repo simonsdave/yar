@@ -52,23 +52,40 @@ class DebugHeadersDict(dict):
 
     lc_debug_header_prefix = \
         auth_server_request_handler.debug_header_prefix.lower()
+
     lc_auth_failure_detail_header_name = \
         auth_server_request_handler.auth_failure_detail_header_name.lower()
 
     def __init__(self, response):
         dict.__init__(self)
 
-        for k, v in response.iteritems():
-            if self._is_debug_header_key(k):
-                self[k[len(self.__class__.lc_debug_header_prefix):]] = v 
+        self.auth_failure_detail = None
+
+        len_lc_debug_header_prefix = len(self.__class__.lc_debug_header_prefix)
+        for key, value in response.iteritems():
+            if self._is_auth_failure_detail_header_key(key):
+                self.auth_failure_detail = value
+            else:
+                if self._is_debug_header_key(key):
+                    self[key[len_lc_debug_header_prefix:]] = value 
 
     def _is_debug_header_key(self, key):
         lc_key = key.lower()
         if not lc_key.startswith(self.__class__.lc_debug_header_prefix):
             return False
-        if self.__class__.lc_auth_failure_detail_header_name == lc_key:
+        if self._is_auth_failure_detail_header_key(key):
             return False
         return True
+
+    def _is_auth_failure_detail_header_key(self, key):
+        return self.__class__.lc_auth_failure_detail_header_name == key.lower()
+
+    def is_equal(self, debug_headers):
+        if debug_headers is None:
+            return False
+        lc_self = {k.lower(): v for k, v in self.iteritems()}
+        lc_debug_headers = {k.lower(): v for k, v in debug_headers.iteritems()}
+        return lc_self == lc_debug_headers
 
 
 class TestCase(yar_test_util.TestCase):
@@ -100,10 +117,8 @@ class TestCase(yar_test_util.TestCase):
         then assert an authorization failure detail HTTP header appears
         in ```response``` with a value equal to ```auth_failure_detail```."""
         self.assertIsNotNone(response)
-        auth_failure_detail_header_value = response.get(
-            # :TODO: why do I have to do this lower()?
-            auth_server_request_handler.auth_failure_detail_header_name.lower(),
-            None)
+        debug_headers_in_response = DebugHeadersDict(response)
+        auth_failure_detail_header_value = debug_headers_in_response.auth_failure_detail
         if auth_failure_detail is None:
             self.assertIsNone(auth_failure_detail_header_value)
         else:
@@ -117,19 +132,13 @@ class TestCase(yar_test_util.TestCase):
         authorization failure debug HTTP headers appear in
         ```response```. If ```debug_headers``` is not None
         then assert all of these authorization failure debug HTTP headers
-        and only these headers appear in ```response```."""
+        and only these debug headers appear in ```response```."""
         self.assertIsNotNone(response)
-
         debug_headers_in_response = DebugHeadersDict(response)
         if debug_headers is None:
             self.assertTrue(0 == len(debug_headers_in_response))
         else:
-            # :TODO: this comparision only works because DebugHeadersDict
-            # converts keys to lowercase and ```debug_headers``` has
-            # no upper case key
-            self.assertEqual(
-                debug_headers,
-                debug_headers_in_response)
+            self.assertTrue(debug_headers_in_response.is_equal(debug_headers))
 
     def test_hmac_auth_failed(self):
         """Verify that when async authentication fails, the response
