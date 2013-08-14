@@ -3,7 +3,7 @@ credentials from the key store."""
 
 import logging
 
-from ks_util import _filter_out_non_model_creds_properties
+from ks_util import filter_out_non_model_creds_properties
 from ks_util import AsyncAction
 
 
@@ -60,7 +60,7 @@ class AsyncCredsRetriever(AsyncAction):
                     if self._is_filter_out_deleted:
                         continue
                 if self._is_filter_out_non_model_properties:
-                    doc = _filter_out_non_model_creds_properties(doc)
+                    doc = filter_out_non_model_creds_properties(doc)
                 rv.append(doc)
         else:
             is_creds_collection = False
@@ -68,7 +68,7 @@ class AsyncCredsRetriever(AsyncAction):
                 rv = None
             else:
                 if self._is_filter_out_non_model_properties:
-                    body = _filter_out_non_model_creds_properties(body)
+                    body = filter_out_non_model_creds_properties(body)
                 rv = body
         assert is_creds_collection is not None
 

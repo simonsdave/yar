@@ -6,7 +6,7 @@ import logging
 
 import mac
 
-from ks_util import _filter_out_non_model_creds_properties
+from ks_util import filter_out_non_model_creds_properties
 from ks_util import AsyncAction
 
 
@@ -44,5 +44,5 @@ class AsyncCredsCreator(AsyncAction):
             self._callback(None)
             return
 
-        creds = _filter_out_non_model_creds_properties(self._creds)
+        creds = filter_out_non_model_creds_properties(self._creds)
         self._callback(creds)

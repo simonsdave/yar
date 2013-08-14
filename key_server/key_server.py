@@ -15,7 +15,6 @@ from clparser import CommandLineParser
 from async_creds_creator import AsyncCredsCreator
 from async_creds_retriever import AsyncCredsRetriever
 from async_creds_deleter import AsyncCredsDeleter
-from ks_util import _filter_out_non_model_creds_properties
 
 """Format of this string is host:port/database. It's used to construct
 a URL when talking to the key store."""
