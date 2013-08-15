@@ -40,6 +40,9 @@ class AsyncAction(object):
     tests super."""
 
     def __init__(self, key_store):
+        """```AsyncAction```'s constructor.
+        ```key_store``` is expected to convert to a string
+        of the form 'host:port'."""
         object.__init__(self)
         self.key_store = key_store
 
@@ -70,7 +73,13 @@ class AsyncAction(object):
             callback=self._http_client_fetch_callback)
 
     def _http_client_fetch_callback(self, response):
+        """Called when ```tornado.httpclient.AsyncHTTPClient``` completes."""
+        if response.error:
+            self._my_callback(False)
+            return
+
         wrapped_response = trhutil.Response(response)
         self._my_callback(
+            True,
             response.code,
             wrapped_response.get_json_body())

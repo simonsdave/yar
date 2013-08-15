@@ -111,9 +111,11 @@ class TestCaseAsyncAction(yar_test_util.TestCase):
             self.assertIsNotNone(callback)
             callback(response)
 
-        def on_async_req_to_key_store_done(http_status_code, body):
+        def on_async_req_to_key_store_done(is_ok, http_status_code=None, body=None):
             """Called when ```ks_util.AsyncAction.async_req_to_key_store```
             completes."""
+            self.assertTrue(is_ok)
+
             self.assertIsNotNone(http_status_code)
             self.assertEqual(http_status_code, httplib.OK)
 
@@ -190,12 +192,12 @@ class TestCaseAsyncAction(yar_test_util.TestCase):
 
             callback(response)
 
-        def on_async_req_to_key_store_done(http_status_code, body):
+        def on_async_req_to_key_store_done(is_ok, http_status_code=None, body=None):
             """Called when ```ks_util.AsyncAction.async_req_to_key_store```
             completes."""
-            self.assertIsNotNone(http_status_code)
-            self.assertEqual(http_status_code, httplib.INTERNAL_SERVER_ERROR)
+            self.assertFalse(is_ok)
 
+            self.assertIsNone(http_status_code)
             self.assertIsNone(body)
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"

@@ -39,8 +39,8 @@ class AsyncCredsCreator(AsyncAction):
             self._creds,
             self._my_callback)
 
-    def _my_callback(self, code, body):
-        if code != httplib.CREATED:
+    def _my_callback(self, is_ok, code=None, body=None):
+        if not is_ok or code != httplib.CREATED:
             self._callback(None)
             return
 

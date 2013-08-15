@@ -45,8 +45,8 @@ class AsyncCredsRetriever(AsyncAction):
             None,
             self._my_callback)
 
-    def _my_callback(self, code, body):
-        if not body:
+    def _my_callback(self, is_ok, code=None, body=None):
+        if not is_ok or not body:
             self._callback(None, None)
             return
 
