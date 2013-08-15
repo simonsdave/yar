@@ -50,7 +50,7 @@ class AsyncAction(object):
         body,
         callback):
 
-        self._requestors_callback = callback
+        self._my_callback = callback
 
         json_encoded_body = json.dumps(body) if body else None
 
@@ -71,6 +71,6 @@ class AsyncAction(object):
 
     def _http_client_fetch_callback(self, response):
         wrapped_response = trhutil.Response(response)
-        code = response.code
-        body = wrapped_response.get_json_body()
-        self._requestors_callback(code, body)
+        self._my_callback(
+            response.code,
+            wrapped_response.get_json_body())
