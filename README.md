@@ -89,7 +89,7 @@ MAC_KEY=d9c_PQf58YF-c30TrfBsgY_lMRirNg93qgKBkMN2Fak
 MAC_ALGORITHM=hmac-sha-1
 ~~~~~
 
-* start Nonce Store: if memcached isn't already running, in a new terminal window start memcached using
+* start the Nonce Store: if memcached isn't already running, in a new terminal window start memcached using
 the following command - by default memcached listens on port 11211
 
 ~~~~~
