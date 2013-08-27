@@ -27,36 +27,36 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
 
         def async_req_to_key_store_patch(
             acc,
-            mac_key_identifier,
-            http_method,
-            creds,
+            path,
+            method,
+            body,
             callback):
 
             self.assertIsNotNone(acc)
 
-            self.assertIsNotNone(mac_key_identifier)
+            self.assertIsNotNone(path)
 
-            self.assertIsNotNone(http_method)
-            self.assertEqual(http_method, "PUT")
+            self.assertIsNotNone(method)
+            self.assertEqual(method, "PUT")
 
-            self.assertIsNotNone(creds)
+            self.assertIsNotNone(body)
 
-            self.assertIn("owner", creds)
-            self.assertEqual(creds["owner"], self.the_owner)
+            self.assertIn("owner", body)
+            self.assertEqual(body["owner"], self.the_owner)
 
-            self.assertIn("mac_key_identifier", creds)
-            self.assertEqual(creds["mac_key_identifier"], mac_key_identifier)
+            self.assertIn("mac_key_identifier", body)
+            self.assertEqual(body["mac_key_identifier"], path)
 
-            self.assertIn("mac_key", creds)
+            self.assertIn("mac_key", body)
 
-            self.assertIn("mac_algorithm", creds)
-            self.assertIn(creds["mac_algorithm"], mac.MAC.algorithm)
+            self.assertIn("mac_algorithm", body)
+            self.assertIn(body["mac_algorithm"], mac.MAC.algorithm)
 
-            self.assertIn("type", creds)
-            self.assertEqual(creds["type"], "cred_v1.0")
+            self.assertIn("type", body)
+            self.assertEqual(body["type"], "cred_v1.0")
 
-            self.assertIn("is_deleted", creds)
-            self.assertFalse(creds["is_deleted"])
+            self.assertIn("is_deleted", body)
+            self.assertFalse(body["is_deleted"])
 
             self.assertIsNotNone(callback)
             callback(is_ok=the_is_ok, code=the_http_status_code)

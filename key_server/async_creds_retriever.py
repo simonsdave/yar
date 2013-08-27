@@ -1,6 +1,7 @@
 """This module contains functionality to async'ly retrieve
 credentials from the key store."""
 
+import httplib
 import logging
 
 from ks_util import filter_out_non_model_creds_properties
@@ -46,7 +47,7 @@ class AsyncCredsRetriever(AsyncAction):
             self._my_callback)
 
     def _my_callback(self, is_ok, code=None, body=None):
-        if not is_ok or not body:
+        if not is_ok or httplib.OK != code or body is None:
             self._callback(None, None)
             return
 
