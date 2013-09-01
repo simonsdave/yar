@@ -21,7 +21,7 @@ import tornado.options
 import tornado.web
 
 import jsonschemas
-import key_server
+import key_server_request_handler
 import key_store.key_store_installer
 import yar_test_util
 
@@ -31,9 +31,14 @@ class KeyServer(yar_test_util.Server):
     def __init__(self, key_store):
         yar_test_util.Server.__init__(self)
 
-        key_server._key_store = key_store
+        key_server_request_handler._key_store = key_store
 
-        http_server = tornado.httpserver.HTTPServer(key_server._tornado_app)
+        handlers = [
+            (r"/v1.0/creds(?:/([^/]+))?", key_server_request_handler.RequestHandler),
+        ]
+        app = tornado.web.Application(handlers=handlers)
+
+        http_server = tornado.httpserver.HTTPServer(app)
         http_server.add_sockets([self.socket])
 
 
