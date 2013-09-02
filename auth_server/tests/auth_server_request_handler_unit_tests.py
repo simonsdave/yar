@@ -2,7 +2,6 @@
 auth_server_request_handler module."""
 
 import httplib
-import logging
 import os
 import sys
 import unittest
@@ -18,19 +17,6 @@ import tornado.web
 import yar_test_util
 
 import auth_server_request_handler
-
-
-_logger = logging.getLogger(__name__)
-
-
-"""```_auth_method_name_to_patch``` and ```_forward_method_name_to_patch```
-are the names of methods that need to be mocked so that auth_server's
-functionality can be isolated for unit testing."""
-_auth_method_name_to_patch = \
-    "async_hmac_auth.AsyncHMACAuth.authenticate"
-_forward_method_name_to_patch = \
-    "async_app_server_forwarder.AsyncAppServerForwarder.forward"
-
 
 class AuthServer(yar_test_util.Server):
     """Mock auth server."""
@@ -157,12 +143,12 @@ class TestCase(yar_test_util.TestCase):
             self.assertIsNotNone(callback)
             callback(is_auth_ok=False)
 
-        with mock.patch(_auth_method_name_to_patch, authenticate_patch):
+        with mock.patch("async_hmac_auth.AsyncHMACAuth.authenticate", authenticate_patch):
             def forward_patch(ignore_async_app_server_forwarder, callback):
                 """This should never be called when authentication fails."""
                 self.assertTrue(False)
 
-            with mock.patch(_forward_method_name_to_patch, forward_patch):
+            with mock.patch("async_app_server_forwarder.AsyncAppServerForwarder.forward", forward_patch):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
                     "http://localhost:%d/whatever" % self.__class__.auth_server.port,
@@ -188,12 +174,12 @@ class TestCase(yar_test_util.TestCase):
                 is_auth_ok=False,
                 auth_failure_detail=the_auth_failure_detail)
 
-        with mock.patch(_auth_method_name_to_patch, authenticate_patch):
+        with mock.patch("async_hmac_auth.AsyncHMACAuth.authenticate", authenticate_patch):
             def forward_patch(ignore_async_app_server_forwarder, callback):
                 """This should never be called when authentication fails."""
                 self.assertTrue(False)
 
-            with mock.patch(_forward_method_name_to_patch, forward_patch):
+            with mock.patch("async_app_server_forwarder.AsyncAppServerForwarder.forward", forward_patch):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
                     "http://localhost:%d/whatever" % self.__class__.auth_server.port,
@@ -225,12 +211,12 @@ class TestCase(yar_test_util.TestCase):
                 is_auth_ok=False,
                 auth_failure_debug_details=the_auth_failure_debug_details)
 
-        with mock.patch(_auth_method_name_to_patch, authenticate_patch):
+        with mock.patch("async_hmac_auth.AsyncHMACAuth.authenticate", authenticate_patch):
             def forward_patch(ignore_async_app_server_forwarder, callback):
                 """This should never be called when authentication fails."""
                 self.assertTrue(False)
 
-            with mock.patch(_forward_method_name_to_patch, forward_patch):
+            with mock.patch("async_app_server_forwarder.AsyncAppServerForwarder.forward", forward_patch):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
                     "http://localhost:%d/whatever" % self.__class__.auth_server.port,
@@ -253,12 +239,12 @@ class TestCase(yar_test_util.TestCase):
             self.assertIsNotNone(callback)
             callback(True, owner=the_owner, identifier=the_identifier)
 
-        with mock.patch(_auth_method_name_to_patch, authenticate_patch):
+        with mock.patch("async_hmac_auth.AsyncHMACAuth.authenticate", authenticate_patch):
             def forward_patch(ignore_async_app_server_forwarder, callback):
                 self.assertIsNotNone(callback)
                 callback(False)
 
-            with mock.patch(_forward_method_name_to_patch, forward_patch):
+            with mock.patch("async_app_server_forwarder.AsyncAppServerForwarder.forward", forward_patch):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
                     "http://localhost:%d/whatever" % self.__class__.auth_server.port,
@@ -286,7 +272,7 @@ class TestCase(yar_test_util.TestCase):
                 owner=the_owner,
                 identifier=the_identifier)
 
-        with mock.patch(_auth_method_name_to_patch, authenticate_patch):
+        with mock.patch("async_hmac_auth.AsyncHMACAuth.authenticate", authenticate_patch):
             def forward_patch(ignore_async_app_server_forwarder, callback):
                 self.assertIsNotNone(callback)
                 callback(
@@ -295,7 +281,7 @@ class TestCase(yar_test_util.TestCase):
                     headers=the_headers,
                     body=the_body)
 
-            with mock.patch(_forward_method_name_to_patch, forward_patch):
+            with mock.patch("async_app_server_forwarder.AsyncAppServerForwarder.forward", forward_patch):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
                     "http://localhost:%d/whatever" % self.__class__.auth_server.port,
