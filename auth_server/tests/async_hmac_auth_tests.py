@@ -201,7 +201,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
             def async_creds_retriever_fetch_patch(acr, callback):
                 callback(False, the_mac_key_identifier)
 
-            name_of_method_to_patch = "async_creds_retriever.AsyncCredsRetriever.fetch"
+            name_of_method_to_patch = "async_hmac_creds_retriever.AsyncHMACCredsRetriever.fetch"
             with mock.patch(name_of_method_to_patch, async_creds_retriever_fetch_patch):
 
                 auth_header_value = mac.AuthHeaderValue(
@@ -279,7 +279,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                     the_mac_key,
                     the_owner)
 
-            name_of_method_to_patch = "async_creds_retriever.AsyncCredsRetriever.fetch"
+            name_of_method_to_patch = "async_hmac_creds_retriever.AsyncHMACCredsRetriever.fetch"
             with mock.patch(name_of_method_to_patch, async_creds_retriever_fetch_patch):
 
                 auth_header_value = mac.AuthHeaderValue(

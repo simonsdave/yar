@@ -1,11 +1,10 @@
 """This module implements the unit tests for the auth server's
-async_creds_retriever module."""
+async_hmac_creds_retriever module."""
 
 import httplib
 import json
 import os
 import sys
-
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import mock
@@ -16,19 +15,19 @@ import yar_test_util
 import mac
 import jsonschemas
 
-import async_creds_retriever
+import async_hmac_creds_retriever
 
-class TestAsyncCredsRetriever(yar_test_util.TestCase):
+class TestAsyncHMACCredsRetriever(yar_test_util.TestCase):
 
     _key_server = "dave:42"
 
     @classmethod
     def setUpClass(cls):
-        async_creds_retriever.key_server = cls._key_server
+        async_hmac_creds_retriever.key_server = cls._key_server
 
     @classmethod
     def tearDownClass(cls):
-        async_creds_retriever.key_server = None
+        async_hmac_creds_retriever.key_server = None
 
     def assertKeyServerRequestOk(self, request, mac_key_identifier):
         self.assertIsNotNone(request)
@@ -44,7 +43,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         """Confirm that when the key server returns an error (as
         in a tornado response.error) that this is flagged as an
         error to the callback of the fetch method of
-        ```AsyncCredsRetriever```."""
+        ```AsyncHMACCredsRetriever```."""
         the_mac_key_identifier = mac.MACKeyIdentifier.generate()
 
         def async_http_client_fetch_patch(http_client, request, callback):
@@ -54,7 +53,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             response.error = "something"
             callback(response)
 
-        def on_async_creds_retriever_done(is_ok, mac_key_identifier):
+        def on_async_hmac_creds_retriever_done(is_ok, mac_key_identifier):
             self.assertIsNotNone(is_ok)
             self.assertFalse(is_ok)
             self.assertIsNotNone(mac_key_identifier)
@@ -62,14 +61,14 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
-            acr = async_creds_retriever.AsyncCredsRetriever(the_mac_key_identifier)
-            acr.fetch(on_async_creds_retriever_done)
+            acr = async_hmac_creds_retriever.AsyncHMACCredsRetriever(the_mac_key_identifier)
+            acr.fetch(on_async_hmac_creds_retriever_done)
 
     def test_key_server_tornado_http_error_response(self):
         """Confirm that when the key server returns an http error (as
         a non httplib.ok response.code) that this is flagged as an
         error to the callback of the fetch method of
-        ```AsyncCredsRetriever```."""
+        ```AsyncHMACCredsRetriever```."""
         the_mac_key_identifier = mac.MACKeyIdentifier.generate()
 
         def async_http_client_fetch_patch(http_client, request, callback):
@@ -80,7 +79,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             response.code = httplib.NOT_FOUND
             callback(response)
 
-        def on_async_creds_retriever_done(is_ok, mac_key_identifier):
+        def on_async_hmac_creds_retriever_done(is_ok, mac_key_identifier):
             self.assertIsNotNone(is_ok)
             self.assertFalse(is_ok)
             self.assertIsNotNone(mac_key_identifier)
@@ -88,13 +87,13 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
-            acr = async_creds_retriever.AsyncCredsRetriever(the_mac_key_identifier)
-            acr.fetch(on_async_creds_retriever_done)
+            acr = async_hmac_creds_retriever.AsyncHMACCredsRetriever(the_mac_key_identifier)
+            acr.fetch(on_async_hmac_creds_retriever_done)
 
     def test_key_server_returns_zero_length_response(self):
         """Confirm that when the key server returns a zero length
         response this is flagged as an error to the callback the
-        fetch method of ```AsyncCredsRetriever```."""
+        fetch method of ```AsyncHMACCredsRetriever```."""
         the_mac_key_identifier = mac.MACKeyIdentifier.generate()
 
         def async_http_client_fetch_patch(http_client, request, callback):
@@ -110,7 +109,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             response.body = ""
             callback(response)
 
-        def on_async_creds_retriever_done(is_ok, mac_key_identifier):
+        def on_async_hmac_creds_retriever_done(is_ok, mac_key_identifier):
             self.assertIsNotNone(is_ok)
             self.assertFalse(is_ok)
             self.assertIsNotNone(mac_key_identifier)
@@ -118,13 +117,13 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
-            acr = async_creds_retriever.AsyncCredsRetriever(the_mac_key_identifier)
-            acr.fetch(on_async_creds_retriever_done)
+            acr = async_hmac_creds_retriever.AsyncHMACCredsRetriever(the_mac_key_identifier)
+            acr.fetch(on_async_hmac_creds_retriever_done)
 
     def test_key_server_returns_non_json_response(self):
         """Confirm that when the key server returns a non-zero length
         response that is not JSON this is flagged as an error to the callback
-        the fetch method of ```AsyncCredsRetriever```."""
+        the fetch method of ```AsyncHMACCredsRetriever```."""
         the_mac_key_identifier = mac.MACKeyIdentifier.generate()
 
         def async_http_client_fetch_patch(http_client, request, callback):
@@ -141,7 +140,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             })
             callback(response)
 
-        def on_async_creds_retriever_done(is_ok, mac_key_identifier):
+        def on_async_hmac_creds_retriever_done(is_ok, mac_key_identifier):
             self.assertIsNotNone(is_ok)
             self.assertFalse(is_ok)
             self.assertIsNotNone(mac_key_identifier)
@@ -149,13 +148,13 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
-            acr = async_creds_retriever.AsyncCredsRetriever(the_mac_key_identifier)
-            acr.fetch(on_async_creds_retriever_done)
+            acr = async_hmac_creds_retriever.AsyncHMACCredsRetriever(the_mac_key_identifier)
+            acr.fetch(on_async_hmac_creds_retriever_done)
 
     def test_key_server_returns_an_invalid_json_response(self):
         """Confirm that when the key server returns a valid JSON document
         but the JSON contains unexpected properties is flagged as an error
-        to the callback the fetch method of ```AsyncCredsRetriever```."""
+        to the callback the fetch method of ```AsyncHMACCredsRetriever```."""
         the_mac_key_identifier = mac.MACKeyIdentifier.generate()
 
         def async_http_client_fetch_patch(http_client, request, callback):
@@ -177,7 +176,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             })
             callback(response)
 
-        def on_async_creds_retriever_done(is_ok, mac_key_identifier):
+        def on_async_hmac_creds_retriever_done(is_ok, mac_key_identifier):
             self.assertIsNotNone(is_ok)
             self.assertFalse(is_ok)
             self.assertIsNotNone(mac_key_identifier)
@@ -185,13 +184,13 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
-            acr = async_creds_retriever.AsyncCredsRetriever(the_mac_key_identifier)
-            acr.fetch(on_async_creds_retriever_done)
+            acr = async_hmac_creds_retriever.AsyncHMACCredsRetriever(the_mac_key_identifier)
+            acr.fetch(on_async_hmac_creds_retriever_done)
 
     def test_key_server_returns_all_good(self):
         """Confirm that when the key server returns a valid JSON document
         but the JSON contains unexpected properties is flagged as an error
-        to the callback the fetch method of ```AsyncCredsRetriever```."""
+        to the callback the fetch method of ```AsyncHMACCredsRetriever```."""
         the_mac_key_identifier = mac.MACKeyIdentifier.generate()
         the_is_deleted = False
         the_mac_algorithm = "hmac-sha-1"
@@ -225,7 +224,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             })
             callback(response)
 
-        def on_async_creds_retriever_done(
+        def on_async_hmac_creds_retriever_done(
             is_ok,
             mac_key_identifier,
             is_deleted,
@@ -253,5 +252,5 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
-            acr = async_creds_retriever.AsyncCredsRetriever(the_mac_key_identifier)
-            acr.fetch(on_async_creds_retriever_done)
+            acr = async_hmac_creds_retriever.AsyncHMACCredsRetriever(the_mac_key_identifier)
+            acr.fetch(on_async_hmac_creds_retriever_done)

@@ -18,7 +18,7 @@ _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 key_server = None
 
 
-class AsyncCredsRetriever(object):
+class AsyncHMACCredsRetriever(object):
     """Wraps the gory details of async crednetials retrieval."""
 
     def __init__(self, mac_key_identifier):
