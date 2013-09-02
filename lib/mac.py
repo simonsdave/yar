@@ -28,10 +28,7 @@ def _hexify(bytes):
     Returns None if ```bytes``` is None."""
     if bytes is None:
         return None
-    try:
-        return binascii.b2a_hex(bytes)
-    except TypeError:
-        return None
+    return binascii.b2a_hex(bytes)
 
 
 def _dehexify(bytes_encoded_as_hex_string):
@@ -230,9 +227,6 @@ class MAC(str):
         """Generate a request's MAC given a normalized request sring (aka
         a summary of the key elements of the request, the mac key and
         the algorithm."""
-        if normalized_request_string is None:
-            return None
-
         keyczar_hmac_key = mac_key.as_keyczar_hmac_key()
         return cls(_hexify(keyczar_hmac_key.Sign(normalized_request_string)))
 

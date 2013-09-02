@@ -16,6 +16,19 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 import mac
 
 
+class HexifyTestCase(unittest.TestCase):
+
+    def test_bytes_is_none(self):
+        self.assertIsNone(mac._hexify(None))
+
+class DehexifyTestCase(unittest.TestCase):
+
+    def test_bytes_encoded_as_hex_string_is_none(self):
+        self.assertIsNone(mac._dehexify(None))
+
+    def test_bytes_encoded_as_hex_string_not_decodable(self):
+        self.assertIsNone(mac._dehexify("dave was here"))
+
 class MACKeyTestCase(unittest.TestCase):
 
     def test_generate_returns_non_none_MACKey(self):
