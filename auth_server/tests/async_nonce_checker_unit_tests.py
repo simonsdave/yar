@@ -32,10 +32,10 @@ class TestAsyncNonceChecker(yar_test_util.TestCase):
         self.assertEqual(key, expected_key)
 
     def test_all_good(self):
-        """..."""
 
         self._mac_key_identifier = mac.MACKeyIdentifier.generate()
         self._nonce = mac.Nonce.generate()
+        self._nonce_store = {}
             
         self._mock = None
 
@@ -46,14 +46,13 @@ class TestAsyncNonceChecker(yar_test_util.TestCase):
 
             def patched_get(key, callback):
                 self._assertKey(self._mac_key_identifier, self._nonce, key)
-                # print "get()"
-                callback(None)
+                callback(self._nonce_store.get(key, None))
 
             def patched_set(key, value, callback):
                 self._assertKey(self._mac_key_identifier, self._nonce, key)
-                # print "set()"
                 self.assertIsNotNone(value)
                 self.assertEqual(value, 1)
+                self._nonce_store[key] = value
                 callback(None)
 
             self.assertIsNone(self._mock)
@@ -67,14 +66,17 @@ class TestAsyncNonceChecker(yar_test_util.TestCase):
             def on_fetch_done(is_ok):
                 self.assertIsNotNone(is_ok)
                 self.assertTrue(is_ok)
-                # print "done()"
 
             aasf = async_nonce_checker.AsyncNonceChecker(
                 self._mac_key_identifier,
                 self._nonce)
             aasf.fetch(on_fetch_done)
-            # print ""
-            # print '&'*50
-            # print self._mock.mock_calls
-            # print '^'*50
-            # self.assertTrue(False)
+
+            def on_fetch_done(is_ok):
+                self.assertIsNotNone(is_ok)
+                self.assertFalse(is_ok)
+
+            aasf = async_nonce_checker.AsyncNonceChecker(
+                self._mac_key_identifier,
+                self._nonce)
+            aasf.fetch(on_fetch_done)
