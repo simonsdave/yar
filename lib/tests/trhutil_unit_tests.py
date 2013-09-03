@@ -7,15 +7,91 @@ import os
 import sys
 import unittest
 import uuid
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+import mock
 import tornado.web
 import tornado.testing
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import trhutil
 
 def _uuid():
     return str(uuid.uuid4()).replace("-", "")
+
+
+class IsJSONContentTypeTestCase(unittest.TestCase):
+
+    def test_none_content_type(self):
+        self.assertFalse(trhutil._is_json_content_type(None))
+
+    def test_valid_content_type_001(self):
+        self.assertTrue(trhutil._is_json_content_type("application/json"))
+
+    def test_valid_content_type_002(self):
+        self.assertTrue(trhutil._is_json_content_type("  application/json"))
+
+    def test_valid_content_type_003(self):
+        self.assertTrue(trhutil._is_json_content_type("application/json   "))
+
+    def test_valid_content_type_004(self):
+        self.assertTrue(trhutil._is_json_content_type("application/JSON"))
+
+    def test_invalid_content_type(self):
+        self.assertFalse(trhutil._is_json_content_type("dave"))
+
+
+class IsJSONUTF8ContentTypeTestCase(unittest.TestCase):
+
+    def test_none_content_type(self):
+        self.assertFalse(trhutil._is_json_utf8_content_type(None))
+
+    def test_valid_content_type_001(self):
+        self.assertFalse(trhutil._is_json_utf8_content_type("application/json;charset=utf-8"))
+
+    def test_valid_content_type_002(self):
+        self.assertTrue(trhutil._is_json_utf8_content_type("APPLICATION/json; charset=utf-8"))
+
+    def test_valid_content_type_003(self):
+        self.assertTrue(trhutil._is_json_utf8_content_type("application/json;  charset=utf-8"))
+
+    def test_valid_content_type_004(self):
+        self.assertTrue(trhutil._is_json_utf8_content_type("  application/json; charset=utf-8"))
+
+    def test_valid_content_type_005(self):
+        self.assertTrue(trhutil._is_json_utf8_content_type("application/json; charset=utf-8   "))
+
+    def test_valid_content_type_006(self):
+        self.assertTrue(trhutil._is_json_utf8_content_type("application/json; charset=utf8"))
+
+    def test_invalid_content_type(self):
+        self.assertFalse(trhutil._is_json_utf8_content_type("dave"))
+
+
+class GetRequestBodyIfExists(unittest.TestCase):
+
+    def test_no_content_length_or_transfer_encoding_headers(self):
+        request = mock.Mock()
+        request.headers = {}
+        self.assertIsNone(trhutil.get_request_body_if_exists(request, None))
+
+    def test_content_length_in_headers_but_no_body(self):
+        request = mock.Mock()
+        request.headers = {"Content-Length": 10}
+        request.body = None
+        self.assertIsNone(trhutil.get_request_body_if_exists(request, None))
+
+    def test_all_good_001(self):
+        request = mock.Mock()
+        request.headers = {"Content-Length": 10}
+        request.body = "dave was here"
+        self.assertEqual(trhutil.get_request_body_if_exists(request, None), request.body)
+
+    def test_all_good_002(self):
+        request = mock.Mock()
+        request.headers = {"Transfer-Encoding": 10}
+        request.body = "dave was here"
+        self.assertEqual(trhutil.get_request_body_if_exists(request, None), request.body)
+
 
 class GetRequestHostAndPortRequestHandler(trhutil.RequestHandler):
 
@@ -35,6 +111,7 @@ class GetRequestHostAndPortRequestHandler(trhutil.RequestHandler):
         }
         self.write(response_body)
         self.set_status(httplib.OK)
+
 
 class GetRequestHostAndPortTestCase(tornado.testing.AsyncHTTPTestCase):
 
@@ -87,6 +164,7 @@ class GetRequestHostAndPortTestCase(tornado.testing.AsyncHTTPTestCase):
             RequestHandler.host_if_not_found,
             RequestHandler.port_if_not_found)
 
+
 class GetRequestIfExistsRequestHandler(trhutil.RequestHandler):
 
     body_if_not_found = _uuid()
@@ -105,6 +183,7 @@ class GetRequestIfExistsRequestHandler(trhutil.RequestHandler):
         }
         self.write(response_body)
         self.set_status(httplib.OK)
+
 
 class GetRequestHostAndPortTestCase(tornado.testing.AsyncHTTPTestCase):
 
@@ -160,6 +239,7 @@ class GetRequestHostAndPortTestCase(tornado.testing.AsyncHTTPTestCase):
             GetRequestHostAndPortRequestHandler.host_if_not_found,
             GetRequestHostAndPortRequestHandler.port_if_not_found)
 
+
 class GetRequestBodyIfExistsRequestHandler(trhutil.RequestHandler):
 
     body_if_not_found = _uuid()
@@ -174,6 +254,7 @@ class GetRequestBodyIfExistsRequestHandler(trhutil.RequestHandler):
             self.__class__.body_if_not_found)
         self.write(response_body)
         self.set_status(httplib.OK)
+
 
 class GetRequestBodyIfExistsTestCase(tornado.testing.AsyncHTTPTestCase):
 
@@ -211,6 +292,7 @@ class GetRequestBodyIfExistsTestCase(tornado.testing.AsyncHTTPTestCase):
             GetRequestBodyIfExistsRequestHandler.body_if_not_found,
             delete_content_length=True)
 
+
 class GetJSONRequestBodyRequestHandler(trhutil.RequestHandler):
 
     body_if_not_found = json.dumps({"uuid": _uuid()})
@@ -225,6 +307,7 @@ class GetJSONRequestBodyRequestHandler(trhutil.RequestHandler):
             self.__class__.body_if_not_found)
         self.write(response_body)
         self.set_status(httplib.OK)
+
 
 class GetJSONRequestBodyIfExistsTestCase(tornado.testing.AsyncHTTPTestCase):
 
