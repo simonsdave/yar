@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """This module contains the core logic for the authenication server.
 The server uses implements MAC Access Authentication."""
 
