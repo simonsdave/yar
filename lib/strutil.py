@@ -9,9 +9,8 @@ def make_http_header_value_friendly(value):
     be used as the value for an HTTP header."""
     if value is None:
         return "<None>"
-    if value is not str:
-        value = str(value)
-    value = value.replace('\n', '\\n')
-    value = value.replace('\r', '\\r')
-    value = value.replace('\t', '\\t')
+    value = str(value)
+    value = value.replace("\n", "\\n")
+    value = value.replace("\r", "\\r")
+    value = value.replace("\t", "\\t")
     return value
