@@ -78,7 +78,7 @@ def get_request_body_if_exists(request, value_if_not_found=None):
         transfer_encoding = request.headers.get(
             "Transfer-Encoding",
             None)
-        if not transfer_encoding:
+        if transfer_encoding is None:
             return value_if_not_found
     if request.body is None:
         return value_if_not_found
@@ -164,7 +164,7 @@ class Response(object):
             transfer_encoding = self._response.headers.get(
                 "Transfer-Encoding",
                 None)
-            if not transfer_encoding:
+            if transfer_encoding is None:
                 return value_if_not_found
 
         content_type = self._response.headers.get("Content-type", None)

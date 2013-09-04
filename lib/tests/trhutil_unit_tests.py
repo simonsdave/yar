@@ -67,30 +67,51 @@ class IsJSONUTF8ContentTypeTestCase(unittest.TestCase):
         self.assertFalse(trhutil._is_json_utf8_content_type("dave"))
 
 
-class GetRequestBodyIfExists(unittest.TestCase):
+class GetRequestBodyIfExistsTestCase(unittest.TestCase):
 
-    def test_no_content_length_or_transfer_encoding_headers(self):
+    def test_no_content_length_or_transfer_encoding_headers_001(self):
         request = mock.Mock()
         request.headers = {}
-        self.assertIsNone(trhutil.get_request_body_if_exists(request, None))
+        self.assertIsNone(trhutil.get_request_body_if_exists(request))
 
-    def test_content_length_in_headers_but_no_body(self):
+    def test_no_content_length_or_transfer_encoding_headers_002(self):
+        request = mock.Mock()
+        request.headers = {}
+        value_if_not_found = "bindle"
+        self.assertEqual(
+            trhutil.get_request_body_if_exists(request, value_if_not_found),
+            value_if_not_found)
+
+    def test_content_length_in_headers_but_no_body_001(self):
         request = mock.Mock()
         request.headers = {"Content-Length": 10}
         request.body = None
-        self.assertIsNone(trhutil.get_request_body_if_exists(request, None))
+        self.assertIsNone(trhutil.get_request_body_if_exists(request))
+
+    def test_content_length_in_headers_but_no_body_002(self):
+        request = mock.Mock()
+        request.headers = {"Content-Length": 10}
+        request.body = None
+        value_if_not_found = "bindle"
+        self.assertEqual(
+            trhutil.get_request_body_if_exists(request, value_if_not_found),
+            value_if_not_found)
 
     def test_all_good_001(self):
         request = mock.Mock()
         request.headers = {"Content-Length": 10}
         request.body = "dave was here"
-        self.assertEqual(trhutil.get_request_body_if_exists(request, None), request.body)
+        self.assertEqual(
+            trhutil.get_request_body_if_exists(request),
+            request.body)
 
     def test_all_good_002(self):
         request = mock.Mock()
         request.headers = {"Transfer-Encoding": 10}
         request.body = "dave was here"
-        self.assertEqual(trhutil.get_request_body_if_exists(request, None), request.body)
+        self.assertEqual(
+            trhutil.get_request_body_if_exists(request),
+            request.body)
 
 
 class GetRequestHostAndPortRequestHandler(trhutil.RequestHandler):
@@ -360,3 +381,56 @@ class GetJSONRequestBodyIfExistsTestCase(tornado.testing.AsyncHTTPTestCase):
             body,
             expected_body=GetJSONRequestBodyRequestHandler.body_if_not_found,
             content_type="dave")
+
+class ResponseTestCase(unittest.TestCase):
+
+    def test_response_arg_is_none_001(self):
+        response = trhutil.Response(None)
+        self.assertIsNone(response.get_json_body())
+
+    def test_response_arg_is_none_002(self):
+        response = trhutil.Response(None)
+        value_if_not_found = "dave"
+        self.assertEqual(
+            response.get_json_body(value_if_not_found),
+            value_if_not_found)
+
+    def test_response_code_is_not_ok_001(self):
+        response_mock = mock.Mock()
+        response_mock.code = httplib.INTERNAL_SERVER_ERROR
+        response = trhutil.Response(response_mock)
+        self.assertIsNone(response.get_json_body())
+
+    def test_response_code_is_not_ok_002(self):
+        response_mock = mock.Mock()
+        response_mock.code = httplib.INTERNAL_SERVER_ERROR
+        response = trhutil.Response(response_mock)
+        value_if_not_found = "dave"
+        self.assertEqual(
+            response.get_json_body(value_if_not_found),
+            value_if_not_found)
+
+    # :TODO: add tests for content-length & transfer-encoding headers
+
+    def test_response_content_type_001(self):
+        response_mock = mock.Mock()
+        response_mock.code = httplib.OK
+        response_mock.headers = {
+            "Content-length": 10,
+            "Content-type": "bindle",
+        }
+        response = trhutil.Response(response_mock)
+        self.assertIsNone(response.get_json_body())
+
+    def test_response_content_type_002(self):
+        response_mock = mock.Mock()
+        response_mock.code = httplib.OK
+        response_mock.headers = {
+            "Content-length": 10,
+            "Content-type": "bindle",
+        }
+        response = trhutil.Response(response_mock)
+        value_if_not_found = "dave"
+        self.assertEqual(
+            response.get_json_body(value_if_not_found),
+            value_if_not_found)
