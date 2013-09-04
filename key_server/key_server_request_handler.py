@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """This module contains the key server's primary
 Tornado request handler logic."""
 
