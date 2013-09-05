@@ -41,9 +41,5 @@ class AsyncCredsDeleter(AsyncAction):
             creds,
             self._on_response_from_key_store_to_put_for_delete)
 
-    def _on_response_from_key_store_to_put_for_delete(
-        self,
-        is_ok,
-        code=None,
-        body=None):
+    def _on_response_from_key_store_to_put_for_delete(self, is_ok, code=None, body=None):
         self._callback(is_ok and code == httplib.CREATED)
