@@ -75,9 +75,7 @@ def get_request_body_if_exists(request, value_if_not_found=None):
     return ```value_if_not_found```."""
     content_length = request.headers.get("Content-Length", None)
     if content_length is None:
-        transfer_encoding = request.headers.get(
-            "Transfer-Encoding",
-            None)
+        transfer_encoding = request.headers.get("Transfer-Encoding", None)
         if transfer_encoding is None:
             return value_if_not_found
     if request.body is None:
@@ -159,8 +157,8 @@ class Response(object):
         if httplib.OK != self._response.code:
             return value_if_not_found
 
-        content_length = self._response.headers.get("Content-length", 0)
-        if 0 == content_length:
+        content_length = self._response.headers.get("Content-length", None)
+        if content_length is None:
             transfer_encoding = self._response.headers.get(
                 "Transfer-Encoding",
                 None)
@@ -177,7 +175,7 @@ class Response(object):
         except:
             return value_if_not_found
 
-        if schema:
+        if schema is not None:
             try:
                 jsonschema.validate(body, schema)
             except Exception as ex:

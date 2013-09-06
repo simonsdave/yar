@@ -134,7 +134,7 @@ class GetRequestHostAndPortRequestHandler(trhutil.RequestHandler):
         self.set_status(httplib.OK)
 
 
-class GetRequestHostAndPortTestCase(tornado.testing.AsyncHTTPTestCase):
+class GetRequestHostAndPortRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
 
     def get_app(self):
         handlers = [(r".*", GetRequestHostAndPortRequestHandler), ]
@@ -206,7 +206,7 @@ class GetRequestIfExistsRequestHandler(trhutil.RequestHandler):
         self.set_status(httplib.OK)
 
 
-class GetRequestHostAndPortTestCase(tornado.testing.AsyncHTTPTestCase):
+class GetRequestHostAndPortRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
 
     def get_app(self):
         handlers = [(r".*", GetRequestHostAndPortRequestHandler), ]
@@ -277,7 +277,7 @@ class GetRequestBodyIfExistsRequestHandler(trhutil.RequestHandler):
         self.set_status(httplib.OK)
 
 
-class GetRequestBodyIfExistsTestCase(tornado.testing.AsyncHTTPTestCase):
+class GetRequestBodyIfExistsRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
 
     def get_app(self):
         handlers = [(r".*", GetRequestBodyIfExistsRequestHandler), ]
@@ -330,7 +330,7 @@ class GetJSONRequestBodyRequestHandler(trhutil.RequestHandler):
         self.set_status(httplib.OK)
 
 
-class GetJSONRequestBodyIfExistsTestCase(tornado.testing.AsyncHTTPTestCase):
+class GetJSONRequestBodyTestCase(tornado.testing.AsyncHTTPTestCase):
 
     def get_app(self):
         handlers = [(r".*", GetJSONRequestBodyRequestHandler), ]
@@ -382,37 +382,81 @@ class GetJSONRequestBodyIfExistsTestCase(tornado.testing.AsyncHTTPTestCase):
             expected_body=GetJSONRequestBodyRequestHandler.body_if_not_found,
             content_type="dave")
 
-class ResponseTestCase(unittest.TestCase):
+class ResponseGetJSONBodyTestCase(unittest.TestCase):
+    """A collection of unit tests to validate the behavior
+    of ```trutil.Response.get_json_body()"""
+
+    def _run_failure_scenario(self, response, value_if_not_found, schema=None):
+        if value_if_not_found is None:
+            self.assertIsNone(response.get_json_body(schema=schema))
+        else:
+            self.assertEqual(
+                response.get_json_body(value_if_not_found, schema=schema),
+                value_if_not_found)
+
+    def _test_response_arg_is_none(self, value_if_not_found):
+        response = trhutil.Response(None)
+
+        self._run_failure_scenario(response, value_if_not_found)
 
     def test_response_arg_is_none_001(self):
-        response = trhutil.Response(None)
-        self.assertIsNone(response.get_json_body())
+        value_if_not_found = None
+        self._test_response_arg_is_none(value_if_not_found)
 
     def test_response_arg_is_none_002(self):
-        response = trhutil.Response(None)
         value_if_not_found = "dave"
-        self.assertEqual(
-            response.get_json_body(value_if_not_found),
-            value_if_not_found)
+        self._test_response_arg_is_none(value_if_not_found)
+
+    def _test_response_code_is_not_ok(self, value_if_not_found):
+        response_mock = mock.Mock()
+        response_mock.code = httplib.INTERNAL_SERVER_ERROR
+        response = trhutil.Response(response_mock)
+
+        self._run_failure_scenario(response, value_if_not_found)
 
     def test_response_code_is_not_ok_001(self):
-        response_mock = mock.Mock()
-        response_mock.code = httplib.INTERNAL_SERVER_ERROR
-        response = trhutil.Response(response_mock)
-        self.assertIsNone(response.get_json_body())
+        value_if_not_found = None
+        self._test_response_code_is_not_ok(value_if_not_found)
 
     def test_response_code_is_not_ok_002(self):
-        response_mock = mock.Mock()
-        response_mock.code = httplib.INTERNAL_SERVER_ERROR
-        response = trhutil.Response(response_mock)
         value_if_not_found = "dave"
-        self.assertEqual(
-            response.get_json_body(value_if_not_found),
-            value_if_not_found)
+        self._test_response_code_is_not_ok(value_if_not_found)
 
-    # :TODO: add tests for content-length & transfer-encoding headers
+    def _test_response_no_content_length_and_no_transfer_encoding(self, value_if_not_found):
+        response_mock = mock.Mock()
+        response_mock.code = httplib.OK
+        response_mock.headers = {}
+        response = trhutil.Response(response_mock)
 
-    def test_response_content_type_001(self):
+        self._run_failure_scenario(response, value_if_not_found)
+
+    def test_response_no_content_length_and_no_transfer_encoding_001(self):
+        value_if_not_found = None
+        self._test_response_no_content_length_and_no_transfer_encoding(value_if_not_found)
+
+    def test_response_no_content_length_and_no_transfer_encoding_002(self):
+        value_if_not_found = "dave"
+        self._test_response_no_content_length_and_no_transfer_encoding(value_if_not_found)
+
+    def _test_response_no_content_length_but_has_transfer_encoding(self, value_if_not_found):
+        response_mock = mock.Mock()
+        response_mock.code = httplib.OK
+        response_mock.headers = {
+            "Transfer-Encoding": "what goes here",
+        }
+        response = trhutil.Response(response_mock)
+
+        self._run_failure_scenario(response, value_if_not_found)
+
+    def test_response_no_content_length_but_has_transfer_encoding_001(self):
+        value_if_not_found = None
+        self._test_response_no_content_length_but_has_transfer_encoding(value_if_not_found)
+
+    def test_response_no_content_length_but_has_transfer_encoding_002(self):
+        value_if_not_found = None
+        self._test_response_no_content_length_but_has_transfer_encoding(value_if_not_found)
+
+    def _test_response_bad_content_type(self, value_if_not_found):
         response_mock = mock.Mock()
         response_mock.code = httplib.OK
         response_mock.headers = {
@@ -420,17 +464,119 @@ class ResponseTestCase(unittest.TestCase):
             "Content-type": "bindle",
         }
         response = trhutil.Response(response_mock)
-        self.assertIsNone(response.get_json_body())
 
-    def test_response_content_type_002(self):
+        self._run_failure_scenario(response, value_if_not_found)
+
+    def test_response_bad_content_type_001(self):
+        value_if_not_found = None
+        self._test_response_bad_content_type(value_if_not_found)
+
+    def test_response_bad_content_type_002(self):
+        value_if_not_found = "dave"
+        self._test_response_bad_content_type(value_if_not_found)
+
+    # different json content types
+
+    def _test_response_body_not_json(self, value_if_not_found):
         response_mock = mock.Mock()
         response_mock.code = httplib.OK
+        response_mock.body = "dave"
         response_mock.headers = {
-            "Content-length": 10,
-            "Content-type": "bindle",
+            "Content-length": len(response_mock.body),
+            "Content-type": "application/json; charset=utf-8",
         }
         response = trhutil.Response(response_mock)
+
+        self._run_failure_scenario(response, value_if_not_found)
+
+    def test_response_body_not_json_001(self):
+        value_if_not_found = None
+        self._test_response_body_not_json(value_if_not_found)
+
+    def test_response_body_not_json_002(self):
         value_if_not_found = "dave"
-        self.assertEqual(
-            response.get_json_body(value_if_not_found),
-            value_if_not_found)
+        self._test_response_body_not_json(value_if_not_found)
+
+    def _test_response_body_jsonschmea_validation_failure(self, value_if_not_found):
+        schema = {
+            "type": "object",
+            "properties": {
+                "dave": {
+                    "type": "boolean"
+                },
+            },
+            "required": [
+                "dave",
+            ],
+            "additionalProperties": False,
+        }
+        body = {
+            "dave": "string that causes validation to fail"
+        }
+        response_mock = mock.Mock()
+        response_mock.code = httplib.OK
+        response_mock.body = json.dumps(body)
+        response_mock.headers = {
+            "Content-length": len(response_mock.body),
+            "Content-type": "application/json; charset=utf-8",
+        }
+        response = trhutil.Response(response_mock)
+
+        self._run_failure_scenario(response, value_if_not_found, schema)
+
+    def test_response_body_jsonschmea_validation_failure_001(self):
+         value_if_not_found = None
+         self._test_response_body_jsonschmea_validation_failure(value_if_not_found)
+
+    def test_response_body_jsonschmea_validation_failure_002(self):
+         value_if_not_found = "dave"
+         self._test_response_body_jsonschmea_validation_failure(value_if_not_found)
+
+    def _test_response_ok_body(self, the_body, schema):
+        response_mock = mock.Mock()
+        response_mock.code = httplib.OK
+        response_mock.body = json.dumps(the_body)
+        response_mock.headers = {
+            "Content-length": len(response_mock.body),
+            "Content-type": "application/json; charset=utf-8",
+        }
+        response = trhutil.Response(response_mock)
+        if schema is None:
+            self.assertEqual(
+                the_body,
+                response.get_json_body())
+        else:
+            self.assertEqual(
+                the_body,
+                response.get_json_body(schema=schema))
+
+    def test_response_ok_empty_body(self):
+        body = {}
+        schema = None
+        self._test_response_ok_body(body, schema)
+
+    def test_response_ok_something_in_body(self):
+        body = {
+            "dave": 1,
+            "was": "here",
+        }
+        schema = None
+        self._test_response_ok_body(body, schema)
+
+    def test_response_ok_something_in_body_valid_against_schema(self):
+        body = {
+            "dave": True
+        }
+        schema = {
+            "type": "object",
+            "properties": {
+                "dave": {
+                    "type": "boolean"
+                },
+            },
+            "required": [
+                "dave",
+            ],
+            "additionalProperties": False,
+        }
+        self._test_response_ok_body(body, schema)
