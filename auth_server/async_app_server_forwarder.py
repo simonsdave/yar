@@ -65,7 +65,7 @@ class AsyncAppServerForwarder(object):
             return
 
         body = None
-        if 0 <= response.headers.get("Content-Length", 0):
+        if 0 <= response.headers.get("Content-Length", -1):
             body = response.body 
         self._callback(
             True,
