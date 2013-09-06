@@ -252,7 +252,7 @@ class TestCase(yar_test_util.TestCase):
                 self.assertIsNotNone(response)
                 self.assertEqual(response.status, httplib.INTERNAL_SERVER_ERROR)
 
-    def _test_forward_all_good(self, the_method):
+    def _test_forward_all_good(self, the_method, the_body=None):
         """Verify that when async the foward to the app server fails,
         that the response is ```httplib.INTERNAL_SERVER_ERROR```."""
         the_owner = str(uuid.uuid4()).replace("-", "")
@@ -263,7 +263,6 @@ class TestCase(yar_test_util.TestCase):
             "X-Bob": str(uuid.uuid4()).replace("-", ""),
             "X-Ben": str(uuid.uuid4()).replace("-", ""),
         }
-        the_body = str(uuid.uuid4()).replace("-", "")
 
         def authenticate_patch(ignore_this_async_hmac_auth, callback):
             self.assertIsNotNone(callback)
@@ -290,7 +289,7 @@ class TestCase(yar_test_util.TestCase):
                 self.assertEqual(response.status, the_status_code)
 
     def test_forward_all_good_get(self):
-        self._test_forward_all_good("GET")
+        self._test_forward_all_good("GET", str(uuid.uuid4()).replace("-", ""))
 
     def test_forward_all_good_post(self):
         self._test_forward_all_good("POST")
