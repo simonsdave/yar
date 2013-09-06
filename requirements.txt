@@ -8,3 +8,4 @@ nose-cov==1.6
 pep8==1.4.5
 python-memcached==1.52
 git+git://github.com/dpnova/tornado-memcache.git@master
+radon==0.4.3
