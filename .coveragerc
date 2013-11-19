@@ -1,12 +1,9 @@
 [run]
 branch = True
 include =
-	lib/*
-	auth_server/*
-	key_server/*
+	yar/*
 omit =
 	*tests*
-	key_server/key_store/*
 	*__init__*
 
 [html]
