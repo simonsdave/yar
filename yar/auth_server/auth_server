@@ -7,7 +7,7 @@ import logging
 import tornado.httpserver
 import tornado.web
 
-from dasutils import tsh
+from yar.util import tsh
 
 import async_app_server_forwarder
 import async_hmac_creds_retriever

@@ -4,7 +4,7 @@ server's command line."""
 import logging
 import optparse
 
-from dasutils import clparserutil
+from yar.util import clparserutil
 
 
 class CommandLineParser(optparse.OptionParser):

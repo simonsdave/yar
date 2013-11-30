@@ -8,7 +8,7 @@ import datetime
 import uuid
 import httplib
 
-from dasutils import tsh
+from yar.util import tsh
 import tornado.httpserver
 import tornado.httpclient
 import tornado.ioloop

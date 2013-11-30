@@ -1,11 +1,10 @@
 """This module contains all the logic required to parse the key
 store installer's command line."""
 
-
 import logging
 import optparse
 
-from dasutils import clparserutil
+from yar.util import clparserutil
 
 
 class CommandLineParser(optparse.OptionParser):

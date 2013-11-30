@@ -6,7 +6,7 @@ import logging
 import tornado.httpserver
 import tornado.web
 
-from dasutils import tsh
+from yar.util import tsh
 
 import clparser
 import key_server_request_handler
