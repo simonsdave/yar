@@ -29,12 +29,12 @@ if __name__ == "__main__":
     fmt = (
         "Auth Server listening on {clo.port} "
         "using Nonce Store {clo.nonce_store}, "
-        "Key Server '{clo.app_server}' "
+        "Key Server '{clo.key_server}' "
         "and App Server '{clo.app_server}'"
     )
     _logger.info(fmt.format(clo=clo))
 
-    async_hmac_creds_retriever.key_server = clo.key_server
+    async_hmac_creds_retriever.key_server_address = clo.key_server
     async_hmac_auth.maxage = clo.maxage
     async_nonce_checker.nonce_store = clo.nonce_store
     async_app_server_forwarder.app_server = clo.app_server

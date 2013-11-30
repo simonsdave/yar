@@ -9,7 +9,7 @@ import tornado.web
 from async_creds_creator import AsyncCredsCreator
 from async_creds_retriever import AsyncCredsRetriever
 from async_creds_deleter import AsyncCredsDeleter
-from yar import jsonschemas
+from yar.key_server import jsonschemas
 from yar import trhutil
 
 """Format of this string is host:port/database. It's used to construct
@@ -77,7 +77,7 @@ class RequestHandler(trhutil.RequestHandler):
 
         body = self.get_json_request_body(
             None,
-            jsonschemas.key_server_create_creds_request)
+            jsonschemas.create_creds_request)
         if not body:
             self.set_status(httplib.BAD_REQUEST)
             self.finish()

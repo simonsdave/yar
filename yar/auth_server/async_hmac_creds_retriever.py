@@ -6,7 +6,7 @@ import logging
 
 import tornado.httpclient
 
-from yar import jsonschemas
+from yar import key_server
 from yar import mac
 from yar import trhutil
 
@@ -15,7 +15,7 @@ _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
 
 """This host:port combination define the location of the key server."""
-key_server = None
+key_server_address = None
 
 
 class AsyncHMACCredsRetriever(object):
@@ -32,7 +32,7 @@ class AsyncHMACCredsRetriever(object):
         self._callback = callback
 
         url = "http://%s/v1.0/creds/%s" % (
-            key_server,
+            key_server_address,
             self._mac_key_identifier)
         http_request = tornado.httpclient.HTTPRequest(
             url=url,
@@ -48,9 +48,13 @@ class AsyncHMACCredsRetriever(object):
             return
 
         response = trhutil.Response(response)
+        print key_server
+        print key_server.__file__
+        print dir(key_server)
+        print key_server.jsonschemas
         body = response.get_json_body(
             None,
-            jsonschemas.key_server_get_creds_response)
+            key_server.jsonschemas.get_creds_response)
         if body is None:
             self._callback(False, self._mac_key_identifier)
             return

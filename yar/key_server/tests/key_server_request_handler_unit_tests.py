@@ -21,7 +21,7 @@ import tornado.netutil
 import tornado.options
 import tornado.web
 
-from yar import jsonschemas
+from yar.key_server import jsonschemas
 from yar.key_server import key_server_request_handler
 from yar import mac
 from yar.tests import yar_test_util
@@ -105,7 +105,7 @@ class TestCase(yar_test_util.TestCase):
             self.assertIsNotNone(creds)
             jsonschema.validate(
                 creds,
-                jsonschemas.key_server_create_creds_response)
+                jsonschemas.create_creds_response)
             self.assertEqual(the_owner, creds.get('owner', None))
             mac_key_identifier = creds.get('mac_key_identifier', None)
             self.assertIsNotNone(mac_key_identifier)
@@ -127,7 +127,7 @@ class TestCase(yar_test_util.TestCase):
         self.assertIsNotNone(creds)
         jsonschema.validate(
             creds,
-            jsonschemas.key_server_create_creds_response)
+            jsonschemas.create_creds_response)
         self.assertEqual(owner, creds.get('owner', None))
         mac_key_identifier = creds.get('mac_key_identifier', None)
         self.assertIsNotNone(mac_key_identifier)
@@ -183,7 +183,7 @@ class TestCase(yar_test_util.TestCase):
             creds = json.loads(content)
             jsonschema.validate(
                 creds,
-                jsonschemas.key_server_get_creds_response)
+                jsonschemas.get_creds_response)
             self.assertIsNotNone(creds)
             self.assertIn("mac_key_identifier", creds)
             self.assertEqual(the_mac_key_identifier, creds["mac_key_identifier"])

@@ -1,12 +1,10 @@
-"""This module contains JSON schemas that can be used to validate
-JSON request and response bodies between the various services in
-the API management solution."""
+"""This module contains JSON schemas which can be used to validate
+JSON bodies of request to and responses from the key server."""
 
 
-"""```key_server_create_creds_request``` is a JSON schema used to validate
+"""```create_creds_request``` is a JSON schema used to validate
 create credentials requests to the key server."""
-
-key_server_create_creds_request = {
+create_creds_request = {
     "type": "object",
     "properties": {
         "owner": {
@@ -21,10 +19,9 @@ key_server_create_creds_request = {
 }
 
 
-"""```key_server_get_creds_response``` is a JSON schema used to validate
+"""```get_creds_response``` is a JSON schema used to validate
 the key server's response to get creds request."""
-
-key_server_get_creds_response = {
+get_creds_response = {
     "type": "object",
     "properties": {
         "is_deleted": {
@@ -76,7 +73,6 @@ key_server_get_creds_response = {
 }
 
 
-"""```key_server_create_creds_response``` is a JSON schema used to validate
+"""```create_creds_response``` is a JSON schema used to validate
 the key server's response to create creds request."""
-
-key_server_create_creds_response = key_server_get_creds_response
+create_creds_response = get_creds_response

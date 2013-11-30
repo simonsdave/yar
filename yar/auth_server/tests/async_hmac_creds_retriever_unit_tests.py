@@ -11,7 +11,8 @@ import tornado.httpclient
 import tornado.httputil
 
 from yar.auth_server import async_hmac_creds_retriever
-from yar import jsonschemas
+from yar import key_server
+from yar.key_server import jsonschemas
 from yar import mac
 from yar.tests import yar_test_util
 
@@ -22,7 +23,7 @@ class TestAsyncHMACCredsRetriever(yar_test_util.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        async_hmac_creds_retriever.key_server = cls._key_server
+        async_hmac_creds_retriever.key_server_address = cls._key_server
 
     @classmethod
     def tearDownClass(cls):
@@ -168,7 +169,7 @@ class TestAsyncHMACCredsRetriever(yar_test_util.TestCase):
             })
             self.assertIsNotValidJSON(
                 response.body,
-                jsonschemas.key_server_get_creds_response)
+                key_server.jsonschemas.get_creds_response)
             response.headers = tornado.httputil.HTTPHeaders({
                 "Content-type": "application/json; charset=utf8",
                 "Content-length": str(len(response.body)),
@@ -216,7 +217,7 @@ class TestAsyncHMACCredsRetriever(yar_test_util.TestCase):
             })
             self.assertIsValidJSON(
                 response.body,
-                jsonschemas.key_server_get_creds_response)
+                key_server.jsonschemas.get_creds_response)
             response.headers = tornado.httputil.HTTPHeaders({
                 "Content-type": "application/json; charset=utf8",
                 "Content-length": str(len(response.body)),
