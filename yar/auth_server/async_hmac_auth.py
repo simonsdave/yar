@@ -20,13 +20,13 @@ _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
 
 # these constants define detailed MAC authentication failure reasons
-AUTH_FAILURE_DETAIL_TS_IN_FUTURE =              0x0001
-AUTH_FAILURE_DETAIL_TS_OLD =                    0x0002
-AUTH_FAILURE_DETAIL_NO_AUTH_HEADER =            0x0003
-AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER =       0x0004
-AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND =           0x0005
-AUTH_FAILURE_DETAIL_NONCE_REUSED =              0x0006
-AUTH_FAILURE_DETAIL_HMACS_DO_NOT_MATCH =        0x0007
+AUTH_FAILURE_DETAIL_TS_IN_FUTURE = 0x0001
+AUTH_FAILURE_DETAIL_TS_OLD = 0x0002
+AUTH_FAILURE_DETAIL_NO_AUTH_HEADER = 0x0003
+AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER = 0x0004
+AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND = 0x0005
+AUTH_FAILURE_DETAIL_NONCE_REUSED = 0x0006
+AUTH_FAILURE_DETAIL_HMACS_DO_NOT_MATCH = 0x0007
 
 
 class AsyncHMACAuth(object):
@@ -34,7 +34,8 @@ class AsyncHMACAuth(object):
     def __init__(self, request, generate_auth_failure_debug_details):
         object.__init__(self)
         self._request = request
-        self._generate_auth_failure_debug_details = generate_auth_failure_debug_details
+        self._generate_auth_failure_debug_details = \
+            generate_auth_failure_debug_details
 
     def _on_async_hmac_creds_retriever_done(
         self,
@@ -52,7 +53,10 @@ class AsyncHMACAuth(object):
             self._on_auth_done(False, AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
             return
 
-        (host, port) = get_request_host_and_port(self._request, "localhost", 80)
+        (host, port) = get_request_host_and_port(
+            self._request,
+            "localhost",
+            80)
         content_type = self._request.headers.get("Content-type", None)
         body = get_request_body_if_exists(self._request, None)
         ext = mac.Ext.generate(content_type, body)
@@ -87,7 +91,8 @@ class AsyncHMACAuth(object):
             auth_failure_debug_details = {}
             if self._generate_auth_failure_debug_details:
                 if body:
-                    auth_failure_debug_details["BODY-SHA1"] = hashlib.sha1(body).hexdigest()
+                    sha1_of_body = hashlib.sha1(body).hexdigest()
+                    auth_failure_debug_details["BODY-SHA1"] = sha1_of_body
                     auth_failure_debug_details["BODY-LEN"] = len(body)
 
                 auth_failure_debug_details["MAC-KEY-IDENTIFIER"] = mac_key_identifier

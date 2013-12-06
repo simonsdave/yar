@@ -19,10 +19,12 @@ _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 to a debug level responses will contain a series of HTTP headers
 that provide additional detail on why the authentication failed.
 All of theses header names are prefixed by the value of
-```debug_header_prefix```.""" 
+```debug_header_prefix```."""
 debug_header_prefix = "X-Auth-Server-"
 
+
 auth_failure_detail_header_name = "%sAuth-Failure-Detail" % debug_header_prefix
+
 
 class RequestHandler(trhutil.RequestHandler):
 
@@ -67,7 +69,7 @@ class RequestHandler(trhutil.RequestHandler):
                     self.set_header(name, value)
 
             self.finish()
-            
+
             return
 
         aasf = async_app_server_forwarder.AsyncAppServerForwarder(

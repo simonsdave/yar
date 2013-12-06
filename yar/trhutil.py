@@ -97,7 +97,7 @@ class RequestHandler(tornado.web.RequestHandler):
         """Return the request's 'Host' HTTP header parsed into its
         host and port components."""
         rv = get_request_host_and_port(
-            self.request, 
+            self.request,
             host_if_not_found,
             port_if_not_found)
         return rv
