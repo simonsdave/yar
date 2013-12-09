@@ -5,15 +5,13 @@ import httplib
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 import mock
 import tornado.httputil
 
 from yar import mac
 from yar.tests import yar_test_util
 
-import async_app_server_forwarder
+from yar.auth_server import async_app_server_forwarder
 
 class TestAsyncCredsForwarder(yar_test_util.TestCase):
 

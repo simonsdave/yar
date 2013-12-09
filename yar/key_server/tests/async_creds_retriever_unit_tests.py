@@ -5,7 +5,6 @@ import httplib
 import os
 import sys
 import uuid
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import mock
 
@@ -52,7 +51,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             self.assertIsNone(creds)
             self.assertIsNone(is_creds_collection)
 
-        name_of_method_to_patch = "ks_util.AsyncAction.async_req_to_key_store"
+        name_of_method_to_patch = "yar.key_server.ks_util.AsyncAction.async_req_to_key_store"
         with mock.patch(name_of_method_to_patch, async_req_to_key_store_patch):
             acr = async_creds_retriever.AsyncCredsRetriever(type(self)._key_store)
             acr.fetch(
@@ -128,7 +127,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             self.assertIsNotNone(is_creds_collection)
             self.assertFalse(is_creds_collection)
 
-        name_of_method_to_patch = "ks_util.AsyncAction.async_req_to_key_store"
+        name_of_method_to_patch = "yar.key_server.ks_util.AsyncAction.async_req_to_key_store"
         with mock.patch(name_of_method_to_patch, async_req_to_key_store_patch):
             acr = async_creds_retriever.AsyncCredsRetriever(type(self)._key_store)
             acr.fetch(
@@ -253,7 +252,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
                 else:
                     self.assertEqual(creds, the_creds)
 
-        name_of_method_to_patch = "ks_util.AsyncAction.async_req_to_key_store"
+        name_of_method_to_patch = "yar.key_server.ks_util.AsyncAction.async_req_to_key_store"
         with mock.patch(name_of_method_to_patch, async_req_to_key_store_patch):
             acr = async_creds_retriever.AsyncCredsRetriever(type(self)._key_store)
             acr.fetch(
@@ -356,7 +355,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
         def on_async_create_done(creds, is_creds_collection):
             pass
 
-        name_of_method_to_patch = "ks_util.AsyncAction.async_req_to_key_store"
+        name_of_method_to_patch = "yar.key_server.ks_util.AsyncAction.async_req_to_key_store"
         with mock.patch(name_of_method_to_patch, async_req_to_key_store_patch):
             acr = async_creds_retriever.AsyncCredsRetriever(type(self)._key_store)
             acr.fetch(
