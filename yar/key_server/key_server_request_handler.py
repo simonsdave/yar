@@ -10,7 +10,7 @@ from async_creds_creator import AsyncCredsCreator
 from async_creds_retriever import AsyncCredsRetriever
 from async_creds_deleter import AsyncCredsDeleter
 from yar.key_server import jsonschemas
-from yar import trhutil
+from yar.util import trhutil
 
 """Format of this string is host:port/database. It's used to construct
 a URL when talking to the key store."""

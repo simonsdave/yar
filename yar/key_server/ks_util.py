@@ -5,7 +5,7 @@ import logging
 
 import tornado.httpclient
 
-from yar import trhutil
+from yar.util import trhutil
 
 
 _logger = logging.getLogger("KEYSERVER.%s" % __name__)

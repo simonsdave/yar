@@ -5,7 +5,7 @@ import sys
 import os
 import unittest
 
-from yar import strutil
+from yar.util import strutil
 
 
 class MakeHttpHeaderValueTestCase(unittest.TestCase):

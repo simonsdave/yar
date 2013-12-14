@@ -8,7 +8,7 @@ import tornado.httpclient
 
 from yar import key_server
 from yar import mac
-from yar import trhutil
+from yar.util import trhutil
 
 
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)

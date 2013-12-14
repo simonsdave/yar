@@ -8,7 +8,7 @@ import logging
 import tornado.httputil
 import tornado.httpclient
 
-from yar.trhutil import get_request_body_if_exists
+from yar.util.trhutil import get_request_body_if_exists
 
 
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)

@@ -8,8 +8,8 @@ import tornado.web
 
 import async_hmac_auth
 import async_app_server_forwarder
-from yar import strutil
-from yar import trhutil
+from yar.util import strutil
+from yar.util import trhutil
 
 
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)

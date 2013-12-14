@@ -12,7 +12,7 @@ import mock
 import tornado.web
 import tornado.testing
 
-from yar import trhutil
+from yar.util import trhutil
 
 def _uuid():
     return str(uuid.uuid4()).replace("-", "")

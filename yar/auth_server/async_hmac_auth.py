@@ -5,8 +5,8 @@ import hashlib
 import logging
 
 from yar import mac
-from yar.trhutil import get_request_host_and_port
-from yar.trhutil import get_request_body_if_exists
+from yar.util.trhutil import get_request_host_and_port
+from yar.util.trhutil import get_request_body_if_exists
 
 from async_hmac_creds_retriever import AsyncHMACCredsRetriever
 from async_nonce_checker import AsyncNonceChecker
