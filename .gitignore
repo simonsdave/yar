@@ -7,3 +7,4 @@ coverage_report
 env
 dist
 yar.egg-info
+.vagrant
