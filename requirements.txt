@@ -2,7 +2,6 @@ httplib2==0.8
 jsonschema==1.3.0
 tornado==3.0.1
 python-keyczar==0.71c
-python-memcached==1.52
 git+git://github.com/dpnova/tornado-memcache.git@master
 mock==1.0.1
 nose==1.3.0
