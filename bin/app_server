@@ -14,7 +14,7 @@ import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 
-from clparser import CommandLineParser
+from yar.app_server.clparser import CommandLineParser
 
 
 __version__ = "1.0"

@@ -10,7 +10,8 @@ import glob
 import httplib
 import httplib2
 
-from clparser import CommandLineParser
+import yar.key_store
+from yar.key_store.clparser import CommandLineParser
 
 _logger = logging.getLogger("KEYSTORE.%s" % __name__)
 
@@ -50,7 +51,7 @@ def create(database="creds", host="localhost:5984"):
     # design documents with the filename (less ".json" being the design
     # document name
     #
-    path = os.path.split(__file__)[0]
+    path = os.path.split(yar.key_store.__file__)[0]
     design_doc_file_name_pattern = os.path.join(path, "*.json")
     for design_doc_file_name in glob.glob(design_doc_file_name_pattern):
 

@@ -9,12 +9,12 @@ import tornado.web
 
 from yar.util import tsh
 
-import async_app_server_forwarder
-import async_hmac_creds_retriever
-import async_hmac_auth
-import async_nonce_checker
-import auth_server_request_handler
-import clparser
+from yar.auth_server import async_app_server_forwarder
+from yar.auth_server import async_hmac_creds_retriever
+from yar.auth_server import async_hmac_auth
+from yar.auth_server import async_nonce_checker
+from yar.auth_server import auth_server_request_handler
+from yar.auth_server import clparser
 
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
