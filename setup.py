@@ -14,7 +14,7 @@ setup(
         "bin/app_server",
         "bin/auth_server",
         "bin/key_server",
-        "bin/key_server_installer",
+        "bin/key_store_installer",
     ],
     install_requires=[
         "httplib2==0.8",
