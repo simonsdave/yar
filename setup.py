@@ -25,7 +25,7 @@ setup(
         "tornado-memcache==1.0",
     ],
     dependency_links = [
-        "http://github.com/dpnova/tornado-memcache/tarball/master",
+        "http://github.com/dpnova/tornado-memcache/tarball/master#egg=tornado-memcache",
     ],
     version=1.0,
     description="yar",
