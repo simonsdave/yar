@@ -6,7 +6,7 @@ import logging
 
 import tornado.httpclient
 
-from yar import key_server
+from yar.key_server import jsonschemas
 from yar import mac
 from yar.util import trhutil
 
@@ -50,7 +50,7 @@ class AsyncHMACCredsRetriever(object):
         response = trhutil.Response(response)
         body = response.get_json_body(
             None,
-            key_server.jsonschemas.get_creds_response)
+            jsonschemas.get_creds_response)
         if body is None:
             self._callback(False, self._mac_key_identifier)
             return
