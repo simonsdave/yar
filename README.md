@@ -81,7 +81,7 @@ curl \
 
 * using the credentials returned by the above cURL request, create a new file called ~/.yar.creds
 in the following format (this file will be used in a bit by
-[yarcurl.sh](https://github.com/simonsdave/yar/wiki/Utilities#yarcurlsh)):
+[yarcurl](https://github.com/simonsdave/yar/wiki/Utilities#yarcurl)):
 
 ~~~~~
 MAC_KEY_IDENTIFIER=35c3913e63ce451d9f58fed1125a2594
@@ -112,10 +112,10 @@ cd; cd yar; source bin/cfg4dev
 ~~~~~
 
 * In the same window that you executed the above commands, you'll now use
-[yarcurl.sh](https://github.com/simonsdave/yar/wiki/Utilities#yarcurlsh) 
+[yarcurl](https://github.com/simonsdave/yar/wiki/Utilities#yarcurl) 
 to issue a request to the app server via the auth server:
 
 ~~~~~
-yarcurl.sh GET http://localhost:8000/dave-was-here.html
+yarcurl GET http://localhost:8000/dave-was-here.html
 ~~~~~
 
