@@ -48,10 +48,6 @@ class AsyncHMACCredsRetriever(object):
             return
 
         response = trhutil.Response(response)
-        print key_server
-        print key_server.__file__
-        print dir(key_server)
-        print key_server.jsonschemas
         body = response.get_json_body(
             None,
             key_server.jsonschemas.get_creds_response)
