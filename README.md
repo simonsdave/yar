@@ -44,7 +44,7 @@ server listens on port 8080 - this app server is only for testing/development - 
 use this in a production deployment:
 
 ~~~~~
-cd; cd yar; source bin/cfg4dev; cd yar/app_server; ./app_server --log=info
+cd; cd yar; source bin/cfg4dev; app_server --log=info
 ~~~~~
 
 * start the Key Store - if CouchDB isn't already running, in a new terminal window start CouchDB
@@ -58,14 +58,14 @@ couchdb
 by running the following in a new terminal window
 
 ~~~~~
-cd; cd yar; source bin/cfg4dev; cd yar/key_store; ./key_store_installer --log=info --create=true
+cd; cd yar; source bin/cfg4dev; key_store_installer --log=info --create=true
 ~~~~~
 
 * start the Key Server: in a new terminal window run the following to start the Key Server - by
 default the Key Server will listen on port 8070
 
 ~~~~~
-cd; cd yar; source bin/cfg4dev; cd yar/key_server; ./key_server --log=info
+cd; cd yar; source bin/cfg4dev; key_server --log=info
 ~~~~~
 
 * generate an inital set of credentials by issuing the follow cURL request:
@@ -100,7 +100,7 @@ memcached -vv
 default, the Autentication Server listens on port 8000
 
 ~~~~~
-cd; cd yar; source bin/cfg4dev; cd yar/auth_server; ./auth_server --log=info
+cd; cd yar; source bin/cfg4dev; auth_server --log=info
 ~~~~~
 
 * Okay, all of your infrastructure should now be running!
