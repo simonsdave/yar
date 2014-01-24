@@ -14,6 +14,14 @@ from yar.util import trhutil
 
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
+"""```_gen_auth_failure_debug_details``` set to ```True```
+when auth server should return auth debug details to the
+caller. Should be really careful with this setting (ie.
+don't run auth server in production environment) as it
+will expose details of authentication scheme implementation
+that could highlight vulnerabilities."""
+_gen_auth_failure_debug_details = _logger.isEnabledFor(logging.DEBUG)
+
 """When authentication fails and the auth server's logging is set
 to a debug level responses will contain a series of HTTP headers
 that provide additional detail on why the authentication failed.
@@ -112,11 +120,9 @@ class RequestHandler(trhutil.RequestHandler):
             self._on_auth_done(False)
             return
 
-        gen_auth_failure_debug_details = _logger.isEnabledFor(logging.DEBUG)
-
         aha = auth_class(
             self.request,
-            gen_auth_failure_debug_details)
+            _gen_auth_failure_debug_details)
         aha.authenticate(self._on_auth_done)
 
     @tornado.web.asynchronous
