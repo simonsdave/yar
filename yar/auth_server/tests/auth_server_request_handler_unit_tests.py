@@ -181,7 +181,8 @@ class TestCase(yar_test_util.TestCase):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
                     "http://localhost:%d/whatever" % self.__class__.auth_server.port,
-                    "GET")
+                    "GET",
+                    headers={"Authorization": "MAC ..."})
                 self.assertIsNotNone(response)
                 self.assertIsNotNone(response.status)
                 self.assertEqual(response.status, httplib.UNAUTHORIZED)
@@ -218,7 +219,8 @@ class TestCase(yar_test_util.TestCase):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
                     "http://localhost:%d/whatever" % self.__class__.auth_server.port,
-                    "GET")
+                    "GET",
+                    headers={"Authorization": "MAC ..."})
                 self.assertIsNotNone(response)
                 self.assertIsNotNone(response.status)
                 self.assertEqual(response.status, httplib.UNAUTHORIZED)
@@ -246,13 +248,15 @@ class TestCase(yar_test_util.TestCase):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
                     "http://localhost:%d/whatever" % self.__class__.auth_server.port,
-                    "GET")
+                    "GET",
+                    headers={"Authorization": "MAC ..."})
                 self.assertIsNotNone(response)
                 self.assertEqual(response.status, httplib.INTERNAL_SERVER_ERROR)
 
-    def _test_forward_all_good(self, the_method, the_body=None):
-        """Verify that when async the foward to the app server fails,
-        that the response is ```httplib.INTERNAL_SERVER_ERROR```."""
+    def _test_forward_all_good(self, the_method, the_response_body=None):
+        """Verify that on successful authentication the request is forwarded
+        to the app server and the app server's response is correctly returned
+        to the caller."""
         the_owner = str(uuid.uuid4()).replace("-", "")
         the_identifier = str(uuid.uuid4()).replace("-", "")
         the_status_code = httplib.OK
@@ -269,20 +273,29 @@ class TestCase(yar_test_util.TestCase):
                 owner=the_owner,
                 identifier=the_identifier)
 
-        with mock.patch("yar.auth_server.async_hmac_auth.AsyncHMACAuth.authenticate", authenticate_patch):
+        name_of_method_to_patch = (
+            "yar.auth_server.async_hmac_auth."
+            "AsyncHMACAuth.authenticate"
+        )
+        with mock.patch(name_of_method_to_patch, authenticate_patch):
             def forward_patch(ignore_async_app_server_forwarder, callback):
                 self.assertIsNotNone(callback)
                 callback(
                     is_ok=True,
                     http_status_code=the_status_code,
                     headers=the_headers,
-                    body=the_body)
+                    body=the_response_body)
 
-            with mock.patch("yar.auth_server.async_app_server_forwarder.AsyncAppServerForwarder.forward", forward_patch):
+            name_of_method_to_patch = (
+                "yar.auth_server.async_app_server_forwarder."
+                "AsyncAppServerForwarder.forward"
+            )
+            with mock.patch(name_of_method_to_patch, forward_patch):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
-                    "http://localhost:%d/whatever" % self.__class__.auth_server.port,
-                    the_method)
+                    "http://localhost:%d/whatever" % type(self).auth_server.port,
+                    the_method,
+                    headers={"Authorization": "MAC ..."})
                 self.assertIsNotNone(response)
                 self.assertEqual(response.status, the_status_code)
 

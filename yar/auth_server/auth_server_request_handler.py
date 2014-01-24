@@ -3,6 +3,7 @@ The server uses implements MAC Access Authentication."""
 
 import httplib
 import logging
+import re
 
 import tornado.web
 
@@ -11,9 +12,7 @@ import async_app_server_forwarder
 from yar.util import strutil
 from yar.util import trhutil
 
-
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
-
 
 """When authentication fails and the auth server's logging is set
 to a debug level responses will contain a series of HTTP headers
@@ -22,8 +21,22 @@ All of theses header names are prefixed by the value of
 ```debug_header_prefix```."""
 debug_header_prefix = "X-Auth-Server-"
 
-
 auth_failure_detail_header_name = "%sAuth-Failure-Detail" % debug_header_prefix
+
+"""When the auth server first recieves a request it extracts the
+authentication scheme from the value associated with the request's 
+HTTP authorization header. ```_auth_scheme_reg_ex``` is the regular
+expression used to parse and extract the authentication scheme."""
+_auth_scheme_reg_ex = re.compile(
+    "^\s*(?P<auth_scheme>(MAC|BASIC))\s+.*",
+    re.IGNORECASE)
+
+"""The authentication server supports a number of authentication mechanisms.
+```_auth_scheme_to_auth_class``` is used to convert an authentication scheme
+into the class that implements the authentication mechanism."""
+_auth_scheme_to_auth_class = {
+    "MAC": async_hmac_auth.AsyncHMACAuth,
+}
 
 
 class RequestHandler(trhutil.RequestHandler):
@@ -82,8 +95,26 @@ class RequestHandler(trhutil.RequestHandler):
         aasf.forward(self._on_app_server_done)
 
     def _handle_request(self):
+        auth_hdr_val = self.request.headers.get("Authorization", None)
+        if not auth_hdr_val:
+            self._on_auth_done(False)
+            return
+
+        match = _auth_scheme_reg_ex.match(auth_hdr_val)
+        if not match:
+            self._on_auth_done(False)
+            return
+
+        auth_scheme = match.group("auth_scheme")
+
+        auth_class = _auth_scheme_to_auth_class.get(auth_scheme.upper(), None)
+        if not auth_class:
+            self._on_auth_done(False)
+            return
+
         gen_auth_failure_debug_details = _logger.isEnabledFor(logging.DEBUG)
-        aha = async_hmac_auth.AsyncHMACAuth(
+
+        aha = auth_class(
             self.request,
             gen_auth_failure_debug_details)
         aha.authenticate(self._on_auth_done)
