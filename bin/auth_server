@@ -10,9 +10,9 @@ import tornado.web
 from yar.util import tsh
 
 from yar.auth_server import async_app_server_forwarder
-from yar.auth_server import async_hmac_creds_retriever
-from yar.auth_server import async_hmac_auth
-from yar.auth_server import async_nonce_checker
+from yar.auth_server.hmac import async_hmac_creds_retriever
+from yar.auth_server.hmac import async_hmac_auth
+from yar.auth_server.hmac import async_nonce_checker
 from yar.auth_server import auth_server_request_handler
 from yar.auth_server import clparser
 
