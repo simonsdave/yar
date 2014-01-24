@@ -10,7 +10,7 @@ import mock
 import tornado.httpclient
 import tornado.httputil
 
-from yar.auth_server import async_hmac_creds_retriever
+from yar.auth_server.hmac import async_hmac_creds_retriever
 from yar import key_server
 from yar.key_server import jsonschemas
 from yar import mac

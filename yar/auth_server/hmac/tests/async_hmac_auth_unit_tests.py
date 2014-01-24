@@ -8,7 +8,7 @@ import sys
 import mock
 import tornado.httputil
 
-from yar.auth_server import async_hmac_auth
+from yar.auth_server.hmac import async_hmac_auth
 from yar import mac
 from yar.tests import yar_test_util
 
@@ -151,7 +151,10 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         def async_nonce_checker_fetch_patch(anc, callback):
             callback(False)
 
-        name_of_method_to_patch = "yar.auth_server.async_nonce_checker.AsyncNonceChecker.fetch"
+        name_of_method_to_patch = (
+            "yar.auth_server.hmac."
+            "async_nonce_checker.AsyncNonceChecker.fetch"
+        )
         with mock.patch(name_of_method_to_patch, async_nonce_checker_fetch_patch):
             auth_header_value = mac.AuthHeaderValue(
                 mac_key_identifier=mac.MACKeyIdentifier.generate(),
@@ -193,13 +196,19 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         def async_nonce_checker_fetch_patch(anc, callback):
             callback(True)
 
-        name_of_method_to_patch = "yar.auth_server.async_nonce_checker.AsyncNonceChecker.fetch"
+        name_of_method_to_patch = (
+            "yar.auth_server.hmac."
+            "async_nonce_checker.AsyncNonceChecker.fetch"
+        )
         with mock.patch(name_of_method_to_patch, async_nonce_checker_fetch_patch):
 
             def async_creds_retriever_fetch_patch(acr, callback):
                 callback(False, the_mac_key_identifier)
 
-            name_of_method_to_patch = "yar.auth_server.async_hmac_creds_retriever.AsyncHMACCredsRetriever.fetch"
+            name_of_method_to_patch = (
+                "yar.auth_server.hmac."
+                "async_hmac_creds_retriever.AsyncHMACCredsRetriever.fetch"
+            )
             with mock.patch(name_of_method_to_patch, async_creds_retriever_fetch_patch):
 
                 auth_header_value = mac.AuthHeaderValue(
@@ -262,7 +271,10 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         def async_nonce_checker_fetch_patch(anc, callback):
             callback(True)
 
-        name_of_method_to_patch = "yar.auth_server.async_nonce_checker.AsyncNonceChecker.fetch"
+        name_of_method_to_patch = (
+            "yar.auth_server.hmac."
+            "async_nonce_checker.AsyncNonceChecker.fetch"
+        )
         with mock.patch(name_of_method_to_patch, async_nonce_checker_fetch_patch):
 
             def async_creds_retriever_fetch_patch(acr, callback):
@@ -277,7 +289,10 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                     the_mac_key,
                     the_owner)
 
-            name_of_method_to_patch = "yar.auth_server.async_hmac_creds_retriever.AsyncHMACCredsRetriever.fetch"
+            name_of_method_to_patch = (
+                "yar.auth_server.hmac."
+                "async_hmac_creds_retriever.AsyncHMACCredsRetriever.fetch"
+            )
             with mock.patch(name_of_method_to_patch, async_creds_retriever_fetch_patch):
 
                 auth_header_value = mac.AuthHeaderValue(

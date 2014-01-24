@@ -7,7 +7,7 @@ import re
 
 import tornado.web
 
-import async_hmac_auth
+import hmac.async_hmac_auth
 import async_app_server_forwarder
 from yar.util import strutil
 from yar.util import trhutil
@@ -43,7 +43,7 @@ _auth_scheme_reg_ex = re.compile(
 ```_auth_scheme_to_auth_class``` is used to convert an authentication scheme
 into the class that implements the authentication mechanism."""
 _auth_scheme_to_auth_class = {
-    "MAC": async_hmac_auth.AsyncHMACAuth,
+    "MAC": hmac.async_hmac_auth.AsyncHMACAuth,
 }
 
 
