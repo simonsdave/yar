@@ -62,7 +62,7 @@ class AsyncAction(object):
             "Accept": "application/json",
             "Accept-Encoding": "charset=utf8"
         })
-        request=tornado.httpclient.HTTPRequest(
+        request = tornado.httpclient.HTTPRequest(
             url,
             method=method,
             headers=headers,
