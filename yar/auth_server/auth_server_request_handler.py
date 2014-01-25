@@ -8,6 +8,7 @@ import re
 import tornado.web
 
 import hmac.async_hmac_auth
+import basic.async_auth
 import async_app_server_forwarder
 from yar.util import strutil
 from yar.util import trhutil
@@ -44,6 +45,7 @@ _auth_scheme_reg_ex = re.compile(
 into the class that implements the authentication mechanism."""
 _auth_scheme_to_auth_class = {
     "MAC": hmac.async_hmac_auth.AsyncHMACAuth,
+    "BASIC": basic.async_auth.Authenticator,
 }
 
 
