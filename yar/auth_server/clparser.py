@@ -41,7 +41,7 @@ class CommandLineParser(optparse.OptionParser):
             type=int,
             help=help)
 
-        default = "DAS",
+        default = "YAR",
         help = "app server's authorization method - default = %s" % default
         self.add_option(
             "--authmethod",

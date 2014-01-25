@@ -23,7 +23,7 @@ is forwarded to the app server. The forward to the app server does not
 contain the original request's HTTP Authorization header but instead
 uses the authorization method described by ```app_server_auth_method```
 and the the credential's owner."""
-app_server_auth_method = "DAS"
+app_server_auth_method = "YAR"
 
 
 class AsyncAppServerForwarder(object):
