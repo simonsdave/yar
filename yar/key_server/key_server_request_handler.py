@@ -18,6 +18,7 @@ _key_store = "localhost:5984/creds"
 
 _logger = logging.getLogger("KEYSERVER.%s" % __name__)
 
+
 class RequestHandler(trhutil.RequestHandler):
 
     def _add_links_to_creds_dict(self, creds):
@@ -27,7 +28,7 @@ class RequestHandler(trhutil.RequestHandler):
         location = "%s/%s" % (self.request.full_url(), mac_key_identifier)
         creds["links"] = {"self": {"href": location}}
         return location
-        
+
     def _on_async_creds_retrieve_done(self, creds, is_creds_collection):
         if creds is None:
             self.set_status(httplib.NOT_FOUND)
