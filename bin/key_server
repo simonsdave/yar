@@ -31,8 +31,12 @@ if __name__ == "__main__":
         clo.key_store)
 
     handlers = [
-        (r"/v1.0/creds(?:/([^/]+))?", key_server_request_handler.RequestHandler),
+        (
+            key_server_request_handler.url_spec,
+            key_server_request_handler.RequestHandler
+        ),
     ]
+
     app = tornado.web.Application(handlers=handlers)
 
     http_server = tornado.httpserver.HTTPServer(app)

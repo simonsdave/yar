@@ -12,11 +12,16 @@ from async_creds_deleter import AsyncCredsDeleter
 from yar.key_server import jsonschemas
 from yar.util import trhutil
 
+_logger = logging.getLogger("KEYSERVER.%s" % __name__)
+
 """Format of this string is host:port/database. It's used to construct
 a URL when talking to the key store."""
 _key_store = "localhost:5984/creds"
 
-_logger = logging.getLogger("KEYSERVER.%s" % __name__)
+"""The key server's mainline should use this URL spec
+to describe the URLs that ```RequestHandler``` can
+correctly service."""
+url_spec = r"/v1.0/creds(?:/([^/]+))?"
 
 
 class RequestHandler(trhutil.RequestHandler):
