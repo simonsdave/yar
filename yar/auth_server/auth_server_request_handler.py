@@ -48,6 +48,11 @@ _auth_scheme_to_auth_class = {
     "BASIC": basic.async_auth.Authenticator,
 }
 
+"""The auth server's mainline should use this URL spec
+to describe the URLs that ```RequestHandler``` can
+correctly service."""
+url_spec = r".*"
+
 
 class RequestHandler(trhutil.RequestHandler):
 
