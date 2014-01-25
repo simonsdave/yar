@@ -45,14 +45,18 @@ use this in a production deployment:
 cd; cd yar; source bin/cfg4dev; app_server --log=info
 ~~~~~
 
-* start the Key Store - if CouchDB isn't already running, in a new terminal window start CouchDB
-using the following command - by default CouchDB listens on port 5984
+* start the Key Store - if [CouchDB](http://couchdb.apache.org/)
+isn't already running, in a new terminal, window start
+[CouchDB](http://couchdb.apache.org/)
+using the following command - by default [CouchDB](http://couchdb.apache.org/)
+listens on port 5984
 
 ~~~~~
 couchdb
 ~~~~~
 
-* configure the Key Store: assuming you don't already have a creds database on your CouchDB configure Key Store
+* configure the Key Store: assuming you don't already have a creds database on your
+[CouchDB](http://couchdb.apache.org/) configure the Key Store
 by running the following in a new terminal window
 
 ~~~~~
