@@ -89,7 +89,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             "mac_key": mac.MACKey.generate(),
             "mac_key_identifier": mac.MACKeyIdentifier.generate(),
             "owner": "dave@example.com",
-            "type": "cred_v1.0",
+            "type": "creds_v1.0",
         }
 
         def async_req_to_key_store_patch(
@@ -169,7 +169,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
                 "mac_key": "CHlFh7fIejF3NLmr73pCfqx3EL_xV2zDQgVcjRl45jM", 
                 "mac_key_identifier": "070a69935bd840e09029a74837dc4755", 
                 "owner": the_owner,
-                "type": "cred_v1.0"
+                "type": "creds_v1.0"
             }, 
             {
                 "_id": "9c8411a78405460e825b5f4318ef9a57", 
@@ -179,7 +179,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
                 "mac_key": "pyHpZ6auevEEHTkZDhfVf-uKHV_YPEH2lctZXL5j4QQ", 
                 "mac_key_identifier": "9c8411a78405460e825b5f4318ef9a57", 
                 "owner": the_owner,
-                "type": "cred_v1.0"
+                "type": "creds_v1.0"
             }, 
         ]
 
@@ -192,7 +192,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
                 "mac_key": "8m_yH35Q9iMEZx_OV5M136eJ4SJsTw0JO-Y6BS3scJY", 
                 "mac_key_identifier": "e49df12a968f4340a6e5f06c43e868bb", 
                 "owner": the_owner,
-                "type": "cred_v1.0"
+                "type": "creds_v1.0"
             },
         ]
 
@@ -297,7 +297,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
                         "mac_key": "CHlFh7fIejF3NLmr73pCfqx3EL_xV2zDQgVcjRl45jM", 
                         "mac_key_identifier": "070a69935bd840e09029a74837dc4755", 
                         "owner": "dave@gmail.com", 
-                        "type": "cred_v1.0"
+                        "type": "creds_v1.0"
                     }
                 }, 
                 {
@@ -311,7 +311,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
                         "mac_key": "pyHpZ6auevEEHTkZDhfVf-uKHV_YPEH2lctZXL5j4QQ", 
                         "mac_key_identifier": "9c8411a78405460e825b5f4318ef9a57", 
                         "owner": "dave@gmail.com", 
-                        "type": "cred_v1.0"
+                        "type": "creds_v1.0"
                     }
                 }, 
                 {
@@ -325,7 +325,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
                         "mac_key": "8m_yH35Q9iMEZx_OV5M136eJ4SJsTw0JO-Y6BS3scJY", 
                         "mac_key_identifier": "e49df12a968f4340a6e5f06c43e868bb", 
                         "owner": "dave@gmail.com", 
-                        "type": "cred_v1.0"
+                        "type": "creds_v1.0"
                     }
                 }
             ], 

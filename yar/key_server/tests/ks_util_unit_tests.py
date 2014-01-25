@@ -144,7 +144,7 @@ class TestCaseAsyncAction(yar_test_util.TestCase):
             "mac_key": "XShLQP_vY8zZTlABKoFh9a7ALSdyEeP3WJaSUlCYVW4",
             "mac_key_identifier": "a6dc9a78867d4dee95d58adefa87c1a1",
             "owner": "bindleberry@example.com",
-            "type": "cred_v1.0",
+            "type": "creds_v1.0",
         }
         self._test_good(
             request_method,
@@ -161,7 +161,7 @@ class TestCaseAsyncAction(yar_test_util.TestCase):
             "mac_key": "XShLQP_vY8zZTlABKoFh9a7ALSdyEeP3WJaSUlCYVW4",
             "mac_key_identifier": "a6dc9a78867d4dee95d58adefa87c1a1",
             "owner": "bindleberry@example.com",
-            "type": "cred_v1.0",
+            "type": "creds_v1.0",
         }
         response_body_as_dict = None
         self._test_good(

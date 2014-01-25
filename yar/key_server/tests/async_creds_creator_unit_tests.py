@@ -52,7 +52,7 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
             self.assertIn(body["mac_algorithm"], mac.MAC.algorithm)
 
             self.assertIn("type", body)
-            self.assertEqual(body["type"], "cred_v1.0")
+            self.assertEqual(body["type"], "creds_v1.0")
 
             self.assertIn("is_deleted", body)
             self.assertFalse(body["is_deleted"])
@@ -110,7 +110,7 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
             self.assertIn(creds["mac_algorithm"], mac.MAC.algorithm)
 
             self.assertIn("type", creds)
-            self.assertEqual(creds["type"], "cred_v1.0")
+            self.assertEqual(creds["type"], "creds_v1.0")
 
             self.assertIn("is_deleted", creds)
             self.assertFalse(creds["is_deleted"])

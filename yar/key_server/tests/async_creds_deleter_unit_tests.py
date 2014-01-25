@@ -65,7 +65,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             "mac_key": mac.MACKey.generate(),
             "mac_key_identifier": mac.MACKeyIdentifier.generate(),
             "owner": "dave@example.com",
-            "type": "cred_v1.0",
+            "type": "creds_v1.0",
         }
 
         def async_creds_retriever_fetch_patch(
@@ -125,7 +125,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             "mac_key": mac.MACKey.generate(),
             "mac_key_identifier": mac.MACKeyIdentifier.generate(),
             "owner": "dave@example.com",
-            "type": "cred_v1.0",
+            "type": "creds_v1.0",
         }
 
         def async_creds_retriever_fetch_patch(

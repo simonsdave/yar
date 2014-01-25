@@ -29,7 +29,7 @@ class AsyncCredsCreator(AsyncAction):
             "mac_key_identifier": mac.MACKeyIdentifier.generate(),
             "mac_key": mac.MACKey.generate(),
             "mac_algorithm": mac.MAC.algorithm,
-            "type": "cred_v1.0",
+            "type": "creds_v1.0",
             "is_deleted": False,
         }
         self.async_req_to_key_store(
