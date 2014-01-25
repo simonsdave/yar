@@ -66,7 +66,8 @@ default the Key Server will listen on port 8070
 cd; cd yar; source bin/cfg4dev; key_server --log=info
 ~~~~~
 
-* generate an inital set of credentials by issuing the follow cURL request:
+* generate an inital set of credentials by issuing the
+follow [cURL](http://en.wikipedia.org/wiki/CURL) request:
 
 ~~~~~
 curl \
@@ -77,7 +78,8 @@ curl \
   http://localhost:8070/v1.0/creds
 ~~~~~
 
-* using the credentials returned by the above cURL request, create a new file called ~/.yar.creds
+* using the credentials returned by the above [cURL](http://en.wikipedia.org/wiki/CURL)
+request, create a new file called ~/.yar.creds
 in the following format (this file will be used in a bit by
 [yarcurl](https://github.com/simonsdave/yar/wiki/Utilities#yarcurl)):
 
