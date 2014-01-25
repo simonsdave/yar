@@ -37,7 +37,7 @@ class AsyncAction(object):
     class is to abstract away all tornado details from the
     derived classes and isolate the async control code into
     a single spot. This isolation makes mock creation in unit
-    tests super."""
+    tests super easy."""
 
     def __init__(self, key_store):
         """```AsyncAction```'s constructor.
