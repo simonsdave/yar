@@ -8,14 +8,12 @@ See the [Wiki](https://github.com/simonsdave/yar/wiki) for a more complete descr
 
 Prerequisites 
 -------------
-* code written and tested on Mac OS X 10.8.4 using
-[git 1.7.12.4](http://git-scm.com/),
-[Python 2.7.2](http://www.python.org/),
-[virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv),
-[CouchDB 1.2 & 1.3](http://couchdb.apache.org/),
-[memcached 1.4.13](http://memcached.org/)
-and
-[command line tools (OS X Mountain Lion) for Xcode - April 2013](https://developer.apple.com/downloads/index.action)
+* code written and tested on Mac OS X 10.8.4 using:
+  * [Python 2.7.2](http://www.python.org/)
+  * [virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv)
+  * [CouchDB 1.2 & 1.3](http://couchdb.apache.org/)
+  * [memcached 1.4.13](http://memcached.org/)
+  * [command line tools (OS X Mountain Lion) for Xcode - April 2013](https://developer.apple.com/downloads/index.action)
 * see
 [requirements.txt](https://github.com/simonsdave/yar/blob/master/requirements.txt "requirements.txt")
 for the complete list of python packages on which yar depends
