@@ -15,9 +15,7 @@ from async_nonce_checker import AsyncNonceChecker
 be no older than ```maxage``` seconds before the current timestamp."""
 maxage = 30
 
-
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
-
 
 # these constants define detailed MAC authentication failure reasons
 AUTH_FAILURE_DETAIL_TS_IN_FUTURE = 0x0001
@@ -123,10 +121,7 @@ class AsyncHMACAuth(object):
             self._request.full_url(),
             self._auth_hdr_val.mac)
 
-        self._on_auth_done(
-            True,
-            owner=owner,
-            identifier=mac_key_identifier)
+        self._on_auth_done(True, owner=owner)
 
     def _on_async_nonce_checker_done(self, is_ok):
         """this callback is invoked when AsyncNonceChecker has finished.

@@ -44,7 +44,6 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
 
         the_response_is_ok = True
         the_request_owner = "das@example.com"
-        the_request_identifier = mac.MACKeyIdentifier.generate()
 
         def async_app_server_forwarder_forward_patch(http_client, request, callback):
             self.assertIsNotNone(request)
@@ -61,10 +60,9 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             self.assertIsNotNone(request.headers)
             self.assertEqual(len(request.headers), 1 + len(the_request_headers))
             expected_headers = tornado.httputil.HTTPHeaders(the_request_headers)
-            expected_headers["Authorization"] = "%s %s %s" % (
+            expected_headers["Authorization"] = "%s %s" % (
                 self.__class__._app_server_auth_method,
-                the_request_owner,
-                the_request_identifier)
+                the_request_owner)
             self.assertEqual(request.headers, expected_headers)
 
             response = mock.Mock()
@@ -115,8 +113,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
                 the_request_uri,
                 the_request_headers,
                 the_request_body,
-                the_request_owner,
-                the_request_identifier)
+                the_request_owner)
             aasf.forward(on_async_app_server_forward_done)
 
     def test_all_good_001(self):
@@ -219,7 +216,6 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
         }
         the_request_body = "dave was here"
         the_request_owner = "das@example.com"
-        the_request_identifier = mac.MACKeyIdentifier.generate()
 
         the_response_code = httplib.CREATED
         the_response_headers = tornado.httputil.HTTPHeaders({
@@ -246,10 +242,9 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             self.assertIsNotNone(request.headers)
             self.assertEqual(len(request.headers), 1 + len(the_request_headers))
             expected_headers = tornado.httputil.HTTPHeaders(the_request_headers)
-            expected_headers["Authorization"] = "%s %s %s" % (
+            expected_headers["Authorization"] = "%s %s" % (
                 self.__class__._app_server_auth_method,
-                the_request_owner,
-                the_request_identifier)
+                the_request_owner)
             self.assertEqual(request.headers, expected_headers)
 
             response = mock.Mock()
@@ -268,6 +263,5 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
                 the_request_uri,
                 the_request_headers,
                 the_request_body,
-                the_request_owner,
-                the_request_identifier)
+                the_request_owner)
             aasf.forward(on_async_app_server_forward_done)

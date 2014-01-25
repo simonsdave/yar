@@ -71,8 +71,7 @@ class RequestHandler(trhutil.RequestHandler):
         is_auth_ok,
         auth_failure_detail=None,
         auth_failure_debug_details=None,
-        owner=None,
-        identifier=None):
+        owner=None):
 
         if not is_auth_ok:
 
@@ -98,8 +97,7 @@ class RequestHandler(trhutil.RequestHandler):
             self.request.uri,
             self.request.headers,
             self.get_request_body_if_exists(),
-            owner,
-            identifier)
+            owner)
         aasf.forward(self._on_app_server_done)
 
     def _handle_request(self):

@@ -319,8 +319,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                     is_auth_ok,
                     auth_failure_detail=None,
                     auth_failure_debug_details=None,
-                    owner=None,
-                    identifier=None):
+                    owner=None):
 
                     self.assertIsNotNone(is_auth_ok)
 
@@ -332,9 +331,6 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
 
                         self.assertIsNotNone(owner)
                         self.assertEqual(owner, the_owner)
-
-                        self.assertIsNotNone(identifier)
-                        self.assertEqual(identifier, the_mac_key_identifier)
                     else:
                         self.assertFalse(is_auth_ok)
 
@@ -350,7 +346,6 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                             self.assertTrue(0 == len(auth_failure_debug_details))
 
                         self.assertIsNone(owner)
-                        self.assertIsNone(identifier)
 
                 aha = async_hmac_auth.AsyncHMACAuth(
                     request=request,

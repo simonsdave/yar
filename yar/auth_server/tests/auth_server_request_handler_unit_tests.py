@@ -16,6 +16,7 @@ import tornado.web
 from yar.tests import yar_test_util
 from yar.auth_server import auth_server_request_handler
 
+
 class AuthServer(yar_test_util.Server):
     """Mock auth server."""
 
@@ -272,7 +273,11 @@ class TestCase(yar_test_util.TestCase):
                 self.assertIsNotNone(callback)
                 callback(False)
 
-            with mock.patch("yar.auth_server.async_app_server_forwarder.AsyncAppServerForwarder.forward", forward_patch):
+            name_of_method_to_patch = (
+                "yar.auth_server.async_app_server_forwarder."
+                "AsyncAppServerForwarder.forward"
+            )
+            with mock.patch(name_of_method_to_patch, forward_patch):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
                     "http://localhost:%d/whatever" % self.__class__.auth_server.port,
@@ -296,10 +301,7 @@ class TestCase(yar_test_util.TestCase):
 
         def authenticate_patch(ignore_this_async_hmac_auth, callback):
             self.assertIsNotNone(callback)
-            callback(
-                is_auth_ok=True,
-                owner=the_owner,
-                identifier=the_identifier)
+            callback(is_auth_ok=True, owner=the_owner)
 
         name_of_method_to_patch = (
             "yar.auth_server.hmac.async_hmac_auth."
