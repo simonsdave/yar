@@ -94,15 +94,6 @@ class RequestHandler(trhutil.RequestHandler):
             body["owner"],
             self._on_async_creds_create_done)
 
-    def _on_async_creds_delete_done(self, isok):
-        if isok is None:
-            status = httplib.INTERNAL_SERVER_ERROR
-        else:
-            status = httplib.OK if isok else httplib.NOT_FOUND
-
-        self.set_status(status)
-        self.finish()
-
     @tornado.web.asynchronous
     def delete(self, mac_key_identifier=None):
         if mac_key_identifier is None:
@@ -114,3 +105,12 @@ class RequestHandler(trhutil.RequestHandler):
         acd.delete(
             mac_key_identifier,
             self._on_async_creds_delete_done)
+
+    def _on_async_creds_delete_done(self, isok):
+        if isok is None:
+            status = httplib.INTERNAL_SERVER_ERROR
+        else:
+            status = httplib.OK if isok else httplib.NOT_FOUND
+
+        self.set_status(status)
+        self.finish()
