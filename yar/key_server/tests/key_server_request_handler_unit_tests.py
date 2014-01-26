@@ -34,7 +34,10 @@ class KeyServer(yar_test_util.Server):
         key_server_request_handler._key_store = key_store
 
         handlers = [
-            (r"/v1.0/creds(?:/([^/]+))?", key_server_request_handler.RequestHandler),
+            (
+                key_server_request_handler.url_spec,
+                key_server_request_handler.RequestHandler
+            ),
         ]
         app = tornado.web.Application(handlers=handlers)
 
@@ -66,13 +69,16 @@ class TestCase(yar_test_util.TestCase):
     def url(self):
         return "http://localhost:%s/v1.0/creds" % self.__class__._key_server.port
 
-    def _create_creds(self, the_owner):
+    def _create_creds(self, the_owner, the_auth_scheme="hmac"):
         self.assertIsNotNone(the_owner)
         self.assertTrue(0 < len(the_owner))
 
-        def create_patch(acc, owner, callback):
+        def create_patch(acc, owner, auth_scheme, callback):
             self.assertIsNotNone(acc)
-#           self.assertEqual(owner, the_expected_owner)
+            self.assertEqual(owner, the_owner)
+            self.assertEqual(auth_scheme, the_auth_scheme)
+            self.assertIsNotNone(callback)
+
             creds = {
                 "owner": owner,
                 "mac_key_identifier": mac.MACKeyIdentifier.generate(),
@@ -80,35 +86,46 @@ class TestCase(yar_test_util.TestCase):
                 "mac_algorithm": mac.MAC.algorithm,
                 "is_deleted": False,
             }
-#           self.the_expected_creds = creds
-            self.assertIsNotNone(callback)
             callback(creds)
 
-        with mock.patch("yar.key_server.async_creds_creator.AsyncCredsCreator.create", create_patch):
+        name_of_method_to_patch = (
+            "yar.key_server.async_creds_creator."
+            "AsyncCredsCreator.create"
+        )
+        with mock.patch(name_of_method_to_patch, create_patch):
             http_client = httplib2.Http()
+            body = {
+                "owner": the_owner,
+                "auth_scheme": the_auth_scheme,
+            }
             response, content = http_client.request(
                 self.url(),
                 "POST",
-                body=json.dumps({"owner": the_owner}),
+                body=json.dumps(body),
                 headers={"Content-Type": "application/json; charset=utf8"})
+
             self.assertIsNotNone(response)
             self.assertTrue(httplib.CREATED == response.status)
-            self.assertTrue('location' in response)
-            location = response['location']
-            self.assertIsNotNone(location)
-            self.assertIsNotNone(location.startswith(self.url()))
+
             self.assertTrue('content-type' in response)
             content_type = response['content-type']
             self.assertIsJsonUtf8ContentType(content_type)
+
             creds = json.loads(content)
             self.assertIsNotNone(creds)
             jsonschema.validate(
                 creds,
                 jsonschemas.create_creds_response)
+
             self.assertEqual(the_owner, creds.get('owner', None))
             mac_key_identifier = creds.get('mac_key_identifier', None)
             self.assertIsNotNone(mac_key_identifier)
-            self.assertTrue(location.endswith(mac_key_identifier))
+
+            self.assertTrue('location' in response)
+            location = response['location']
+            self.assertIsNotNone(location)
+            expected_location = "%s/%s" % (self.url(), mac_key_identifier)
+            self.assertEqual(location, expected_location)
 
             self._creds_database.append(creds)
 
@@ -119,15 +136,20 @@ class TestCase(yar_test_util.TestCase):
         http_client = httplib2.Http()
         response, content = http_client.request(location, "GET")
         self.assertTrue(httplib.OK == response.status)
+
         self.assertTrue("content-type" in response)
         content_type = response["content-type"]
         self.assertIsJsonUtf8ContentType(content_type)
+
         creds = json.loads(content)
         self.assertIsNotNone(creds)
+
         jsonschema.validate(
             creds,
             jsonschemas.create_creds_response)
-        self.assertEqual(owner, creds.get('owner', None))
+
+        self.assertEqual(the_owner, creds.get("owner", None))
+
         mac_key_identifier = creds.get('mac_key_identifier', None)
         self.assertIsNotNone(mac_key_identifier)
         self.assertTrue(location.endswith(mac_key_identifier))
@@ -138,22 +160,29 @@ class TestCase(yar_test_util.TestCase):
 
         return (creds, location)
 
-    def _get_creds(self, the_mac_key_identifier, expected_to_be_found=True, get_deleted=False):
+    def _get_creds(
+        self,
+        the_mac_key_identifier,
+        expected_to_be_found=True,
+        get_deleted=False):
+
         self.assertIsNotNone(the_mac_key_identifier)
         self.assertTrue(0 < len(the_mac_key_identifier))
 
         def fetch_patch(
             acr,
             callback,
-            mac_key_identifier,
+            key,
             owner,
             is_filter_out_deleted,
             is_filter_out_non_model_properties):
+
             self.assertIsNotNone(acr)
             self.assertIsNotNone(callback)
-            self.assertIsNotNone(mac_key_identifier)
-            self.assertEqual(mac_key_identifier, the_mac_key_identifier)
+            self.assertIsNotNone(key)
+            self.assertEqual(key, the_mac_key_identifier)
             self.assertIsNone(owner)
+
             for creds in self._creds_database:
                 self.assertIn("mac_key_identifier", creds)
                 if the_mac_key_identifier == creds["mac_key_identifier"]:
@@ -166,7 +195,10 @@ class TestCase(yar_test_util.TestCase):
                     return
             callback(creds=None, is_creds_collection=None)
 
-        with mock.patch("yar.key_server.async_creds_retriever.AsyncCredsRetriever.fetch", fetch_patch):
+        name_of_method_to_patch = (
+            "yar.key_server.async_creds_retriever.AsyncCredsRetriever.fetch"
+        )
+        with mock.patch(name_of_method_to_patch, fetch_patch):
             url = "%s/%s" % (self.url(), the_mac_key_identifier)
             if get_deleted:
                 url = "%s?deleted=true" % url
@@ -193,13 +225,14 @@ class TestCase(yar_test_util.TestCase):
         def fetch_patch(
             acr,
             callback,
-            mac_key_identifier,
+            key,
             owner,
             is_filter_out_deleted,
             is_filter_out_non_model_properties):
+
             self.assertIsNotNone(acr)
             self.assertIsNotNone(callback)
-            self.assertIsNone(mac_key_identifier)
+            self.assertIsNone(key)
             if the_owner is None:
                 self.assertIsNone(owner)
             else:
@@ -218,7 +251,11 @@ class TestCase(yar_test_util.TestCase):
                         owners_creds.append(creds)
                 callback(creds=owners_creds, is_creds_collection=True)
 
-        with mock.patch("yar.key_server.async_creds_retriever.AsyncCredsRetriever.fetch", fetch_patch):
+        name_of_method_to_patch = (
+            "yar.key_server.async_creds_retriever."
+            "AsyncCredsRetriever.fetch"
+        )
+        with mock.patch(name_of_method_to_patch, fetch_patch):
             http_client = httplib2.Http()
             url = self.url()
             if the_owner is not None:
@@ -259,29 +296,36 @@ class TestCase(yar_test_util.TestCase):
                     return
             callback(False)
 
-        with mock.patch("yar.key_server.async_creds_deleter.AsyncCredsDeleter.delete", delete_patch):
+        name_of_method_to_patch = (
+            "yar.key_server.async_creds_deleter.AsyncCredsDeleter.delete"
+        )
+        with mock.patch(name_of_method_to_patch, delete_patch):
             url = "%s/%s" % (self.url(), the_mac_key_identifier)
             http_client = httplib2.Http()
             response, content = http_client.request(url, "DELETE")
             self.assertTrue(httplib.OK == response.status)
 
     def test_get_of_non_existent_resource(self):
-        the_mac_key_identifier = str(uuid.uuid4()).replace("-", "")
+        the_key = str(uuid.uuid4()).replace("-", "")
 
         def fetch_patch(
             acr,
             callback,
-            mac_key_identifier,
+            key,
             owner,
             is_filter_out_deleted,
             is_filter_out_non_model_properties):
             self.assertIsNotNone(acr)
             self.assertIsNotNone(callback)
-            self.assertEqual(mac_key_identifier, the_mac_key_identifier)
+            self.assertEqual(key, the_key)
             callback(creds=None, is_creds_collection=None)
 
-        with mock.patch("yar.key_server.async_creds_retriever.AsyncCredsRetriever.fetch", fetch_patch):
-            url = "%s/%s" % (self.url(), the_mac_key_identifier)
+        name_of_method_to_patch = (
+            "yar.key_server.async_creds_retriever."
+            "AsyncCredsRetriever.fetch"
+        )
+        with mock.patch(name_of_method_to_patch, fetch_patch):
+            url = "%s/%s" % (self.url(), the_key)
             http_client = httplib2.Http()
             response, content = http_client.request(url, "GET")
             self.assertIsNotNone(response)

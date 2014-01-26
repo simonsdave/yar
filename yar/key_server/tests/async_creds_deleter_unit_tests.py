@@ -13,7 +13,7 @@ from yar import mac
 from yar.tests import yar_test_util
 
 
-class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
+class TestCaseAsyncCredsDeleter(yar_test_util.TestCase):
     """A collection of whitebox unit tests for the key server's
     async_creds_deleter module."""
 
@@ -24,17 +24,17 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
         AsyncCredsRetriever indicates the credentials being
         deleted don't exist in the key store."""
 
-        the_mac_key_identifier = mac.MACKeyIdentifier.generate()
+        the_key = str(uuid.uuid4()).replace("-", "")
 
         def async_creds_retriever_fetch_patch(
             acd,
             callback,
-            mac_key_identifier,
+            key,
             is_filter_out_deleted):
 
             self.assertIsNotNone(acd)
 
-            self.assertEqual(mac_key_identifier, the_mac_key_identifier)
+            self.assertEqual(key, the_key)
 
             self.assertFalse(is_filter_out_deleted)
 
@@ -45,12 +45,13 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             self.assertIsNotNone(is_ok)
             self.assertFalse(is_ok)
 
-        name_of_method_to_patch = "yar.key_server.async_creds_retriever.AsyncCredsRetriever.fetch"
+        name_of_method_to_patch = (
+            "yar.key_server.async_creds_retriever."
+            "AsyncCredsRetriever.fetch"
+        )
         with mock.patch(name_of_method_to_patch, async_creds_retriever_fetch_patch):
             acd = async_creds_deleter.AsyncCredsDeleter(type(self)._key_store)
-            acd.delete(
-                mac_key_identifier=the_mac_key_identifier,
-                callback=on_async_delete_done)
+            acd.delete(key=the_key, callback=on_async_delete_done)
 
     def test_already_deleted_creds(self):
         """Validates async_creds_deleter's behavior when
@@ -71,12 +72,12 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
         def async_creds_retriever_fetch_patch(
             acd,
             callback,
-            mac_key_identifier,
+            key,
             is_filter_out_deleted):
 
             self.assertIsNotNone(acd)
 
-            self.assertEqual(mac_key_identifier, the_creds["mac_key_identifier"])
+            self.assertEqual(key, the_creds["mac_key_identifier"])
 
             self.assertFalse(is_filter_out_deleted)
 
@@ -103,7 +104,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             with mock.patch(name_of_method_to_patch, async_req_to_key_store_patch):
                 acd = async_creds_deleter.AsyncCredsDeleter(type(self)._key_store)
                 acd.delete(
-                    mac_key_identifier=the_creds["mac_key_identifier"],
+                    key=the_creds["mac_key_identifier"],
                     callback=on_async_delete_done)
 
     def _test_creds_update_failure(self, the_is_ok, the_code):
@@ -131,12 +132,12 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
         def async_creds_retriever_fetch_patch(
             acd,
             callback,
-            mac_key_identifier,
+            key,
             is_filter_out_deleted):
 
             self.assertIsNotNone(acd)
 
-            self.assertEqual(mac_key_identifier, the_creds["mac_key_identifier"])
+            self.assertEqual(key, the_creds["mac_key_identifier"])
 
             self.assertFalse(is_filter_out_deleted)
 
@@ -174,7 +175,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             with mock.patch(name_of_method_to_patch, async_req_to_key_store_patch):
                 acd = async_creds_deleter.AsyncCredsDeleter(type(self)._key_store)
                 acd.delete(
-                    mac_key_identifier=the_creds["mac_key_identifier"],
+                    key=the_creds["mac_key_identifier"],
                     callback=on_async_delete_done)
 
     def test_creds_update_failure_bad_is_ok(self):

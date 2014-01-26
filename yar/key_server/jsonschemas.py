@@ -11,6 +11,13 @@ create_creds_request = {
             "type": "string",
             "minLength": 1
         },
+        "auth_scheme": {
+            "type": "string",
+            "enum": [
+                "hmac",
+                "basic",
+            ],
+        },
     },
     "required": [
         "owner",

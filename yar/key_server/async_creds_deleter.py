@@ -7,19 +7,18 @@ import logging
 from async_creds_retriever import AsyncCredsRetriever
 from ks_util import AsyncAction
 
-
 _logger = logging.getLogger("KEYSERVER.%s" % __name__)
 
 
 class AsyncCredsDeleter(AsyncAction):
 
-    def delete(self, mac_key_identifier, callback):
+    def delete(self, key, callback):
         self._callback = callback
 
         acr = AsyncCredsRetriever(self.key_store)
         acr.fetch(
             self._on_async_creds_retriever_done,
-            mac_key_identifier=mac_key_identifier,
+            key=key,
             is_filter_out_deleted=False)
 
     def _on_async_creds_retriever_done(self, creds, is_creds_collection):

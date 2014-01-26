@@ -25,7 +25,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
         the_code,
         the_body):
 
-        self.the_mac_key_identifier = mac.MACKeyIdentifier.generate()
+        self.the_key = str(uuid.uuid4()).replace("-", "")
 
         def async_req_to_key_store_patch(
             acr,
@@ -37,7 +37,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             self.assertIsNotNone(acr)
 
             self.assertIsNotNone(path)
-            self.assertEqual(path, self.the_mac_key_identifier)
+            self.assertEqual(path, self.the_key)
 
             self.assertIsNotNone(method)
             self.assertEqual(method, "GET")
@@ -56,7 +56,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             acr = async_creds_retriever.AsyncCredsRetriever(type(self)._key_store)
             acr.fetch(
                 callback=on_async_create_done,
-                mac_key_identifier=self.the_mac_key_identifier)
+                key=self.the_key)
 
     def test_is_ok_error_from_async_req_to_key_store(self):
         self._test_error_from_async_req_to_key_store(
@@ -132,7 +132,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             acr = async_creds_retriever.AsyncCredsRetriever(type(self)._key_store)
             acr.fetch(
                 callback=on_async_create_done,
-                mac_key_identifier=the_body["mac_key_identifier"],
+                key=the_body["mac_key_identifier"],
                 owner=None,
                 is_filter_out_deleted=the_is_filter_out_deleted,
                 is_filter_out_non_model_properties=the_is_filter_out_non_model_properties)
@@ -257,7 +257,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             acr = async_creds_retriever.AsyncCredsRetriever(type(self)._key_store)
             acr.fetch(
                 callback=on_async_create_done,
-                mac_key_identifier=None,
+                key=None,
                 owner=the_owner,
                 is_filter_out_deleted=the_is_filter_out_deleted,
                 is_filter_out_non_model_properties=the_is_filter_out_non_model_properties)
@@ -360,7 +360,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             acr = async_creds_retriever.AsyncCredsRetriever(type(self)._key_store)
             acr.fetch(
                 callback=on_async_create_done,
-                mac_key_identifier=None,
+                key=None,
                 owner=None,
                 is_filter_out_deleted=False,
                 is_filter_out_non_model_properties=False)

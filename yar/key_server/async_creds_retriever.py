@@ -16,7 +16,7 @@ class AsyncCredsRetriever(AsyncAction):
     def fetch(
         self,
         callback,
-        mac_key_identifier=None,
+        key=None,
         owner=None,
         is_filter_out_deleted=True,
         is_filter_out_non_model_properties=False):
@@ -26,8 +26,8 @@ class AsyncCredsRetriever(AsyncAction):
             is_filter_out_non_model_properties
         self._is_filter_out_deleted = is_filter_out_deleted
 
-        if mac_key_identifier:
-            path = mac_key_identifier
+        if key:
+            path = key
         else:
             if owner:
                 fmt = (

@@ -25,6 +25,7 @@ def filter_out_non_model_creds_properties(creds):
         "mac_algorithm",
         "mac_key",
         "mac_key_identifier",
+        "api_key",
         "owner"
     ]
     return {k: v for k, v in creds.iteritems() if k in model_creds_properties}

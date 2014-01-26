@@ -28,11 +28,27 @@ class RequestHandler(trhutil.RequestHandler):
 
     def _add_links_to_creds_dict(self, creds):
         assert creds is not None
-        mac_key_identifier = creds.get("mac_key_identifier", None)
-        assert mac_key_identifier is not None
-        location = "%s/%s" % (self.request.full_url(), mac_key_identifier)
+        if "mac_key_identifier" in creds:
+            key = creds["mac_key_identifier"]
+        else:
+            key = creds["api_key"]
+        assert key is not None
+        location = "%s/%s" % (self.request.full_url(), key)
         creds["links"] = {"self": {"href": location}}
         return location
+
+    @tornado.web.asynchronous
+    def get(self, key=None):
+        is_filter_out_deleted = False \
+            if self.get_argument("deleted", None) \
+            else True
+        acr = AsyncCredsRetriever(_key_store)
+        acr.fetch(
+            self._on_async_creds_retrieve_done,
+            key=key,
+            owner=self.get_argument("owner", None),
+            is_filter_out_deleted=is_filter_out_deleted,
+            is_filter_out_non_model_properties=True)
 
     def _on_async_creds_retrieve_done(self, creds, is_creds_collection):
         if creds is None:
@@ -50,33 +66,8 @@ class RequestHandler(trhutil.RequestHandler):
         self.finish()
 
     @tornado.web.asynchronous
-    def get(self, mac_key_identifier=None):
-        is_filter_out_deleted = False \
-            if self.get_argument("deleted", None) \
-            else True
-        acr = AsyncCredsRetriever(_key_store)
-        acr.fetch(
-            self._on_async_creds_retrieve_done,
-            mac_key_identifier=mac_key_identifier,
-            owner=self.get_argument("owner", None),
-            is_filter_out_deleted=is_filter_out_deleted,
-            is_filter_out_non_model_properties=True)
-
-    def _on_async_creds_create_done(self, creds):
-        if creds is None:
-            self.set_status(httplib.INTERNAL_SERVER_ERROR)
-            self.finish()
-            return
-
-        location = self._add_links_to_creds_dict(creds)
-        self.set_header("Location", location)
-        self.write(creds)
-        self.set_status(httplib.CREATED)
-        self.finish()
-
-    @tornado.web.asynchronous
-    def post(self, mac_key_identifer=None):
-        if mac_key_identifer is not None:
+    def post(self, key=None):
+        if key is not None:
             self.set_status(httplib.METHOD_NOT_ALLOWED)
             self.finish()
             return
@@ -92,18 +83,31 @@ class RequestHandler(trhutil.RequestHandler):
         acc = AsyncCredsCreator(_key_store)
         acc.create(
             body["owner"],
+            body.get("auth_scheme", "basic"),
             self._on_async_creds_create_done)
 
+    def _on_async_creds_create_done(self, creds):
+        if creds is None:
+            self.set_status(httplib.INTERNAL_SERVER_ERROR)
+            self.finish()
+            return
+
+        location = self._add_links_to_creds_dict(creds)
+        self.set_header("Location", location)
+        self.write(creds)
+        self.set_status(httplib.CREATED)
+        self.finish()
+
     @tornado.web.asynchronous
-    def delete(self, mac_key_identifier=None):
-        if mac_key_identifier is None:
+    def delete(self, key=None):
+        if key is None:
             self.set_status(httplib.METHOD_NOT_ALLOWED)
             self.finish()
             return
 
         acd = AsyncCredsDeleter(_key_store)
         acd.delete(
-            mac_key_identifier,
+            key,
             self._on_async_creds_delete_done)
 
     def _on_async_creds_delete_done(self, isok):
