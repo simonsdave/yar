@@ -1,5 +1,5 @@
 """This module hides the gory details of async'ly interacting
-with the key store to retrieve credentials."""
+with the key server to retrieve credentials."""
 
 import httplib
 import logging
@@ -10,12 +10,10 @@ from yar.key_server import jsonschemas
 from yar import mac
 from yar.util import trhutil
 
-
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
-
 """This host:port combination define the location of the key server."""
-key_server_address = None
+key_server_address = "localhost:8070"
 
 
 class AsyncHMACCredsRetriever(object):
