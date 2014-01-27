@@ -57,20 +57,8 @@ class KeyServerGetCredsResponseTestCase(unittest.TestCase):
     def _uuid(self):
         return str(uuid.uuid4())
 
-    def _good_response(self, is_hmac_sha_1=True):
-        mac_algorithm = "hmac-sha-1" if is_hmac_sha_1 else "hmac-sha-256"
-        return {
-            "is_deleted": True,
-            "mac_algorithm": mac_algorithm,
-            "mac_key": str(mac.MACKey.generate()),
-            "mac_key_identifier": str(mac.MACKeyIdentifier.generate()),
-            "owner": "simonsdave@gmail.com",
-            "links": {
-                "self": {
-                    "href": "http://localhost:8070/v1.0/creds/f274d56f213faa731e97735f790ddc89"
-                    }
-                }
-            }
+    def _generate_good_response(self):
+        return None
 
     def _validate(self, response):
         jsonschema.validate(
@@ -78,50 +66,30 @@ class KeyServerGetCredsResponseTestCase(unittest.TestCase):
             jsonschemas.get_creds_response)
 
     def test_all_good(self):
-        response = self._good_response()
+        response = self._generate_good_response()
+        if not response:
+            # :TODO: crappy way to do this - how do we avoid nosetests selecting
+            # this abstract base class as a real test case class
+            return
         self._validate(response)
 
     def test_is_deleted_is_not_boolean(self):
-        response = self._good_response()
+        response = self._generate_good_response()
+        if not response:
+            # :TODO: crappy way to do this - how do we avoid nosetests selecting
+            # this abstract base class as a real test case class
+            return
         self._validate(response)
         response["is_deleted"] = self._uuid()
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(response)
 
-    def test_invalid_algorithm(self):
-        response = self._good_response(is_hmac_sha_1=True)
-        self._validate(response)
-        response = self._good_response(is_hmac_sha_1=False)
-        self._validate(response)
-        response["mac_algorithm"] = self._uuid()
-        with self.assertRaises(jsonschema.ValidationError):
-            self._validate(response)
-        response["mac_algorithm"] = ""
-        with self.assertRaises(jsonschema.ValidationError):
-            self._validate(response)
-
-    def test_invalid_mac_key(self):
-        response = self._good_response()
-        self._validate(response)
-        response["mac_key"] = ""
-        with self.assertRaises(jsonschema.ValidationError):
-            self._validate(response)
-        del response["mac_key"]
-        with self.assertRaises(jsonschema.ValidationError):
-            self._validate(response)
-
-    def test_invalid_mac_key_identifier(self):
-        response = self._good_response()
-        self._validate(response)
-        response["mac_key_identifier"] = ""
-        with self.assertRaises(jsonschema.ValidationError):
-            self._validate(response)
-        del response["mac_key_identifier"]
-        with self.assertRaises(jsonschema.ValidationError):
-            self._validate(response)
-
     def test_invalid_owner(self):
-        response = self._good_response()
+        response = self._generate_good_response()
+        if not response:
+            # :TODO: crappy way to do this - how do we avoid nosetests selecting
+            # this abstract base class as a real test case class
+            return
         self._validate(response)
         response["owner"] = ""
         with self.assertRaises(jsonschema.ValidationError):
@@ -132,7 +100,11 @@ class KeyServerGetCredsResponseTestCase(unittest.TestCase):
 
     def test_invalid_links(self):
         # :TODO: this should be a more exhaustive test
-        response = self._good_response()
+        response = self._generate_good_response()
+        if not response:
+            # :TODO: crappy way to do this - how do we avoid nosetests selecting
+            # this abstract base class as a real test case class
+            return
         self._validate(response)
         response["links"] = ""
         with self.assertRaises(jsonschema.ValidationError):
@@ -142,8 +114,100 @@ class KeyServerGetCredsResponseTestCase(unittest.TestCase):
             self._validate(response)
 
     def test_extra_properties(self):
-        response = self._good_response()
+        response = self._generate_good_response()
+        if not response:
+            # :TODO: crappy way to do this - how do we avoid nosetests selecting
+            # this abstract base class as a real test case class
+            return
         self._validate(response)
         response[self._uuid()] = self._uuid()
+        with self.assertRaises(jsonschema.ValidationError):
+            self._validate(response)
+
+
+class KeyServerGetBasicCredsResponseTestCase(KeyServerGetCredsResponseTestCase):
+
+    def _generate_good_response(self):
+        # :TODO: need basic.APIKey.generate() instead of line below
+        api_key = str(uuid.uuid4()).replace("-", "")
+        return {
+            "basic": {
+                "api_key": str(api_key),
+            },
+            "is_deleted": True,
+            "owner": "simonsdave@gmail.com",
+            "links": {
+                "self": {
+                    "href": "http://localhost:8070/v1.0/creds/f274d56f213faa731e97735f790ddc89"
+                }
+            }
+        }
+
+    def test_invalid_api_key(self):
+        response = self._generate_good_response()
+        self._validate(response)
+
+        response["basic"]["api_key"] = ""
+        with self.assertRaises(jsonschema.ValidationError):
+            self._validate(response)
+
+        del response["basic"]["api_key"]
+        with self.assertRaises(jsonschema.ValidationError):
+            self._validate(response)
+
+
+class KeyServerGetHMACCredsResponseTestCase(KeyServerGetCredsResponseTestCase):
+
+    def _generate_good_response(self):
+        mac_key = mac.MACKey.generate()
+        mac_key_identifier = mac.MACKeyIdentifier.generate()
+        return {
+            "hmac": {
+                "mac_algorithm": "hmac-sha-1",
+                "mac_key": str(mac_key),
+                "mac_key_identifier": str(mac_key_identifier),
+            },
+            "is_deleted": True,
+            "owner": "simonsdave@gmail.com",
+            "links": {
+                "self": {
+                    "href": "http://localhost:8070/v1.0/creds/f274d56f213faa731e97735f790ddc89"
+                }
+            }
+        }
+
+    def test_sha_256_algorithm(self):
+        response = self._generate_good_response()
+        self._validate(response)
+        response["hmac"]["mac_algorithm"] = "hmac-sha-256"
+        self._validate(response)
+
+    def test_invalid_algorithm(self):
+        response = self._generate_good_response()
+        self._validate(response)
+        response["hmac"]["mac_algorithm"] = self._uuid()
+        with self.assertRaises(jsonschema.ValidationError):
+            self._validate(response)
+        response["hmac"]["mac_algorithm"] = ""
+        with self.assertRaises(jsonschema.ValidationError):
+            self._validate(response)
+
+    def test_invalid_mac_key(self):
+        response = self._generate_good_response()
+        self._validate(response)
+        response["hmac"]["mac_key"] = ""
+        with self.assertRaises(jsonschema.ValidationError):
+            self._validate(response)
+        del response["hmac"]["mac_key"]
+        with self.assertRaises(jsonschema.ValidationError):
+            self._validate(response)
+
+    def test_invalid_mac_key_identifier(self):
+        response = self._generate_good_response()
+        self._validate(response)
+        response["hmac"]["mac_key_identifier"] = ""
+        with self.assertRaises(jsonschema.ValidationError):
+            self._validate(response)
+        del response["hmac"]["mac_key_identifier"]
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(response)

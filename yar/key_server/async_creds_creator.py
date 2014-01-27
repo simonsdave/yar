@@ -34,21 +34,28 @@ class AsyncCredsCreator(AsyncAction):
             "is_deleted": False,
         }
         if auth_scheme == "hmac":        
-            self._creds["mac_key_identifier"] = mac.MACKeyIdentifier.generate()
-            path = self._creds["mac_key_identifier"]
-            self._creds["mac_key"] = mac.MACKey.generate()
-            self._creds["mac_algorithm"] = mac.MAC.algorithm
+            mac_key_identifier = mac.MACKeyIdentifier.generate()
+            self._creds["hmac"] = {
+                "mac_key_identifier": mac_key_identifier,
+                "mac_key": mac.MACKey.generate(),
+                "mac_algorithm": mac.MAC.algorithm,
+            }
+            path = mac_key_identifier
         else:
-            self._creds["api_key"] = str(uuid.uuid4()).replace("-", "")
-            path = self._creds["api_key"]
+            # :TODO: need basic.APIKey.generate() instead of line below
+            api_key = str(uuid.uuid4()).replace("-", "")
+            self._creds["basic"] = {
+                "api_key": api_key,
+            }
+            path = api_key
 
         self.async_req_to_key_store(
             path,
             "PUT",
             self._creds,
-            self._my_callback)
+            self._on_async_req_to_key_store_done)
 
-    def _my_callback(self, is_ok, code=None, body=None):
+    def _on_async_req_to_key_store_done(self, is_ok, code=None, body=None):
         if not is_ok or code != httplib.CREATED:
             self._callback(None)
             return

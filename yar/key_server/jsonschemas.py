@@ -29,54 +29,118 @@ create_creds_request = {
 """```get_creds_response``` is a JSON schema used to validate
 the key server's response to get creds request."""
 get_creds_response = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+#    "id": "http://api.cloudfeaster.com/v1.00/spider_metadata",
+    "title": "Get Creds Response",
+    "description": "Get Creds Response",
     "type": "object",
-    "properties": {
-        "is_deleted": {
-            "type": "boolean"
-        },
-        "mac_algorithm": {
-            "type": "string",
-            "enum": [
-                "hmac-sha-1",
-                "hmac-sha-256",
-            ],
-        },
-        "mac_key": {
-            "type": "string",
-            "minLength": 1
-        },
-        "mac_key_identifier": {
-            "type": "string",
-            "minLength": 1
-        },
-        "owner": {
-            "type": "string",
-            "minLength": 1
-        },
-        "links": {
+    "oneOf": [
+        {
             "type": "object",
             "properties": {
-                "self": {
+                "basic": {
                     "type": "object",
                     "properties": {
-                        "href": {
+                        "api_key": {
                             "type": "string",
-                            "minLength": 1
-                        }
-                    }
-                }
-            }
+                            "minLength": 1,
+                        },
+                    },
+                    "required": [
+                        "api_key",
+                    ],
+                    "additionalProperties": False,
+                },
+                "is_deleted": {
+                    "type": "boolean",
+                },
+                "owner": {
+                    "type": "string",
+                    "minLength": 1,
+                },
+                "links": {
+                    "type": "object",
+                    "properties": {
+                        "self": {
+                            "type": "object",
+                            "properties": {
+                                "href": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            "required": [
+                "basic",
+                "is_deleted",
+                "owner",
+                "links",
+            ],
+            "additionalProperties": False,
         },
-    },
-    "required": [
-        "is_deleted",
-        "mac_algorithm",
-        "mac_key",
-        "mac_key_identifier",
-        "owner",
-        "links",
+        {
+            "type": "object",
+            "properties": {
+                "hmac": {
+                    "type": "object",
+                    "properties": {
+                        "mac_algorithm": {
+                            "type": "string",
+                            "enum": [
+                                "hmac-sha-1",
+                                "hmac-sha-256",
+                            ],
+                        },
+                        "mac_key": {
+                            "type": "string",
+                            "minLength": 1,
+                        },
+                        "mac_key_identifier": {
+                            "type": "string",
+                            "minLength": 1,
+                        },
+                    },
+                    "required": [
+                        "mac_algorithm",
+                        "mac_key",
+                        "mac_key_identifier",
+                    ],
+                    "additionalProperties": False,
+                },
+                "is_deleted": {
+                    "type": "boolean",
+                },
+                "owner": {
+                    "type": "string",
+                    "minLength": 1,
+                },
+                "links": {
+                    "type": "object",
+                    "properties": {
+                        "self": {
+                            "type": "object",
+                            "properties": {
+                                "href": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            "required": [
+                "hmac",
+                "is_deleted",
+                "owner",
+                "links",
+            ],
+            "additionalProperties": False,
+        },
     ],
-    "additionalProperties": False,
 }
 
 

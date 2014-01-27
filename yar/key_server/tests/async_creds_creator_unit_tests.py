@@ -50,15 +50,25 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
             self.assertFalse(body["is_deleted"])
 
             if the_auth_scheme == "hmac":
-                self.assertIn("mac_key_identifier", body)
-                self.assertEqual(body["mac_key_identifier"], path)
+                self.assertIn("hmac", body)
+                hmac_section_of_body = body["hmac"]
 
-                self.assertIn("mac_key", body)
+                self.assertIn("mac_key_identifier", hmac_section_of_body)
+                self.assertEqual(
+                    hmac_section_of_body["mac_key_identifier"],
+                    path)
 
-                self.assertIn("mac_algorithm", body)
-                self.assertIn(body["mac_algorithm"], mac.MAC.algorithm)
+                self.assertIn("mac_key", hmac_section_of_body)
+
+                self.assertIn("mac_algorithm", hmac_section_of_body)
+                self.assertEqual(
+                    hmac_section_of_body["mac_algorithm"],
+                    mac.MAC.algorithm)
             else:
-                self.assertIn("api_key", body)
+                self.assertIn("basic", body)
+                basic_section_of_body = body["basic"]
+
+                self.assertIn("api_key", basic_section_of_body)
 
             self.assertIsNotNone(callback)
             callback(is_ok=the_is_ok, code=the_http_status_code)
@@ -101,50 +111,60 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
             the_auth_scheme="basic",
             the_http_status_code=httplib.BAD_REQUEST)
 
-    def test_ok(self):
+    def _test_ok(self, the_auth_scheme):
 
         self.the_owner = str(uuid.uuid4()).replace("-", "")
         self.the_creds = None
 
         def async_req_to_key_store_patch(
             acc,
-            mac_key_identifier,
-            http_method,
-            creds,
+            path,
+            method,
+            body,
             callback):
 
             self.assertIsNotNone(acc)
 
-            self.assertIsNotNone(mac_key_identifier)
+            self.assertIsNotNone(path)
 
-            self.assertIsNotNone(http_method)
-            self.assertEqual(http_method, "PUT")
+            self.assertIsNotNone(method)
+            self.assertEqual(method, "PUT")
 
-            self.assertIsNotNone(creds)
-            self.the_creds = creds
+            self.assertIsNotNone(body)
+            self.the_creds = body
 
-            self.assertIn("owner", creds)
-            self.assertEqual(creds["owner"], self.the_owner)
+            self.assertIn("owner", body)
+            self.assertEqual(body["owner"], self.the_owner)
 
-            self.assertIn("mac_key_identifier", creds)
-            self.assertEqual(creds["mac_key_identifier"], mac_key_identifier)
+            self.assertIn("type", body)
+            self.assertEqual(body["type"], "creds_v1.0")
 
-            self.assertIn("mac_key", creds)
+            self.assertIn("is_deleted", body)
+            self.assertFalse(body["is_deleted"])
 
-            self.assertIn("mac_algorithm", creds)
-            self.assertIn(creds["mac_algorithm"], mac.MAC.algorithm)
+            if the_auth_scheme == "hmac":
+                self.assertIn("hmac", body)
+                hmac_section_of_body = body["hmac"]
 
-            self.assertIn("type", creds)
-            self.assertEqual(creds["type"], "creds_v1.0")
+                self.assertIn("mac_key_identifier", hmac_section_of_body)
+                self.assertEqual(
+                    hmac_section_of_body["mac_key_identifier"],
+                    path)
 
-            self.assertIn("is_deleted", creds)
-            self.assertFalse(creds["is_deleted"])
+                self.assertIn("mac_key", hmac_section_of_body)
+
+                self.assertIn("mac_algorithm", hmac_section_of_body)
+                self.assertEqual(
+                    hmac_section_of_body["mac_algorithm"],
+                    mac.MAC.algorithm)
+            else:
+                self.assertIn("basic", body)
+                basic_section_of_body = body["basic"]
+
+                self.assertIn("api_key", basic_section_of_body)
 
             self.assertIsNotNone(callback)
-            callback(
-                is_ok=True,
-                code=httplib.CREATED,
-                body=creds)
+            callback(is_ok=True, code=httplib.CREATED, body=body)
 
         def on_async_create_done(creds):
             self.assertIsNotNone(creds)
@@ -161,5 +181,11 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
             acc = async_creds_creator.AsyncCredsCreator(type(self)._key_store)
             acc.create(
                 self.the_owner,
-                "hmac",
+                the_auth_scheme,
                 on_async_create_done)
+
+    def test_hmac_ok(self):
+        self._test_ok("hmac")
+
+    def test_basic_ok(self):
+        self._test_ok("basic")
