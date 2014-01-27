@@ -28,10 +28,10 @@ class RequestHandler(trhutil.RequestHandler):
 
     def _add_links_to_creds_dict(self, creds):
         assert creds is not None
-        if "mac_key_identifier" in creds:
-            key = creds["mac_key_identifier"]
+        if "hmac" in creds:
+            key = creds["hmac"]["mac_key_identifier"]
         else:
-            key = creds["api_key"]
+            key = creds["basic"]["api_key"]
         assert key is not None
         location = "%s/%s" % (self.request.full_url(), key)
         creds["links"] = {"self": {"href": location}}

@@ -23,6 +23,7 @@ import tornado.web
 from yar.key_server import jsonschemas
 from yar.key_server import key_server_request_handler
 from yar import mac
+from yar import basic
 from yar.tests import yar_test_util
 
 
@@ -69,6 +70,13 @@ class TestCase(yar_test_util.TestCase):
     def url(self):
         return "http://localhost:%s/v1.0/creds" % self.__class__._key_server.port
 
+    def _key_from_creds(self, creds):
+        if "hmac" in creds:
+            key = creds["hmac"].get("mac_key_identifier", None)
+        else:
+            key = creds["basic"].get("api_key", None)
+        return key
+
     def _create_creds(self, the_owner, the_auth_scheme="hmac"):
         self.assertIsNotNone(the_owner)
         self.assertTrue(0 < len(the_owner))
@@ -81,11 +89,19 @@ class TestCase(yar_test_util.TestCase):
 
             creds = {
                 "owner": owner,
-                "mac_key_identifier": mac.MACKeyIdentifier.generate(),
-                "mac_key": mac.MACKey.generate(),
-                "mac_algorithm": mac.MAC.algorithm,
                 "is_deleted": False,
             }
+            if the_auth_scheme == "hmac":
+                creds["hmac"] = {
+                    "mac_key_identifier": mac.MACKeyIdentifier.generate(),
+                    "mac_key": mac.MACKey.generate(),
+                    "mac_algorithm": mac.MAC.algorithm,
+                }
+            else:
+                creds["basic"] = {
+                    "api_key": basic.APIKey.generate(),
+                }
+
             callback(creds)
 
         name_of_method_to_patch = (
@@ -107,8 +123,8 @@ class TestCase(yar_test_util.TestCase):
             self.assertIsNotNone(response)
             self.assertTrue(httplib.CREATED == response.status)
 
-            self.assertTrue('content-type' in response)
-            content_type = response['content-type']
+            self.assertTrue("content-type" in response)
+            content_type = response["content-type"]
             self.assertIsJsonUtf8ContentType(content_type)
 
             creds = json.loads(content)
@@ -117,14 +133,15 @@ class TestCase(yar_test_util.TestCase):
                 creds,
                 jsonschemas.create_creds_response)
 
-            self.assertEqual(the_owner, creds.get('owner', None))
-            mac_key_identifier = creds.get('mac_key_identifier', None)
-            self.assertIsNotNone(mac_key_identifier)
+            self.assertEqual(the_owner, creds.get("owner", None))
+
+            key = self._key_from_creds(creds)
+            self.assertIsNotNone(key)
 
             self.assertTrue('location' in response)
             location = response['location']
             self.assertIsNotNone(location)
-            expected_location = "%s/%s" % (self.url(), mac_key_identifier)
+            expected_location = "%s/%s" % (self.url(), key)
             self.assertEqual(location, expected_location)
 
             self._creds_database.append(creds)
@@ -162,12 +179,12 @@ class TestCase(yar_test_util.TestCase):
 
     def _get_creds(
         self,
-        the_mac_key_identifier,
+        the_key,
         expected_to_be_found=True,
         get_deleted=False):
 
-        self.assertIsNotNone(the_mac_key_identifier)
-        self.assertTrue(0 < len(the_mac_key_identifier))
+        self.assertIsNotNone(the_key)
+        self.assertTrue(0 < len(the_key))
 
         def fetch_patch(
             acr,
@@ -180,12 +197,12 @@ class TestCase(yar_test_util.TestCase):
             self.assertIsNotNone(acr)
             self.assertIsNotNone(callback)
             self.assertIsNotNone(key)
-            self.assertEqual(key, the_mac_key_identifier)
+            self.assertEqual(key, the_key)
             self.assertIsNone(owner)
 
             for creds in self._creds_database:
-                self.assertIn("mac_key_identifier", creds)
-                if the_mac_key_identifier == creds["mac_key_identifier"]:
+                key = self._key_from_creds(creds)
+                if the_key == key:
                     if is_filter_out_deleted:
                         self.assertIn("is_deleted", creds)
                         if creds["is_deleted"]:
@@ -199,7 +216,7 @@ class TestCase(yar_test_util.TestCase):
             "yar.key_server.async_creds_retriever.AsyncCredsRetriever.fetch"
         )
         with mock.patch(name_of_method_to_patch, fetch_patch):
-            url = "%s/%s" % (self.url(), the_mac_key_identifier)
+            url = "%s/%s" % (self.url(), the_key)
             if get_deleted:
                 url = "%s?deleted=true" % url
             http_client = httplib2.Http()
@@ -208,16 +225,19 @@ class TestCase(yar_test_util.TestCase):
                 self.assertTrue(httplib.NOT_FOUND == response.status)
                 return None
             self.assertTrue(httplib.OK == response.status)
+
             self.assertTrue("content-type" in response)
             content_type = response["content-type"]
             self.assertIsJsonUtf8ContentType(content_type)
+
             creds = json.loads(content)
+            self.assertIsNotNone(creds)
             jsonschema.validate(
                 creds,
                 jsonschemas.get_creds_response)
-            self.assertIsNotNone(creds)
-            self.assertIn("mac_key_identifier", creds)
-            self.assertEqual(the_mac_key_identifier, creds["mac_key_identifier"])
+
+            self.assertEqual(the_key, self._key_from_creds(creds))
+
             return creds
 
     def _get_all_creds(self, the_owner=None):
@@ -279,18 +299,17 @@ class TestCase(yar_test_util.TestCase):
             self.assertTrue("creds" in creds)
             return creds["creds"]
 
-    def _delete_creds(self, the_mac_key_identifier):
-        self.assertIsNotNone(the_mac_key_identifier)
-        self.assertTrue(0 < len(the_mac_key_identifier))
+    def _delete_creds(self, the_key):
+        self.assertIsNotNone(the_key)
+        self.assertTrue(0 < len(the_key))
 
-        def delete_patch(acd, mac_key_identifier, callback):
+        def delete_patch(acd, key, callback):
             self.assertIsNotNone(acd)
-            self.assertIsNotNone(mac_key_identifier)
-            self.assertEqual(mac_key_identifier, the_mac_key_identifier)
+            self.assertIsNotNone(key)
+            self.assertEqual(key, the_key)
             self.assertIsNotNone(callback)
             for creds in self._creds_database:
-                self.assertIn("mac_key_identifier", creds)
-                if mac_key_identifier == creds["mac_key_identifier"]:
+                if key == self._key_from_creds(creds):
                     creds["is_deleted"] = True
                     callback(True)
                     return
@@ -300,7 +319,7 @@ class TestCase(yar_test_util.TestCase):
             "yar.key_server.async_creds_deleter.AsyncCredsDeleter.delete"
         )
         with mock.patch(name_of_method_to_patch, delete_patch):
-            url = "%s/%s" % (self.url(), the_mac_key_identifier)
+            url = "%s/%s" % (self.url(), the_key)
             http_client = httplib2.Http()
             response, content = http_client.request(url, "DELETE")
             self.assertTrue(httplib.OK == response.status)
@@ -476,12 +495,13 @@ class TestCase(yar_test_util.TestCase):
         owner = str(uuid.uuid4()).replace("-", "")
         (creds, location) = self._create_creds(owner)
         self.assertIsNotNone(creds)
-        mac_key_identifier = creds.get('mac_key_identifier', None)
-        self.assertIsNotNone(mac_key_identifier)
-        self.assertTrue(0 < len(mac_key_identifier))
 
-        self._delete_creds(mac_key_identifier)
-        # self._delete_creds(mac_key_identifier)
+        key = self._key_from_creds(creds)
+        self.assertIsNotNone(key)
+        self.assertTrue(0 < len(key))
+
+        self._delete_creds(key)
+        # self._delete_creds(key)
 
         all_creds = self._get_all_creds()
         self.assertIsNotNone(all_creds)
@@ -490,9 +510,9 @@ class TestCase(yar_test_util.TestCase):
     def test_deleted_creds_not_returned_by_default_on_get(self):
         owner = str(uuid.uuid4()).replace("-", "")
         (creds_on_create, location_on_create) = self._create_creds(owner)
-        mac_key_identifier = creds_on_create["mac_key_identifier"]
-        creds_on_get_before_delete = self._get_creds(mac_key_identifier)
+        key = self._key_from_creds(creds_on_create)
+        creds_on_get_before_delete = self._get_creds(key)
         self.assertIsNotNone(creds_on_get_before_delete)
-        self._delete_creds(mac_key_identifier)
-        self._get_creds(mac_key_identifier, expected_to_be_found=False)
-        self._get_creds(mac_key_identifier, get_deleted=True)
+        self._delete_creds(key)
+        self._get_creds(key, expected_to_be_found=False)
+        self._get_creds(key, get_deleted=True)
