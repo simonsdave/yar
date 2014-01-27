@@ -8,6 +8,7 @@ import uuid
 from ks_util import filter_out_non_model_creds_properties
 from ks_util import AsyncAction
 from yar import mac
+from yar import basic
 
 _logger = logging.getLogger("KEYSERVER.%s" % __name__)
 
@@ -42,8 +43,7 @@ class AsyncCredsCreator(AsyncAction):
             }
             path = mac_key_identifier
         else:
-            # :TODO: need basic.APIKey.generate() instead of line below
-            api_key = str(uuid.uuid4()).replace("-", "")
+            api_key = basic.APIKey.generate()
             self._creds["basic"] = {
                 "api_key": api_key,
             }

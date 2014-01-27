@@ -11,6 +11,7 @@ import mock
 import tornado.httpclient
 import tornado.httputil
 
+from yar import basic
 from yar.auth_server.basic import async_creds_retriever
 from yar import key_server
 from yar.key_server import jsonschemas
@@ -44,7 +45,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         in a tornado response.error) that this is flagged as an
         error to the callback of the fetch method of
         ```AsyncCredsRetriever```."""
-        the_api_key = str(uuid.uuid4()).replace("-", "")
+        the_api_key = basic.APIKey.generate()
 
         def async_http_client_fetch_patch(http_client, request, callback):
             self.assertKeyServerRequestOk(request, the_api_key)
@@ -71,7 +72,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         response code (only expect OK & NOT_FOUND) that this is flagged
         as an error to the callback of the fetch method of
         ```AsyncCredsRetriever```."""
-        the_api_key = str(uuid.uuid4()).replace("-", "")
+        the_api_key = basic.APIKey.generate()
 
         def async_http_client_fetch_patch(http_client, request, callback):
             self.assertKeyServerRequestOk(request, the_api_key)
@@ -96,7 +97,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         """Confirm that when the key server returns a NOT_FOUND
         response code that this is flagged as being ok to the callback
         of the fetch method of ```AsyncCredsRetriever```."""
-        the_api_key = str(uuid.uuid4()).replace("-", "")
+        the_api_key = basic.APIKey.generate()
 
         def async_http_client_fetch_patch(http_client, request, callback):
             self.assertKeyServerRequestOk(request, the_api_key)
@@ -122,7 +123,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         """Confirm that when the key server returns a zero length
         response this is flagged as an error to the callback the
         fetch method of ```AsyncCredsRetriever```."""
-        the_api_key = str(uuid.uuid4()).replace("-", "")
+        the_api_key = basic.APIKey.generate()
 
         def async_http_client_fetch_patch(http_client, request, callback):
             self.assertKeyServerRequestOk(request, the_api_key)
@@ -153,7 +154,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         """Confirm that when the key server returns a response
         body that's not json is flagged as an error to the callback
         the fetch method of ```AsyncCredsRetriever```."""
-        the_api_key = str(uuid.uuid4()).replace("-", "")
+        the_api_key = basic.APIKey.generate()
 
         def async_http_client_fetch_patch(http_client, request, callback):
             self.assertKeyServerRequestOk(request, the_api_key)
@@ -186,7 +187,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         body that's json but has unexpected attributes that this
         is flagged as an error to the callback the fetch method of
         ```AsyncCredsRetriever```."""
-        the_api_key = str(uuid.uuid4()).replace("-", "")
+        the_api_key = basic.APIKey.generate()
 
         def async_http_client_fetch_patch(http_client, request, callback):
             self.assertKeyServerRequestOk(request, the_api_key)
@@ -221,7 +222,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
     def test_all_good(self):
         """This is a happy path test for the fetch method of
         ```AsyncCredsRetriever```."""
-        the_api_key = str(uuid.uuid4()).replace("-", "")
+        the_api_key = basic.APIKey.generate()
         the_owner = str(uuid.uuid4()).replace("-", "")
 
         def async_http_client_fetch_patch(http_client, request, callback):

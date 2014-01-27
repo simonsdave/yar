@@ -11,6 +11,7 @@ import jsonschema
 
 from yar.key_server import jsonschemas
 from yar import mac
+from yar import basic
 
 
 class KeyServerCreateCredsRequestTestCase(unittest.TestCase):
@@ -128,8 +129,7 @@ class KeyServerGetCredsResponseTestCase(unittest.TestCase):
 class KeyServerGetBasicCredsResponseTestCase(KeyServerGetCredsResponseTestCase):
 
     def _generate_good_response(self):
-        # :TODO: need basic.APIKey.generate() instead of line below
-        api_key = str(uuid.uuid4()).replace("-", "")
+        api_key = basic.APIKey.generate()
         return {
             "basic": {
                 "api_key": str(api_key),

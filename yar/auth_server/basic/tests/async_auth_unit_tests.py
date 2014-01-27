@@ -8,6 +8,7 @@ import uuid
 import mock
 import tornado.httputil
 
+from yar import basic
 from yar.auth_server.basic import async_auth
 from yar.tests import yar_test_util
 
@@ -116,7 +117,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
         With this test the base64 encoded authorization header's value
         has both an api and password but there should not be a password."""
 
-        the_api_key = str(uuid.uuid4()).replace("-", "")
+        the_api_key = basic.APIKey.generate()
         the_password = str(uuid.uuid4()).replace("-", "")
 
         def on_auth_done(
@@ -179,7 +180,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
         aha.authenticate(on_auth_done)
 
     def test_error_getting_creds(self):
-        the_api_key = str(uuid.uuid4()).replace("-", "")
+        the_api_key = basic.APIKey.generate()
         the_owner = str(uuid.uuid4()).replace("-", "")
 
         def on_auth_done(
@@ -217,7 +218,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
             aha.authenticate(on_auth_done)
 
     def test_creds_not_found(self):
-        the_api_key = str(uuid.uuid4()).replace("-", "")
+        the_api_key = basic.APIKey.generate()
         the_owner = str(uuid.uuid4()).replace("-", "")
 
         def on_auth_done(
@@ -256,7 +257,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
             aha.authenticate(on_auth_done)
 
     def test_all_good(self):
-        the_api_key = str(uuid.uuid4()).replace("-", "")
+        the_api_key = basic.APIKey.generate()
         the_owner = str(uuid.uuid4()).replace("-", "")
 
         def on_auth_done(
