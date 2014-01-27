@@ -46,7 +46,7 @@ class DebugHeadersDict(dict):
 
         self.auth_failure_detail = None
 
-        len_lc_debug_header_prefix = len(self.__class__.lc_debug_header_prefix)
+        len_lc_debug_header_prefix = len(type(self).lc_debug_header_prefix)
         for key, value in response.iteritems():
             if self._is_auth_failure_detail_header_key(key):
                 self.auth_failure_detail = value
@@ -56,14 +56,14 @@ class DebugHeadersDict(dict):
 
     def _is_debug_header_key(self, key):
         lc_key = key.lower()
-        if not lc_key.startswith(self.__class__.lc_debug_header_prefix):
+        if not lc_key.startswith(type(self).lc_debug_header_prefix):
             return False
         if self._is_auth_failure_detail_header_key(key):
             return False
         return True
 
     def _is_auth_failure_detail_header_key(self, key):
-        return self.__class__.lc_auth_failure_detail_header_name == key.lower()
+        return type(self).lc_auth_failure_detail_header_name == key.lower()
 
     def is_equal(self, debug_headers):
         if debug_headers is None:
@@ -158,7 +158,7 @@ class TestCase(yar_test_util.TestCase):
             with mock.patch(name_of_method_to_patch, forward_patch):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
-                    "http://localhost:%d/whatever" % self.__class__.auth_server.port,
+                    "http://localhost:%d/whatever" % type(self).auth_server.port,
                     "GET")
                 self.assertIsNotNone(response)
                 self.assertIsNotNone(response.status)
@@ -197,7 +197,7 @@ class TestCase(yar_test_util.TestCase):
             with mock.patch(name_of_method_to_patch, forward_patch):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
-                    "http://localhost:%d/whatever" % self.__class__.auth_server.port,
+                    "http://localhost:%d/whatever" % type(self).auth_server.port,
                     "GET",
                     headers={"Authorization": "MAC ..."})
                 self.assertIsNotNone(response)
@@ -243,7 +243,7 @@ class TestCase(yar_test_util.TestCase):
             with mock.patch(name_of_method_to_patch, forward_patch):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
-                    "http://localhost:%d/whatever" % self.__class__.auth_server.port,
+                    "http://localhost:%d/whatever" % type(self).auth_server.port,
                     "GET",
                     headers={"Authorization": "MAC ..."})
                 self.assertIsNotNone(response)
@@ -280,7 +280,7 @@ class TestCase(yar_test_util.TestCase):
             with mock.patch(name_of_method_to_patch, forward_patch):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
-                    "http://localhost:%d/whatever" % self.__class__.auth_server.port,
+                    "http://localhost:%d/whatever" % type(self).auth_server.port,
                     "GET",
                     headers={"Authorization": "MAC ..."})
                 self.assertIsNotNone(response)
