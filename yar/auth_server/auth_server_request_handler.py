@@ -63,14 +63,15 @@ class RequestHandler(trhutil.RequestHandler):
         headers=None,
         body=None):
 
-        if not is_ok:
-            self.set_status(httplib.INTERNAL_SERVER_ERROR)
-        else:
+        if is_ok:
             self.set_status(http_status_code)
             for (name, value) in headers.items():
                 self.set_header(name, value)
             if body is not None:
                 self.write(body)
+        else:
+            self.set_status(httplib.INTERNAL_SERVER_ERROR)
+
         self.finish()
 
     def _on_auth_done(

@@ -258,11 +258,10 @@ class TestCase(yar_test_util.TestCase):
         """Verify that when async the foward to the app server fails,
         that the response is ```httplib.INTERNAL_SERVER_ERROR```."""
         the_owner = str(uuid.uuid4()).replace("-", "")
-        the_identifier = str(uuid.uuid4()).replace("-", "")
 
         def authenticate_patch(ignore_this_async_hmac_auth, callback):
             self.assertIsNotNone(callback)
-            callback(True, owner=the_owner, identifier=the_identifier)
+            callback(True, owner=the_owner)
 
         name_of_method_to_patch = (
             "yar.auth_server.hmac."
@@ -291,7 +290,6 @@ class TestCase(yar_test_util.TestCase):
         to the app server and the app server's response is correctly returned
         to the caller."""
         the_owner = str(uuid.uuid4()).replace("-", "")
-        the_identifier = str(uuid.uuid4()).replace("-", "")
         the_status_code = httplib.OK
         the_headers = {
             "X-Dave": str(uuid.uuid4()).replace("-", ""),
