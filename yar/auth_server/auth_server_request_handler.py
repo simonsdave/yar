@@ -32,6 +32,9 @@ debug_header_prefix = "X-Auth-Server-"
 
 auth_failure_detail_header_name = "%sAuth-Failure-Detail" % debug_header_prefix
 
+# these constants define detailed authentication failure reasons
+AUTH_FAILURE_DETAIL_NO_AUTH_HEADER = 0x0000 + 0x0001
+
 """When the auth server first recieves a request it extracts the
 authentication scheme from the value associated with the request's 
 HTTP authorization header. ```_auth_scheme_reg_ex``` is the regular
@@ -111,7 +114,9 @@ class RequestHandler(trhutil.RequestHandler):
     def _handle_request(self):
         auth_hdr_val = self.request.headers.get("Authorization", None)
         if not auth_hdr_val:
-            self._on_auth_done(False)
+            self._on_auth_done(
+                is_auth_ok=False,
+                auth_failure_detail=AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
             return
 
         match = _auth_scheme_reg_ex.match(auth_hdr_val)

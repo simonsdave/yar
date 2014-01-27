@@ -159,7 +159,8 @@ class TestCase(yar_test_util.TestCase):
                 http_client = httplib2.Http()
                 response, content = http_client.request(
                     "http://localhost:%d/whatever" % type(self).auth_server.port,
-                    "GET")
+                    "GET",
+                    headers={"Authorization": "MAC ..."})
                 self.assertIsNotNone(response)
                 self.assertIsNotNone(response.status)
                 self.assertEqual(response.status, httplib.UNAUTHORIZED)
