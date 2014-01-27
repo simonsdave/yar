@@ -5,6 +5,8 @@ import base64
 import logging
 import re
 
+from async_creds_retriever import AsyncCredsRetriever
+
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
 # these constants define detailed authentication failure reasons
@@ -12,7 +14,8 @@ AUTH_FAILURE_DETAIL_NO_AUTH_HEADER = 0x0001
 AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER_FORMAT_PRE_DECODING = 0x0002
 AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER_BAD_ENCODING = 0x0003
 AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER_FORMAT_POST_DECODING = 0x0004
-AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND = 0x0003
+AUTH_FAILURE_DETAIL_ERROR_GETTING_CREDS = 0x0004
+AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND = 0x0005
 
 """```_auth_hdr_val_reg_ex``` is used to parse the value of
 the Authorization HTTP header."""
@@ -74,8 +77,23 @@ class Authenticator(object):
                 AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER_FORMAT_POST_DECODING)
             return
 
-        api_key = match.group("api_key")
+        self._api_key = match.group("api_key")
 
-        _logger.info("api key = >>>%s<<<", api_key)
+        acr = AsyncCredsRetriever(self._api_key)
+        acr.fetch(self._on_creds_fetch_done)
 
-        self._on_auth_done(True, owner=api_key)
+    def _on_creds_fetch_done(self, is_ok, owner=None):
+        """After ```AsyncBasicCredsRetriever``` has finished attempting to
+        retrieve credentials from the key server this method is called.
+        ```is_ok``` will be False if an error occured when fetching the
+        credentials. ```owner``` will be None on error and when the
+        credentials can't be found."""
+        if not is_ok:
+            self._on_auth_done(False, AUTH_FAILURE_DETAIL_ERROR_GETTING_CREDS)
+            return
+
+        if not owner:
+            self._on_auth_done(False, AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
+            return
+
+        self._on_auth_done(True, owner=owner)

@@ -20,7 +20,11 @@ class TestAsyncAuth(yar_test_util.TestCase):
         failure with ```async_auth.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER```
         detailed error code."""
 
-        def on_auth_done(is_auth_ok, auth_failure_detail):
+        def on_auth_done(
+            is_auth_ok,
+            auth_failure_detail=None,
+            auth_failure_debug_details=None,
+            owner=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -46,7 +50,11 @@ class TestAsyncAuth(yar_test_util.TestCase):
 
         With this test the authorization header's value is blank."""
 
-        def on_auth_done(is_auth_ok, auth_failure_detail):
+        def on_auth_done(
+            is_auth_ok,
+            auth_failure_detail=None,
+            auth_failure_debug_details=None,
+            owner=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -75,7 +83,11 @@ class TestAsyncAuth(yar_test_util.TestCase):
         With this test the authorization header's value only has the correct
         authorization scheme."""
 
-        def on_auth_done(is_auth_ok, auth_failure_detail):
+        def on_auth_done(
+            is_auth_ok,
+            auth_failure_detail=None,
+            auth_failure_debug_details=None,
+            owner=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -107,7 +119,11 @@ class TestAsyncAuth(yar_test_util.TestCase):
         the_api_key = str(uuid.uuid4()).replace("-", "")
         the_password = str(uuid.uuid4()).replace("-", "")
 
-        def on_auth_done(is_auth_ok, auth_failure_detail):
+        def on_auth_done(
+            is_auth_ok,
+            auth_failure_detail=None,
+            auth_failure_debug_details=None,
+            owner=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -138,7 +154,11 @@ class TestAsyncAuth(yar_test_util.TestCase):
         With this test the authorization header's value is not correctly
         base64 encoded."""
 
-        def on_auth_done(is_auth_ok, auth_failure_detail):
+        def on_auth_done(
+            is_auth_ok,
+            auth_failure_detail=None,
+            auth_failure_debug_details=None,
+            owner=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -158,26 +178,115 @@ class TestAsyncAuth(yar_test_util.TestCase):
             generate_auth_failure_debug_details=False)
         aha.authenticate(on_auth_done)
 
+    def test_error_getting_creds(self):
+        the_api_key = str(uuid.uuid4()).replace("-", "")
+        the_owner = str(uuid.uuid4()).replace("-", "")
+
+        def on_auth_done(
+            is_auth_ok,
+            auth_failure_detail=None,
+            auth_failure_debug_details=None,
+            owner=None):
+
+            self.assertIsNotNone(is_auth_ok)
+            self.assertFalse(is_auth_ok)
+
+            self.assertIsNotNone(auth_failure_detail)
+            self.assertEqual(
+                auth_failure_detail,
+                async_auth.AUTH_FAILURE_DETAIL_ERROR_GETTING_CREDS)
+
+        def fetch_patch(acr, callback):
+            callback(False)
+
+        name_of_method_to_patch = (
+            "yar.auth_server.basic.async_creds_retriever."
+            "AsyncCredsRetriever.fetch"
+        )
+        with mock.patch(name_of_method_to_patch, fetch_patch):
+            api_key_colon = "%s:" % the_api_key
+            auth_hdr_value = "BASIC %s" % base64.b64encode(api_key_colon)
+            request = mock.Mock()
+            request.headers = tornado.httputil.HTTPHeaders({
+                "Authorization": auth_hdr_value,
+            })
+
+            aha = async_auth.Authenticator(
+                request=request,
+                generate_auth_failure_debug_details=False)
+            aha.authenticate(on_auth_done)
+
+    def test_creds_not_found(self):
+        the_api_key = str(uuid.uuid4()).replace("-", "")
+        the_owner = str(uuid.uuid4()).replace("-", "")
+
+        def on_auth_done(
+            is_auth_ok,
+            auth_failure_detail=None,
+            auth_failure_debug_details=None,
+            owner=None):
+
+            self.assertIsNotNone(is_auth_ok)
+            self.assertFalse(is_auth_ok)
+
+            self.assertIsNotNone(auth_failure_detail)
+            self.assertEqual(
+                auth_failure_detail,
+                async_auth.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
+
+        def fetch_patch(acr, callback):
+            owner = None
+            callback(True, owner)
+
+        name_of_method_to_patch = (
+            "yar.auth_server.basic.async_creds_retriever."
+            "AsyncCredsRetriever.fetch"
+        )
+        with mock.patch(name_of_method_to_patch, fetch_patch):
+            api_key_colon = "%s:" % the_api_key
+            auth_hdr_value = "BASIC %s" % base64.b64encode(api_key_colon)
+            request = mock.Mock()
+            request.headers = tornado.httputil.HTTPHeaders({
+                "Authorization": auth_hdr_value,
+            })
+
+            aha = async_auth.Authenticator(
+                request=request,
+                generate_auth_failure_debug_details=False)
+            aha.authenticate(on_auth_done)
+
     def test_all_good(self):
         the_api_key = str(uuid.uuid4()).replace("-", "")
+        the_owner = str(uuid.uuid4()).replace("-", "")
 
-        def on_auth_done(is_auth_ok, owner):
+        def on_auth_done(
+            is_auth_ok,
+            auth_failure_detail=None,
+            auth_failure_debug_details=None,
+            owner=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertTrue(is_auth_ok)
 
             self.assertIsNotNone(owner)
-            # :TODO: shouldn't be the_api_key coming back here
-            self.assertEqual(owner, the_api_key)
+            self.assertEqual(owner, the_owner)
 
-        api_key_colon_nothing = "%s:" % the_api_key
-        auth_hdr_value = "BASIC %s" % base64.b64encode(api_key_colon_nothing)
-        request = mock.Mock()
-        request.headers = tornado.httputil.HTTPHeaders({
-            "Authorization": auth_hdr_value,
-        })
+        def fetch_patch(acr, callback):
+            callback(True, the_owner)
 
-        aha = async_auth.Authenticator(
-            request=request,
-            generate_auth_failure_debug_details=False)
-        aha.authenticate(on_auth_done)
+        name_of_method_to_patch = (
+            "yar.auth_server.basic.async_creds_retriever."
+            "AsyncCredsRetriever.fetch"
+        )
+        with mock.patch(name_of_method_to_patch, fetch_patch):
+            api_key_colon = "%s:" % the_api_key
+            auth_hdr_value = "BASIC %s" % base64.b64encode(api_key_colon)
+            request = mock.Mock()
+            request.headers = tornado.httputil.HTTPHeaders({
+                "Authorization": auth_hdr_value,
+            })
+
+            aha = async_auth.Authenticator(
+                request=request,
+                generate_auth_failure_debug_details=False)
+            aha.authenticate(on_auth_done)

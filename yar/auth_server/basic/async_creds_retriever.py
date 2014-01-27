@@ -1,5 +1,6 @@
 """This module hides the gory details of async'ly interacting
-with the key server to retrieve credentials."""
+with the key server to retrieve credentials for the basic
+authentication scheme."""
 
 import httplib
 import logging
@@ -16,22 +17,24 @@ _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 key_server_address = "localhost:8070"
 
 
-class AsyncHMACCredsRetriever(object):
-    """Wraps the gory details of async crednetials retrieval."""
+class AsyncCredsRetriever(object):
+    """Wraps all the gory details of async'ly interacting with
+    the key server to retrieve credentials for use with basic
+    authentication scheme."""
 
-    def __init__(self, mac_key_identifier):
+    def __init__(self, api_key):
         object.__init__(self)
-        self._mac_key_identifier = mac_key_identifier
+        self._api_key = api_key
 
     def fetch(self, callback):
-        """Retrieve the credentials for ```mac_key_identifier```
+        """Retrieve the credentials for ```self._api_key```
         and when done call ```callback```."""
 
         self._callback = callback
 
         url = "http://%s/v1.0/creds/%s" % (
             key_server_address,
-            self._mac_key_identifier)
+            self._api_key)
         http_request = tornado.httpclient.HTTPRequest(
             url=url,
             method="GET",
@@ -41,27 +44,26 @@ class AsyncHMACCredsRetriever(object):
 
     def _on_fetch_done(self, response):
         """Called when request to the key server returns."""
-        if response.error or response.code != httplib.OK:
-            self._callback(False, self._mac_key_identifier)
+        expected_response_codes = [
+            httplib.OK,
+            httplib.NOT_FOUND,
+        ]
+        if response.error or response.code not in expected_response_codes:
+            self._callback(False)
+            return
+
+        if response.code == httplib.NOT_FOUND:
+            self._callback(True, None)
             return
 
         response = trhutil.Response(response)
-        body = response.get_json_body(
-            None,
-            jsonschemas.get_creds_response)
+        body = response.get_json_body(schema=jsonschemas.get_creds_response)
         if body is None:
-            self._callback(False, self._mac_key_identifier)
+            self._callback(False)
             return
 
         _logger.info(
-            "For mac key identifier '%s' retrieved credentials '%s'",
-            self._mac_key_identifier,
-            body)
+            "Successfully retrieved basic auth credentials for api key '%s'",
+            self._api_key)
 
-        self._callback(
-            True,
-            mac.MACKeyIdentifier(body["hmac"]["mac_key_identifier"]),
-            body["is_deleted"],
-            body["hmac"]["mac_algorithm"],
-            mac.MACKey(body["hmac"]["mac_key"]),
-            body["owner"])
+        self._callback(True, body["owner"])
