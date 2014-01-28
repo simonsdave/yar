@@ -44,9 +44,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         request = mock.Mock()
         request.headers = tornado.httputil.HTTPHeaders()
 
-        aha = async_hmac_auth.AsyncHMACAuth(
-            request=request,
-            generate_auth_failure_debug_details=False)
+        aha = async_hmac_auth.AsyncHMACAuth(request)
         aha.authenticate(on_auth_done)
 
     def test_invalid_authorization_header(self):
@@ -71,9 +69,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
             "Authorization": "DAVE WAS HERE",
         })
 
-        aha = async_hmac_auth.AsyncHMACAuth(
-            request=request,
-            generate_auth_failure_debug_details=False)
+        aha = async_hmac_auth.AsyncHMACAuth(request)
         aha.authenticate(on_auth_done)
 
     def _test_timestamp(self, ts_adjustment, expected_auth_failure_detail):
@@ -103,9 +99,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
             "Authorization": str(auth_header_value),
         })
 
-        aha = async_hmac_auth.AsyncHMACAuth(
-            request=request,
-            generate_auth_failure_debug_details=False)
+        aha = async_hmac_auth.AsyncHMACAuth(request)
         aha.authenticate(on_auth_done)
 
     def test_timestamp_in_future(self):
@@ -168,9 +162,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                 "Authorization": str(auth_header_value),
             })
 
-            aha = async_hmac_auth.AsyncHMACAuth(
-                request=request,
-                generate_auth_failure_debug_details=False)
+            aha = async_hmac_auth.AsyncHMACAuth(request)
             aha.authenticate(on_auth_done)
 
     def test_creds_not_found(self):
@@ -223,16 +215,10 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                     "Authorization": str(auth_header_value),
                 })
 
-                aha = async_hmac_auth.AsyncHMACAuth(
-                    request=request,
-                    generate_auth_failure_debug_details=False)
+                aha = async_hmac_auth.AsyncHMACAuth(request)
                 aha.authenticate(on_auth_done)
 
-    def _test_mac_good_or_bad(
-        self,
-        the_method,
-        the_bad_mac,
-        generate_auth_failure_debug_details):
+    def _test_mac_good_or_bad(self, the_method, the_bad_mac):
         """When a request contains an Authorization HTTP header that
         correctly authenticates a caller."""
 
@@ -339,39 +325,22 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                             auth_failure_detail,
                             async_hmac_auth.AUTH_FAILURE_DETAIL_HMACS_DO_NOT_MATCH)
 
-                        self.assertIsNotNone(auth_failure_debug_details)
-                        if generate_auth_failure_debug_details:
-                            self.assertTrue(0 < len(auth_failure_debug_details))
-                        else:
-                            self.assertTrue(0 == len(auth_failure_debug_details))
-
                         self.assertIsNone(owner)
 
-                aha = async_hmac_auth.AsyncHMACAuth(
-                    request=request,
-                    generate_auth_failure_debug_details=generate_auth_failure_debug_details)
+                aha = async_hmac_auth.AsyncHMACAuth(request)
                 aha.authenticate(on_auth_done)
 
-    def test_mac_bad_and_do_not_generate_debug_details(self):
+    def test_mac_bad_on_get(self):
         self._test_mac_good_or_bad(
             the_method="GET",
-            the_bad_mac="dave",
-            generate_auth_failure_debug_details=False)
+            the_bad_mac="dave")
 
-    def test_mac_bad_and_generate_debug_details(self):
-        self._test_mac_good_or_bad(
-            the_method="GET",
-            the_bad_mac="dave",
-            generate_auth_failure_debug_details=True)
-
-    def test_mac_bad_on_post_and_generate_debug_details(self):
+    def test_mac_bad_on_post(self):
         self._test_mac_good_or_bad(
             the_method="POST",
-            the_bad_mac="dave",
-            generate_auth_failure_debug_details=True)
+            the_bad_mac="dave")
 
     def test_mac_good(self):
         self._test_mac_good_or_bad(
             the_method="GET",
-            the_bad_mac=None,
-            generate_auth_failure_debug_details=False)
+            the_bad_mac=None)

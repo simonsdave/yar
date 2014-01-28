@@ -39,11 +39,9 @@ class Authenticator(object):
     (ii) asking the key store for credentials matching values
     extracted from the authorization header"""
 
-    def __init__(self, request, generate_auth_failure_debug_details):
+    def __init__(self, request):
         object.__init__(self)
         self._request = request
-        self._generate_auth_failure_debug_details = \
-            generate_auth_failure_debug_details
 
     def authenticate(self, on_auth_done):
         self._on_auth_done = on_auth_done

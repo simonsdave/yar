@@ -29,11 +29,9 @@ AUTH_FAILURE_DETAIL_HMACS_DO_NOT_MATCH = 0x0010 + 0x0007
 
 class AsyncHMACAuth(object):
 
-    def __init__(self, request, generate_auth_failure_debug_details):
+    def __init__(self, request):
         object.__init__(self)
         self._request = request
-        self._generate_auth_failure_debug_details = \
-            generate_auth_failure_debug_details
 
     def _on_async_hmac_creds_retriever_done(
         self,
@@ -81,33 +79,34 @@ class AsyncHMACAuth(object):
                 self._request.full_url(),
                 mac_key_identifier,
                 self._auth_hdr_val.mac)
+
             # When an authentication failure occurs it can be super hard
             # to figure out the root cause of the error. This method is called
             # on authentication failure and, if logging is set to at least
             # debug, a whole series of HTTP headers are set to return the
             # core elements that are used to generate the HMAC.
             auth_failure_debug_details = {}
-            if self._generate_auth_failure_debug_details:
-                if body:
-                    sha1_of_body = hashlib.sha1(body).hexdigest()
-                    auth_failure_debug_details["BODY-SHA1"] = sha1_of_body
-                    auth_failure_debug_details["BODY-LEN"] = len(body)
 
-                auth_failure_debug_details["MAC-KEY-IDENTIFIER"] = mac_key_identifier
-                auth_failure_debug_details["MAC-KEY"] = mac_key
-                auth_failure_debug_details["MAC-ALGORITHM"] = mac_algorithm
-                auth_failure_debug_details["HOST"] = host
-                auth_failure_debug_details["PORT"] = port
-                auth_failure_debug_details["CONTENT-TYPE"] = content_type
-                auth_failure_debug_details["REQUEST-METHOD"] = self._request.method
-                auth_failure_debug_details["URI"] = self._request.uri
-                auth_failure_debug_details["TIMESTAMP"] = self._auth_hdr_val.ts
-                auth_failure_debug_details["NONCE"] = self._auth_hdr_val.nonce
-                auth_failure_debug_details["EXT"] = ext
-                auth_failure_debug_details["MAC"] = mac.MAC.generate(
-                    mac_key,
-                    mac_algorithm,
-                    normalized_request_string)
+            if body:
+                sha1_of_body = hashlib.sha1(body).hexdigest()
+                auth_failure_debug_details["BODY-SHA1"] = sha1_of_body
+                auth_failure_debug_details["BODY-LEN"] = len(body)
+
+            auth_failure_debug_details["MAC-KEY-IDENTIFIER"] = mac_key_identifier
+            auth_failure_debug_details["MAC-KEY"] = mac_key
+            auth_failure_debug_details["MAC-ALGORITHM"] = mac_algorithm
+            auth_failure_debug_details["HOST"] = host
+            auth_failure_debug_details["PORT"] = port
+            auth_failure_debug_details["CONTENT-TYPE"] = content_type
+            auth_failure_debug_details["REQUEST-METHOD"] = self._request.method
+            auth_failure_debug_details["URI"] = self._request.uri
+            auth_failure_debug_details["TIMESTAMP"] = self._auth_hdr_val.ts
+            auth_failure_debug_details["NONCE"] = self._auth_hdr_val.nonce
+            auth_failure_debug_details["EXT"] = ext
+            auth_failure_debug_details["MAC"] = mac.MAC.generate(
+                mac_key,
+                mac_algorithm,
+                normalized_request_string)
 
             # end of pumping out debug headers - returning to regular headers
             self._on_auth_done(

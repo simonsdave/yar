@@ -15,13 +15,13 @@ from yar.util import trhutil
 
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
-"""```_gen_auth_failure_debug_details``` set to ```True```
+"""```_include_auth_failure_debug_details``` set to ```True```
 when auth server should return auth debug details to the
 caller. Should be really careful with this setting (ie.
 don't run auth server in production environment) as it
 will expose details of authentication scheme implementation
 that could highlight vulnerabilities."""
-_gen_auth_failure_debug_details = _logger.isEnabledFor(logging.DEBUG)
+_include_auth_failure_debug_details = _logger.isEnabledFor(logging.DEBUG)
 
 """When authentication fails and the auth server's logging is set
 to a debug level responses will contain a series of HTTP headers
@@ -34,6 +34,7 @@ auth_failure_detail_header_name = "%sAuth-Failure-Detail" % debug_header_prefix
 
 # these constants define detailed authentication failure reasons
 AUTH_FAILURE_DETAIL_NO_AUTH_HEADER = 0x0000 + 0x0001
+AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER = 0x0000 + 0x0002
 
 """When the auth server first recieves a request it extracts the
 authentication scheme from the value associated with the request's 
@@ -92,12 +93,12 @@ class RequestHandler(trhutil.RequestHandler):
 
         auth_class = _auth_scheme_to_auth_class.get(auth_scheme.upper(), None)
         if not auth_class:
-            self._on_auth_done(False)
+            self._on_auth_done(
+                is_auth_ok=False,
+                auth_failure_detail=AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER)
             return
 
-        aha = auth_class(
-            self.request,
-            _gen_auth_failure_debug_details)
+        aha = auth_class(self.request)
         aha.authenticate(self._on_auth_done)
 
     def _on_auth_done(
@@ -111,16 +112,18 @@ class RequestHandler(trhutil.RequestHandler):
 
             self.set_status(httplib.UNAUTHORIZED)
 
-            if auth_failure_detail:
-                self.set_header(
-                    auth_failure_detail_header_name,
-                    auth_failure_detail)
+            if _include_auth_failure_debug_details:
 
-            if auth_failure_debug_details:
-                for (name, value) in auth_failure_debug_details.items():
-                    name = "%s%s" % (debug_header_prefix, name)
-                    value = strutil.make_http_header_value_friendly(value)
-                    self.set_header(name, value)
+                if auth_failure_detail:
+                    self.set_header(
+                        auth_failure_detail_header_name,
+                        auth_failure_detail)
+
+                if auth_failure_debug_details:
+                    for (name, value) in auth_failure_debug_details.items():
+                        name = "%s%s" % (debug_header_prefix, name)
+                        value = strutil.make_http_header_value_friendly(value)
+                        self.set_header(name, value)
 
             self.finish()
 

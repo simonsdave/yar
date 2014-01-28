@@ -38,9 +38,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
         request = mock.Mock()
         request.headers = tornado.httputil.HTTPHeaders()
 
-        aha = async_auth.Authenticator(
-            request=request,
-            generate_auth_failure_debug_details=False)
+        aha = async_auth.Authenticator(request)
         aha.authenticate(on_auth_done)
 
     def test_invalid_authorization_header_001(self):
@@ -70,9 +68,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
             "Authorization": "",
         })
 
-        aha = async_auth.Authenticator(
-            request=request,
-            generate_auth_failure_debug_details=False)
+        aha = async_auth.Authenticator(request)
         aha.authenticate(on_auth_done)
 
     def test_invalid_authorization_header_002(self):
@@ -103,9 +99,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
             "Authorization": "BASIC",
         })
 
-        aha = async_auth.Authenticator(
-            request=request,
-            generate_auth_failure_debug_details=False)
+        aha = async_auth.Authenticator(request)
         aha.authenticate(on_auth_done)
 
     def test_invalid_authorization_header_003(self):
@@ -141,9 +135,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
             "Authorization": auth_hdr_value,
         })
 
-        aha = async_auth.Authenticator(
-            request=request,
-            generate_auth_failure_debug_details=False)
+        aha = async_auth.Authenticator(request)
         aha.authenticate(on_auth_done)
 
     def test_invalid_authorization_header_004(self):
@@ -174,9 +166,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
             "Authorization": "BASIC u:p",
         })
 
-        aha = async_auth.Authenticator(
-            request=request,
-            generate_auth_failure_debug_details=False)
+        aha = async_auth.Authenticator(request)
         aha.authenticate(on_auth_done)
 
     def test_error_getting_creds(self):
@@ -212,9 +202,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
                 "Authorization": auth_hdr_value,
             })
 
-            aha = async_auth.Authenticator(
-                request=request,
-                generate_auth_failure_debug_details=False)
+            aha = async_auth.Authenticator(request)
             aha.authenticate(on_auth_done)
 
     def test_creds_not_found(self):
@@ -251,9 +239,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
                 "Authorization": auth_hdr_value,
             })
 
-            aha = async_auth.Authenticator(
-                request=request,
-                generate_auth_failure_debug_details=False)
+            aha = async_auth.Authenticator(request)
             aha.authenticate(on_auth_done)
 
     def test_all_good(self):
@@ -287,7 +273,5 @@ class TestAsyncAuth(yar_test_util.TestCase):
                 "Authorization": auth_hdr_value,
             })
 
-            aha = async_auth.Authenticator(
-                request=request,
-                generate_auth_failure_debug_details=False)
+            aha = async_auth.Authenticator(request)
             aha.authenticate(on_auth_done)
