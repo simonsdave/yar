@@ -12,6 +12,7 @@ import tornado.httputil
 from yar.tests import yar_test_util
 from yar.key_server import ks_util
 
+
 class TestCaseFilterOutNonModelCredProperties(yar_test_util.TestCase):
     """A collection of unit tests for
     ks_util's filter_out_non_model_creds_properties()."""
@@ -23,9 +24,8 @@ class TestCaseFilterOutNonModelCredProperties(yar_test_util.TestCase):
     def test_model_properties_are_not_filtered_out(self):
         creds = {
             "is_deleted": str(uuid.uuid4()).replace("-", ""),
-            "mac_algorithm": str(uuid.uuid4()).replace("-", ""),
-            "mac_key": str(uuid.uuid4()).replace("-", ""),
-            "mac_key_identifier": str(uuid.uuid4()).replace("-", ""),
+            "basic": str(uuid.uuid4()).replace("-", ""),
+            "hmac": str(uuid.uuid4()).replace("-", ""),
             "owner": str(uuid.uuid4()).replace("-", ""),
         }
         filtered_creds = ks_util.filter_out_non_model_creds_properties(creds)
@@ -39,14 +39,14 @@ class TestCaseFilterOutNonModelCredProperties(yar_test_util.TestCase):
         }
         creds = {
             "is_deleted": str(uuid.uuid4()).replace("-", ""),
-            "mac_algorithm": str(uuid.uuid4()).replace("-", ""),
-            "mac_key": str(uuid.uuid4()).replace("-", ""),
-            "mac_key_identifier": str(uuid.uuid4()).replace("-", ""),
+            "basic": str(uuid.uuid4()).replace("-", ""),
+            "hmac": str(uuid.uuid4()).replace("-", ""),
             "owner": str(uuid.uuid4()).replace("-", ""),
         }
-        combined_creds = z = dict(non_cred_properties.items() + creds.items())
+        combined_creds = dict(non_cred_properties.items() + creds.items())
         filtered_creds = ks_util.filter_out_non_model_creds_properties(combined_creds)
         self.assertEqual(creds, filtered_creds)
+
 
 class TestCaseAsyncAction(yar_test_util.TestCase):
     """A collection of unit tests for ks_util's AsyncAction class."""
@@ -206,4 +206,3 @@ class TestCaseAsyncAction(yar_test_util.TestCase):
                 "GET",
                 None,
                 on_async_req_to_key_store_done)
-
