@@ -59,23 +59,46 @@ url_spec = r".*"
 
 class RequestHandler(trhutil.RequestHandler):
 
-    def _on_app_server_done(
-        self,
-        is_ok,
-        http_status_code=None,
-        headers=None,
-        body=None):
+    @tornado.web.asynchronous
+    def get(self):
+        self._handle_request()
 
-        if is_ok:
-            self.set_status(http_status_code)
-            for (name, value) in headers.items():
-                self.set_header(name, value)
-            if body is not None:
-                self.write(body)
-        else:
-            self.set_status(httplib.INTERNAL_SERVER_ERROR)
+    @tornado.web.asynchronous
+    def post(self):
+        self._handle_request()
 
-        self.finish()
+    @tornado.web.asynchronous
+    def put(self):
+        self._handle_request()
+
+    @tornado.web.asynchronous
+    def delete(self):
+        self._handle_request()
+
+    def _handle_request(self):
+        auth_hdr_val = self.request.headers.get("Authorization", None)
+        if not auth_hdr_val:
+            self._on_auth_done(
+                is_auth_ok=False,
+                auth_failure_detail=AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
+            return
+
+        match = _auth_scheme_reg_ex.match(auth_hdr_val)
+        if not match:
+            self._on_auth_done(False)
+            return
+
+        auth_scheme = match.group("auth_scheme")
+
+        auth_class = _auth_scheme_to_auth_class.get(auth_scheme.upper(), None)
+        if not auth_class:
+            self._on_auth_done(False)
+            return
+
+        aha = auth_class(
+            self.request,
+            _gen_auth_failure_debug_details)
+        aha.authenticate(self._on_auth_done)
 
     def _on_auth_done(
         self,
@@ -111,43 +134,20 @@ class RequestHandler(trhutil.RequestHandler):
             owner)
         aasf.forward(self._on_app_server_done)
 
-    def _handle_request(self):
-        auth_hdr_val = self.request.headers.get("Authorization", None)
-        if not auth_hdr_val:
-            self._on_auth_done(
-                is_auth_ok=False,
-                auth_failure_detail=AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
-            return
+    def _on_app_server_done(
+        self,
+        is_ok,
+        http_status_code=None,
+        headers=None,
+        body=None):
 
-        match = _auth_scheme_reg_ex.match(auth_hdr_val)
-        if not match:
-            self._on_auth_done(False)
-            return
+        if is_ok:
+            self.set_status(http_status_code)
+            for (name, value) in headers.items():
+                self.set_header(name, value)
+            if body is not None:
+                self.write(body)
+        else:
+            self.set_status(httplib.INTERNAL_SERVER_ERROR)
 
-        auth_scheme = match.group("auth_scheme")
-
-        auth_class = _auth_scheme_to_auth_class.get(auth_scheme.upper(), None)
-        if not auth_class:
-            self._on_auth_done(False)
-            return
-
-        aha = auth_class(
-            self.request,
-            _gen_auth_failure_debug_details)
-        aha.authenticate(self._on_auth_done)
-
-    @tornado.web.asynchronous
-    def get(self):
-        self._handle_request()
-
-    @tornado.web.asynchronous
-    def post(self):
-        self._handle_request()
-
-    @tornado.web.asynchronous
-    def put(self):
-        self._handle_request()
-
-    @tornado.web.asynchronous
-    def delete(self):
-        self._handle_request()
+        self.finish()
