@@ -26,17 +26,6 @@ url_spec = r"/v1.0/creds(?:/([^/]+))?"
 
 class RequestHandler(trhutil.RequestHandler):
 
-    def _add_links_to_creds_dict(self, creds):
-        assert creds is not None
-        if "hmac" in creds:
-            key = creds["hmac"]["mac_key_identifier"]
-        else:
-            key = creds["basic"]["api_key"]
-        assert key is not None
-        location = "%s/%s" % (self.request.full_url(), key)
-        creds["links"] = {"self": {"href": location}}
-        return location
-
     @tornado.web.asynchronous
     def get(self, key=None):
         is_filter_out_deleted = False \
@@ -118,3 +107,17 @@ class RequestHandler(trhutil.RequestHandler):
 
         self.set_status(status)
         self.finish()
+
+    def _add_links_to_creds_dict(self, creds):
+        print "+"*80
+        print creds
+        print "+"*80
+        assert creds is not None
+        if "hmac" in creds:
+            key = creds["hmac"]["mac_key_identifier"]
+        else:
+            key = creds["basic"]["api_key"]
+        assert key is not None
+        location = "%s/%s" % (self.request.full_url(), key)
+        creds["links"] = {"self": {"href": location}}
+        return location
