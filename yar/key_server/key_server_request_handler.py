@@ -109,9 +109,6 @@ class RequestHandler(trhutil.RequestHandler):
         self.finish()
 
     def _add_links_to_creds_dict(self, creds):
-        print "+"*80
-        print creds
-        print "+"*80
         assert creds is not None
         if "hmac" in creds:
             key = creds["hmac"]["mac_key_identifier"]
