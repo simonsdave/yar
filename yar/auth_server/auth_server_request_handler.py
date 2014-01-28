@@ -34,7 +34,8 @@ auth_failure_detail_header_name = "%sAuth-Failure-Detail" % debug_header_prefix
 
 # these constants define detailed authentication failure reasons
 AUTH_FAILURE_DETAIL_NO_AUTH_HEADER = 0x0000 + 0x0001
-AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER = 0x0000 + 0x0002
+AUTH_FAILURE_DETAIL_UNKNOWN_AUTHENTICATION_SCHEME = 0x0000 + 0x0002
+AUTH_FAILURE_DETAIL_FOR_TESTING = 0x0000 + 0x00ff
 
 """When the auth server first recieves a request it extracts the
 authentication scheme from the value associated with the request's 
@@ -86,17 +87,14 @@ class RequestHandler(trhutil.RequestHandler):
 
         match = _auth_scheme_reg_ex.match(auth_hdr_val)
         if not match:
-            self._on_auth_done(False)
+            self._on_auth_done(
+                is_auth_ok=False,
+                auth_failure_detail=AUTH_FAILURE_DETAIL_UNKNOWN_AUTHENTICATION_SCHEME)
             return
 
         auth_scheme = match.group("auth_scheme")
-
         auth_class = _auth_scheme_to_auth_class.get(auth_scheme.upper(), None)
-        if not auth_class:
-            self._on_auth_done(
-                is_auth_ok=False,
-                auth_failure_detail=AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER)
-            return
+        assert auth_class is not None
 
         aha = auth_class(self.request)
         aha.authenticate(self._on_auth_done)
@@ -108,6 +106,8 @@ class RequestHandler(trhutil.RequestHandler):
         auth_failure_debug_details=None,
         owner=None):
 
+        # :TODO: how to differentiate between an authentication failure
+        # and a failure with the authentication infrastructure
         if not is_auth_ok:
 
             self.set_status(httplib.UNAUTHORIZED)
@@ -129,6 +129,9 @@ class RequestHandler(trhutil.RequestHandler):
 
             return
 
+        # the request has been successfully authenticated:-)
+        # all that's left now is to asyc'y forward the request 
+        # to the application server
         aasf = async_app_server_forwarder.AsyncAppServerForwarder(
             self.request.method,
             self.request.uri,
