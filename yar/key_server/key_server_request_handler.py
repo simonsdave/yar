@@ -114,6 +114,7 @@ class RequestHandler(trhutil.RequestHandler):
             key = creds["hmac"]["mac_key_identifier"]
         else:
             key = creds["basic"]["api_key"]
+        # :TODO: there's a bug here when building link for GET double adds the key
         assert key is not None
         location = "%s/%s" % (self.request.full_url(), key)
         creds["links"] = {"self": {"href": location}}
