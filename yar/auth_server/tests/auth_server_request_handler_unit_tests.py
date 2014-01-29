@@ -259,3 +259,6 @@ class AuthServerRequestHanlderTestCase(tornado.testing.AsyncHTTPTestCase):
             "DELETE",
             None,
             None)
+
+    # :TODO: need test to verify MAC Authorization header uses MAC Authenticator
+    # :TODO: need test to verify BASIC Authorization header uses Basic Authenticator
