@@ -20,66 +20,7 @@ from yar.auth_server.auth_server_request_handler import auth_failure_detail_head
 from yar.auth_server.auth_server_request_handler import debug_header_prefix
 
 
-class AuthServer(yar_test_util.Server):
-    """Mock auth server."""
-
-    def __init__(self):
-        """Creates an instance of the auth server and starts the
-        server listenting on a random, available port."""
-        yar_test_util.Server.__init__(self)
-
-        handlers = [
-            (
-                auth_server_request_handler.url_spec,
-                auth_server_request_handler.RequestHandler
-            ),
-        ]
-        app = tornado.web.Application(handlers=handlers)
-        http_server = tornado.httpserver.HTTPServer(app)
-        http_server.add_sockets([self.socket])
-
-
-class DebugHeadersDict(dict):
-
-    lc_debug_header_prefix = \
-        auth_server_request_handler.debug_header_prefix.lower()
-
-    lc_auth_failure_detail_header_name = \
-        auth_server_request_handler.auth_failure_detail_header_name.lower()
-
-    def __init__(self, response):
-        dict.__init__(self)
-
-        self.auth_failure_detail = None
-
-        len_lc_debug_header_prefix = len(type(self).lc_debug_header_prefix)
-        for key, value in response.iteritems():
-            if self._is_auth_failure_detail_header_key(key):
-                self.auth_failure_detail = value
-            else:
-                if self._is_debug_header_key(key):
-                    self[key[len_lc_debug_header_prefix:]] = value 
-
-    def _is_debug_header_key(self, key):
-        lc_key = key.lower()
-        if not lc_key.startswith(type(self).lc_debug_header_prefix):
-            return False
-        if self._is_auth_failure_detail_header_key(key):
-            return False
-        return True
-
-    def _is_auth_failure_detail_header_key(self, key):
-        return type(self).lc_auth_failure_detail_header_name == key.lower()
-
-    def is_equal(self, debug_headers):
-        if debug_headers is None:
-            return False
-        lc_self = {k.lower(): v for k, v in self.iteritems()}
-        lc_debug_headers = {k.lower(): v for k, v in debug_headers.iteritems()}
-        return lc_self == lc_debug_headers
-
-
-class MyTestCase(tornado.testing.AsyncHTTPTestCase):
+class AuthServerRequestHanlderTestCase(tornado.testing.AsyncHTTPTestCase):
     """Unit tests for ```auth_server_request_handler.RequestHandler```."""
 
     def get_app(self):
@@ -121,6 +62,8 @@ class MyTestCase(tornado.testing.AsyncHTTPTestCase):
         auth failure debug headers found return as a dict
         with header's name as dict's key and header's value as
         the corresponding value."""
+        # :TODO: look at all the 'lower()' calls in the code below!
+        # What is DAS doing wrong?
         rv = {}
         for key, value in response.headers.iteritems():
             if key.lower().startswith(debug_header_prefix.lower()):
@@ -217,97 +160,44 @@ class MyTestCase(tornado.testing.AsyncHTTPTestCase):
             self.assertNoAuthFailureDetail(response)
             self.assertNoAuthFailureDebugDetails(response)
 
-
-class TestCase(yar_test_util.TestCase):
-    """```TestCase``` contains all the unit tests for the
-    ```auth_server``` module of the authentication server."""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.io_loop = yar_test_util.IOLoop()
-        cls.io_loop.start()
-        cls.auth_server = AuthServer()
-
-    @classmethod
-    def tearDownClass(cls):
-        # :TODO: is this shutdown sequence right? shouldn't it be the
-        # reverse of the startup sequence?
-        cls.io_loop.stop()
-        cls.io_loop = None
-        cls.auth_server.shutdown()
-        cls.auth_server = None
-
-    def assertAuthFailureDetail(
-        self,
-        response,
-        auth_failure_detail=None):
-        """If ```auth_failure_detail``` is None, assert an
-        authorization failure detail HTTP header does not appear in
-        ```response```. If ```auth_failure_detail``` is not None
-        then assert an authorization failure detail HTTP header appears
-        in ```response``` with a value equal to ```auth_failure_detail```."""
-        self.assertIsNotNone(response)
-        debug_headers_in_response = DebugHeadersDict(response)
-        auth_failure_detail_header_value = debug_headers_in_response.auth_failure_detail
-        if auth_failure_detail is None:
-            self.assertIsNone(auth_failure_detail_header_value)
-        else:
-            self.assertIsNotNone(auth_failure_detail_header_value)
-            self.assertEqual(
-                auth_failure_detail_header_value,
-                auth_failure_detail)
-
-    def assertAuthorizationDebugHeaders(self, response, debug_headers=None):
-        """If ```debug_headers``` is None, assert that no
-        authorization failure debug HTTP headers appear in
-        ```response```. If ```debug_headers``` is not None
-        then assert all of these authorization failure debug HTTP headers
-        and only these debug headers appear in ```response```."""
-        self.assertIsNotNone(response)
-        debug_headers_in_response = DebugHeadersDict(response)
-        if debug_headers is None:
-            self.assertTrue(0 == len(debug_headers_in_response))
-        else:
-            self.assertTrue(debug_headers_in_response.is_equal(debug_headers))
-
     def test_forward_to_app_server_failed(self):
         """Verify that when async the foward to the app server fails,
         that the response is ```httplib.INTERNAL_SERVER_ERROR```."""
         the_owner = str(uuid.uuid4()).replace("-", "")
 
-        def authenticate_patch(ignore_this_async_hmac_auth, callback):
-            self.assertIsNotNone(callback)
-            callback(True, owner=the_owner)
+        def authenticate_patch(authenticator, callback):
+            callback(is_auth_ok=True, owner=the_owner)
 
         name_of_method_to_patch = (
             "yar.auth_server.hmac."
             "async_hmac_auth.AsyncHMACAuth.authenticate"
         )
         with mock.patch(name_of_method_to_patch, authenticate_patch):
-            def forward_patch(ignore_async_app_server_forwarder, callback):
-                self.assertIsNotNone(callback)
-                callback(False)
+
+            def forward_patch(async_app_server_forwarder, callback):
+                callback(is_ok=False)
 
             name_of_method_to_patch = (
                 "yar.auth_server.async_app_server_forwarder."
                 "AsyncAppServerForwarder.forward"
             )
             with mock.patch(name_of_method_to_patch, forward_patch):
-                http_client = httplib2.Http()
-                response, content = http_client.request(
-                    "http://localhost:%d/whatever" % type(self).auth_server.port,
-                    "GET",
-                    headers={"Authorization": "MAC ..."})
-                self.assertIsNotNone(response)
-                self.assertEqual(response.status, httplib.INTERNAL_SERVER_ERROR)
 
-    def _test_forward_all_good(self, the_method, the_response_body=None):
-        """Verify that on successful authentication the request is forwarded
-        to the app server and the app server's response is correctly returned
-        to the caller."""
+                response = self.fetch(
+                    "/",
+                    method="GET",
+                    headers={"Authorization": "MAC ..."})
+
+                self.assertIsNotNone(response)
+                self.assertEqual(response.code, httplib.INTERNAL_SERVER_ERROR)
+
+    def _test_forward_all_good(self, the_method, the_request_body, the_response_body):
+        """Happy path verification of forwarding request to app server
+        after authentication is successful."""
+
         the_owner = str(uuid.uuid4()).replace("-", "")
         the_status_code = httplib.OK
-        the_headers = {
+        the_response_headers = {
             "X-Dave": str(uuid.uuid4()).replace("-", ""),
             "X-Bob": str(uuid.uuid4()).replace("-", ""),
             "X-Ben": str(uuid.uuid4()).replace("-", ""),
@@ -318,16 +208,16 @@ class TestCase(yar_test_util.TestCase):
             callback(is_auth_ok=True, owner=the_owner)
 
         name_of_method_to_patch = (
-            "yar.auth_server.hmac.async_hmac_auth."
-            "AsyncHMACAuth.authenticate"
+            "yar.auth_server.hmac."
+            "async_hmac_auth.AsyncHMACAuth.authenticate"
         )
         with mock.patch(name_of_method_to_patch, authenticate_patch):
-            def forward_patch(ignore_async_app_server_forwarder, callback):
-                self.assertIsNotNone(callback)
+
+            def forward_patch(async_app_server_forwarder, callback):
                 callback(
                     is_ok=True,
                     http_status_code=the_status_code,
-                    headers=the_headers,
+                    headers=the_response_headers,
                     body=the_response_body)
 
             name_of_method_to_patch = (
@@ -335,22 +225,37 @@ class TestCase(yar_test_util.TestCase):
                 "AsyncAppServerForwarder.forward"
             )
             with mock.patch(name_of_method_to_patch, forward_patch):
-                http_client = httplib2.Http()
-                response, content = http_client.request(
-                    "http://localhost:%d/whatever" % type(self).auth_server.port,
-                    the_method,
+
+                response = self.fetch(
+                    "/",
+                    method=the_method,
+                    body=the_request_body,
                     headers={"Authorization": "MAC ..."})
+
                 self.assertIsNotNone(response)
-                self.assertEqual(response.status, the_status_code)
+                self.assertEqual(response.code, the_status_code)
+                # :TODO: what about response body & response headers?
 
     def test_forward_all_good_get(self):
-        self._test_forward_all_good("GET", str(uuid.uuid4()).replace("-", ""))
+        self._test_forward_all_good(
+            "GET",
+            None,
+            str(uuid.uuid4()).replace("-", ""))
 
     def test_forward_all_good_post(self):
-        self._test_forward_all_good("POST")
+        self._test_forward_all_good(
+            "POST",
+            "",
+            None)
 
     def test_forward_all_good_put(self):
-        self._test_forward_all_good("PUT")
+        self._test_forward_all_good(
+            "PUT",
+            "",
+            None)
 
     def test_forward_all_good_delete(self):
-        self._test_forward_all_good("DELETE")
+        self._test_forward_all_good(
+            "DELETE",
+            None,
+            None)
