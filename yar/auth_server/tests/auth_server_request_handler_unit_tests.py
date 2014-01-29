@@ -17,6 +17,7 @@ import tornado.testing
 from yar.tests import yar_test_util
 from yar.auth_server import auth_server_request_handler
 from yar.auth_server.auth_server_request_handler import auth_failure_detail_header_name
+from yar.auth_server.auth_server_request_handler import debug_header_prefix
 
 
 class AuthServer(yar_test_util.Server):
@@ -115,6 +116,31 @@ class MyTestCase(tornado.testing.AsyncHTTPTestCase):
         self.assertIsNone(key)
         self.assertIsNone(value)
 
+    def _get_auth_failure_debug_details(self, response):
+        """Search thru ```response```'s headers and extract all
+        auth failure debug headers found return as a dict
+        with header's name as dict's key and header's value as
+        the corresponding value."""
+        rv = {}
+        for key, value in response.headers.iteritems():
+            if key.lower().startswith(debug_header_prefix.lower()):
+                if auth_failure_detail_header_name.lower() != key.lower():
+                    rv[key[len(debug_header_prefix):].lower()] = value 
+        return rv
+
+    def assertAuthFailureDebugDetails(self, response, auth_failure_debug_details):
+        """Assert specific authorization failure debug HTTP headers
+        appear in ```response```."""
+        self.assertEqual(
+            auth_failure_debug_details,
+            self._get_auth_failure_debug_details(response))
+
+    def assertNoAuthFailureDebugDetails(self, response):
+        """Assert *no* authorization failure debug HTTP headers
+        appear in ```response```."""
+        auth_failure_debug_details = self._get_auth_failure_debug_details(response)
+        self.assertTrue(0 == len(auth_failure_debug_details))
+
     def test_no_authorization_header(self):
         """This test confirms that authentication fails if no Authorization
         header is supplied in the auth server's."""
@@ -152,8 +178,17 @@ class MyTestCase(tornado.testing.AsyncHTTPTestCase):
 
         the_auth_failure_detail = auth_server_request_handler.AUTH_FAILURE_DETAIL_FOR_TESTING
 
+        the_auth_failure_debug_details = {
+            str(uuid.uuid4()).replace("-", ""): str(uuid.uuid4()).replace("-", ""),
+            str(uuid.uuid4()).replace("-", ""): str(uuid.uuid4()).replace("-", ""),
+            str(uuid.uuid4()).replace("-", ""): str(uuid.uuid4()).replace("-", ""),
+        }
+
         def authenticate_patch(authenticator, callback):
-            callback(is_auth_ok=False, auth_failure_detail=the_auth_failure_detail)
+            callback(
+                is_auth_ok=False,
+                auth_failure_detail=the_auth_failure_detail,
+                auth_failure_debug_details=the_auth_failure_debug_details)
 
         name_of_method_to_patch = (
             "yar.auth_server.hmac."
@@ -169,6 +204,7 @@ class MyTestCase(tornado.testing.AsyncHTTPTestCase):
             response = self.fetch("/", method="GET", headers={"Authorization": "MAC ..."})
             self.assertEqual(response.code, httplib.UNAUTHORIZED)
             self.assertAuthFailureDetail(response, the_auth_failure_detail)
+            self.assertAuthFailureDebugDetails(response, the_auth_failure_debug_details)
 
             # step #2 ...
 
@@ -179,6 +215,7 @@ class MyTestCase(tornado.testing.AsyncHTTPTestCase):
             response = self.fetch("/", method="GET", headers={"Authorization": "MAC ..."})
             self.assertEqual(response.code, httplib.UNAUTHORIZED)
             self.assertNoAuthFailureDetail(response)
+            self.assertNoAuthFailureDebugDetails(response)
 
 
 class TestCase(yar_test_util.TestCase):
@@ -232,53 +269,6 @@ class TestCase(yar_test_util.TestCase):
             self.assertTrue(0 == len(debug_headers_in_response))
         else:
             self.assertTrue(debug_headers_in_response.is_equal(debug_headers))
-
-    @unittest.skip("only for a wee bit")
-    def test_auth_failure_debug_details_in_auth_server_response(self):
-        """This test confirms that when the authenication
-        mechanism supplies debug headers
-        that the debug headers are the auth server's HTTP response."""
-
-        prefix = auth_server_request_handler.debug_header_prefix.lower()
-        the_auth_failure_debug_details = {
-            str(uuid.uuid4()).replace("-", ""): str(uuid.uuid4()).replace("-", ""),
-            str(uuid.uuid4()).replace("-", ""): str(uuid.uuid4()).replace("-", ""),
-            str(uuid.uuid4()).replace("-", ""): str(uuid.uuid4()).replace("-", ""),
-        }
-
-        def authenticate_patch(an_async_hmac_auth, callback):
-            self.assertIsNotNone(an_async_hmac_auth)
-            self.assertIsNotNone(callback)
-            callback(
-                is_auth_ok=False,
-                auth_failure_debug_details=the_auth_failure_debug_details)
-
-        name_of_method_to_patch = (
-            "yar.auth_server.hmac."
-            "async_hmac_auth.AsyncHMACAuth.authenticate"
-        )
-        with mock.patch(name_of_method_to_patch, authenticate_patch):
-            def forward_patch(ignore_async_app_server_forwarder, callback):
-                """This should never be called when authentication fails."""
-                self.assertTrue(False)
-
-            name_of_method_to_patch = (
-                "yar.auth_server."
-                "async_app_server_forwarder.AsyncAppServerForwarder.forward"
-            )
-            with mock.patch(name_of_method_to_patch, forward_patch):
-                http_client = httplib2.Http()
-                response, content = http_client.request(
-                    "http://localhost:%d/whatever" % type(self).auth_server.port,
-                    "GET",
-                    headers={"Authorization": "MAC ..."})
-                self.assertIsNotNone(response)
-                self.assertIsNotNone(response.status)
-                self.assertEqual(response.status, httplib.UNAUTHORIZED)
-                self.assertAuthFailureDetail(response)
-                self.assertAuthorizationDebugHeaders(
-                    response,
-                    the_auth_failure_debug_details)
 
     def test_forward_to_app_server_failed(self):
         """Verify that when async the foward to the app server fails,
