@@ -516,3 +516,35 @@ class TestCase(yar_test_util.TestCase):
         self._delete_creds(key)
         self._get_creds(key, expected_to_be_found=False)
         self._get_creds(key, get_deleted=True)
+
+    def test_create_creds_failure(self):
+        """Verify that when credentials creation fails (for whatever reason)
+        that the key server returns an INTERNAL_SERVER_ERROR status code."""
+
+        def create_patch(acc, owner, auth_scheme, callback):
+            # the "None" below indicates a failure has occured
+            callback(None)
+
+        name_of_method_to_patch = (
+            "yar.key_server.async_creds_creator."
+            "AsyncCredsCreator.create"
+        )
+        with mock.patch(name_of_method_to_patch, create_patch):
+            http_client = httplib2.Http()
+            body = {
+                "owner": str(uuid.uuid4()).replace("-", ""),
+                "auth_scheme": "basic",
+            }
+            body_as_json = json.dumps(body)
+            headers = {
+                "Content-type": "application/json; charset=utf8",
+                "Content-length": str(len(body_as_json)),
+            }
+            response, content = http_client.request(
+                self.url(),
+                "POST",
+                body=body_as_json,
+                headers=headers)
+
+            self.assertIsNotNone(response)
+            self.assertEqual(httplib.INTERNAL_SERVER_ERROR, response.status)
