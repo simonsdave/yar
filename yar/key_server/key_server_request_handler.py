@@ -1,6 +1,7 @@
 """This module contains the key server's primary
 Tornado request handler logic."""
 
+import urllib
 import httplib
 import logging
 
@@ -50,7 +51,8 @@ class RequestHandler(trhutil.RequestHandler):
                 self._add_links_to_creds_dict(each_creds)
             creds = {"creds": creds}
         else:
-            self._add_links_to_creds_dict(creds)
+            location = self._add_links_to_creds_dict(creds)
+            self.set_header("Location", location)
         self.write(creds)
         self.finish()
 
@@ -109,13 +111,35 @@ class RequestHandler(trhutil.RequestHandler):
         self.finish()
 
     def _add_links_to_creds_dict(self, creds):
-        assert creds is not None
-        if "hmac" in creds:
-            key = creds["hmac"]["mac_key_identifier"]
-        else:
-            key = creds["basic"]["api_key"]
-        # :TODO: there's a bug here when building link for GET double adds the key
-        assert key is not None
-        location = "%s/%s" % (self.request.full_url(), key)
+        """Add HATEOAS style links to ```creds```."""
+
+        key = self._key_from_creds(creds)
+
+        # This method is called either because something asked
+        # (i) to create a key (ii) get a collection of creds
+        # (iii) get a specific set of creds. (i) and (ii)
+        # are requests made to the creds collection resource
+        # and (iii) is made to the resource itself. It's
+        # essential to understand these request patterns in
+        # order to understand this method's code."""
+
+        (url, _) = urllib.splitquery(self.request.full_url())
+        location = url if url.endswith(key) else "%s/%s" % (url, key)
+
         creds["links"] = {"self": {"href": location}}
         return location
+
+    def _key_from_creds(self, creds):
+        """```creds``` is a set of creds in a dict.
+        If the credentials are for the MAC authentication scheme
+        return the mac key identifier.
+        If the credentials are for the BASIC authentication scheme
+        return the api key."""
+
+        if "hmac" in creds:
+            return creds["hmac"]["mac_key_identifier"]
+
+        if "basic" in creds:
+            return creds["basic"]["api_key"]
+
+        return None

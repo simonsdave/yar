@@ -114,12 +114,16 @@ class TestCase(yar_test_util.TestCase):
                 "owner": the_owner,
                 "auth_scheme": the_auth_scheme,
             }
+            body_as_json = json.dumps(body)
+            headers = {
+                "Content-type": "application/json; charset=utf8",
+                "Content-length": str(len(body_as_json)),
+            }
             response, content = http_client.request(
                 self.url(),
                 "POST",
-                body=json.dumps(body),
-                headers={"Content-Type": "application/json; charset=utf8"})
-
+                body=body_as_json,
+                headers=headers)
             self.assertIsNotNone(response)
             self.assertTrue(httplib.CREATED == response.status)
 
@@ -127,6 +131,7 @@ class TestCase(yar_test_util.TestCase):
             content_type = response["content-type"]
             self.assertIsJsonUtf8ContentType(content_type)
 
+            self.assertIsNotNone(content)
             creds = json.loads(content)
             self.assertIsNotNone(creds)
             jsonschema.validate(
@@ -138,44 +143,19 @@ class TestCase(yar_test_util.TestCase):
             key = self._key_from_creds(creds)
             self.assertIsNotNone(key)
 
-            self.assertTrue('location' in response)
-            location = response['location']
+            self.assertTrue("location" in response)
+            location = response["location"]
             self.assertIsNotNone(location)
             expected_location = "%s/%s" % (self.url(), key)
             self.assertEqual(location, expected_location)
 
+            self.assertEqual(
+                location,
+                creds["links"]["self"]["href"])
+
             self._creds_database.append(creds)
 
             return (creds, location)
-
-        # based on the returned location retrieve the
-        # newly created MAC creds
-        http_client = httplib2.Http()
-        response, content = http_client.request(location, "GET")
-        self.assertTrue(httplib.OK == response.status)
-
-        self.assertTrue("content-type" in response)
-        content_type = response["content-type"]
-        self.assertIsJsonUtf8ContentType(content_type)
-
-        creds = json.loads(content)
-        self.assertIsNotNone(creds)
-
-        jsonschema.validate(
-            creds,
-            jsonschemas.create_creds_response)
-
-        self.assertEqual(the_owner, creds.get("owner", None))
-
-        mac_key_identifier = creds.get('mac_key_identifier', None)
-        self.assertIsNotNone(mac_key_identifier)
-        self.assertTrue(location.endswith(mac_key_identifier))
-
-        # this is really over the top but that's the way I roll:-)
-        # :TODO: should this be uncommented
-        # self._get_creds(mac_key_identifier)
-
-        return (creds, location)
 
     def _get_creds(
         self,
@@ -236,7 +216,22 @@ class TestCase(yar_test_util.TestCase):
                 creds,
                 jsonschemas.get_creds_response)
 
-            self.assertEqual(the_key, self._key_from_creds(creds))
+            key = self._key_from_creds(creds)
+            self.assertIsNotNone(key)
+            self.assertEqual(the_key, key)
+
+            print type(response)
+            print url
+            print response
+            self.assertTrue("location" in response)
+            location = response["location"]
+            self.assertIsNotNone(location)
+            expected_location = "%s/%s" % (self.url(), key)
+            self.assertEqual(location, expected_location)
+
+            self.assertEqual(
+                location,
+                creds["links"]["self"]["href"])
 
             return creds
 
