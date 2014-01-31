@@ -91,7 +91,7 @@ class TestCase(yar_test_util.TestCase):
                 "owner": owner,
                 "is_deleted": False,
             }
-            if the_auth_scheme == "hmac":
+            if auth_scheme == "hmac":
                 creds["hmac"] = {
                     "mac_key_identifier": mac.MACKeyIdentifier.generate(),
                     "mac_key": mac.MACKey.generate(),
@@ -482,13 +482,13 @@ class TestCase(yar_test_util.TestCase):
         self.assertEqual(len(all_owner_creds), len(owner_creds))
         # :TODO: validate all_owner_creds is same as owner_creds
 
-    def test_all_good_for_simple_create_and_delete(self):
+    def _test_all_good_for_simple_create_and_delete(self, auth_scheme):
         all_creds = self._get_all_creds()
         self.assertIsNotNone(all_creds)
         self.assertEqual(0, len(all_creds))
 
         owner = str(uuid.uuid4()).replace("-", "")
-        (creds, location) = self._create_creds(owner)
+        (creds, location) = self._create_creds(owner, auth_scheme)
         self.assertIsNotNone(creds)
 
         key = self._key_from_creds(creds)
@@ -501,6 +501,12 @@ class TestCase(yar_test_util.TestCase):
         all_creds = self._get_all_creds()
         self.assertIsNotNone(all_creds)
         self.assertEqual(0, len(all_creds))
+
+    def test_all_good_for_simple_create_and_delete_hmac(self):
+        self._test_all_good_for_simple_create_and_delete("hmac")
+
+    def test_all_good_for_simple_create_and_delete_basic(self):
+        self._test_all_good_for_simple_create_and_delete("basic")
 
     def test_deleted_creds_not_returned_by_default_on_get(self):
         owner = str(uuid.uuid4()).replace("-", "")

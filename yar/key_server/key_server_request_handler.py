@@ -139,7 +139,5 @@ class RequestHandler(trhutil.RequestHandler):
         if "hmac" in creds:
             return creds["hmac"]["mac_key_identifier"]
 
-        if "basic" in creds:
-            return creds["basic"]["api_key"]
-
-        return None
+        assert "basic" in creds:
+        return creds["basic"]["api_key"]
