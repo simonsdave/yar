@@ -15,14 +15,6 @@ from yar.util import trhutil
 
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
-"""```_include_auth_failure_debug_details``` set to ```True```
-when auth server should return auth debug details to the
-caller. Should be really careful with this setting (ie.
-don't run auth server in production environment) as it
-will expose details of authentication scheme implementation
-that could highlight vulnerabilities."""
-_include_auth_failure_debug_details = _logger.isEnabledFor(logging.DEBUG)
-
 """When authentication fails and the auth server's logging is set
 to a debug level responses will contain a series of HTTP headers
 that provide additional detail on why the authentication failed.
@@ -31,6 +23,13 @@ All of theses header names are prefixed by the value of
 debug_header_prefix = "X-Auth-Server-"
 
 auth_failure_detail_header_name = "%sAuth-Failure-Detail" % debug_header_prefix
+
+# implementation of ```_include_auth_failure_debug_details()``` is pretty
+# obvious. what might be less clear is the motivation for the function.
+# this function is only here so that test frameworks can override the
+# implementation to force and unforce auth debug details to be generated
+def _include_auth_failure_debug_details():
+    return _logger.isEnabledFor(logging.DEBUG)
 
 # these constants define detailed authentication failure reasons
 AUTH_FAILURE_DETAIL_NO_AUTH_HEADER = 0x0000 + 0x0001
@@ -112,7 +111,7 @@ class RequestHandler(trhutil.RequestHandler):
 
             self.set_status(httplib.UNAUTHORIZED)
 
-            if _include_auth_failure_debug_details:
+            if _include_auth_failure_debug_details():
 
                 if auth_failure_detail:
                     self.set_header(

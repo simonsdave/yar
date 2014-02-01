@@ -20,7 +20,26 @@ from yar.auth_server.auth_server_request_handler import auth_failure_detail_head
 from yar.auth_server.auth_server_request_handler import debug_header_prefix
 
 
-class AuthServerRequestHanlderTestCase(tornado.testing.AsyncHTTPTestCase):
+class ControlIncludeAuthFailureDebugDetails(object):
+    """A helper class that simplifies controlling if the auth server
+    request handler includes auth falure debug details in a
+    response."""
+
+    def __init__(self, value):
+        name = (
+            "yar.auth_server.auth_server_request_handler."
+            "_include_auth_failure_debug_details"
+        )
+        self._patcher = mock.patch(name, mock.Mock(return_value=value))
+
+    def __enter__(self):
+        self._patcher.start()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._patcher.stop()
+
+
+class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
     """Unit tests for ```auth_server_request_handler.RequestHandler```."""
 
     def get_app(self):
@@ -88,30 +107,24 @@ class AuthServerRequestHanlderTestCase(tornado.testing.AsyncHTTPTestCase):
         """This test confirms that authentication fails if no Authorization
         header is supplied in the auth server's."""
 
-        # setting _include_auth_failure_debug_details to True forces
-        # the auth server to include auth failure details in response
-        auth_server_request_handler._include_auth_failure_debug_details = True
-
-        response = self.fetch("/", method="GET", headers={})
-        self.assertEqual(response.code, httplib.UNAUTHORIZED)
-        self.assertAuthFailureDetail(
-            response,
-            auth_server_request_handler.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
+        with ControlIncludeAuthFailureDebugDetails(True):
+            response = self.fetch("/", method="GET", headers={})
+            self.assertEqual(response.code, httplib.UNAUTHORIZED)
+            self.assertAuthFailureDetail(
+                response,
+                auth_server_request_handler.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
 
     def test_invalid_authorization_header(self):
         """This test confirms that authentication fails if an Authorization
         header is supplied but it contains an unrecognized authententication
         scheme."""
 
-        # setting _include_auth_failure_debug_details to True forces
-        # the auth server to include auth failure details in response
-        auth_server_request_handler._include_auth_failure_debug_details = True
-
-        response = self.fetch("/", method="GET", headers={"Authorization": "DAVE"})
-        self.assertEqual(response.code, httplib.UNAUTHORIZED)
-        self.assertAuthFailureDetail(
-            response,
-            auth_server_request_handler.AUTH_FAILURE_DETAIL_UNKNOWN_AUTHENTICATION_SCHEME)
+        with ControlIncludeAuthFailureDebugDetails(True):
+            response = self.fetch("/", method="GET", headers={"Authorization": "DAVE"})
+            self.assertEqual(response.code, httplib.UNAUTHORIZED)
+            self.assertAuthFailureDetail(
+                response,
+                auth_server_request_handler.AUTH_FAILURE_DETAIL_UNKNOWN_AUTHENTICATION_SCHEME)
 
     def test_auth_failure_detail_correctly_in_auth_server_response(self):
         """This test confirms that when an authenticator
@@ -139,26 +152,26 @@ class AuthServerRequestHanlderTestCase(tornado.testing.AsyncHTTPTestCase):
         )
         with mock.patch(name_of_method_to_patch, authenticate_patch):
             # step #1 ...
-
-            # setting _include_auth_failure_debug_details to True forces
-            # the auth server to include auth failure details in response
-            auth_server_request_handler._include_auth_failure_debug_details = True
-
-            response = self.fetch("/", method="GET", headers={"Authorization": "MAC ..."})
-            self.assertEqual(response.code, httplib.UNAUTHORIZED)
-            self.assertAuthFailureDetail(response, the_auth_failure_detail)
-            self.assertAuthFailureDebugDetails(response, the_auth_failure_debug_details)
+            with ControlIncludeAuthFailureDebugDetails(True):
+                response = self.fetch(
+                    "/",
+                    method="GET",
+                    headers={"Authorization": "MAC ..."})
+                self.assertEqual(response.code, httplib.UNAUTHORIZED)
+                self.assertAuthFailureDetail(response, the_auth_failure_detail)
+                self.assertAuthFailureDebugDetails(
+                    response,
+                    the_auth_failure_debug_details)
 
             # step #2 ...
-
-            # setting _include_auth_failure_debug_details to False forces
-            # the auth server to *not* include auth failure details in response
-            auth_server_request_handler._include_auth_failure_debug_details = False
-
-            response = self.fetch("/", method="GET", headers={"Authorization": "MAC ..."})
-            self.assertEqual(response.code, httplib.UNAUTHORIZED)
-            self.assertNoAuthFailureDetail(response)
-            self.assertNoAuthFailureDebugDetails(response)
+            with ControlIncludeAuthFailureDebugDetails(False):
+                response = self.fetch(
+                    "/",
+                    method="GET",
+                    headers={"Authorization": "MAC ..."})
+                self.assertEqual(response.code, httplib.UNAUTHORIZED)
+                self.assertNoAuthFailureDetail(response)
+                self.assertNoAuthFailureDebugDetails(response)
 
     def test_forward_to_app_server_failed(self):
         """Verify that when async the foward to the app server fails,
