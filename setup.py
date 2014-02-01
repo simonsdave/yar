@@ -22,10 +22,10 @@ setup(
         "tornado==3.0.1",
         "python-keyczar==0.71c",
         "python-memcached==1.52",
-        "tornado-memcache==1.0",
+#       "tornado-memcache==1.0",
     ],
     dependency_links = [
-        "http://github.com/dpnova/tornado-memcache/tarball/master#egg=tornado-memcache",
+#       "http://github.com/dpnova/tornado-memcache/tarball/master#egg=tornado-memcache",
     ],
     version=1.0,
     description="yar",
