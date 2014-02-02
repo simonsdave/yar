@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
+apt-get update
+
+# run 2 x lines below if we need setuptools 2.1 rather than the 0.6 default
+cd /tmp
+wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py -O - | python
+
 apt-get install -y python-pip
-apt-get install -y python-setuptools
-# cd /tmp
-# wget -q - http://python-distribute.org/distribute_setup.py
-# python distribute_setup.py
-# apt-get install -y python-virtualenv
 
 # libgmp-dev installed to avoid the warning
 #   "warning: GMP or MPIR library not found; Not building Crypto.PublicKey._fastmath."
@@ -24,10 +25,7 @@ echo "############################################################"
 # :TODO: in future, there should service specific setup.py
 cd /tmp
 cp /vagrant/artifacts/tmp/yar-*.*.tar.gz .
-gunzip yar-*.*.tar.gz
-tar xvf yar-*.*.tar
-cd yar-*.*
-sudo python setup.py install
+pip install yar-*.*.tar.gz
 cd /tmp
 rm -rf yar-*.*. >& /dev/null
 
