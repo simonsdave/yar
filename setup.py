@@ -9,6 +9,8 @@ setup(
         "yar.auth_server",
         "yar.key_server",
         "yar.key_store",
+        # see "data_files" comment on why the next shouldn't be here
+        "yar.key_store.design_docs",
     ],
     scripts=[
         "bin/app_server",
@@ -24,9 +26,15 @@ setup(
         "python-memcached==1.52",
 #       "tornado-memcache==1.0",
     ],
-    dependency_links = [
+    dependency_links=[
 #       "http://github.com/dpnova/tornado-memcache/tarball/master#egg=tornado-memcache",
     ],
+    # MANIFEST.in in same directory as this setup.py should contain
+    # a single line:
+    #   include yar/key_store/design_docs/creds.json
+    # data_files = [
+    #     (key_store_package_dir, ["yar/key_store/creds.json"]),
+    # ],
     version=1.0,
     description="yar",
     author="Dave Simons",
