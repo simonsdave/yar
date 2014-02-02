@@ -10,7 +10,7 @@ import glob
 import httplib
 import httplib2
 
-import yar.key_store
+import yar.key_store.design_docs
 from yar.key_store.clparser import CommandLineParser
 
 _logger = logging.getLogger("KEYSTORE.%s" % __name__)
@@ -51,19 +51,23 @@ def create(database="creds", host="localhost:5984"):
     # design documents with the filename (less ".json" being the design
     # document name
     #
-    path = os.path.split(yar.key_store.__file__)[0]
-    design_doc_file_name_pattern = os.path.join(path, "*.json")
-    for design_doc_file_name in glob.glob(design_doc_file_name_pattern):
+    path = os.path.split(yar.key_store.design_docs.__file__)[0]
+    design_doc_filename_pattern = os.path.join(path, "*.py")
+    for design_doc_filename in glob.glob(design_doc_filename_pattern):
+
+        if design_doc_filename.endswith("__init__.py"):
+            continue
+
+        design_doc_name = os.path.basename(design_doc_filename)[:-len(".py")]
 
         _logger.info(
-            "Creating design doc '%s' in database '%s' on '%s'",
-            design_doc_file_name,
+            "Creating design doc '%s' in database '%s' on '%s' from file '%s'",
+            design_doc_name,
             database,
-            host)
+            host,
+            design_doc_filename)
 
-        design_doc_name = os.path.basename(design_doc_file_name)[:-len(".json")]
-
-        with open(design_doc_file_name, "r") as design_doc_file:
+        with open(design_doc_filename, "r") as design_doc_file:
             design_doc = design_doc_file.read()
 
         url = "http://%s/%s/_design/%s" % (host, database, design_doc_name)
