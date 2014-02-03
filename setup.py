@@ -23,10 +23,23 @@ setup(
         "jsonschema==1.3.0",
         "tornado==3.0.1",
         "python-keyczar==0.71c",
-#       "tornado-memcache==1.0",
+        "tornado-memcache==0.1",
     ],
     dependency_links=[
-#       "http://github.com/dpnova/tornado-memcache/tarball/master#egg=tornado-memcache",
+        # wow was it tricky (for me) trying to figure out how to get
+        # tornado-memcache to install corectly. there are lots of postings
+        # talking about the basic url structure req'd but only the article
+        # below seemed to highlight the need for the version number on
+        # the end of the url.
+        #
+        #   http://lfhck.com/question/298293/can-pip-install-dependencies-not-specified-in-setuppy-at-install-time
+        #
+        # :TRICKY: the version number @ the end of the URL below matches
+        # the version number in "install_requires" section of this setup.py
+        # and the version number listed in tornado-memcache's setup.py.
+        # all 3 of these version numbers had to match to get this all to
+        # work correctly.
+        "http://github.com/dpnova/tornado-memcache/tarball/master#egg=tornado-memcache-0.1",
     ],
     # MANIFEST.in in same directory as this setup.py should contain
     # a single line:
