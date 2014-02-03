@@ -23,7 +23,6 @@ setup(
         "jsonschema==1.3.0",
         "tornado==3.0.1",
         "python-keyczar==0.71c",
-        "python-memcached==1.52",
 #       "tornado-memcache==1.0",
     ],
     dependency_links=[
