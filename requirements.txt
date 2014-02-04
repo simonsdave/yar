@@ -8,6 +8,6 @@ git+git://github.com/dpnova/tornado-memcache.git@master
 mock==1.0.1
 nose==1.3.0
 nose-cov==1.6
-pep8==1.4.5
+pep8==1.4.6
 radon==0.4.3
 Sphinx==1.2b3
