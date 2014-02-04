@@ -78,7 +78,7 @@ curl \
   -v \
   -X POST \
   -H "Content-Type: application/json; charset=utf8" \
-  -d "{\"owner\":\"simonsdave@gmail.com\", \"auth_scheme\":\"hmac\"}" \
+  -d "{\"principal\":\"simonsdave@gmail.com\", \"auth_scheme\":\"hmac\"}" \
   http://localhost:8070/v1.0/creds
 ~~~~~
 

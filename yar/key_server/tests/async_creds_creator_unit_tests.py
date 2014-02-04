@@ -22,7 +22,7 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
 
     def _test_bad(self, the_is_ok, the_auth_scheme, the_http_status_code):
 
-        self.the_owner = str(uuid.uuid4()).replace("-", "")
+        self.the_principal = str(uuid.uuid4()).replace("-", "")
 
         def async_req_to_key_store_patch(
             acc,
@@ -40,8 +40,8 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
 
             self.assertIsNotNone(body)
 
-            self.assertIn("owner", body)
-            self.assertEqual(body["owner"], self.the_owner)
+            self.assertIn("principal", body)
+            self.assertEqual(body["principal"], self.the_principal)
 
             self.assertIn("type", body)
             self.assertEqual(body["type"], "creds_v1.0")
@@ -83,7 +83,7 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
         with mock.patch(name_of_method_to_patch, async_req_to_key_store_patch):
             acc = async_creds_creator.AsyncCredsCreator(type(self)._key_store)
             acc.create(
-                self.the_owner,
+                self.the_principal,
                 the_auth_scheme,
                 on_async_create_done)
 
@@ -113,7 +113,7 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
 
     def _test_ok(self, the_auth_scheme):
 
-        self.the_owner = str(uuid.uuid4()).replace("-", "")
+        self.the_principal = str(uuid.uuid4()).replace("-", "")
         self.the_creds = None
 
         def async_req_to_key_store_patch(
@@ -133,8 +133,8 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
             self.assertIsNotNone(body)
             self.the_creds = body
 
-            self.assertIn("owner", body)
-            self.assertEqual(body["owner"], self.the_owner)
+            self.assertIn("principal", body)
+            self.assertEqual(body["principal"], self.the_principal)
 
             self.assertIn("type", body)
             self.assertEqual(body["type"], "creds_v1.0")
@@ -180,7 +180,7 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
         with mock.patch(name_of_method_to_patch, async_req_to_key_store_patch):
             acc = async_creds_creator.AsyncCredsCreator(type(self)._key_store)
             acc.create(
-                self.the_owner,
+                self.the_principal,
                 the_auth_scheme,
                 on_async_create_done)
 

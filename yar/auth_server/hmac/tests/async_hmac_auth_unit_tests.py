@@ -222,7 +222,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
         """When a request contains an Authorization HTTP header that
         correctly authenticates a caller."""
 
-        the_owner = "das@example.com"
+        the_principal = "das@example.com"
         the_mac_key_identifier = mac.MACKeyIdentifier.generate()
         the_mac_key = mac.MACKey.generate()
         the_mac_algorithm = mac.MAC.algorithm
@@ -273,7 +273,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                     is_deleted,
                     the_mac_algorithm,
                     the_mac_key,
-                    the_owner)
+                    the_principal)
 
             name_of_method_to_patch = (
                 "yar.auth_server.hmac."
@@ -305,7 +305,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                     is_auth_ok,
                     auth_failure_detail=None,
                     auth_failure_debug_details=None,
-                    owner=None):
+                    principal=None):
 
                     self.assertIsNotNone(is_auth_ok)
 
@@ -315,8 +315,8 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                         self.assertIsNone(auth_failure_detail)
                         self.assertIsNone(auth_failure_debug_details)
 
-                        self.assertIsNotNone(owner)
-                        self.assertEqual(owner, the_owner)
+                        self.assertIsNotNone(principal)
+                        self.assertEqual(principal, the_principal)
                     else:
                         self.assertFalse(is_auth_ok)
 
@@ -325,7 +325,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                             auth_failure_detail,
                             async_hmac_auth.AUTH_FAILURE_DETAIL_HMACS_DO_NOT_MATCH)
 
-                        self.assertIsNone(owner)
+                        self.assertIsNone(principal)
 
                 aha = async_hmac_auth.AsyncHMACAuth(request)
                 aha.authenticate(on_auth_done)

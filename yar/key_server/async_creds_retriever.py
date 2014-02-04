@@ -17,7 +17,7 @@ class AsyncCredsRetriever(AsyncAction):
         self,
         callback,
         key=None,
-        owner=None,
+        principal=None,
         is_filter_out_deleted=True,
         is_filter_out_non_model_properties=False):
 
@@ -29,14 +29,14 @@ class AsyncCredsRetriever(AsyncAction):
         if key:
             path = key
         else:
-            if owner:
+            if principal:
                 fmt = (
-                    '_design/creds/_view/by_owner?'
+                    '_design/creds/_view/by_principal?'
                     'startkey="%s"'
                     '&'
                     'endkey="%s"'
                 )
-                path = fmt % (owner, owner)
+                path = fmt % (principal, principal)
             else:
                 path = "_design/creds/_view/all"
 

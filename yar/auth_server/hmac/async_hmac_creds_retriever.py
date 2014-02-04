@@ -64,4 +64,4 @@ class AsyncHMACCredsRetriever(object):
             body["is_deleted"],
             body["hmac"]["mac_algorithm"],
             mac.MACKey(body["hmac"]["mac_key"]),
-            body["owner"])
+            body["principal"])

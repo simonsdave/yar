@@ -18,7 +18,7 @@ class KeyServerCreateCredsRequestTestCase(unittest.TestCase):
 
     def _good_request(self):
         return {
-            "owner": "simonsdave@gmail.com",
+            "principal": "simonsdave@gmail.com",
         }
 
     def _validate(self, request):
@@ -33,15 +33,15 @@ class KeyServerCreateCredsRequestTestCase(unittest.TestCase):
     def test_request_empty(self):
         request = self._good_request()
         self._validate(request)
-        del request["owner"]
+        del request["principal"]
         self.assertEquals(0, len(request))
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(request)
 
-    def test_request_zero_length_owner(self):
+    def test_request_zero_length_principal(self):
         request = self._good_request()
         self._validate(request)
-        request["owner"] = ""
+        request["principal"] = ""
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(request)
 
@@ -85,17 +85,17 @@ class KeyServerGetCredsResponseTestCase(unittest.TestCase):
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(response)
 
-    def test_invalid_owner(self):
+    def test_invalid_principal(self):
         response = self._generate_good_response()
         if not response:
             # :TODO: crappy way to do this - how do we avoid nosetests selecting
             # this abstract base class as a real test case class
             return
         self._validate(response)
-        response["owner"] = ""
+        response["principal"] = ""
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(response)
-        del response["owner"]
+        del response["principal"]
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(response)
 
@@ -135,7 +135,7 @@ class KeyServerGetBasicCredsResponseTestCase(KeyServerGetCredsResponseTestCase):
                 "api_key": str(api_key),
             },
             "is_deleted": True,
-            "owner": "simonsdave@gmail.com",
+            "principal": "simonsdave@gmail.com",
             "links": {
                 "self": {
                     "href": "http://localhost:8070/v1.0/creds/f274d56f213faa731e97735f790ddc89"
@@ -168,7 +168,7 @@ class KeyServerGetHMACCredsResponseTestCase(KeyServerGetCredsResponseTestCase):
                 "mac_key_identifier": str(mac_key_identifier),
             },
             "is_deleted": True,
-            "owner": "simonsdave@gmail.com",
+            "principal": "simonsdave@gmail.com",
             "links": {
                 "self": {
                     "href": "http://localhost:8070/v1.0/creds/f274d56f213faa731e97735f790ddc89"

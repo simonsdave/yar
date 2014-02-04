@@ -77,18 +77,18 @@ class TestCase(yar_test_util.TestCase):
             key = creds["basic"].get("api_key", None)
         return key
 
-    def _create_creds(self, the_owner, the_auth_scheme="hmac"):
-        self.assertIsNotNone(the_owner)
-        self.assertTrue(0 < len(the_owner))
+    def _create_creds(self, the_principal, the_auth_scheme="hmac"):
+        self.assertIsNotNone(the_principal)
+        self.assertTrue(0 < len(the_principal))
 
-        def create_patch(acc, owner, auth_scheme, callback):
+        def create_patch(acc, principal, auth_scheme, callback):
             self.assertIsNotNone(acc)
-            self.assertEqual(owner, the_owner)
+            self.assertEqual(principal, the_principal)
             self.assertEqual(auth_scheme, the_auth_scheme)
             self.assertIsNotNone(callback)
 
             creds = {
-                "owner": owner,
+                "principal": principal,
                 "is_deleted": False,
             }
             if auth_scheme == "hmac":
@@ -111,7 +111,7 @@ class TestCase(yar_test_util.TestCase):
         with mock.patch(name_of_method_to_patch, create_patch):
             http_client = httplib2.Http()
             body = {
-                "owner": the_owner,
+                "principal": the_principal,
                 "auth_scheme": the_auth_scheme,
             }
             body_as_json = json.dumps(body)
@@ -138,7 +138,7 @@ class TestCase(yar_test_util.TestCase):
                 creds,
                 jsonschemas.create_creds_response)
 
-            self.assertEqual(the_owner, creds.get("owner", None))
+            self.assertEqual(the_principal, creds.get("principal", None))
 
             key = self._key_from_creds(creds)
             self.assertIsNotNone(key)
@@ -170,7 +170,7 @@ class TestCase(yar_test_util.TestCase):
             acr,
             callback,
             key,
-            owner,
+            principal,
             is_filter_out_deleted,
             is_filter_out_non_model_properties):
 
@@ -178,7 +178,7 @@ class TestCase(yar_test_util.TestCase):
             self.assertIsNotNone(callback)
             self.assertIsNotNone(key)
             self.assertEqual(key, the_key)
-            self.assertIsNone(owner)
+            self.assertIsNone(principal)
 
             for creds in self._creds_database:
                 key = self._key_from_creds(creds)
@@ -235,36 +235,36 @@ class TestCase(yar_test_util.TestCase):
 
             return creds
 
-    def _get_all_creds(self, the_owner=None):
+    def _get_all_creds(self, the_principal=None):
 
         def fetch_patch(
             acr,
             callback,
             key,
-            owner,
+            principal,
             is_filter_out_deleted,
             is_filter_out_non_model_properties):
 
             self.assertIsNotNone(acr)
             self.assertIsNotNone(callback)
             self.assertIsNone(key)
-            if the_owner is None:
-                self.assertIsNone(owner)
+            if the_principal is None:
+                self.assertIsNone(principal)
             else:
-                self.assertEqual(owner, the_owner)
+                self.assertEqual(principal, the_principal)
             if is_filter_out_deleted:
                 creds_database = [creds for creds in self._creds_database if not creds.get("is_deleted", False)]
             else:
                 creds_database = self._creds_database
-            if owner is None:
+            if principal is None:
                 callback(creds=creds_database, is_creds_collection=True)
             else:
-                owners_creds = []
+                principals_creds = []
                 for creds in creds_database:
-                    self.assertIn("owner", creds)
-                    if owner == creds["owner"]:
-                        owners_creds.append(creds)
-                callback(creds=owners_creds, is_creds_collection=True)
+                    self.assertIn("principal", creds)
+                    if principal == creds["principal"]:
+                        principals_creds.append(creds)
+                callback(creds=principals_creds, is_creds_collection=True)
 
         name_of_method_to_patch = (
             "yar.key_server.async_creds_retriever."
@@ -273,9 +273,9 @@ class TestCase(yar_test_util.TestCase):
         with mock.patch(name_of_method_to_patch, fetch_patch):
             http_client = httplib2.Http()
             url = self.url()
-            if the_owner is not None:
-                self.assertTrue(0 < len(the_owner))
-                url = "%s?owner=%s" % (url, the_owner)
+            if the_principal is not None:
+                self.assertTrue(0 < len(the_principal))
+                url = "%s?principal=%s" % (url, the_principal)
             response, content = http_client.request(url, "GET")
             self.assertIsNotNone(response)
             self.assertTrue(httplib.OK == response.status)
@@ -326,7 +326,7 @@ class TestCase(yar_test_util.TestCase):
             acr,
             callback,
             key,
-            owner,
+            principal,
             is_filter_out_deleted,
             is_filter_out_non_model_properties):
             self.assertIsNotNone(acr)
@@ -350,7 +350,7 @@ class TestCase(yar_test_util.TestCase):
         response, content = http_client.request(
             self.url(),
             "POST",
-            body=json.dumps({"owner": "simonsdave@gmail.com"}),
+            body=json.dumps({"principal": "simonsdave@gmail.com"}),
             headers={})
         self.assertIsNotNone(response)
         self.assertTrue(httplib.BAD_REQUEST == response.status)
@@ -360,7 +360,7 @@ class TestCase(yar_test_util.TestCase):
         response, content = http_client.request(
             self.url(),
             "POST",
-            body=json.dumps({"owner": "simonsdave@gmail.com"}),
+            body=json.dumps({"principal": "simonsdave@gmail.com"}),
             headers={"Content-Type": "text/plain"})
         self.assertIsNotNone(response)
         self.assertTrue(httplib.BAD_REQUEST == response.status)
@@ -394,22 +394,22 @@ class TestCase(yar_test_util.TestCase):
         self.assertIsNotNone(response)
         self.assertTrue(httplib.BAD_REQUEST == response.status)
 
-    def test_post_with_no_owner_in_body(self):
+    def test_post_with_no_principal_in_body(self):
         http_client = httplib2.Http()
         response, content = http_client.request(
             self.url(),
             "POST",
-            body=json.dumps({"XXXownerXXX": "simonsdave@gmail.com"}),
+            body=json.dumps({"XXXprincipalXXX": "simonsdave@gmail.com"}),
             headers={"Content-Type": "application/json; charset=utf8"})
         self.assertIsNotNone(response)
         self.assertTrue(httplib.BAD_REQUEST == response.status)
 
     def test_post_failure(self):
-        the_owner = str(uuid.uuid4()).replace("-", "")
+        the_principal = str(uuid.uuid4()).replace("-", "")
 
-        def create_patch(acc, owner, callback):
+        def create_patch(acc, principal, callback):
             self.assertIsNotNone(acc)
-            self.assertEqual(owner, the_owner)
+            self.assertEqual(principal, the_principal)
             self.assertIsNotNone(callback)
             callback(None)
 
@@ -418,7 +418,7 @@ class TestCase(yar_test_util.TestCase):
             response, content = http_client.request(
                 self.url(),
                 "POST",
-                body=json.dumps({"owner": the_owner}),
+                body=json.dumps({"principal": the_principal}),
                 headers={"Content-Type": "application/json; charset=utf8"})
             self.assertIsNotNone(response)
             self.assertTrue(httplib.INTERNAL_SERVER_ERROR == response.status)
@@ -466,29 +466,29 @@ class TestCase(yar_test_util.TestCase):
         self.assertIsNotNone(response)
         self.assertTrue(httplib.METHOD_NOT_ALLOWED == response.status)
 
-    def test_get_by_owner(self):
-        owner = str(uuid.uuid4()).replace("-", "")
-        owner_creds = []
+    def test_get_by_principal(self):
+        principal = str(uuid.uuid4()).replace("-", "")
+        principal_creds = []
         for x in range(1, 11):
-            owner_creds.append(self._create_creds(owner))
+            principal_creds.append(self._create_creds(principal))
 
-        other_owner = str(uuid.uuid4()).replace("-", "")
-        other_owner_creds = []
+        other_principal = str(uuid.uuid4()).replace("-", "")
+        other_principal_creds = []
         for x in range(1, 4):
-            other_owner_creds.append(self._create_creds(other_owner))
+            other_principal_creds.append(self._create_creds(other_principal))
 
-        all_owner_creds = self._get_all_creds(owner)
-        self.assertIsNotNone(all_owner_creds)
-        self.assertEqual(len(all_owner_creds), len(owner_creds))
-        # :TODO: validate all_owner_creds is same as owner_creds
+        all_principal_creds = self._get_all_creds(principal)
+        self.assertIsNotNone(all_principal_creds)
+        self.assertEqual(len(all_principal_creds), len(principal_creds))
+        # :TODO: validate all_principal_creds is same as principal_creds
 
     def _test_all_good_for_simple_create_and_delete(self, auth_scheme):
         all_creds = self._get_all_creds()
         self.assertIsNotNone(all_creds)
         self.assertEqual(0, len(all_creds))
 
-        owner = str(uuid.uuid4()).replace("-", "")
-        (creds, location) = self._create_creds(owner, auth_scheme)
+        principal = str(uuid.uuid4()).replace("-", "")
+        (creds, location) = self._create_creds(principal, auth_scheme)
         self.assertIsNotNone(creds)
 
         key = self._key_from_creds(creds)
@@ -509,8 +509,8 @@ class TestCase(yar_test_util.TestCase):
         self._test_all_good_for_simple_create_and_delete("basic")
 
     def test_deleted_creds_not_returned_by_default_on_get(self):
-        owner = str(uuid.uuid4()).replace("-", "")
-        (creds_on_create, location_on_create) = self._create_creds(owner)
+        principal = str(uuid.uuid4()).replace("-", "")
+        (creds_on_create, location_on_create) = self._create_creds(principal)
         key = self._key_from_creds(creds_on_create)
         creds_on_get_before_delete = self._get_creds(key)
         self.assertIsNotNone(creds_on_get_before_delete)
@@ -522,7 +522,7 @@ class TestCase(yar_test_util.TestCase):
         """Verify that when credentials creation fails (for whatever reason)
         that the key server returns an INTERNAL_SERVER_ERROR status code."""
 
-        def create_patch(acc, owner, auth_scheme, callback):
+        def create_patch(acc, principal, auth_scheme, callback):
             # the "None" below indicates a failure has occured
             callback(None)
 
@@ -533,7 +533,7 @@ class TestCase(yar_test_util.TestCase):
         with mock.patch(name_of_method_to_patch, create_patch):
             http_client = httplib2.Http()
             body = {
-                "owner": str(uuid.uuid4()).replace("-", ""),
+                "principal": str(uuid.uuid4()).replace("-", ""),
                 "auth_scheme": "basic",
             }
             body_as_json = json.dumps(body)

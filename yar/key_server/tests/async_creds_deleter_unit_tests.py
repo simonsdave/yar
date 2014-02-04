@@ -65,7 +65,7 @@ class TestCaseAsyncCredsDeleter(yar_test_util.TestCase):
             "mac_algorithm": mac.MAC.algorithm,
             "mac_key": mac.MACKey.generate(),
             "mac_key_identifier": mac.MACKeyIdentifier.generate(),
-            "owner": "dave@example.com",
+            "principal": "dave@example.com",
             "type": "creds_v1.0",
         }
 
@@ -125,7 +125,7 @@ class TestCaseAsyncCredsDeleter(yar_test_util.TestCase):
             "mac_algorithm": mac.MAC.algorithm,
             "mac_key": mac.MACKey.generate(),
             "mac_key_identifier": mac.MACKeyIdentifier.generate(),
-            "owner": "dave@example.com",
+            "principal": "dave@example.com",
             "type": "creds_v1.0",
         }
 

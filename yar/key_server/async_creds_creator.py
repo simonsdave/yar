@@ -17,8 +17,8 @@ class AsyncCredsCreator(AsyncAction):
     """```AsyncCredsCreator``` implements the async action
     pattern for creating credentials."""
 
-    def create(self, owner, auth_scheme, callback):
-        """Create a set of credentials for ```owner```,
+    def create(self, principal, auth_scheme, callback):
+        """Create a set of credentials for ```principal```,
         save the credentials to the key store and when all
         of that is done call ```callback``` with a single
         argument = the newly created credentials.
@@ -30,7 +30,7 @@ class AsyncCredsCreator(AsyncAction):
         self._callback = callback
 
         self._creds = {
-            "owner": owner,
+            "principal": principal,
             "type": "creds_v1.0",
             "is_deleted": False,
         }

@@ -66,4 +66,4 @@ class AsyncCredsRetriever(object):
             "Successfully retrieved basic auth credentials for api key '%s'",
             self._api_key)
 
-        self._callback(True, body["owner"])
+        self._callback(True, body["principal"])

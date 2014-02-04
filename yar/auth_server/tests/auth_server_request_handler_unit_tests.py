@@ -176,10 +176,10 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
     def test_forward_to_app_server_failed(self):
         """Verify that when async the foward to the app server fails,
         that the response is ```httplib.INTERNAL_SERVER_ERROR```."""
-        the_owner = str(uuid.uuid4()).replace("-", "")
+        the_principal = str(uuid.uuid4()).replace("-", "")
 
         def authenticate_patch(authenticator, callback):
-            callback(is_auth_ok=True, owner=the_owner)
+            callback(is_auth_ok=True, principal=the_principal)
 
         name_of_method_to_patch = (
             "yar.auth_server.hmac."
@@ -208,7 +208,7 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
         """Happy path verification of forwarding request to app server
         after authentication is successful."""
 
-        the_owner = str(uuid.uuid4()).replace("-", "")
+        the_principal = str(uuid.uuid4()).replace("-", "")
         the_status_code = httplib.OK
         the_response_headers = {
             "X-Dave": str(uuid.uuid4()).replace("-", ""),
@@ -218,7 +218,7 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
 
         def authenticate_patch(ignore_this_async_hmac_auth, callback):
             self.assertIsNotNone(callback)
-            callback(is_auth_ok=True, owner=the_owner)
+            callback(is_auth_ok=True, principal=the_principal)
 
         name_of_method_to_patch = (
             "yar.auth_server.hmac."

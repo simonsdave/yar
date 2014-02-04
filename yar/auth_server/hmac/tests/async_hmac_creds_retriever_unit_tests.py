@@ -195,7 +195,7 @@ class TestAsyncHMACCredsRetriever(yar_test_util.TestCase):
         the_is_deleted = False
         the_mac_algorithm = "hmac-sha-1"
         the_mac_key = mac.MACKey.generate()
-        the_owner = "das@example.com"
+        the_principal = "das@example.com"
 
         def async_http_client_fetch_patch(http_client, request, callback):
             self.assertKeyServerRequestOk(request, the_mac_key_identifier)
@@ -210,7 +210,7 @@ class TestAsyncHMACCredsRetriever(yar_test_util.TestCase):
                     "mac_key_identifier": the_mac_key_identifier,
                 },
                 "is_deleted": the_is_deleted,
-                "owner": the_owner,
+                "principal": the_principal,
                 "links": {
                     "self": {
                         "href": "abc",
@@ -232,7 +232,7 @@ class TestAsyncHMACCredsRetriever(yar_test_util.TestCase):
             is_deleted,
             mac_algorithm,
             mac_key,
-            owner):
+            principal):
 
             self.assertIsNotNone(is_ok)
             self.assertTrue(is_ok)
@@ -249,8 +249,8 @@ class TestAsyncHMACCredsRetriever(yar_test_util.TestCase):
             self.assertIsNotNone(mac_key)
             self.assertEqual(mac_key, the_mac_key)
 
-            self.assertIsNotNone(owner)
-            self.assertEqual(owner, the_owner)
+            self.assertIsNotNone(principal)
+            self.assertEqual(principal, the_principal)
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):

@@ -80,18 +80,18 @@ class Authenticator(object):
         acr = AsyncCredsRetriever(self._api_key)
         acr.fetch(self._on_creds_fetch_done)
 
-    def _on_creds_fetch_done(self, is_ok, owner=None):
+    def _on_creds_fetch_done(self, is_ok, principal=None):
         """After ```AsyncBasicCredsRetriever``` has finished attempting to
         retrieve credentials from the key server this method is called.
         ```is_ok``` will be False if an error occured when fetching the
-        credentials. ```owner``` will be None on error and when the
+        credentials. ```principal``` will be None on error and when the
         credentials can't be found."""
         if not is_ok:
             self._on_auth_done(False, AUTH_FAILURE_DETAIL_ERROR_GETTING_CREDS)
             return
 
-        if not owner:
+        if not principal:
             self._on_auth_done(False, AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
             return
 
-        self._on_auth_done(True, owner=owner)
+        self._on_auth_done(True, principal=principal)

@@ -36,7 +36,7 @@ class RequestHandler(trhutil.RequestHandler):
         acr.fetch(
             self._on_async_creds_retrieve_done,
             key=key,
-            owner=self.get_argument("owner", None),
+            principal=self.get_argument("principal", None),
             is_filter_out_deleted=is_filter_out_deleted,
             is_filter_out_non_model_properties=True)
 
@@ -73,7 +73,7 @@ class RequestHandler(trhutil.RequestHandler):
 
         acc = AsyncCredsCreator(_key_store)
         acc.create(
-            body["owner"],
+            body["principal"],
             body.get("auth_scheme", "basic"),
             self._on_async_creds_create_done)
 

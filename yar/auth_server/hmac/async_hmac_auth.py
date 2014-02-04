@@ -40,7 +40,7 @@ class AsyncHMACAuth(object):
         is_deleted=None,
         mac_algorithm=None,
         mac_key=None,
-        owner=None):
+        principal=None):
 
         if not is_ok:
             _logger.info(
@@ -120,7 +120,7 @@ class AsyncHMACAuth(object):
             self._request.full_url(),
             self._auth_hdr_val.mac)
 
-        self._on_auth_done(True, owner=owner)
+        self._on_auth_done(True, principal=principal)
 
     def _on_async_nonce_checker_done(self, is_ok):
         """this callback is invoked when AsyncNonceChecker has finished.

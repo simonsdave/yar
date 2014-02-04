@@ -88,7 +88,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             "mac_algorithm": mac.MAC.algorithm,
             "mac_key": mac.MACKey.generate(),
             "mac_key_identifier": mac.MACKeyIdentifier.generate(),
-            "owner": "dave@example.com",
+            "principal": "dave@example.com",
             "type": "creds_v1.0",
         }
 
@@ -133,7 +133,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             acr.fetch(
                 callback=on_async_create_done,
                 key=the_body["mac_key_identifier"],
-                owner=None,
+                principal=None,
                 is_filter_out_deleted=the_is_filter_out_deleted,
                 is_filter_out_non_model_properties=the_is_filter_out_non_model_properties)
 
@@ -153,12 +153,12 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             the_is_filter_out_non_model_properties=False)
 
 
-    def _test_ok_on_owner_request_to_key_store(
+    def _test_ok_on_principal_request_to_key_store(
         self,
         the_is_filter_out_deleted,
         the_is_filter_out_non_model_properties):
 
-        the_owner = "dave@example.com"
+        the_principal = "dave@example.com"
 
         the_non_deleted_creds = [
             {
@@ -168,7 +168,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
                 "mac_algorithm": "hmac-sha-1", 
                 "mac_key": "CHlFh7fIejF3NLmr73pCfqx3EL_xV2zDQgVcjRl45jM", 
                 "mac_key_identifier": "070a69935bd840e09029a74837dc4755", 
-                "owner": the_owner,
+                "principal": the_principal,
                 "type": "creds_v1.0"
             }, 
             {
@@ -178,7 +178,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
                 "mac_algorithm": "hmac-sha-1", 
                 "mac_key": "pyHpZ6auevEEHTkZDhfVf-uKHV_YPEH2lctZXL5j4QQ", 
                 "mac_key_identifier": "9c8411a78405460e825b5f4318ef9a57", 
-                "owner": the_owner,
+                "principal": the_principal,
                 "type": "creds_v1.0"
             }, 
         ]
@@ -191,7 +191,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
                 "mac_algorithm": "hmac-sha-1", 
                 "mac_key": "8m_yH35Q9iMEZx_OV5M136eJ4SJsTw0JO-Y6BS3scJY", 
                 "mac_key_identifier": "e49df12a968f4340a6e5f06c43e868bb", 
-                "owner": the_owner,
+                "principal": the_principal,
                 "type": "creds_v1.0"
             },
         ]
@@ -219,12 +219,12 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             self.assertIsNotNone(acr)
 
             expected_path_fmt = (
-                '_design/creds/_view/by_owner?'
+                '_design/creds/_view/by_principal?'
                 'startkey="%s"'
                 '&'
                 'endkey="%s"'
             )
-            expected_path = expected_path_fmt % (the_owner, the_owner)
+            expected_path = expected_path_fmt % (the_principal, the_principal)
             self.assertIsNotNone(path)
             self.assertEqual(path, expected_path)
 
@@ -258,27 +258,27 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             acr.fetch(
                 callback=on_async_create_done,
                 key=None,
-                owner=the_owner,
+                principal=the_principal,
                 is_filter_out_deleted=the_is_filter_out_deleted,
                 is_filter_out_non_model_properties=the_is_filter_out_non_model_properties)
 
-    def test_ok_on_owner_request_to_key_store_no_filtering(self):
-        self._test_ok_on_owner_request_to_key_store(
+    def test_ok_on_principal_request_to_key_store_no_filtering(self):
+        self._test_ok_on_principal_request_to_key_store(
             the_is_filter_out_deleted=False,
             the_is_filter_out_non_model_properties=False)
 
-    def test_ok_on_owner_request_to_key_store_filter_non_model(self):
-        self._test_ok_on_owner_request_to_key_store(
+    def test_ok_on_principal_request_to_key_store_filter_non_model(self):
+        self._test_ok_on_principal_request_to_key_store(
             the_is_filter_out_deleted=False,
             the_is_filter_out_non_model_properties=True)
 
-    def test_ok_on_owner_request_to_key_store_filter_deleted(self):
-        self._test_ok_on_owner_request_to_key_store(
+    def test_ok_on_principal_request_to_key_store_filter_deleted(self):
+        self._test_ok_on_principal_request_to_key_store(
             the_is_filter_out_deleted=True,
             the_is_filter_out_non_model_properties=False)
 
     def test_ok_on_retrieve_all_request_to_key_store(self):
-        """_test_ok_on_owner_request_to_key_store tests the bulk
+        """_test_ok_on_principal_request_to_key_store tests the bulk
         of this functionality - all the test is really here to do
         is confirm that the correct request is issued to the
         key server."""
@@ -296,7 +296,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
                         "mac_algorithm": "hmac-sha-1", 
                         "mac_key": "CHlFh7fIejF3NLmr73pCfqx3EL_xV2zDQgVcjRl45jM", 
                         "mac_key_identifier": "070a69935bd840e09029a74837dc4755", 
-                        "owner": "dave@gmail.com", 
+                        "principal": "dave@gmail.com", 
                         "type": "creds_v1.0"
                     }
                 }, 
@@ -310,7 +310,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
                         "mac_algorithm": "hmac-sha-1", 
                         "mac_key": "pyHpZ6auevEEHTkZDhfVf-uKHV_YPEH2lctZXL5j4QQ", 
                         "mac_key_identifier": "9c8411a78405460e825b5f4318ef9a57", 
-                        "owner": "dave@gmail.com", 
+                        "principal": "dave@gmail.com", 
                         "type": "creds_v1.0"
                     }
                 }, 
@@ -324,7 +324,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
                         "mac_algorithm": "hmac-sha-1", 
                         "mac_key": "8m_yH35Q9iMEZx_OV5M136eJ4SJsTw0JO-Y6BS3scJY", 
                         "mac_key_identifier": "e49df12a968f4340a6e5f06c43e868bb", 
-                        "owner": "dave@gmail.com", 
+                        "principal": "dave@gmail.com", 
                         "type": "creds_v1.0"
                     }
                 }
@@ -361,6 +361,6 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             acr.fetch(
                 callback=on_async_create_done,
                 key=None,
-                owner=None,
+                principal=None,
                 is_filter_out_deleted=False,
                 is_filter_out_non_model_properties=False)

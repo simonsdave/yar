@@ -22,19 +22,19 @@ app_server = None
 is forwarded to the app server. The forward to the app server does not
 contain the original request's HTTP Authorization header but instead
 uses the authorization method described by ```app_server_auth_method```
-and the the credential's owner."""
+and the the credential's principal."""
 app_server_auth_method = "YAR"
 
 
 class AsyncAppServerForwarder(object):
 
-    def __init__(self, method, uri, headers, body, owner):
+    def __init__(self, method, uri, headers, body, principal):
         object.__init__(self)
         self._method = method
         self._uri = uri
         self._headers = headers
         self._body = body
-        self._owner = owner
+        self._principal = principal
 
     def forward(self, callback):
 
@@ -43,7 +43,7 @@ class AsyncAppServerForwarder(object):
         headers = tornado.httputil.HTTPHeaders(self._headers)
         headers["Authorization"] = "%s %s" % (
             app_server_auth_method,
-            self._owner)
+            self._principal)
 
         http_request = tornado.httpclient.HTTPRequest(
             url="http://%s%s" % (app_server, self._uri),

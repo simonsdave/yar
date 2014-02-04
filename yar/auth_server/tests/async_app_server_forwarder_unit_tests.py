@@ -43,7 +43,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
         forwarding functionality when things are working corectly."""
 
         the_response_is_ok = True
-        the_request_owner = "das@example.com"
+        the_request_principal = "das@example.com"
 
         def async_app_server_forwarder_forward_patch(http_client, request, callback):
             self.assertIsNotNone(request)
@@ -62,7 +62,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             expected_headers = tornado.httputil.HTTPHeaders(the_request_headers)
             expected_headers["Authorization"] = "%s %s" % (
                 self.__class__._app_server_auth_method,
-                the_request_owner)
+                the_request_principal)
             self.assertEqual(request.headers, expected_headers)
 
             response = mock.Mock()
@@ -113,7 +113,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
                 the_request_uri,
                 the_request_headers,
                 the_request_body,
-                the_request_owner)
+                the_request_principal)
             aasf.forward(on_async_app_server_forward_done)
 
     def test_all_good_001(self):
@@ -215,7 +215,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             "X-Dave-Testing": 42,
         }
         the_request_body = "dave was here"
-        the_request_owner = "das@example.com"
+        the_request_principal = "das@example.com"
 
         the_response_code = httplib.CREATED
         the_response_headers = tornado.httputil.HTTPHeaders({
@@ -244,7 +244,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             expected_headers = tornado.httputil.HTTPHeaders(the_request_headers)
             expected_headers["Authorization"] = "%s %s" % (
                 self.__class__._app_server_auth_method,
-                the_request_owner)
+                the_request_principal)
             self.assertEqual(request.headers, expected_headers)
 
             response = mock.Mock()
@@ -263,5 +263,5 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
                 the_request_uri,
                 the_request_headers,
                 the_request_body,
-                the_request_owner)
+                the_request_principal)
             aasf.forward(on_async_app_server_forward_done)

@@ -25,7 +25,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
             is_auth_ok,
             auth_failure_detail=None,
             auth_failure_debug_details=None,
-            owner=None):
+            principal=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -53,7 +53,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
             is_auth_ok,
             auth_failure_detail=None,
             auth_failure_debug_details=None,
-            owner=None):
+            principal=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -84,7 +84,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
             is_auth_ok,
             auth_failure_detail=None,
             auth_failure_debug_details=None,
-            owner=None):
+            principal=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -118,7 +118,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
             is_auth_ok,
             auth_failure_detail=None,
             auth_failure_debug_details=None,
-            owner=None):
+            principal=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -151,7 +151,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
             is_auth_ok,
             auth_failure_detail=None,
             auth_failure_debug_details=None,
-            owner=None):
+            principal=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -171,13 +171,13 @@ class TestAsyncAuth(yar_test_util.TestCase):
 
     def test_error_getting_creds(self):
         the_api_key = basic.APIKey.generate()
-        the_owner = str(uuid.uuid4()).replace("-", "")
+        the_principal = str(uuid.uuid4()).replace("-", "")
 
         def on_auth_done(
             is_auth_ok,
             auth_failure_detail=None,
             auth_failure_debug_details=None,
-            owner=None):
+            principal=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -207,13 +207,13 @@ class TestAsyncAuth(yar_test_util.TestCase):
 
     def test_creds_not_found(self):
         the_api_key = basic.APIKey.generate()
-        the_owner = str(uuid.uuid4()).replace("-", "")
+        the_principal = str(uuid.uuid4()).replace("-", "")
 
         def on_auth_done(
             is_auth_ok,
             auth_failure_detail=None,
             auth_failure_debug_details=None,
-            owner=None):
+            principal=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -224,8 +224,8 @@ class TestAsyncAuth(yar_test_util.TestCase):
                 async_auth.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
 
         def fetch_patch(acr, callback):
-            owner = None
-            callback(True, owner)
+            principal = None
+            callback(True, principal)
 
         name_of_method_to_patch = (
             "yar.auth_server.basic.async_creds_retriever."
@@ -244,22 +244,22 @@ class TestAsyncAuth(yar_test_util.TestCase):
 
     def test_all_good(self):
         the_api_key = basic.APIKey.generate()
-        the_owner = str(uuid.uuid4()).replace("-", "")
+        the_principal = str(uuid.uuid4()).replace("-", "")
 
         def on_auth_done(
             is_auth_ok,
             auth_failure_detail=None,
             auth_failure_debug_details=None,
-            owner=None):
+            principal=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertTrue(is_auth_ok)
 
-            self.assertIsNotNone(owner)
-            self.assertEqual(owner, the_owner)
+            self.assertIsNotNone(principal)
+            self.assertEqual(principal, the_principal)
 
         def fetch_patch(acr, callback):
-            callback(True, the_owner)
+            callback(True, the_principal)
 
         name_of_method_to_patch = (
             "yar.auth_server.basic.async_creds_retriever."

@@ -7,7 +7,7 @@ create credentials requests to the key server."""
 create_creds_request = {
     "type": "object",
     "properties": {
-        "owner": {
+        "principal": {
             "type": "string",
             "minLength": 1
         },
@@ -20,7 +20,7 @@ create_creds_request = {
         },
     },
     "required": [
-        "owner",
+        "principal",
     ],
     "additionalProperties": False,
 }
@@ -54,7 +54,7 @@ get_creds_response = {
                 "is_deleted": {
                     "type": "boolean",
                 },
-                "owner": {
+                "principal": {
                     "type": "string",
                     "minLength": 1,
                 },
@@ -76,7 +76,7 @@ get_creds_response = {
             "required": [
                 "basic",
                 "is_deleted",
-                "owner",
+                "principal",
                 "links",
             ],
             "additionalProperties": False,
@@ -113,7 +113,7 @@ get_creds_response = {
                 "is_deleted": {
                     "type": "boolean",
                 },
-                "owner": {
+                "principal": {
                     "type": "string",
                     "minLength": 1,
                 },
@@ -135,7 +135,7 @@ get_creds_response = {
             "required": [
                 "hmac",
                 "is_deleted",
-                "owner",
+                "principal",
                 "links",
             ],
             "additionalProperties": False,

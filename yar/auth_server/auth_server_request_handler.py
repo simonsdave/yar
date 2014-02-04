@@ -103,7 +103,7 @@ class RequestHandler(trhutil.RequestHandler):
         is_auth_ok,
         auth_failure_detail=None,
         auth_failure_debug_details=None,
-        owner=None):
+        principal=None):
 
         # :TODO: how to differentiate between an authentication failure
         # and a failure with the authentication infrastructure
@@ -136,7 +136,7 @@ class RequestHandler(trhutil.RequestHandler):
             self.request.uri,
             self.request.headers,
             self.get_request_body_if_exists(),
-            owner)
+            principal)
         aasf.forward(self._on_app_server_done)
 
     def _on_app_server_done(

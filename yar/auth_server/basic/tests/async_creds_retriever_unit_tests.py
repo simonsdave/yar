@@ -58,11 +58,11 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
 
-            def on_async_creds_retriever_done(is_ok, owner=None):
+            def on_async_creds_retriever_done(is_ok, principal=None):
                 self.assertIsNotNone(is_ok)
                 self.assertFalse(is_ok)
 
-                self.assertIsNone(owner)
+                self.assertIsNone(principal)
 
             acr = async_creds_retriever.AsyncCredsRetriever(the_api_key)
             acr.fetch(on_async_creds_retriever_done)
@@ -84,11 +84,11 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
 
-            def on_async_creds_retriever_done(is_ok, owner=None):
+            def on_async_creds_retriever_done(is_ok, principal=None):
                 self.assertIsNotNone(is_ok)
                 self.assertFalse(is_ok)
 
-                self.assertIsNone(owner)
+                self.assertIsNone(principal)
 
             acr = async_creds_retriever.AsyncCredsRetriever(the_api_key)
             acr.fetch(on_async_creds_retriever_done)
@@ -110,11 +110,11 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
 
-            def on_async_creds_retriever_done(is_ok, owner=None):
+            def on_async_creds_retriever_done(is_ok, principal=None):
                 self.assertIsNotNone(is_ok)
                 self.assertTrue(is_ok)
 
-                self.assertIsNone(owner)
+                self.assertIsNone(principal)
 
             acr = async_creds_retriever.AsyncCredsRetriever(the_api_key)
             acr.fetch(on_async_creds_retriever_done)
@@ -141,11 +141,11 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
 
-            def on_async_creds_retriever_done(is_ok, owner=None):
+            def on_async_creds_retriever_done(is_ok, principal=None):
                 self.assertIsNotNone(is_ok)
                 self.assertFalse(is_ok)
 
-                self.assertIsNone(owner)
+                self.assertIsNone(principal)
 
             acr = async_creds_retriever.AsyncCredsRetriever(the_api_key)
             acr.fetch(on_async_creds_retriever_done)
@@ -173,11 +173,11 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
 
-            def on_async_creds_retriever_done(is_ok, owner=None):
+            def on_async_creds_retriever_done(is_ok, principal=None):
                 self.assertIsNotNone(is_ok)
                 self.assertFalse(is_ok)
 
-                self.assertIsNone(owner)
+                self.assertIsNone(principal)
 
             acr = async_creds_retriever.AsyncCredsRetriever(the_api_key)
             acr.fetch(on_async_creds_retriever_done)
@@ -210,11 +210,11 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
 
-            def on_async_creds_retriever_done(is_ok, owner=None):
+            def on_async_creds_retriever_done(is_ok, principal=None):
                 self.assertIsNotNone(is_ok)
                 self.assertFalse(is_ok)
 
-                self.assertIsNone(owner)
+                self.assertIsNone(principal)
 
             acr = async_creds_retriever.AsyncCredsRetriever(the_api_key)
             acr.fetch(on_async_creds_retriever_done)
@@ -223,7 +223,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         """This is a happy path test for the fetch method of
         ```AsyncCredsRetriever```."""
         the_api_key = basic.APIKey.generate()
-        the_owner = str(uuid.uuid4()).replace("-", "")
+        the_principal = str(uuid.uuid4()).replace("-", "")
 
         def async_http_client_fetch_patch(http_client, request, callback):
             self.assertKeyServerRequestOk(request, the_api_key)
@@ -236,7 +236,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
                 "basic": {
                     "api_key": the_api_key,
                 },
-                "owner": the_owner,
+                "principal": the_principal,
                 "links": {
                     "self": {
                         "href": "abc",
@@ -255,12 +255,12 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
         with mock.patch(name_of_method_to_patch, async_http_client_fetch_patch):
 
-            def on_async_creds_retriever_done(is_ok, owner=None):
+            def on_async_creds_retriever_done(is_ok, principal=None):
                 self.assertIsNotNone(is_ok)
                 self.assertTrue(is_ok)
 
-                self.assertIsNotNone(owner)
-                self.assertEqual(owner, the_owner)
+                self.assertIsNotNone(principal)
+                self.assertEqual(principal, the_principal)
 
             acr = async_creds_retriever.AsyncCredsRetriever(the_api_key)
             acr.fetch(on_async_creds_retriever_done)
