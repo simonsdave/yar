@@ -1,7 +1,7 @@
 # the packages below are required in setup.py
 httplib2==0.8
 jsonschema==2.3.0
-tornado==3.0.1
+tornado==3.2
 python-keyczar==0.71c
 git+git://github.com/dpnova/tornado-memcache.git@master
 # the packages below are required for clf development
