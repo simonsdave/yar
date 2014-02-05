@@ -1,7 +1,5 @@
-#!/usr/bin/env python
 """This module contains the logic for async forwarding
 of requests to the app server."""
-
 
 import logging
 
@@ -10,9 +8,7 @@ import tornado.httpclient
 
 from yar.util.trhutil import get_request_body_if_exists
 
-
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
-
 
 """Once a request has been authenticated, the request is forwarded
 to the app server as defined by this host:port combination."""
@@ -53,20 +49,14 @@ class AsyncAppServerForwarder(object):
             follow_redirects=False)
 
         http_client = tornado.httpclient.AsyncHTTPClient()
-        http_client.fetch(
-            http_request,
-            self._on_forward_done)
+        http_client.fetch(http_request, self._on_forward_done)
 
     def _on_forward_done(self, response):
         if response.error:
             self._callback(False)
             return
 
-        body = None
-        if 0 <= response.headers.get("Content-Length", -1):
-            body = response.body
-        self._callback(
-            True,
-            response.code,
-            response.headers,
-            body)
+        content_length = response.headers.get("Content-Length", -1)
+        body = response.body if 0 <= content_length else None
+
+        self._callback(True, response.code, response.headers, body)
