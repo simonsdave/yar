@@ -8,7 +8,7 @@ import sys
 import mock
 import tornado.httputil
 
-from yar import mac
+from yar.util import mac
 from yar.tests import yar_test_util
 
 from yar.auth_server import async_app_server_forwarder

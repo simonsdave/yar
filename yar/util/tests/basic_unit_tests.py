@@ -3,7 +3,7 @@ validate lib/mac.py"""
 
 import unittest
 
-from yar.basic import APIKey
+from yar.util.basic import APIKey
 
 
 class APIKeyTestCase(unittest.TestCase):

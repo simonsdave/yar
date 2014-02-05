@@ -12,7 +12,7 @@ import json
 import sys
 import os
 
-from yar import mac
+from yar.util import mac
 
 
 class HexifyTestCase(unittest.TestCase):

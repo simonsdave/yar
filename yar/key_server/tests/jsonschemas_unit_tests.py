@@ -10,8 +10,8 @@ import os
 import jsonschema
 
 from yar.key_server import jsonschemas
-from yar import mac
-from yar import basic
+from yar.util import mac
+from yar.util import basic
 
 
 class KeyServerCreateCredsRequestTestCase(unittest.TestCase):

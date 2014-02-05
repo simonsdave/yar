@@ -7,8 +7,8 @@ import uuid
 
 from ks_util import filter_out_non_model_creds_properties
 from ks_util import AsyncAction
-from yar import mac
-from yar import basic
+from yar.util import mac
+from yar.util import basic
 
 _logger = logging.getLogger("KEYSERVER.%s" % __name__)
 

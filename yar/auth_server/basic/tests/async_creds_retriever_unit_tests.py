@@ -11,7 +11,7 @@ import mock
 import tornado.httpclient
 import tornado.httputil
 
-from yar import basic
+from yar.util import basic
 from yar.auth_server.basic import async_creds_retriever
 from yar import key_server
 from yar.key_server import jsonschemas

@@ -8,7 +8,7 @@ import uuid
 import mock
 import tornado.httputil
 
-from yar import basic
+from yar.util import basic
 from yar.auth_server.basic import async_auth
 from yar.tests import yar_test_util
 

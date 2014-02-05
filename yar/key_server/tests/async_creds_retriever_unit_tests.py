@@ -10,7 +10,7 @@ import mock
 
 from yar.key_server import async_creds_retriever
 from yar.key_server import ks_util
-from yar import mac
+from yar.util import mac
 from yar.tests import yar_test_util
 
 class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):

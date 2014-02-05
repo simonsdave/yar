@@ -4,7 +4,7 @@ an async HMAC validation."""
 import hashlib
 import logging
 
-from yar import mac
+from yar.util import mac
 from yar.util.trhutil import get_request_host_and_port
 from yar.util.trhutil import get_request_body_if_exists
 

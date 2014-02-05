@@ -22,8 +22,8 @@ import tornado.web
 
 from yar.key_server import jsonschemas
 from yar.key_server import key_server_request_handler
-from yar import mac
-from yar import basic
+from yar.util import mac
+from yar.util import basic
 from yar.tests import yar_test_util
 
 

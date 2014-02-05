@@ -13,7 +13,7 @@ import tornado.httputil
 from yar.auth_server.hmac import async_hmac_creds_retriever
 from yar import key_server
 from yar.key_server import jsonschemas
-from yar import mac
+from yar.util import mac
 from yar.tests import yar_test_util
 
 
