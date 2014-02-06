@@ -80,7 +80,7 @@ class CommandLineParser(optparse.OptionParser):
             type=int,
             help=help)
 
-        default = "127.0.0.1:11211"
+        default = ["127.0.0.1:11211"]
         help = "memcached servers for nonce store - default = %s" % default
         self.add_option(
             "--noncestore",
