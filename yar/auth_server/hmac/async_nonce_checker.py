@@ -11,7 +11,7 @@ _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 """```nonce_store``` is a collection of host:port strings
 that point to the memcached cluster that implements the
 nonce store."""
-nonce_store = ['127.0.0.1:11211']
+nonce_store = ["127.0.0.1:11211"]
 
 
 class AsyncNonceChecker(object):
