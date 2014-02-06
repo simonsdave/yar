@@ -6,9 +6,7 @@ import signal
 import sys
 import logging
 
-
-_logger = logging.getLogger("CLF_%s" % __name__)
-
+_logger = logging.getLogger("UTIL.%s" % __name__)
 
 def _term_signal_handler(signalNumber, frame):
     assert signalNumber == signal.SIGINT
