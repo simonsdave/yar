@@ -11,7 +11,6 @@ from yar.util import tsh
 from yar.key_server import clparser
 from yar.key_server import key_server_request_handler
 
-
 _logger = logging.getLogger("KEYSERVER.%s" % __name__)
 
 
