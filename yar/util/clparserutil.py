@@ -2,16 +2,11 @@
 components for use when building extensions to the optparse module
 which parses command lines."""
 
-
 import re
 import logging
 import optparse
 
-
 _logger = logging.getLogger("UTIL.%s" % __name__)
-
-
-__version__ = "1.0"
 
 
 def _check_couchdb(option, opt, value):
@@ -40,29 +35,51 @@ def _check_logging_level(option, opt, value):
 def _check_host_colon_port(option, opt, value):
     """Type checking function for command line parser's
     'hostcolonport' type."""
-    reg_ex_pattern = "^[^\s]+\:\d+$"
-    reg_ex = re.compile(reg_ex_pattern)
-    if reg_ex.match(value):
-        return value
-    msg = "option %s: should be host:port format" % opt
-    raise optparse.OptionValueError(msg)
+    if not _parse_host_colon_port(value):
+        msg = "option %s: should be host:port format" % opt
+        raise optparse.OptionValueError(msg)
+    return value
 
 
-def _check_memcached(option, opt, value):
+def _check_host_colon_ports(option, opt, value):
     """Type checking function for command line parser's
     'memcached' type."""
+    return _parse_host_colon_ports(option, opt, value, False)
+
+
+def _check_host_colon_ports_parsed(option, opt, value):
+    """Type checking function for command line parser's
+    'memcached' type."""
+    return _parse_host_colon_ports(option, opt, value, True)
+
+
+def _parse_host_colon_ports(option, opt, value, return_parsed_pairs):
     split_reg_ex = re.compile("\s*\,\s*")
-    host_colon_port_reg_ex = re.compile("^[^\:]+\:\d+$")
+
     rv = []
     for server in split_reg_ex.split(value.strip()):
-        if not host_colon_port_reg_ex.match(server):
+        parsed_server = _parse_host_colon_port(server)
+        if not parsed_server:
             fmt = (
                 "option %s: should be 'host:port, host:port, ... "
                 "host:port' format"
             )
             raise optparse.OptionValueError(fmt % opt)
-        rv.append(server)
+        rv.append(parsed_server if return_parsed_pairs else server)
     return rv
+
+
+def _parse_host_colon_port(server):
+
+    host_colon_port_reg_ex_pattern = "^\s*(?P<host>[^\:]+)\:(?P<port>\d+)\s*$"
+    host_colon_port_reg_ex = re.compile(host_colon_port_reg_ex_pattern)
+
+    match = host_colon_port_reg_ex.match(server)
+    if not match:
+        return None
+    host = match.group("host")
+    port = match.group("port")
+    return (host, int(port))
 
 
 def _check_boolean(option, opt, value):
@@ -80,19 +97,21 @@ def _check_boolean(option, opt, value):
 
 
 class Option(optparse.Option):
-    """Adds couchdb, hostcolonport, boolean & logginglevel types to the
-    command line parser's list of available types."""
+    """Adds couchdb, hostcolonport, hostcolonports, boolean & logginglevel
+    types to the command line parser's list of available types."""
     new_types = (
         "hostcolonport",
+        "hostcolonports",
+        "hostcolonportsparsed",
         "logginglevel",
         "boolean",
         "couchdb",
-        "memcached",
     )
     TYPES = optparse.Option.TYPES + new_types
     TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
     TYPE_CHECKER["hostcolonport"] = _check_host_colon_port
+    TYPE_CHECKER["hostcolonports"] = _check_host_colon_ports
+    TYPE_CHECKER["hostcolonportsparsed"] = _check_host_colon_ports_parsed
     TYPE_CHECKER["logginglevel"] = _check_logging_level
     TYPE_CHECKER["boolean"] = _check_boolean
     TYPE_CHECKER["couchdb"] = _check_couchdb
-    TYPE_CHECKER["memcached"] = _check_memcached

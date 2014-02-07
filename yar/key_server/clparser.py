@@ -31,17 +31,17 @@ class CommandLineParser(optparse.OptionParser):
             type="logginglevel",
             help=help)
 
-        default = 8070
-        help = "port - default = %d" % default
+        default = [("127.0.0.1", 8070)]
+        help = "address:port to listen on - default = %s" % default
         self.add_option(
-            "--port",
+            "--lon",
             action="store",
-            dest="port",
+            dest="listen_on",
             default=default,
-            type=int,
+            type="hostcolonportsparsed",
             help=help)
 
-        default = "localhost:5984/creds"
+        default = "127.0.0.1:5984/creds"
         fmt = (
             "key store - "
             "host:port/database"

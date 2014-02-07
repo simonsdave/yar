@@ -99,17 +99,17 @@ class TestCase(unittest.TestCase):
                 with self.assertRaises(optparse.OptionValueError):
                     type_checker(option, opt_string, value[0])
 
-    def test_check_memcached(self):
+    def test_check_host_colon_ports(self):
         option = clparserutil.Option(
             "--memcached",
             action="store",
             dest="cluster",
             default="localhost:8909",
-            type="memcached",
+            type="hostcolonports",
             help="whatever")
         values = [
             ["bindle:8909", ["bindle:8909"]],
-            ["b:8, d:89", ["b:8", "d:89"]],
+            ["b:8, d:89, fiddle:43", ["b:8", "d:89", "fiddle:43"]],
             ["b:8 , d:89", ["b:8", "d:89"]],
             [" b:8 ,d:89", ["b:8", "d:89"]],
 
@@ -117,12 +117,46 @@ class TestCase(unittest.TestCase):
             ["89", None],
             [":89", None],
         ]
-        type_checker = clparserutil.Option.TYPE_CHECKER["memcached"]
+        type_checker = clparserutil.Option.TYPE_CHECKER["hostcolonports"]
         self.assertIsNotNone(type_checker)
         opt_string = option.get_opt_string(),
         for value in values:
             if value[1] is not None:
                 msg = "Failed to parse '%s' correctly." % value[0]
+                result = type_checker(option, opt_string, value[0])
+                self.assertEqual(result, value[1], msg)
+            else:
+                with self.assertRaises(optparse.OptionValueError):
+                    type_checker(option, opt_string, value[0])
+
+    def test_check_host_colon_ports_parsed(self):
+        option = clparserutil.Option(
+            "--memcached",
+            action="store",
+            dest="cluster",
+            default="localhost:8909",
+            type="hostcolonportsparsed",
+            help="whatever")
+        values = [
+            ["bindle:8909", [("bindle", 8909)]],
+            ["b:8, d:89, fiddle:43", [("b", 8), ("d",89), ("fiddle", 43)]],
+            ["b:8 , d:89", [("b", 8), ("d", 89)]],
+            [" b:8 ,d:89", [("b", 8), ("d", 89)]],
+
+            ["dave", None],
+            ["89", None],
+            [":89", None],
+            ["dave:89, ", None],
+            ["dave:89, hello", None],
+            ["dave:89, hello:", None],
+        ]
+        type_checker = clparserutil.Option.TYPE_CHECKER["hostcolonportsparsed"]
+        self.assertIsNotNone(type_checker)
+        opt_string = option.get_opt_string(),
+        for value in values:
+            if value[1] is not None:
+                fmt = "Failed to correctly parse '%s' to '%s'"
+                msg = fmt % (value[0], value[1])
                 result = type_checker(option, opt_string, value[0])
                 self.assertEqual(result, value[1], msg)
             else:

@@ -19,6 +19,7 @@ from yar.auth_server import clparser
 
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
+
 if __name__ == "__main__":
     clp = clparser.CommandLineParser()
     (clo, cla) = clp.parse_args()
@@ -28,7 +29,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=clo.logging_level)
 
     fmt = (
-        "Auth Server listening on {clo.port} "
+        "Auth Server listening on {clo.listen_on} "
         "using Nonce Store {clo.nonce_store}, "
         "Key Server '{clo.key_server}' "
         "and App Server '{clo.app_server}'"
@@ -51,5 +52,6 @@ if __name__ == "__main__":
     app = tornado.web.Application(handlers=handlers)
 
     http_server = tornado.httpserver.HTTPServer(app)
-    http_server.listen(clo.port)
+    for address_and_port in clo.listen_on:
+        http_server.listen(address_and_port[1], address_and_port[0])
     tornado.ioloop.IOLoop.instance().start()

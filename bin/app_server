@@ -66,12 +66,13 @@ if __name__ == "__main__":
     tsh.install()
 
     _logger.info(
-        "%s %s running on %d",
+        "%s %s listening on %s",
         os.path.basename(os.path.split(sys.argv[0])[1]),
         __version__,
-        clo.port)
+        clo.listen_on)
 
     app = tornado.web.Application(handlers=[(r".*", RequestHandler)])
     http_server = tornado.httpserver.HTTPServer(app)
-    http_server.listen(clo.port)
+    for address_and_port in clo.listen_on:
+        http_server.listen(address_and_port[1], address_and_port[0])
     tornado.ioloop.IOLoop.instance().start()

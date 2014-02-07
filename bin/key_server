@@ -25,8 +25,8 @@ if __name__ == "__main__":
     key_server_request_handler._key_store = clo.key_store
 
     _logger.info(
-        "Key server listening on %d and using key store '%s'",
-        clo.port,
+        "Key server listening on '%s' and using key store '%s'",
+        clo.listen_on,
         clo.key_store)
 
     handlers = [
@@ -39,5 +39,6 @@ if __name__ == "__main__":
     app = tornado.web.Application(handlers=handlers)
 
     http_server = tornado.httpserver.HTTPServer(app)
-    http_server.listen(clo.port)
+    for address_and_port in clo.listen_on:
+        http_server.listen(address_and_port[1], address_and_port[0])
     tornado.ioloop.IOLoop.instance().start()

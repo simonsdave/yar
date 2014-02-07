@@ -38,8 +38,8 @@ cd; git clone https://github.com/simonsdave/yar.git
 ~~~~~
 
 * start the App Server with the following in a new terminal window - by default the app
-server listens on port 8080 - this app server is only for testing/development - you wouldn't
-use this in a production deployment:
+server listens on 127:0.0.1:8080 - this app server is only for
+testing/development - you wouldn't use this in a production deployment:
 
 ~~~~~
 cd; cd yar; source bin/cfg4dev; app_server --log=info
@@ -49,7 +49,7 @@ cd; cd yar; source bin/cfg4dev; app_server --log=info
 isn't already running, in a new terminal, window start
 [CouchDB](http://couchdb.apache.org/)
 using the following command - by default [CouchDB](http://couchdb.apache.org/)
-listens on port 5984
+listens on 127.0.0.1:5984
 
 ~~~~~
 couchdb
@@ -64,7 +64,7 @@ cd; cd yar; source bin/cfg4dev; key_store_installer --log=info --create=true
 ~~~~~
 
 * start the Key Server: in a new terminal window run the following to start the Key Server - by
-default the Key Server will listen on port 8070
+default the Key Server will listen on 127.0.0.1:8070
 
 ~~~~~
 cd; cd yar; source bin/cfg4dev; key_server --log=info
@@ -79,7 +79,7 @@ curl \
   -X POST \
   -H "Content-Type: application/json; charset=utf8" \
   -d "{\"principal\":\"simonsdave@gmail.com\", \"auth_scheme\":\"hmac\"}" \
-  http://localhost:8070/v1.0/creds
+  http://127.0.0.1:8070/v1.0/creds
 ~~~~~
 
 * using the credentials returned by the above [cURL](http://en.wikipedia.org/wiki/CURL)
@@ -103,7 +103,7 @@ memcached -vv
 ~~~~~
 
 * start the Authentication Server by running the following in a new terminal window - by
-default, the Autentication Server listens on port 8000
+default, the Autentication Server listens on 127.0.0.1:8000
 
 ~~~~~
 cd; cd yar; source bin/cfg4dev; auth_server --log=info

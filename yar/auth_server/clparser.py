@@ -31,14 +31,14 @@ class CommandLineParser(optparse.OptionParser):
             type="logginglevel",
             help=help)
 
-        default = 8000
-        help = "port - default = %d" % default
+        default = [("127.0.0.1", 8000)]
+        help = "address:port to listen on - default = %s" % default
         self.add_option(
-            "--port",
+            "--lon",
             action="store",
-            dest="port",
+            dest="listen_on",
             default=default,
-            type=int,
+            type="hostcolonportsparsed",
             help=help)
 
         default = "YAR",
@@ -87,5 +87,5 @@ class CommandLineParser(optparse.OptionParser):
             action="store",
             dest="nonce_store",
             default=default,
-            type="memcached",
+            type="hostcolonports",
             help=help)
