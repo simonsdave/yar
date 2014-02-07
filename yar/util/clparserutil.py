@@ -43,17 +43,22 @@ def _check_host_colon_port(option, opt, value):
 
 def _check_host_colon_ports(option, opt, value):
     """Type checking function for command line parser's
-    'memcached' type."""
+    'hostcolonports' type."""
     return _parse_host_colon_ports(option, opt, value, False)
 
 
 def _check_host_colon_ports_parsed(option, opt, value):
     """Type checking function for command line parser's
-    'memcached' type."""
+    'hostcolonportsparsed' type."""
     return _parse_host_colon_ports(option, opt, value, True)
 
 
 def _parse_host_colon_ports(option, opt, value, return_parsed_pairs):
+    """```value``` is a string whose form is expected to be
+    a series of host:port pairs seperated by commas. This function
+    parses the string and returns a list of host, port tuples.
+    If ```value``` is not in the expected format a
+    optparse.OptionValueError exception is raised."""
     split_reg_ex = re.compile("\s*\,\s*")
 
     rv = []
@@ -70,6 +75,11 @@ def _parse_host_colon_ports(option, opt, value, return_parsed_pairs):
 
 
 def _parse_host_colon_port(server):
+    """```server``` is expected to be in the form of
+    host:port. This function extracts the host and
+    port and returns these components as a string and
+    int tuple. If ```server``` is not in the expected
+    form None is returned."""
 
     host_colon_port_reg_ex_pattern = "^\s*(?P<host>[^\:]+)\:(?P<port>\d+)\s*$"
     host_colon_port_reg_ex = re.compile(host_colon_port_reg_ex_pattern)
