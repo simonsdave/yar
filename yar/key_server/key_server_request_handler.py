@@ -17,7 +17,7 @@ _logger = logging.getLogger("KEYSERVER.%s" % __name__)
 
 """Format of this string is host:port/database. It's used to construct
 a URL when talking to the key store."""
-_key_store = "localhost:5984/creds"
+_key_store = "127.0.0.1:5984/creds"
 
 """The key server's mainline should use this URL spec
 to describe the URLs that ```RequestHandler``` can

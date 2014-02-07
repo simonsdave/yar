@@ -235,7 +235,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
             the_body = "bindle berry"
             the_content_type = "application/json; charset=utf8"
         the_ext = mac.Ext.generate(the_content_type, the_body)
-        the_host="localhost"
+        the_host="127.0.0.1"
         the_port=8080
         the_uri="/whatever.html"
         the_normalized_request_string = mac.NormalizedRequestString.generate(

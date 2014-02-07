@@ -13,7 +13,7 @@ from yar.util import trhutil
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
 """This host:port combination define the location of the key server."""
-key_server_address = "localhost:8070"
+key_server_address = "127.0.0.1:8070"
 
 
 class AsyncHMACCredsRetriever(object):

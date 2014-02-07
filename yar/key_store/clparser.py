@@ -36,7 +36,7 @@ class CommandLineParser(optparse.OptionParser):
             type="logginglevel",
             help=help)
 
-        default = "localhost:5984"
+        default = "127.0.0.1:5984"
         help = "where's CouchDB running - default = %s" % default
         self.add_option(
             "--host",

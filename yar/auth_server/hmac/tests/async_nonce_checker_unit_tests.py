@@ -13,7 +13,7 @@ from yar.tests import yar_test_util
 
 class TestAsyncNonceChecker(yar_test_util.TestCase):
 
-    _nonce_store = ['localhost:11211']
+    _nonce_store = ['127.0.0.1:11211']
 
     @classmethod
     def setUpClass(cls):

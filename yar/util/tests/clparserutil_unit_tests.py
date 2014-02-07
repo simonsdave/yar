@@ -104,7 +104,7 @@ class TestCase(unittest.TestCase):
             "--memcached",
             action="store",
             dest="cluster",
-            default="localhost:8909",
+            default="127.0.0.1:8909",
             type="hostcolonports",
             help="whatever")
         values = [
@@ -134,7 +134,7 @@ class TestCase(unittest.TestCase):
             "--memcached",
             action="store",
             dest="cluster",
-            default="localhost:8909",
+            default="127.0.0.1:8909",
             type="hostcolonportsparsed",
             help="whatever")
         values = [

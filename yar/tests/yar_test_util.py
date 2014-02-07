@@ -27,7 +27,7 @@ class Server(object):
 
         [self.socket] = tornado.netutil.bind_sockets(
             0,
-            "localhost",
+            "127.0.0.1",
             family=socket.AF_INET)
         self.port = self.socket.getsockname()[1]
 

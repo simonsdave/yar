@@ -138,7 +138,7 @@ class KeyServerGetBasicCredsResponseTestCase(KeyServerGetCredsResponseTestCase):
             "principal": "simonsdave@gmail.com",
             "links": {
                 "self": {
-                    "href": "http://localhost:8070/v1.0/creds/f274d56f213faa731e97735f790ddc89"
+                    "href": "http://127.0.0.1:8070/v1.0/creds/f274d56f213faa731e97735f790ddc89"
                 }
             }
         }
@@ -171,7 +171,7 @@ class KeyServerGetHMACCredsResponseTestCase(KeyServerGetCredsResponseTestCase):
             "principal": "simonsdave@gmail.com",
             "links": {
                 "self": {
-                    "href": "http://localhost:8070/v1.0/creds/f274d56f213faa731e97735f790ddc89"
+                    "href": "http://127.0.0.1:8070/v1.0/creds/f274d56f213faa731e97735f790ddc89"
                 }
             }
         }

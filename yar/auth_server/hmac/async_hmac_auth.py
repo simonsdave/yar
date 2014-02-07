@@ -51,7 +51,7 @@ class AsyncHMACAuth(object):
 
         (host, port) = get_request_host_and_port(
             self._request,
-            "localhost",
+            "127.0.0.1",
             80)
         content_type = self._request.headers.get("Content-type", None)
         body = get_request_body_if_exists(self._request, None)

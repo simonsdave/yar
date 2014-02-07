@@ -122,6 +122,6 @@ cd; cd yar; source bin/cfg4dev
 to issue a request to the app server via the auth server:
 
 ~~~~~
-yarcurl GET http://localhost:8000/dave-was-here.html
+yarcurl GET http://127.0.0.1:8000/dave-was-here.html
 ~~~~~
 

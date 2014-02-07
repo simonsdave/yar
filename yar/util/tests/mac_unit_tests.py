@@ -203,7 +203,7 @@ class AuthHeaderValueTestCase(unittest.TestCase):
         nonce = mac.Nonce.generate()
         http_method = "GET"
         uri = "/whatever"
-        host = "localhost"
+        host = "127.0.0.1"
         port = 8080
         content_type = None
         body = None
@@ -242,7 +242,7 @@ class AuthHeaderValueTestCase(unittest.TestCase):
         nonce = mac.Nonce.generate()
         http_method = "POST"
         uri = "/whatever"
-        host = "localhost"
+        host = "127.0.0.1"
         port = 8080
         content_type = "application/json;charset=utf-8"
         body = json.dumps({"dave": "was", "there": "you", "are": 42})
@@ -353,7 +353,7 @@ class MACTestCase(unittest.TestCase):
         ts = mac.Timestamp.generate()
         nonce = mac.Nonce.generate()
         uri = "/whatever"
-        host = "localhost"
+        host = "127.0.0.1"
         port = 8080
         ext = mac.Ext.generate(content_type, body)
         normalized_request_string = mac.NormalizedRequestString.generate(

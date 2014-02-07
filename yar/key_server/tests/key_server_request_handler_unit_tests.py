@@ -53,7 +53,7 @@ class TestCase(yar_test_util.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._database_name = "das%s" % str(uuid.uuid4()).replace("-", "")[:7]
-        cls._key_server = KeyServer("localhost:5984/%s" % cls._database_name)
+        cls._key_server = KeyServer("127.0.0.1:5984/%s" % cls._database_name)
         cls._ioloop = yar_test_util.IOLoop()
         cls._ioloop.start()
 
@@ -68,7 +68,7 @@ class TestCase(yar_test_util.TestCase):
         self._creds_database = []
 
     def url(self):
-        return "http://localhost:%s/v1.0/creds" % self.__class__._key_server.port
+        return "http://127.0.0.1:%s/v1.0/creds" % self.__class__._key_server.port
 
     def _key_from_creds(self, creds):
         if "hmac" in creds:

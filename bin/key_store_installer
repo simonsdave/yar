@@ -16,7 +16,7 @@ from yar.key_store.clparser import CommandLineParser
 _logger = logging.getLogger("KEYSTORE.%s" % __name__)
 
 
-def _is_couchdb_accessible(host="localhost:5984"):
+def _is_couchdb_accessible(host="127.0.0.1:5984"):
     """Returns True if there's a CouchDB server running on ```host```.
     Otherwise returns False. ```host``` is expected to be of the form
     host:port."""
@@ -30,7 +30,7 @@ def _is_couchdb_accessible(host="localhost:5984"):
     return httplib.OK == response.status
 
 
-def create(database="creds", host="localhost:5984"):
+def create(database="creds", host="127.0.0.1:5984"):
 
     _logger.info("Creating database '%s' on '%s'", database, host)
 
@@ -85,7 +85,7 @@ def create(database="creds", host="localhost:5984"):
     return True
 
 
-def delete(database="creds", host="localhost:5984"):
+def delete(database="creds", host="127.0.0.1:5984"):
 
     _logger.info("Deleting database '%s' on '%s'", database, host)
     url = "http://%s/%s" % (host, database)
