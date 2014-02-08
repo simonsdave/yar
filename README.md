@@ -20,7 +20,7 @@ for the complete list of python packages on which yar depends
 
 Development
 -----------
-The following (brief) instructions describe how to setup a yar development environment and
+The following instructions describe how to setup a yar development environment and
 issue your first request through the infrastructure.
 The commands below are expected to be executed in your
 favorite terminal emulator ([iTerm2](http://www.iterm2.com/) happens to be my favorite).
