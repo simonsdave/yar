@@ -35,3 +35,24 @@ echo "############################################################"
 useradd --system --user-group --create-home yar
 
 echo "############################################################"
+echo "Installing docker"
+echo "############################################################"
+# http://docs.docker.io/en/latest/installation/ubuntulinux/#ubuntu-precise-12-04-lts-64-bit
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+sh -c "echo deb http://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
+apt-get update
+apt-get install -y lxc-docker
+
+echo "############################################################"
+echo "Get nonce store running"
+echo "############################################################"
+
+cp -r /vagrant/Nonce-Store .
+cd Nonce-Store
+docker build -t memcached_img .
+NS1=$(sudo docker run -name memcached_ins_001 -d memcached_img)
+NS1_IP=$(sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' $NS1)
+echo $NS1
+echo $NS1_IP
+
+echo "############################################################"
