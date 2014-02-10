@@ -47,6 +47,9 @@ echo "############################################################"
 echo "Get nonce store running"
 echo "############################################################"
 
+# nice reference for getting memcached running using docker 
+#   https://www.digitalocean.com/community/articles/docker-explained-how-to-create-docker-containers-running-memcached
+
 cp -r /vagrant/Nonce-Store .
 cd Nonce-Store
 docker build -t memcached_img .
@@ -54,5 +57,11 @@ NS1=$(sudo docker run -name memcached_ins_001 -d memcached_img)
 NS1_IP=$(sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' $NS1)
 echo $NS1
 echo $NS1_IP
+
+apt-get install wget
+wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py -O - | python
+apt-get install -y python-pip
+apt-get install -y libgmp-dev
+apt-get install -y python-dev
 
 echo "############################################################"
