@@ -32,5 +32,4 @@ RUN apt-get install -y python-dev
 # all the files in the archive
 ADD yar-1.0.tar.gz /tmp/.
 
-# RUN ls -la .
 RUN pip install /tmp/yar-1.0
