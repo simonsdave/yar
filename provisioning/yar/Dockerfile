@@ -13,17 +13,24 @@ MAINTAINER Dave Simons
 RUN apt-get update
 
 RUN apt-get install -y wget
+
+# don't like doing having the --no-check-certificate
 RUN wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py -O - | python
 
 RUN apt-get install -y python-pip
 
-RUN apt-get install -y libgmp-dev
+# these next 3 need to be install because yar uses keyczar
 
+# unclear why if a vagrant ubuntu 12.04 install has gcc
+# that a docker based install of ubuntu 12.04 needs to
+# have gcc installed
+RUN apt-get install -y gcc
+RUN apt-get install -y libgmp-dev
 RUN apt-get install -y python-dev
 
-# note: source can be an http://... rule
-ADD /vagrant/artifacts/tmp/yar-1.0.tar.gz /tmp
+# :TRICKY: ADD command decompresses the archive and extract
+# all the files in the archive
+ADD yar-1.0.tar.gz /tmp/.
 
-RUN pip install /tmp/yar-1.0.tar.gz
-
-RUN rm /tmp/yar-1.0.tar.gz
+# RUN ls -la .
+RUN pip install /tmp/yar-1.0
