@@ -4,10 +4,10 @@ componentry already existed in the open source community. All that should be nec
 was assembling this pre-existing componentry into a solution and
 providing a suite of automated tests to validate the solution's correctness.
 
-Did the theory prove out? I would say yes. Of course it's been work than
-I expected (suprise:-). Summary of capabilities achived to date achieved
+Did the theory prove out? I would say yes. Of course it's been more work than
+I expected (suprise:-). Summary of capabilities achived to date 
 with ~1,500 lines of Python:
-  * authentication using [OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02) and Basic authentication
+  * authentication using [OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02) and Basic authentication schemes
   * key generation for both the above authentication schemes
   * [Keyczar](http://www.keyczar.org/) is used extensively in both key generation and HMAC verification
   * [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server) and [Key Server](https://github.com/simonsdave/yar/wiki/Key-Server) are [Tornado](http://www.tornadoweb.org/en/stable/) servers leveraging Tornado's [asynchronous](http://www.tornadoweb.org/en/stable/networking.html) for high concurrency operation
