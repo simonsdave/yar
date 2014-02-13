@@ -25,6 +25,7 @@ class TestCase(unittest.TestCase):
             ["dave:89", None],
             ["89/", None],
             ["dave:89/", None],
+            ["89/y", None],
         ]
         type_checker = clparserutil.Option.TYPE_CHECKER["couchdb"]
         self.assertIsNotNone(type_checker)
@@ -89,13 +90,14 @@ class TestCase(unittest.TestCase):
         ]
         type_checker = clparserutil.Option.TYPE_CHECKER["hostcolonport"]
         self.assertIsNotNone(type_checker)
-        opt_string = option.get_opt_string(),
+        opt_string = option.get_opt_string()
         for value in values:
+            msg = "Failed to parse '%s' correctly." % value[0]
             if value[1] is not None:
-                msg = "Failed to parse '%s' correctly." % value[0]
                 result = type_checker(option, opt_string, value[0])
                 self.assertEqual(result, value[1], msg)
             else:
+                print msg
                 with self.assertRaises(optparse.OptionValueError):
                     type_checker(option, opt_string, value[0])
 
@@ -109,17 +111,17 @@ class TestCase(unittest.TestCase):
             help="whatever")
         values = [
             ["bindle:8909", ["bindle:8909"]],
-            ["b:8, d:89, fiddle:43", ["b:8", "d:89", "fiddle:43"]],
+            ["b:8, 89, fiddle:43", ["b:8", "89", "fiddle:43"]],
             ["b:8 , d:89", ["b:8", "d:89"]],
             [" b:8 ,d:89", ["b:8", "d:89"]],
+            ["89", ["89"]],
 
             ["dave", None],
-            ["89", None],
             [":89", None],
         ]
         type_checker = clparserutil.Option.TYPE_CHECKER["hostcolonports"]
         self.assertIsNotNone(type_checker)
-        opt_string = option.get_opt_string(),
+        opt_string = option.get_opt_string()
         for value in values:
             if value[1] is not None:
                 msg = "Failed to parse '%s' correctly." % value[0]
@@ -139,12 +141,12 @@ class TestCase(unittest.TestCase):
             help="whatever")
         values = [
             ["bindle:8909", [("bindle", 8909)]],
-            ["b:8, d:89, fiddle:43", [("b", 8), ("d",89), ("fiddle", 43)]],
+            ["b:8, 89, fiddle:43", [("b", 8), (None,89), ("fiddle", 43)]],
             ["b:8 , d:89", [("b", 8), ("d", 89)]],
             [" b:8 ,d:89", [("b", 8), ("d", 89)]],
+            ["89", [(None, 89)]],
 
             ["dave", None],
-            ["89", None],
             [":89", None],
             ["dave:89, ", None],
             ["dave:89, hello", None],

@@ -35,7 +35,7 @@ def _check_logging_level(option, opt, value):
 def _check_host_colon_port(option, opt, value):
     """Type checking function for command line parser's
     'hostcolonport' type."""
-    if not _parse_host_colon_port(value):
+    if not _parse_host_colon_port(value, must_have_host=True):
         msg = "option %s: should be host:port format" % opt
         raise optparse.OptionValueError(msg)
     return value
@@ -44,13 +44,13 @@ def _check_host_colon_port(option, opt, value):
 def _check_host_colon_ports(option, opt, value):
     """Type checking function for command line parser's
     'hostcolonports' type."""
-    return _parse_host_colon_ports(option, opt, value, False)
+    return _parse_host_colon_ports(option, opt, value, return_parsed_pairs=False)
 
 
 def _check_host_colon_ports_parsed(option, opt, value):
     """Type checking function for command line parser's
     'hostcolonportsparsed' type."""
-    return _parse_host_colon_ports(option, opt, value, True)
+    return _parse_host_colon_ports(option, opt, value, return_parsed_pairs=True)
 
 
 def _parse_host_colon_ports(option, opt, value, return_parsed_pairs):
@@ -63,7 +63,7 @@ def _parse_host_colon_ports(option, opt, value, return_parsed_pairs):
 
     rv = []
     for server in split_reg_ex.split(value.strip()):
-        parsed_server = _parse_host_colon_port(server)
+        parsed_server = _parse_host_colon_port(server, must_have_host=False)
         if not parsed_server:
             fmt = (
                 "option %s: should be 'host:port, host:port, ... "
@@ -74,14 +74,19 @@ def _parse_host_colon_ports(option, opt, value, return_parsed_pairs):
     return rv
 
 
-def _parse_host_colon_port(server):
+def _parse_host_colon_port(server, must_have_host):
     """```server``` is expected to be in the form of
-    host:port. This function extracts the host and
+    host:port if ```must_have_host``` is True otherwise
+    ```server``` can be in host:port format or just be
+    a port. This function extracts the host and
     port and returns these components as a string and
-    int tuple. If ```server``` is not in the expected
-    form None is returned."""
+    int tuple respectively. If ```server``` is not in
+    the expected form None is returned."""
 
-    host_colon_port_reg_ex_pattern = "^\s*(?P<host>[^\:]+)\:(?P<port>\d+)\s*$"
+    if must_have_host:
+        host_colon_port_reg_ex_pattern = "^\s*(?P<host>[^\:]+)\:(?P<port>\d+)\s*$"
+    else:
+        host_colon_port_reg_ex_pattern = "^\s*(?:(?P<host>[^\:]+)\:)?(?P<port>\d+)\s*$"
     host_colon_port_reg_ex = re.compile(host_colon_port_reg_ex_pattern)
 
     match = host_colon_port_reg_ex.match(server)

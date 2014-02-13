@@ -74,5 +74,8 @@ if __name__ == "__main__":
     app = tornado.web.Application(handlers=[(r".*", RequestHandler)])
     http_server = tornado.httpserver.HTTPServer(app)
     for address_and_port in clo.listen_on:
-        http_server.listen(address_and_port[1], address_and_port[0])
+        http_server.listen(
+            port=address_and_port[1],
+            address=address_and_port[0])
+
     tornado.ioloop.IOLoop.instance().start()
