@@ -5,6 +5,12 @@
 # usage
 #
 #   sudo docker build -t yar_img .
+#
+# these are very useful for interactive testing/debugging
+#
+#   docker run -i -t yar_img /bin/bash
+#   C1=$(sudo docker run -name yar_001 -d yar_img)
+#   C1_IP=$(sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' $C1)
 
 FROM ubuntu:12.04
 
