@@ -1,28 +1,30 @@
-This repo is the result of being convinced that it wouldn't be that
-hard to write an API Management solution. Why? Because it felt like so much
-componentry already existed in the open source community. All that should be necessary
-was assembling this pre-existing componentry into a solution and
-providing a suite of automated tests to validate the solution's correctness.
+So you've spent time writing an awesome RESTful API and now you want to secure it.
+You'll soon find there are a number of commerical API management solutions available.
+What you'll also find is that there's lots of open source components that it feels like
+should be pretty easy to stitch together to create your own API Management solution.
+It's that last point that motivated this project. How hard could it really be? Well, turned
+out to be more work than I originally thought but it wasn't crazy hard.
+With about 1,500 lines of Python this project realizes an API Management solution with
+the capabilities outlined below.
+Is the project complete? No. Yar is still a work in progress. Below you'll find the
+list of big/important things that are on the immediate to do list.
+See the [Wiki](https://github.com/simonsdave/yar/wiki) for a more complete description and discussion of yar.
 
-Did the theory prove out? I would say yes. Of course it's been more work than
-I expected (suprise:-). Summary of capabilities achived to date 
-with ~1,500 lines of Python:
   * authentication using [OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02) and Basic authentication schemes
   * key generation for both the above authentication schemes
   * [Keyczar](http://www.keyczar.org/) is used extensively in both key generation and HMAC verification
   * [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server) and [Key Server](https://github.com/simonsdave/yar/wiki/Key-Server) are [Tornado](http://www.tornadoweb.org/en/stable/) servers leveraging Tornado's [asynchronous](http://www.tornadoweb.org/en/stable/networking.html) for high concurrency operation
   * [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store) is built on [CouchDB](http://couchdb.apache.org/) so the [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store) inherits all the nice architectual/operational qualities of [CouchDB](http://couchdb.apache.org/)
   
-Big('ish) things left to do:
+Bigger/important things on the immediate to do list:
+
   * automated integration tests - currently working on this while learning how to best leverage [Vagrant](http://www.vagrantup.com/) and [Docker](https://www.docker.io/)
-  * encryption of keys in [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store)
+  * securing keys in [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store)
   * authorization service
   * bunch more documentation
 
-See the [Wiki](https://github.com/simonsdave/yar/wiki) for a more complete description and discussion of yar.
-
-Prerequisites 
--------------
+Development Prerequisites 
+-------------------------
 * code written and tested on Mac OS X 10.8.4 using:
   * [Python 2.7.2](http://www.python.org/)
   * [virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv)
@@ -33,8 +35,8 @@ Prerequisites
 [requirements.txt](https://github.com/simonsdave/yar/blob/master/requirements.txt "requirements.txt")
 for the complete list of python packages on which yar depends
 
-Development
------------
+Development Quick Start
+-----------------------
 The following instructions describe how to setup a yar development environment and
 issue your first request through the infrastructure.
 The commands below are expected to be executed in your
