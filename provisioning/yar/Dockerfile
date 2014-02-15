@@ -1,8 +1,8 @@
 # this Dockerfile creates a base image for all yar servers
-# all the python pre-reqs are install and the yar package
+# all the python pre-reqs are installed and the yar package
 # is also installed
 #
-# usage
+# to build the image
 #
 #   sudo docker build -t yar_img .
 #
@@ -22,9 +22,14 @@
 #   KS1_IP=$(sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' $KS1)
 #   docker run -d -p 8001:8001 -p 5001:5001 coreos/etcd -peer-addr ${PUBLIC_IP}:8001 -addr ${PUBLIC_IP}:5001 -name etcd-node1
 #
-# ...
+# Using apache benchmark (http://httpd.apache.org/docs/2.2/programs/ab.html)
+# to drive load thru the deployment
 #
 #   ab -c 100 -n 1000 http://$APPS_001_IP:8080/dave.html
+#
+#       -c = concurrency level
+#       -n = # of requests
+#       -v = verbosity level (2, 3, 4)
 
 FROM ubuntu:12.04
 
