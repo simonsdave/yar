@@ -6,6 +6,7 @@ apt-get update
 apt-get install -y curl
 
 # for apache benchmark
+# http://httpd.apache.org/docs/2.2/programs/ab.html
 apt-get install -y apache2-utils
 
 # http://docs.docker.io/en/latest/installation/ubuntulinux/#ubuntu-precise-12-04-lts-64-bit
