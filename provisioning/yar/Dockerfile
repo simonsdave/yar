@@ -8,9 +8,19 @@
 #
 # these are very useful for interactive testing/debugging
 #
-#   docker run -i -t yar_img /bin/bash
+#   sudo docker run -i -t yar_img /bin/bash
 #   C1=$(sudo docker run -name yar_001 -d yar_img)
 #   C1_IP=$(sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' $C1)
+#
+# app server
+#
+#   APPS_001=$(sudo docker run -d -p 8080:8080 -name apps_001 yar_img app_server --log=info --lon=8080)
+#   APPS_001_IP=$(sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' $APPS_001)
+#   curl http://$APPS_001_IP:8080/dave.html
+#
+#   KS1=$(sudo docker run -d -p 8070:8070 -name ks_001 yar_img key_server --log=info --lon=8070)
+#   KS1_IP=$(sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' $KS1)
+#   docker run -d -p 8001:8001 -p 5001:5001 coreos/etcd -peer-addr ${PUBLIC_IP}:8001 -addr ${PUBLIC_IP}:5001 -name etcd-node1
 
 FROM ubuntu:12.04
 
