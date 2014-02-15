@@ -21,6 +21,10 @@
 #   KS1=$(sudo docker run -d -p 8070:8070 -name ks_001 yar_img key_server --log=info --lon=8070)
 #   KS1_IP=$(sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' $KS1)
 #   docker run -d -p 8001:8001 -p 5001:5001 coreos/etcd -peer-addr ${PUBLIC_IP}:8001 -addr ${PUBLIC_IP}:5001 -name etcd-node1
+#
+# ...
+#
+#   ab -c 100 -n 1000 http://$APPS_001_IP:8080/dave.html
 
 FROM ubuntu:12.04
 
