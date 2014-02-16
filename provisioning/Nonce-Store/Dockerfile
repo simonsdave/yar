@@ -1,8 +1,18 @@
-# sudo docker build -t memcached_img .
-# NS1=$(sudo docker run -name memcached_ins_001 -d memcached_img)
-# NS1_IP=$(sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' $NS1)
+# to build the image
 #
-# nice reference for getting memcached running using docker
+#   sudo docker build -t nonce_store_img .
+#
+# for testing/debugging
+#
+#   sudo docker run -i -t nonce_store_img /bin/bash
+#
+# spin up real nonnce store
+#
+#   NONCE_STORE=$(sudo docker run -d nonce_store_img)
+#   NONCE_STORE_IP=$(sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' $NONCE_STORE)
+#
+# references
+#
 #   https://www.digitalocean.com/community/articles/docker-explained-how-to-create-docker-containers-running-memcached
 
 FROM ubuntu:12.04
