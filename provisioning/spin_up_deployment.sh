@@ -27,10 +27,20 @@ create_key_server() {
 
 create_app_server() {
     PORT=8080
-    APP_SERVER=$(sudo docker run -d -p $PORT:$PORT yar_img app_server --log=info --lon=$PORT)
+    APP_SERVER_CMD="app_server --log=info --lon=$PORT"
+    APP_SERVER=$(sudo docker run -d yar_img $APP_SERVER_CMD)
     APP_SERVER_IP=$(get_container_ip $APP_SERVER)
+
+    for i in {1..10}
+    do
+		sleep 1
+        curl -s http://$APP_SERVER_IP:$PORT/dave.html >& /dev/null
+	    if [ $? == 0 ]; then
+		    break
+	    fi
+    done
+
     echo $APP_SERVER
-#   curl http://$APPS_SERVER_IP:8080/dave.html
 }
 
 APP_SERVER=$(create_app_server)
