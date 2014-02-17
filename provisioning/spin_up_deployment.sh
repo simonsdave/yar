@@ -10,11 +10,26 @@ get_container_ip() {
 }
 
 create_key_server() {
-    echo "dave"
+    PORT=8070
+    KEY_SERVER_CMD="key_server --log=info --lon=$PORT --key_store=${1:-}"
+    KEY_SERVER=$(sudo docker run -d yar_img $KEY_SERVER_CMD)
+    KEY_SERVER_IP=$(get_container_ip $KEY_SERVER)
+
+    for i in {1..10}
+    do
+		sleep 1
+        curl -s http://$KEY_SERVER_IP:$PORT/v1.0/creds >& /dev/null
+	    if [ $? == 0 ]; then
+		    break
+	    fi
+    done
+
+    echo $KEY_SERVER_IP:$PORT
 }
 
 create_key_store() {
     PORT=5984
+    DATABASE=creds
 
     KEY_STORE=$(sudo docker run -d key_store_img)
     KEY_STORE_IP=$(get_container_ip $KEY_STORE)
@@ -28,19 +43,19 @@ create_key_store() {
 	    fi
     done
 
-    INSTALL_CMD="key_store_installer --log=info --create=true --host=$KEY_STORE_IP:$PORT"
+    INSTALL_CMD="key_store_installer --log=info --create=true --host=$KEY_STORE_IP:$PORT --database=$DATABASE"
     sudo docker run -i -t yar_img $INSTALL_CMD >& /dev/null
 
     for i in {1..10}
     do
 		sleep 1
-        curl -s http://$KEY_SERVER_IP:$PORT/creds >& /dev/null
+        curl -s http://$KEY_STORE_IP:$PORT/$DATABASE >& /dev/null
 	    if [ $? == 0 ]; then
 		    break
 	    fi
     done
 
-    echo $KEY_STORE
+    echo $KEY_STORE_IP:$PORT/$DATABASE
 }
 
 create_app_server() {
@@ -68,3 +83,6 @@ create_app_server() {
 
 KEY_STORE=$(create_key_store) 
 echo $KEY_STORE
+
+KEY_SERVER=$(create_key_server $KEY_STORE)
+echo $KEY_SERVER
