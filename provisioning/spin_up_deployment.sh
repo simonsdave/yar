@@ -79,7 +79,10 @@ create_key_store() {
     PORT=5984
     DATABASE=creds
 
-    KEY_STORE=$(sudo docker run -d key_store_img)
+    DATA_DIRECTORY=$SCRIPT_DIR_NAME/Key-Store-Data
+    rm -rf $DATA_DIRECTORY >& /dev/null
+    mkdir -p $DATA_DIRECTORY
+    KEY_STORE=$(sudo docker run -d -v $DATA_DIRECTORY:/usr/local/var/lib/couchdb:rw -t key_store_img)
     KEY_STORE_IP=$(get_container_ip $KEY_STORE)
 
     for i in {1..10}
