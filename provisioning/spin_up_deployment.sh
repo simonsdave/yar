@@ -73,16 +73,17 @@ create_app_server() {
 	    fi
     done
 
-    echo $APP_SERVER
+    echo $APP_SERVER_IP
 }
 
-# APP_SERVER=$(create_app_server)
-# echo $APP_SERVER
-# APP_SERVER_IP=$(get_container_ip $APP_SERVER)
-# echo $APP_SERVER_ID
+echo "Starting App Server"
+APP_SERVER=$(create_app_server)
+echo $APP_SERVER
 
+echo "Starting Key Store"
 KEY_STORE=$(create_key_store) 
 echo $KEY_STORE
 
+echo "Starting Key Server"
 KEY_SERVER=$(create_key_server $KEY_STORE)
 echo $KEY_SERVER
