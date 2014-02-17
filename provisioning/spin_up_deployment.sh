@@ -9,6 +9,23 @@ get_container_ip() {
     sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' ${1:-}
 }
 
+create_nonce_store() {
+    PORT=11211
+    NONCE_STORE_CMD=""
+    NONCE_STORE=$(sudo docker run -d nonce_store_img $NONCE_STORE_CMD)
+    NONCE_STORE_IP=$(get_container_ip $NONCE_STORE)
+
+    for i in {1..10}
+    do
+		sleep 1
+        if [ "$(memcstat --servers=$NONCE_STORE_IP:$PORT | wc -l)" != "0" ]; then
+		    break
+	    fi
+    done
+
+    echo $NONCE_STORE_IP:$PORT
+}
+
 create_key_server() {
     PORT=8070
     KEY_SERVER_CMD="key_server --log=info --lon=$PORT --key_store=${1:-}"
@@ -76,6 +93,10 @@ create_app_server() {
     echo $APP_SERVER_IP
 }
 
+echo "Starting Nonce Store"
+NONCE_STORE=$(create_nonce_store) 
+echo $NONCE_STORE
+
 echo "Starting App Server"
 APP_SERVER=$(create_app_server)
 echo $APP_SERVER
@@ -87,3 +108,5 @@ echo $KEY_STORE
 echo "Starting Key Server"
 KEY_SERVER=$(create_key_server $KEY_STORE)
 echo $KEY_SERVER
+
+exit 0
