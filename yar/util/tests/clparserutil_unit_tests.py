@@ -208,3 +208,30 @@ class TestCase(unittest.TestCase):
             else:
                 with self.assertRaises(optparse.OptionValueError):
                     type_checker(option, opt_string, value[0])
+
+    def test_check_unix_domain_socket(self):
+        option = clparserutil.Option(
+            "--syslog",
+            action="store",
+            dest="syslog",
+            default=None,
+            type="unixdomainsocket",
+            help="something - default = True")
+        values = [
+            ["/dev/log", "/dev/log"],
+            ["/var/run/syslog", "/var/run/syslog"],
+
+            ["dev/log", None],
+            ["", None],
+            ["dev", None],
+        ]
+        type_checker = clparserutil.Option.TYPE_CHECKER["unixdomainsocket"]
+        opt_string = option.get_opt_string(),
+        for value in values:
+            if value[1] is not None:
+                msg = "Failed to parse '%s' correctly." % value[0]
+                result = type_checker(option, opt_string, value[0])
+                self.assertEqual(result, value[1], msg)
+            else:
+                with self.assertRaises(optparse.OptionValueError):
+                    type_checker(option, opt_string, value[0])

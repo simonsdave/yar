@@ -111,6 +111,18 @@ def _check_boolean(option, opt, value):
     raise optparse.OptionValueError(msg)
 
 
+def _check_unix_domain_socket(option, opt, value):
+    """Type checking function for command line
+    parser's 'unixdomaintype' type."""
+    reg_ex_pattern = "^(?:/[A-Za-z0-9]+)+$"
+    reg_ex = re.compile(reg_ex_pattern, re.IGNORECASE)
+    if reg_ex.match(value):
+        return value
+
+    msg = "option %s: should max reg ex patterh '%s'" % (opt, reg_ex_pattern)
+    raise optparse.OptionValueError(msg)
+
+
 class Option(optparse.Option):
     """Adds couchdb, hostcolonport, hostcolonports, boolean & logginglevel
     types to the command line parser's list of available types."""
@@ -121,6 +133,7 @@ class Option(optparse.Option):
         "logginglevel",
         "boolean",
         "couchdb",
+        "unixdomainsocket",
     )
     TYPES = optparse.Option.TYPES + new_types
     TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
@@ -130,3 +143,4 @@ class Option(optparse.Option):
     TYPE_CHECKER["logginglevel"] = _check_logging_level
     TYPE_CHECKER["boolean"] = _check_boolean
     TYPE_CHECKER["couchdb"] = _check_couchdb
+    TYPE_CHECKER["unixdomainsocket"] = _check_unix_domain_socket
