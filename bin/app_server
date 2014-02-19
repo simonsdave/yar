@@ -63,6 +63,10 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=clo.logging_level)
 
+    if clo.syslog:
+        handler = logging.handlers.SysLogHandler(address=clo.syslog)
+        logging.getLogger().addHandler(handler)
+
     tsh.install()
 
     _logger.info(
