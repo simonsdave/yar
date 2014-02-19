@@ -1,3 +1,27 @@
+# Execute the command line
+#
+#   python setup.py sdist
+#
+# from the same directory as setup.py which will generate
+# the file yar/yar-V.N.tar.gz where V.N is the version number
+# used as the version argument to setup() below.
+#
+# To install the archieve just run pip using something like
+#
+#   pip install yar-V.N.tar.gz
+#
+# Note - if you're running pip install inside a Docker container
+# then it probably means you got the archive into the container
+# using a Dockerfile's ADD command. The ADD command decompresses
+# the archive and extracts all files. This is fine. Just run the
+# pip command on the directory to which the files are extracted.
+# Probably something like this for yar:
+#
+#   pip install yar-1.0
+#
+# :TODO: add commentry about which version of setuptools should
+# be used.
+
 from setuptools import setup
 
 setup(
@@ -19,6 +43,8 @@ setup(
         "bin/auth_server",
         "bin/key_server",
         "bin/key_store_installer",
+        "bin/yarcurl",
+        "bin/jpp",
     ],
     install_requires=[
         "httplib2==0.8",
