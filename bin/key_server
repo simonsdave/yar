@@ -20,6 +20,10 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=clo.logging_level)
 
+    if clo.syslog:
+        handler = logging.handlers.SysLogHandler(address=clo.syslog)
+        logging.getLogger().addHandler(handler)
+
     tsh.install()
 
     key_server_request_handler._key_store = clo.key_store

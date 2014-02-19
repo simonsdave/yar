@@ -55,3 +55,13 @@ class CommandLineParser(optparse.OptionParser):
             default=default,
             type="couchdb",
             help=help)
+
+        default = None
+        help = "syslog unix domain socket - default = %s" % default
+        self.add_option(
+            "--syslog",
+            action="store",
+            dest="syslog",
+            default=default,
+            type="unixdomainsocket",
+            help=help)
