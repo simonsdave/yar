@@ -24,8 +24,8 @@ create_auth_server() {
     APP_SERVER=${2:-}
     NONCE_STORE=${3:-}
     PORT=8000
-    AUTH_SERVER_CMD="auth_server --log=info --lon=$PORT --keyserver=$KEY_SERVER --appserver=$APP_SERVER --noncestore=$NONCE_STORE"
-    AUTH_SERVER=$(sudo docker run -d yar_img $AUTH_SERVER_CMD)
+    AUTH_SERVER_CMD="auth_server --log=info --lon=$PORT --keyserver=$KEY_SERVER --appserver=$APP_SERVER --noncestore=$NONCE_STORE --syslog=/dev/log"
+    AUTH_SERVER=$(sudo docker run -d -v /dev/log:/dev/log yar_img $AUTH_SERVER_CMD)
     AUTH_SERVER_IP=$(get_container_ip $AUTH_SERVER)
 
     for i in {1..10}
@@ -59,8 +59,8 @@ create_nonce_store() {
 
 create_key_server() {
     PORT=8070
-    KEY_SERVER_CMD="key_server --log=info --lon=$PORT --key_store=${1:-}"
-    KEY_SERVER=$(sudo docker run -d yar_img $KEY_SERVER_CMD)
+    KEY_SERVER_CMD="key_server --log=info --lon=$PORT --key_store=${1:-} --syslog=/dev/log"
+    KEY_SERVER=$(sudo docker run -d -v /dev/log:/dev/log yar_img $KEY_SERVER_CMD)
     KEY_SERVER_IP=$(get_container_ip $KEY_SERVER)
 
     for i in {1..10}
@@ -111,8 +111,8 @@ create_key_store() {
 
 create_app_server() {
     PORT=8080
-    APP_SERVER_CMD="app_server --log=info --lon=$PORT"
-    APP_SERVER=$(sudo docker run -d yar_img $APP_SERVER_CMD)
+    APP_SERVER_CMD="app_server --log=info --lon=$PORT --syslog=/dev/log"
+    APP_SERVER=$(sudo docker run -d -v /dev/log:/dev/log yar_img $APP_SERVER_CMD)
     APP_SERVER_IP=$(get_container_ip $APP_SERVER)
 
     for i in {1..10}
