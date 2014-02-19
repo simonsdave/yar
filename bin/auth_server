@@ -24,9 +24,13 @@ if __name__ == "__main__":
     clp = clparser.CommandLineParser()
     (clo, cla) = clp.parse_args()
 
-    tsh.install()
-
     logging.basicConfig(level=clo.logging_level)
+
+    if clo.syslog:
+        handler = logging.handlers.SysLogHandler(address=clo.syslog)
+        logging.getLogger().addHandler(handler)
+
+    tsh.install()
 
     fmt = (
         "Auth Server listening on {clo.listen_on} "
