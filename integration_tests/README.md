@@ -19,3 +19,105 @@ was selected as the container host for integration testing.
 [Ubuntu 12.04](http://releases.ubuntu.com/12.04/) virtual machine
 running on [VirtualBox](https://www.virtualbox.org/)
 acts as the container host.
+
+Let's walk step by step through how to spin up an integration tests environment.
+We'll assume you're doing this from ground zero and don't even have
+the yar source installed on your machine.
+
+* get the source code by running the following in a new terminal window
+
+~~~~~
+cd; git clone https://github.com/simonsdave/yar.git; cd yar; source bin/cfg4dev
+~~~~~
+
+* provision the container host
+
+~~~~~
+cd integration_tests; ./provision_docker_container_host.sh
+~~~~~
+
+* it will take a few minutes, you'll see lots of messages rushing by on your
+terminal windows as provision_docker_container_host.sh packages up yar
+for install by pip, uses Vagrant to spin up a virtual machine
+that's the container host on VirtualBox.
+* once the virtual machine is running, use vagrant to ssh into the VM
+and get to the directory in the VM that gives you access to the integration
+test scripts
+
+~~~~~
+(env)>vagrant ssh
+Welcome to Ubuntu 12.04 LTS (GNU/Linux 3.2.0-23-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+Welcome to your Vagrant-built virtual machine.
+Last login: Fri Sep 14 06:23:18 2012 from 10.0.2.2
+vagrant@precise64:~$ cd /vagrant
+vagrant@precise64:/vagrant$ ls -la
+total 36
+drwxr-xr-x  1 vagrant vagrant  476 Feb 20 11:26 .
+drwxr-xr-x 24 root    root    4096 Feb 20 11:27 ..
+-rwxr-xr-x  1 vagrant vagrant  272 Feb 19 11:35 create_images.sh
+drwxr-xr-x  1 vagrant vagrant  102 Feb 19 11:35 Key-Store
+drwxr-xr-x  1 vagrant vagrant  102 Feb 19 11:35 Nonce-Store
+-rwxr-xr-x  1 vagrant vagrant  553 Feb 19 12:02 provision_docker_container_host.sh
+-rw-r--r--  1 vagrant vagrant  959 Feb 19 23:53 README.md
+-rwxr-xr-x  1 vagrant vagrant  438 Feb 19 11:35 rm_all_containers.sh
+-rwxr-xr-x  1 vagrant vagrant 3783 Feb 19 11:35 spin_up_deployment.sh
+drwxr-xr-x  1 vagrant vagrant  102 Feb 19 11:50 .vagrant
+-rw-r--r--  1 vagrant vagrant 4670 Feb 19 11:35 Vagrantfile
+-rwxr-xr-x  1 vagrant vagrant  656 Feb 19 11:35 vagrant-provision.sh
+drwxr-xr-x  1 vagrant vagrant  136 Feb 20 11:26 yar
+vagrant@precise64:/vagrant$
+~~~~~
+
+* now let's create the Docker images that will host the various
+yar services by running create_images.sh
+
+~~~~~
+./create_images.sh
+~~~~~
+
+* this will take several minutes to run as 3 Docker images are created - one
+for the Key Store, a second for the Nonce Store and a final one for
+the running the Auth Server, Key Server and App Server - use Docker's
+images command to see the list of available images once create_images.sh
+has completed
+
+~~~~~
+vagrant@precise64:/vagrant$ sudo docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED              VIRTUAL SIZE
+yar_img             latest              c363428a22fa        About a minute ago   444.9 MB
+key_store_img       latest              afab3edaa41d        4 minutes ago        562.9 MB
+nonce_store_img     latest              11e067a8a011        8 minutes ago        265.5 MB
+ubuntu              12.04               9cd978db300e        2 weeks ago          204.4 MB
+~~~~~
+
+* now we have everything we need to spin up a complete, simple yar deployment
+and we'll do this using ./spin_up_deployment.sh
+
+~~~~~
+vagrant@precise64:/vagrant$ ./spin_up_deployment.sh
+Starting Nonce Store
+172.17.0.2:11211
+Starting App Server
+172.17.0.3:8080
+Starting Key Store
+172.17.0.4:5984/creds
+Starting Key Server
+172.17.0.5:8070
+Starting Auth Server
+172.17.0.6:8000
+~~~~~
+
+* let's pause for a couple of minutes and review what's going on here
+because these simple scripts we've been running have been doing a ton
+of stuff that may not be immediately visible/obvious
+* :TODO: syslog
+* :TODO: data for key store containers
+* as an aside, if at any point during the above you need to remove all
+containers so you can start from scratch just run rm_all_containers.sh - just
+be warned that rm_all_containers.sh kills all running containers and
+removes all file systems for all containers - note the emphasis on "all" so
+if you're running this directly on Ubuntu with non-yar docker containers
+rm_all_containers.sh will remove them just as quickly as it removes
+yar containers
