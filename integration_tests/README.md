@@ -109,10 +109,35 @@ Starting Auth Server
 172.17.0.6:8000
 ~~~~~
 
+* so what did ./spin_up_deployment.sh just do? it spun up an App Server,
+a Key Store, a Key Server, a Nonce Store and an Auth Server aka a highly
+simplified but complete deployment of yar. you can see all the containers
+that are running using the docker ps command
+
+~~~~~
+vagrant@precise64:/vagrant$ sudo docker ps
+CONTAINER ID        IMAGE                    COMMAND                CREATED             STATUS              PORTS               NAMES
+74c06e96b101        yar_img:latest           auth_server --log=in   23 seconds ago      Up 22 seconds                           stoic_heisenberg
+8fe347b3515a        yar_img:latest           key_server --log=inf   25 seconds ago      Up 24 seconds                           distracted_davinci
+6801d6e051d4        key_store_img:latest     /bin/sh -c couchdb     3 minutes ago       Up 3 minutes        5984/tcp            pensive_wozniak
+c3a6f1271403        yar_img:latest           app_server --log=inf   3 minutes ago       Up 3 minutes                            hopeful_bardeen
+1b3900987e19        nonce_store_img:latest   /bin/sh -c memcached   4 minutes ago       Up 3 minutes        11211/tcp           berserk_engelbart
+~~~~~
+
 * let's pause for a couple of minutes and review what's going on here
 because these simple scripts we've been running have been doing a ton
 of stuff that may not be immediately visible/obvious
-* :TODO: syslog
+* yar's Auth Server, Key Server and App Server are all capabile of logging
+to syslog (see the --syslog command line option for each of these servers)
+* ./spin_up_deployment.sh maps the /dev/log device for Auth Server, Key Server
+and App Server to the host container's /dev/log and tells these servers
+to log to syslog which is useful because it means you can watch log output
+for 3 servers by tailing /var/log/syslog
+
+~~~~~
+tail -f /var/log/syslog
+~~~~~
+
 * :TODO: data for key store containers
 * as an aside, if at any point during the above you need to remove all
 containers so you can start from scratch just run rm_all_containers.sh - just
