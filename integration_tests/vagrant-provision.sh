@@ -5,6 +5,16 @@ apt-get update
 # curl's a generally useful utility across SO many platforms ...
 apt-get install -y curl
 
+# we're going to need git to grab some utilities from github
+apt-get install -y git
+
+# JSON.sh is a json parser written in bash
+cd /tmp
+git clone https://github.com/dominictarr/JSON.sh.git
+cd JSON.sh
+mv JSON.sh /usr/local/bin/.
+cd
+
 # for apache benchmark
 # http://httpd.apache.org/docs/2.2/programs/ab.html
 apt-get install -y apache2-utils
