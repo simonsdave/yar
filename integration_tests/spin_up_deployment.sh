@@ -19,6 +19,16 @@ get_container_ip() {
     sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' ${1:-}
 }
 
+get_from_json() {
+    PATTERN=${1:-}
+    CREATE_ACCOUNT_OUTPUT_FILE_NAME=${2:-}
+    JSON.sh | \
+        grep $PATTERN |
+        sed -e "s/$PATTERN//" |
+        sed -e "s/[[:space:]]//g" |
+        sed -e "s/\"//g"
+}
+
 create_auth_server() {
     KEY_SERVER=${1:-}
     APP_SERVER=${2:-}
@@ -127,6 +137,62 @@ create_app_server() {
     echo $APP_SERVER_IP:$PORT
 }
 
+create_basic_creds() {
+
+    KEY_SERVER=${1:-}
+    PRINCIPAL=${2:-}
+
+    CREDS_FILE_NAME=$(mktemp)
+
+    curl \
+        -s \
+        -X POST \
+        -H "Content-Type: application/json; charset=utf8" \
+        -d "{\"principal\":\"$PRINCIPAL\", \"auth_scheme\":\"basic\"}" \
+        http://$KEY_SERVER/v1.0/creds > $CREDS_FILE_NAME
+
+    API_KEY=`cat $CREDS_FILE_NAME | get_from_json '\["basic"\,"api_key"\]'`
+
+    rm -rf $CREDS_FILE_NAME >& /dev/null
+
+    echo $API_KEY
+}
+
+create_mac_creds() {
+
+    KEY_SERVER=${1:-}
+    PRINCIPAL=${2:-}
+
+    CREDS_FILE_NAME=$(mktemp)
+
+    curl \
+        -s \
+        -X POST \
+        -H "Content-Type: application/json; charset=utf8" \
+        -d "{\"principal\":\"$PRINCIPAL\", \"auth_scheme\":\"hmac\"}" \
+        http://$KEY_SERVER/v1.0/creds > $CREDS_FILE_NAME
+
+    local MAC_ALGORITHM=`cat $CREDS_FILE_NAME | get_from_json \
+        '\["hmac"\,"mac_algorithm"\]'`
+
+    local MAC_KEY_IDENTIFIER=`cat $CREDS_FILE_NAME | get_from_json \
+        '\["hmac"\,"mac_key_identifier"\]'`
+
+    local MAC_KEY=`cat $CREDS_FILE_NAME | get_from_json \
+        '\["hmac"\,"mac_key"\]'`
+
+    rm -rf ~/.yar.creds >& /dev/null
+    echo "MAC_KEY_IDENTIFIER=$MAC_KEY_IDENTIFIER" > ~/.yar.creds
+    echo "MAC_KEY=$MAC_KEY" >> ~/.yar.creds
+    echo "MAC_ALGORITHM=$MAC_ALGORITHM" >> ~/.yar.creds
+
+    rm -rf $CREDS_FILE_NAME >& /dev/null
+}
+
+PRINCIPAL="dave@example.com"
+
+# spin up services
+
 echo "Starting Nonce Store"
 NONCE_STORE=$(create_nonce_store) 
 echo $NONCE_STORE
@@ -146,5 +212,14 @@ echo $KEY_SERVER
 echo "Starting Auth Server"
 AUTH_SERVER=$(create_auth_server $KEY_SERVER $APP_SERVER $NONCE_STORE)
 echo $AUTH_SERVER
+
+# services now running, time to provision some keys
+
+API_KEY=$(create_basic_creds $KEY_SERVER $PRINCIPAL)
+echo "API key for basic auth = $API_KEY"
+
+create_mac_creds $KEY_SERVER $PRINCIPAL
+echo "MAC creds in auth = ~/.yar.creds"
+cat ~/.yar.creds
 
 exit 0
