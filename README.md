@@ -10,7 +10,9 @@ Is the project complete? No. Yar is still a work in progress. Below you'll find 
 list of big/important things that are on the immediate to do list.
 See the [Wiki](https://github.com/simonsdave/yar/wiki) for a more complete description and discussion of yar.
 
-  * authentication using [OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02) and Basic authentication schemes
+  * authentication using
+[OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02)
+and [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
   * key generation for both the above authentication schemes
   * [Keyczar](http://www.keyczar.org/) is used extensively in both key generation and HMAC verification
   * [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server) and [Key Server](https://github.com/simonsdave/yar/wiki/Key-Server) are [Tornado](http://www.tornadoweb.org/en/stable/) servers leveraging Tornado's [asynchronous](http://www.tornadoweb.org/en/stable/networking.html) for high concurrency operation
