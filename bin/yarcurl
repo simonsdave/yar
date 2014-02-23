@@ -150,18 +150,6 @@ else
        $URL"
 fi
 
-# if [ $VERBOSE -eq 1 ]; then
-#    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-#    eval echo $CURL_CMD
-#    echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-# fi
-
-# if [ $VERBOSE -eq 1 ]; then
-#     set -x verbose
-# fi
-# eval $CURL_CMD > ~/ooo 2>&1
-
-# eval echo $CURL_CMD
 eval $CURL_CMD
 
 exit 0
