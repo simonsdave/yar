@@ -215,9 +215,11 @@ echo $AUTH_SERVER
 
 # services now running, time to provision some keys
 
+echo ""
 API_KEY=$(create_basic_creds $KEY_SERVER $PRINCIPAL)
 echo "API key for basic auth = $API_KEY"
 
+echo ""
 create_mac_creds $KEY_SERVER $PRINCIPAL
 echo "MAC creds in auth = ~/.yar.creds"
 cat ~/.yar.creds
