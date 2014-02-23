@@ -42,7 +42,7 @@ case "$HTTP_METHOD" in
             ;;
         PUT|POST)
 			CONTENT_TYPE="application/json; charset=utf-8"
-			COPY_OF_STDIN=`mktemp -t DAS`
+			COPY_OF_STDIN=`mktemp`
 			cat /dev/stdin > $COPY_OF_STDIN
             ;;
         *)
@@ -95,7 +95,7 @@ get_ext() {
 	if [ "$CONTENT_TYPE" == "" ] || [ "$COPY_OF_STDIN" == "" ]; then
 		echo ""
 	else
-		CONTENT_TYPE_PLUS_COPY_OF_STDIN=`mktemp -t DAS`
+		CONTENT_TYPE_PLUS_COPY_OF_STDIN=`mktemp`
 		echo -n $CONTENT_TYPE > $CONTENT_TYPE_PLUS_COPY_OF_STDIN
 		cat $COPY_OF_STDIN >> $CONTENT_TYPE_PLUS_COPY_OF_STDIN
 		openssl sha1 < $CONTENT_TYPE_PLUS_COPY_OF_STDIN
@@ -104,7 +104,7 @@ get_ext() {
 }
 EXT=$(get_ext "$CONTENT_TYPE" "$COPY_OF_STDIN")
 
-NRS=`mktemp -t DAS`
+NRS=`mktemp`
 printf \
 	'%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
 	$TIMESTAMP \
@@ -114,7 +114,7 @@ printf \
 	$HOST \
 	$PORT \
 	$EXT >& $NRS
-MAC=$(openssl dgst -sha1 -hmac "$MAC_KEY" < $NRS)
+MAC=$(openssl dgst -sha1 -hmac "$MAC_KEY" < $NRS | sed -e "s/^.*=\s*//g")
 rm -f $NRS >& /dev/null
 
 printf \
