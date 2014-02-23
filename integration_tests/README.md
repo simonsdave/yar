@@ -107,12 +107,28 @@ Starting Key Server
 172.17.0.5:8070
 Starting Auth Server
 172.17.0.6:8000
+
+API key for basic auth = d6ff91ecd14d4da7b405ec6d6fe5c24d
+
+MAC creds in auth = ~/.yar.creds
+MAC_KEY_IDENTIFIER=992177d0305145a4ad4983f4e4b1b878
+MAC_KEY=m-jHe4IcDTDVvL_acOIq0jYHFOYAh2pZErsUPpx1PTU
+MAC_ALGORITHM=hmac-sha-1
 ~~~~~
 
-* so what did ./spin_up_deployment.sh just do? it spun up an App Server,
-a Key Store, a Key Server, a Nonce Store and an Auth Server aka a highly
-simplified but complete deployment of yar. you can see all the containers
-that are running using the docker ps command
+* so what did ./spin_up_deployment.sh just do? it spun up
+an [App Server](https://github.com/simonsdave/yar/wiki/App-Server),
+a [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store),
+a [Key Server](https://github.com/simonsdave/yar/wiki/Key-Server),
+a [Nonce Store](https://github.com/simonsdave/yar/wiki/Nonce-Store) and
+an [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server) as well as
+provisioning keys for [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
+and [OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02)
+* essentially this is a highly simplified but complete deployment of
+yar that you can issue requests to using
+[cURL](http://en.wikipedia.org/wiki/CURL) and
+[yarcurl](https://github.com/simonsdave/yar/wiki/Utilities#yarcurl)
+* you can see all the containers that are running using the docker ps command
 
 ~~~~~
 vagrant@precise64:/vagrant$ sudo docker ps
@@ -122,6 +138,18 @@ CONTAINER ID        IMAGE                    COMMAND                CREATED     
 6801d6e051d4        key_store_img:latest     /bin/sh -c couchdb     3 minutes ago       Up 3 minutes        5984/tcp            pensive_wozniak
 c3a6f1271403        yar_img:latest           app_server --log=inf   3 minutes ago       Up 3 minutes                            hopeful_bardeen
 1b3900987e19        nonce_store_img:latest   /bin/sh -c memcached   4 minutes ago       Up 3 minutes        11211/tcp           berserk_engelbart
+~~~~~
+
+* from the host container try issuing some requests to the deployment
+
+~~~~~
+vagrant@precise64:/vagrant$ curl -s -u d6ff91ecd14d4da7b405ec6d6fe5c24d: http://172.17.0.6:8000/dave.html | jpp
+{
+    "auth": "YAR dave@example.com",
+    "status": "ok",
+    "version": "1.0",
+    "when": "2014-02-23 23:04:53.857666"
+}
 ~~~~~
 
 * let's pause for a couple of minutes and review what's going on here
