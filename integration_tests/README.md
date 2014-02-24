@@ -170,6 +170,77 @@ for 3 servers by tailing /var/log/syslog on the container host
 tail -f /var/log/syslog
 ~~~~~
 
+* above we issued request to the deployment using
+[cURL](http://en.wikipedia.org/wiki/CURL) and
+[yarcurl](https://github.com/simonsdave/yar/wiki/Utilities#yarcurl) but if
+you want to get a sense of how yar performs under load you'll
+want to issue repeated requests at various concurrency levels - a simple
+way to get going down that path is to use
+[Apache's ab](http://httpd.apache.org/docs/2.4/programs/ab.html) utility which
+was installed on the container host by provision_docker_container_host.sh - below
+is an example of using ab to issue 10,000 requests to the deployment's
+auth server 10 requests at a time
+
+~~~~~
+vagrant@precise64:/vagrant$ ab -c 10 -n 10000 -A 5eed597374994bd0a078552208799434: http://172.17.0.6:8000/dave.html
+This is ApacheBench, Version 2.3 <$Revision: 655654 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 172.17.0.6 (be patient)
+Completed 1000 requests
+Completed 2000 requests
+Completed 3000 requests
+Completed 4000 requests
+Completed 5000 requests
+Completed 6000 requests
+Completed 7000 requests
+Completed 8000 requests
+Completed 9000 requests
+Completed 10000 requests
+Finished 10000 requests
+
+
+Server Software:        TornadoServer/3.0.1
+Server Hostname:        172.17.0.6
+Server Port:            8000
+
+Document Path:          /dave.html
+Document Length:        104 bytes
+
+Concurrency Level:      10
+Time taken for tests:   142.237 seconds
+Complete requests:      10000
+Failed requests:        7
+   (Connect: 0, Receive: 0, Length: 7, Exceptions: 0)
+Write errors:           0
+Non-2xx responses:      7
+Total transferred:      3069112 bytes
+HTML transferred:       1039272 bytes
+Requests per second:    70.31 [#/sec] (mean)
+Time per request:       142.237 [ms] (mean)
+Time per request:       14.224 [ms] (mean, across all concurrent requests)
+Transfer rate:          21.07 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    8 463.9      0   31038
+Processing:    38  134 532.1    121   20086
+Waiting:       38  134 532.1    121   20086
+Total:         38  142 720.5    121   31161
+
+Percentage of the requests served within a certain time (ms)
+  50%    121
+  66%    126
+  75%    129
+  80%    130
+  90%    136
+  95%    142
+  98%    149
+  99%    156
+ 100%  31161 (longest request)
+~~~~~
+
 * :TODO: data for key store containers
 * as an aside, if at any point during the above you need to remove all
 containers so you can start from scratch just run rm_all_containers.sh - just
