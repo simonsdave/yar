@@ -26,9 +26,15 @@ if [ "$PWD" != "$SCRIPT_DIR_NAME" ]; then
 fi
 
 cleanup_yar_dist
-rm yar/yar-*.*.tar.gz >& /dev/null
+rm -rf yar/artifacts >& /dev/null
+mkdir yar/artifacts
 build_yar_dist
-cp ../dist/yar-*.*.tar.gz yar/.
+cp ../dist/yar-*.*.tar.gz yar/artifacts/.
 cleanup_yar_dist
+
+rm -rf artifacts >& /dev/null
+mkdir artifacts
+cp ../bin/jpp artifacts/.
+cp ../bin/yarcurl artifacts/.
 
 vagrant up

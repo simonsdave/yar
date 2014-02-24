@@ -55,6 +55,6 @@ RUN apt-get install -y python-dev
 
 # :TRICKY: ADD command decompresses the archive and extract
 # all the files in the archive
-ADD yar-1.0.tar.gz /tmp/.
+ADD artifacts/yar-1.0.tar.gz /tmp/.
 
 RUN pip install /tmp/yar-1.0
