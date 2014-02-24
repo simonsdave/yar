@@ -152,15 +152,19 @@ vagrant@precise64:/vagrant$ curl -s -u d6ff91ecd14d4da7b405ec6d6fe5c24d: http://
 }
 ~~~~~
 
-* let's pause for a couple of minutes and review what's going on here
-because these simple scripts we've been running have been doing a ton
-of stuff that may not be immediately visible/obvious
-* yar's Auth Server, Key Server and App Server are all capabile of logging
-to syslog (see the --syslog command line option for each of these servers)
-* ./spin_up_deployment.sh maps the /dev/log device for Auth Server, Key Server
-and App Server to the host container's /dev/log and tells these servers
+* yar's [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server),
+[Key Server](https://github.com/simonsdave/yar/wiki/Key-Server)
+and [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server)
+are all capabile of logging to
+[syslog](http://manpages.ubuntu.com/manpages/precise/man8/rsyslogd.8.html)
+(see the --syslog command line option for each of these servers)
+* ./spin_up_deployment.sh maps the /dev/log device for each
+[Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server),
+[Key Server](https://github.com/simonsdave/yar/wiki/Key-Server)
+and [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server)
+to the host container's /dev/log and tells these servers
 to log to syslog which is useful because it means you can watch log output
-for 3 servers by tailing /var/log/syslog
+for 3 servers by tailing /var/log/syslog on the container host
 
 ~~~~~
 tail -f /var/log/syslog
