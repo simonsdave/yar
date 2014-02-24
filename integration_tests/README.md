@@ -107,12 +107,28 @@ Starting Key Server
 172.17.0.5:8070
 Starting Auth Server
 172.17.0.6:8000
+
+API key for basic auth = d6ff91ecd14d4da7b405ec6d6fe5c24d
+
+MAC creds in auth = ~/.yar.creds
+MAC_KEY_IDENTIFIER=992177d0305145a4ad4983f4e4b1b878
+MAC_KEY=m-jHe4IcDTDVvL_acOIq0jYHFOYAh2pZErsUPpx1PTU
+MAC_ALGORITHM=hmac-sha-1
 ~~~~~
 
-* so what did ./spin_up_deployment.sh just do? it spun up an App Server,
-a Key Store, a Key Server, a Nonce Store and an Auth Server aka a highly
-simplified but complete deployment of yar. you can see all the containers
-that are running using the docker ps command
+* so what did ./spin_up_deployment.sh just do? it spun up
+an [App Server](https://github.com/simonsdave/yar/wiki/App-Server),
+a [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store),
+a [Key Server](https://github.com/simonsdave/yar/wiki/Key-Server),
+a [Nonce Store](https://github.com/simonsdave/yar/wiki/Nonce-Store) and
+an [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server) as well as
+provisioning keys for [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
+and [OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02)
+* essentially this is a highly simplified but complete deployment of
+yar that you can issue requests to using
+[cURL](http://en.wikipedia.org/wiki/CURL) and
+[yarcurl](https://github.com/simonsdave/yar/wiki/Utilities#yarcurl)
+* you can see all the containers that are running using the docker ps command
 
 ~~~~~
 vagrant@precise64:/vagrant$ sudo docker ps
@@ -124,18 +140,105 @@ c3a6f1271403        yar_img:latest           app_server --log=inf   3 minutes ag
 1b3900987e19        nonce_store_img:latest   /bin/sh -c memcached   4 minutes ago       Up 3 minutes        11211/tcp           berserk_engelbart
 ~~~~~
 
-* let's pause for a couple of minutes and review what's going on here
-because these simple scripts we've been running have been doing a ton
-of stuff that may not be immediately visible/obvious
-* yar's Auth Server, Key Server and App Server are all capabile of logging
-to syslog (see the --syslog command line option for each of these servers)
-* ./spin_up_deployment.sh maps the /dev/log device for Auth Server, Key Server
-and App Server to the host container's /dev/log and tells these servers
+* from the host container try issuing some requests to the deployment
+
+~~~~~
+vagrant@precise64:/vagrant$ curl -s -u d6ff91ecd14d4da7b405ec6d6fe5c24d: http://172.17.0.6:8000/dave.html | jpp
+{
+    "auth": "YAR dave@example.com",
+    "status": "ok",
+    "version": "1.0",
+    "when": "2014-02-23 23:04:53.857666"
+}
+~~~~~
+
+* yar's [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server),
+[Key Server](https://github.com/simonsdave/yar/wiki/Key-Server)
+and [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server)
+are all capabile of logging to
+[syslog](http://manpages.ubuntu.com/manpages/precise/man8/rsyslogd.8.html)
+(see the --syslog command line option for each of these servers)
+* ./spin_up_deployment.sh maps the /dev/log device for each
+[Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server),
+[Key Server](https://github.com/simonsdave/yar/wiki/Key-Server)
+and [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server)
+to the host container's /dev/log and tells these servers
 to log to syslog which is useful because it means you can watch log output
-for 3 servers by tailing /var/log/syslog
+for 3 servers by tailing /var/log/syslog on the container host
 
 ~~~~~
 tail -f /var/log/syslog
+~~~~~
+
+* above we issued request to the deployment using
+[cURL](http://en.wikipedia.org/wiki/CURL) and
+[yarcurl](https://github.com/simonsdave/yar/wiki/Utilities#yarcurl) but if
+you want to get a sense of how yar performs under load you'll
+want to issue repeated requests at various concurrency levels - a simple
+way to get going down that path is to use
+[Apache's ab](http://httpd.apache.org/docs/2.4/programs/ab.html) utility which
+was installed on the container host by provision_docker_container_host.sh - below
+is an example of using ab to issue 10,000 requests to the deployment's
+auth server 10 requests at a time
+
+~~~~~
+vagrant@precise64:/vagrant$ ab -c 10 -n 10000 -A 5eed597374994bd0a078552208799434: http://172.17.0.6:8000/dave.html
+This is ApacheBench, Version 2.3 <$Revision: 655654 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 172.17.0.6 (be patient)
+Completed 1000 requests
+Completed 2000 requests
+Completed 3000 requests
+Completed 4000 requests
+Completed 5000 requests
+Completed 6000 requests
+Completed 7000 requests
+Completed 8000 requests
+Completed 9000 requests
+Completed 10000 requests
+Finished 10000 requests
+
+
+Server Software:        TornadoServer/3.0.1
+Server Hostname:        172.17.0.6
+Server Port:            8000
+
+Document Path:          /dave.html
+Document Length:        104 bytes
+
+Concurrency Level:      10
+Time taken for tests:   142.237 seconds
+Complete requests:      10000
+Failed requests:        7
+   (Connect: 0, Receive: 0, Length: 7, Exceptions: 0)
+Write errors:           0
+Non-2xx responses:      7
+Total transferred:      3069112 bytes
+HTML transferred:       1039272 bytes
+Requests per second:    70.31 [#/sec] (mean)
+Time per request:       142.237 [ms] (mean)
+Time per request:       14.224 [ms] (mean, across all concurrent requests)
+Transfer rate:          21.07 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    8 463.9      0   31038
+Processing:    38  134 532.1    121   20086
+Waiting:       38  134 532.1    121   20086
+Total:         38  142 720.5    121   31161
+
+Percentage of the requests served within a certain time (ms)
+  50%    121
+  66%    126
+  75%    129
+  80%    130
+  90%    136
+  95%    142
+  98%    149
+  99%    156
+ 100%  31161 (longest request)
 ~~~~~
 
 * :TODO: data for key store containers
