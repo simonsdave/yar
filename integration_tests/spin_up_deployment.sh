@@ -171,11 +171,11 @@ create_basic_creds() {
         -d "{\"principal\":\"$PRINCIPAL\", \"auth_scheme\":\"basic\"}" \
         http://$KEY_SERVER/v1.0/creds > $CREDS_FILE_NAME
 
-    API_KEY=`cat $CREDS_FILE_NAME | get_from_json '\["basic"\,"api_key"\]'`
+    local API_KEY=`cat $CREDS_FILE_NAME | get_from_json '\["basic"\,"api_key"\]'`
+
+    echo "API_KEY=$API_KEY" >> ~/.yar.creds
 
     rm -rf $CREDS_FILE_NAME >& /dev/null
-
-    echo $API_KEY
 }
 
 create_mac_creds() {
@@ -201,8 +201,7 @@ create_mac_creds() {
     local MAC_KEY=`cat $CREDS_FILE_NAME | get_from_json \
         '\["hmac"\,"mac_key"\]'`
 
-    rm -rf ~/.yar.creds >& /dev/null
-    echo "MAC_KEY_IDENTIFIER=$MAC_KEY_IDENTIFIER" > ~/.yar.creds
+    echo "MAC_KEY_IDENTIFIER=$MAC_KEY_IDENTIFIER" >> ~/.yar.creds
     echo "MAC_KEY=$MAC_KEY" >> ~/.yar.creds
     echo "MAC_ALGORITHM=$MAC_ALGORITHM" >> ~/.yar.creds
 
@@ -239,13 +238,11 @@ echo $AUTH_SERVER
 
 # services now running, time to provision some keys
 
-echo ""
-API_KEY=$(create_basic_creds $KEY_SERVER $PRINCIPAL)
-echo "API key for basic auth = $API_KEY"
-
-echo ""
+echo "Creating Credentials"
+rm -f ~/.yar.creds >& /dev/null
+create_basic_creds $KEY_SERVER $PRINCIPAL
 create_mac_creds $KEY_SERVER $PRINCIPAL
-echo "MAC creds in auth = ~/.yar.creds"
+echo "Credentials in ~/.yar.creds"
 cat ~/.yar.creds
 
 exit 0
