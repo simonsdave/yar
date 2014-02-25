@@ -80,7 +80,7 @@ create_key_store() {
     PORT=5984
     DATABASE=creds
 
-    DATA_DIRECTORY=$SCRIPT_DIR_NAME/Key-Store-Data
+    DATA_DIRECTORY=$SCRIPT_DIR_NAME/Key-Store/artifacts
     rm -rf $DATA_DIRECTORY >& /dev/null
     mkdir -p $DATA_DIRECTORY
     KEY_STORE=$(sudo docker run -d -v $DATA_DIRECTORY:/usr/local/var/lib/couchdb:rw -t key_store_img)
