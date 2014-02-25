@@ -16,10 +16,6 @@ import tornado.web
 
 from yar.app_server.clparser import CommandLineParser
 
-
-__version__ = "1.0"
-
-
 _logger = logging.getLogger("APPSERVER.%s" % __name__)
 
 
@@ -30,7 +26,6 @@ class RequestHandler(tornado.web.RequestHandler):
             "<no auth header>")
         dict = {
             "status": "ok",
-            "version": __version__,
             "when": str(datetime.datetime.now()),
             "auth": auth_hdr_value,
         }
@@ -70,9 +65,8 @@ if __name__ == "__main__":
     tsh.install()
 
     _logger.info(
-        "%s %s listening on %s",
+        "%s listening on %s",
         os.path.basename(os.path.split(sys.argv[0])[1]),
-        __version__,
         clo.listen_on)
 
     app = tornado.web.Application(handlers=[(r".*", RequestHandler)])
