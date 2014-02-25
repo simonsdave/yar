@@ -17,8 +17,6 @@ from keyczar import keyczar
 
 _logger = logging.getLogger("UTIL.%s" % __name__)
 
-__version__ = "1.0"
-
 
 def _hexify(bytes):
     """Super simple utility to turn an array of bytes in
