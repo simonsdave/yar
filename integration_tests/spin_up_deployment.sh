@@ -3,15 +3,6 @@
 # very useful for debugging ...
 #
 #   sudo docker run -i -t yar_img /bin/bash
-#
-# Using apache benchmark (http://httpd.apache.org/docs/2.2/programs/ab.html)
-# to drive load thru the deployment
-#
-#   ab -A api-key: -c 10 -n 1000 http://auth-server-ip-colon-port/dave.html
-#
-#       -c = concurrency level
-#       -n = # of requests
-#       -v = verbosity level (2, 3, 4)
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 
@@ -137,6 +128,35 @@ create_app_server() {
     echo $APP_SERVER_IP:$PORT
 }
 
+create_app_server_lb() {
+
+    APP_SERVER=${1:-}
+
+    PORT=8080
+
+    CFG_TEMPLATE_DIRECTORY=$SCRIPT_DIR_NAME/App-Server-LB
+    CFG_DIRECTORY=$SCRIPT_DIR_NAME/App-Server-LB/artifacts
+    rm -rf $CFG_DIRECTORY >& /dev/null
+    mkdir $CFG_DIRECTORY
+    cp $CFG_TEMPLATE_DIRECTORY/haproxy.cfg.template $CFG_DIRECTORY/haproxy.cfg
+    echo "    server appserver1 $APP_SERVER check" >> $CFG_DIRECTORY/haproxy.cfg
+
+    APP_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
+    APP_SERVER_LB=$(sudo docker run -d -v /dev/log:/haproxy/log -v $CFG_DIRECTORY:/haproxycfg app_server_lb_img $APP_SERVER_LB_CMD)
+    APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB)
+
+    for i in {1..10}
+    do
+        sleep 1
+        curl -s http://$APP_SERVER_LB_IP:$PORT/dave.html >& /dev/null
+        if [ $? == 0 ]; then
+            break
+        fi
+    done
+
+    echo $APP_SERVER_LB_IP:$PORT
+}
+
 create_basic_creds() {
 
     KEY_SERVER=${1:-}
@@ -193,13 +213,17 @@ PRINCIPAL="dave@example.com"
 
 # spin up services
 
+echo "Starting App Server(s)"
+APP_SERVER=$(create_app_server)
+echo $APP_SERVER
+
+echo "Starting App Server LB"
+APP_SERVER_LB=$(create_app_server_lb $APP_SERVER)
+echo $APP_SERVER_LB
+
 echo "Starting Nonce Store"
 NONCE_STORE=$(create_nonce_store) 
 echo $NONCE_STORE
-
-echo "Starting App Server"
-APP_SERVER=$(create_app_server)
-echo $APP_SERVER
 
 echo "Starting Key Store"
 KEY_STORE=$(create_key_store) 
@@ -210,7 +234,7 @@ KEY_SERVER=$(create_key_server $KEY_STORE)
 echo $KEY_SERVER
 
 echo "Starting Auth Server"
-AUTH_SERVER=$(create_auth_server $KEY_SERVER $APP_SERVER $NONCE_STORE)
+AUTH_SERVER=$(create_auth_server $KEY_SERVER $APP_SERVER_LB $NONCE_STORE)
 echo $AUTH_SERVER
 
 # services now running, time to provision some keys
