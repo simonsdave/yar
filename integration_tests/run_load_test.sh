@@ -36,6 +36,10 @@ ab -c 10 -n 2500 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/da
 $SCRIPT_DIR_NAME/plot_load_test_results
 mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_10x2500.jpg
 
+ab -c 50 -n 2500 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/dave.html
+$SCRIPT_DIR_NAME/plot_load_test_results
+mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_50x2500.jpg
+
 ab -c 100 -n 2500 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/dave.html
 $SCRIPT_DIR_NAME/plot_load_test_results
 mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_100x2500.jpg
@@ -47,6 +51,7 @@ mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_250
 convert \
     $SCRIPT_DIR_NAME/load_test_results_1x2500.jpg \
     $SCRIPT_DIR_NAME/load_test_results_10x2500.jpg \
+    $SCRIPT_DIR_NAME/load_test_results_50x2500.jpg \
     $SCRIPT_DIR_NAME/load_test_results_100x2500.jpg \
     $SCRIPT_DIR_NAME/load_test_results_250x5000.jpg \
     $SCRIPT_DIR_NAME/load_test_results.pdf
