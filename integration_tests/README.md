@@ -249,3 +249,11 @@ removes all file systems for all containers - note the emphasis on "all" so
 if you're running this directly on Ubuntu with non-yar docker containers
 rm_all_containers.sh will remove them just as quickly as it removes
 yar containers
+
+Notes
+-----
+* why are bash scripts used for lots of this testing? why not use Python
+and docker-py? tried docker-py but found the API really poorly documented
+and not used extensively (so Googling for answers yielded few hits).
+The docker cli on the other hand is very well documented and lots of folks
+are using it so easy to Google for answers.

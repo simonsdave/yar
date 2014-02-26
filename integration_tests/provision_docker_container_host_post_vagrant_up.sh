@@ -38,9 +38,5 @@ cp /vagrant/artifacts/yarcurl /usr/local/bin/.
 # python scripts setup and drive tests so we'll need pip
 apt-get install -y python-pip
 
-# docker's python client lib is used by various scripts
-# to setup the testing environment
-apt-get install -y docker-py
-
 # these utilities are used to assemble graphs of load testing results
 apt-get install -y gnuplot
