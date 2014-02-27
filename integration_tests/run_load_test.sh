@@ -19,11 +19,16 @@ get_deployment_config() {
     fi
 }
 
-take_95th_percentile() {
-    local INPUT_FILENAME=${1:-}
-    local OUTPUT_FILENAME=${2:-}
+# given an input file (geneated by apache benchmark), generate
+# an output file which represents the nth percentile of the
+# input file based on the 5th column (request time) in the
+# input file.
+take_percentile() {
+    local PERCENTILE=${1:-}
+    local INPUT_FILENAME=${2:-}
+    local OUTPUT_FILENAME=${3:-}
 	x=$(tail -n +2 $INPUT_FILENAME | wc -l)
-	n=$(python -c "print int($x * .95)")
+	n=$(python -c "print int($x * $PERCENTILE)")
 	sort \
         --field-separator=$'\t' \
         --key=5 \
@@ -37,17 +42,16 @@ take_95th_percentile() {
 }
 
 # :TODO: what if either of these scripts fail?
-$SCRIPT_DIR_NAME/rm_all_containers.sh
-$SCRIPT_DIR_NAME/spin_up_deployment.sh
+# $SCRIPT_DIR_NAME/rm_all_containers.sh
+# $SCRIPT_DIR_NAME/spin_up_deployment.sh
 
 API_KEY=$(get_deployment_config "API_KEY")
 # :TODO: what if API_KEY doesn't exist?
 
 rm -f load_test_results* >& /dev/null
 
-NUMBER_OF_REQUESTS=2500
-NUMBER_OF_REQUESTS=1000
-PERCENTILE=95
+NUMBER_OF_REQUESTS=5000
+PERCENTILE=98
 
 CONCURRENCY=1
 LOAD_TEST_RESULTS_DATA=$SCRIPT_DIR_NAME/load_test_results-$CONCURRENCY-$NUMBER_OF_REQUESTS.tsv
@@ -61,14 +65,15 @@ ab \
     -g $LOAD_TEST_RESULTS_DATA \
     http://172.17.0.7:8000/dave.html
 
-take_95th_percentile \
+take_percentile \
+    $PERCENTILE \
     $LOAD_TEST_RESULTS_DATA \
     $LOAD_TEST_RESULTS_DATA_PERCENTILE
 
 gnuplot \
     -e "input_filename='$LOAD_TEST_RESULTS_DATA_PERCENTILE'" \
-    -e "title='Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; Percentile = $PERCENTILE th'" \
     -e "output_filename='$LOAD_TEST_RESULTS_PLOT'" \
+    -e "title='Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; $PERCENTILE th Percentile'" \
     $SCRIPT_DIR_NAME/plot_load_test_results
 
 convert \
@@ -77,22 +82,22 @@ convert \
 exit 0
 
 ab -c 10 -n 2500 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/dave.html
-take_95th_percentile
+take_percentile
 $SCRIPT_DIR_NAME/plot_load_test_results
 mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_10x2500.jpg
 
 ab -c 50 -n 2500 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/dave.html
-take_95th_percentile
+take_percentile
 $SCRIPT_DIR_NAME/plot_load_test_results
 mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_50x2500.jpg
 
 ab -c 100 -n 2500 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/dave.html
-take_95th_percentile
+take_percentile
 $SCRIPT_DIR_NAME/plot_load_test_results
 mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_100x2500.jpg
 
 ab -c 250 -n 5000 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/dave.html
-take_95th_percentile
+take_percentile
 $SCRIPT_DIR_NAME/plot_load_test_results
 mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_250x5000.jpg
 
