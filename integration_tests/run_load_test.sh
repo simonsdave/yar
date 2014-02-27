@@ -70,50 +70,27 @@ run_load_test() {
 }
 
 # :TODO: what if either of these scripts fail?
-# $SCRIPT_DIR_NAME/rm_all_containers.sh
-# $SCRIPT_DIR_NAME/spin_up_deployment.sh
+$SCRIPT_DIR_NAME/rm_all_containers.sh
+$SCRIPT_DIR_NAME/spin_up_deployment.sh
 
 API_KEY=$(get_deployment_config "API_KEY")
 # :TODO: what if API_KEY doesn't exist?
 
 rm -f load_test_results* >& /dev/null
 
-NUMBER_OF_REQUESTS=5000
-PERCENTILE=98
+NUMBER_OF_REQUESTS=10000
+PERCENTILE=95
 
 run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE
+run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE
+run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE
+run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE
+run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE
+run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE
+run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE
 
 convert \
     $SCRIPT_DIR_NAME/*.jpg \
-    $SCRIPT_DIR_NAME/load_test_results.pdf
-exit 0
-
-ab -c 10 -n 2500 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/dave.html
-take_percentile
-$SCRIPT_DIR_NAME/plot_load_test_results
-mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_10x2500.jpg
-
-ab -c 50 -n 2500 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/dave.html
-take_percentile
-$SCRIPT_DIR_NAME/plot_load_test_results
-mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_50x2500.jpg
-
-ab -c 100 -n 2500 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/dave.html
-take_percentile
-$SCRIPT_DIR_NAME/plot_load_test_results
-mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_100x2500.jpg
-
-ab -c 250 -n 5000 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/dave.html
-take_percentile
-$SCRIPT_DIR_NAME/plot_load_test_results
-mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_250x5000.jpg
-
-convert \
-    $SCRIPT_DIR_NAME/load_test_results_1x2500.jpg \
-    $SCRIPT_DIR_NAME/load_test_results_10x2500.jpg \
-    $SCRIPT_DIR_NAME/load_test_results_50x2500.jpg \
-    $SCRIPT_DIR_NAME/load_test_results_100x2500.jpg \
-    $SCRIPT_DIR_NAME/load_test_results_250x5000.jpg \
     $SCRIPT_DIR_NAME/load_test_results.pdf
 
 exit 0
