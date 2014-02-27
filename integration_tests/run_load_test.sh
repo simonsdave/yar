@@ -41,6 +41,34 @@ take_percentile() {
         -n > $OUTPUT_FILENAME
 }
 
+run_load_test() {
+    local NUMBER_OF_REQUESTS=${1:-}
+    local CONCURRENCY=${2:-}
+    local PERCENTILE=${3:-}
+
+    LOAD_TEST_RESULTS_DATA=$SCRIPT_DIR_NAME/load_test_results-$CONCURRENCY-$NUMBER_OF_REQUESTS.tsv
+    LOAD_TEST_RESULTS_DATA_PERCENTILE=$SCRIPT_DIR_NAME/load_test_results-$CONCURRENCY-$NUMBER_OF_REQUESTS-$PERCENTILE.tsv
+    LOAD_TEST_RESULTS_PLOT=$SCRIPT_DIR_NAME/load_test_results-$CONCURRENCY-$NUMBER_OF_REQUESTS.jpg
+
+    ab \
+        -c $CONCURRENCY \
+        -n $NUMBER_OF_REQUESTS \
+        -A $API_KEY: \
+        -g $LOAD_TEST_RESULTS_DATA \
+        http://172.17.0.7:8000/dave.html
+
+    take_percentile \
+        $PERCENTILE \
+        $LOAD_TEST_RESULTS_DATA \
+        $LOAD_TEST_RESULTS_DATA_PERCENTILE
+
+    gnuplot \
+        -e "input_filename='$LOAD_TEST_RESULTS_DATA_PERCENTILE'" \
+        -e "output_filename='$LOAD_TEST_RESULTS_PLOT'" \
+        -e "title='Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; $PERCENTILE th Percentile'" \
+        $SCRIPT_DIR_NAME/plot_load_test_results
+}
+
 # :TODO: what if either of these scripts fail?
 # $SCRIPT_DIR_NAME/rm_all_containers.sh
 # $SCRIPT_DIR_NAME/spin_up_deployment.sh
@@ -53,28 +81,7 @@ rm -f load_test_results* >& /dev/null
 NUMBER_OF_REQUESTS=5000
 PERCENTILE=98
 
-CONCURRENCY=1
-LOAD_TEST_RESULTS_DATA=$SCRIPT_DIR_NAME/load_test_results-$CONCURRENCY-$NUMBER_OF_REQUESTS.tsv
-LOAD_TEST_RESULTS_DATA_PERCENTILE=$SCRIPT_DIR_NAME/load_test_results-$CONCURRENCY-$NUMBER_OF_REQUESTS-$PERCENTILE.tsv
-LOAD_TEST_RESULTS_PLOT=$SCRIPT_DIR_NAME/load_test_results-$CONCURRENCY-$NUMBER_OF_REQUESTS.jpg
-
-ab \
-    -c $CONCURRENCY \
-    -n $NUMBER_OF_REQUESTS \
-    -A $API_KEY: \
-    -g $LOAD_TEST_RESULTS_DATA \
-    http://172.17.0.7:8000/dave.html
-
-take_percentile \
-    $PERCENTILE \
-    $LOAD_TEST_RESULTS_DATA \
-    $LOAD_TEST_RESULTS_DATA_PERCENTILE
-
-gnuplot \
-    -e "input_filename='$LOAD_TEST_RESULTS_DATA_PERCENTILE'" \
-    -e "output_filename='$LOAD_TEST_RESULTS_PLOT'" \
-    -e "title='Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; $PERCENTILE th Percentile'" \
-    $SCRIPT_DIR_NAME/plot_load_test_results
+run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE
 
 convert \
     $SCRIPT_DIR_NAME/*.jpg \
