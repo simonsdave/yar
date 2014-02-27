@@ -1,17 +1,21 @@
-#!/usr/bin/gnuplot
-
+# input variables
+#
+#   input_filename
+#   title
+#   output_filename
+#
 # references
+#
 #   http://www.bradlanders.com/2013/04/15/apache-bench-and-gnuplot-youre-probably-doing-it-wrong/
 
 # Let's output to a jpeg file
-# set terminal jpeg size 500,500
 set terminal jpeg size 1280,720
 # This sets the aspect ratio of the graph
 set size 1, 1
 # The file we'll write to
-set output "load_test_results.jpg"
+set output output_filename
 # The graph title
-set title "Benchmark testing"
+set title title
 # Where to place the legend/key
 set key left top
 # Draw gridlines oriented on the y axis
@@ -29,5 +33,6 @@ set ylabel "Response Time (ms)"
 # Tell gnuplot to use tabs as the delimiter instead of spaces (default)
 set datafile separator '\t'
 # Plot the data
-plot "load_test_results.tsv" every ::2 using 2:5 title "" with points
+plot input_filename every ::2 using 2:5 title "" with points
+# plot "load_test_results.tsv" every ::2 using 2:5 title "" with points
 exit
