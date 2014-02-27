@@ -25,9 +25,9 @@ set format x "%S"
 # Label the x-axis
 set xlabel 'seconds'
 # Label the y-axis
-set ylabel "response time (ms)"
+set ylabel "Response Time (ms)"
 # Tell gnuplot to use tabs as the delimiter instead of spaces (default)
 set datafile separator '\t'
 # Plot the data
-plot "load_test_results.tsv" every ::2 using 2:5 title 'response time' with points
+plot "load_test_results.tsv" every ::2 using 2:5 title "" with points
 exit
