@@ -19,6 +19,14 @@ get_deployment_config() {
     fi
 }
 
+take_95th_percentile() {
+	x=$(tail -n +2 $SCRIPT_DIR_NAME/load_test_results.tsv | wc -l)
+	n=$(python -c "print int($x * .95)")
+	tmpfile=$(mktemp)
+	sort --field-separator=$'\t' --key=5 -n $SCRIPT_DIR_NAME/load_test_results.tsv | head -n $n | sort --field-separator=$'\t' --key=2 -n > $tmpfile
+	mv $tmpfile $SCRIPT_DIR_NAME/load_test_results.tsv
+}
+
 rm -f load_test_results.* >& /dev/null
 
 # :TODO: what if either of these scripts fail?
@@ -33,18 +41,22 @@ $SCRIPT_DIR_NAME/plot_load_test_results
 mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_1x2500.jpg
 
 ab -c 10 -n 2500 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/dave.html
+take_95th_percentile
 $SCRIPT_DIR_NAME/plot_load_test_results
 mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_10x2500.jpg
 
 ab -c 50 -n 2500 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/dave.html
+take_95th_percentile
 $SCRIPT_DIR_NAME/plot_load_test_results
 mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_50x2500.jpg
 
 ab -c 100 -n 2500 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/dave.html
+take_95th_percentile
 $SCRIPT_DIR_NAME/plot_load_test_results
 mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_100x2500.jpg
 
 ab -c 250 -n 5000 -A $API_KEY: -g load_test_results.tsv http://172.17.0.7:8000/dave.html
+take_95th_percentile
 $SCRIPT_DIR_NAME/plot_load_test_results
 mv $SCRIPT_DIR_NAME/load_test_results.jpg $SCRIPT_DIR_NAME/load_test_results_250x5000.jpg
 
