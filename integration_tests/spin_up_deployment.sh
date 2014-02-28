@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-# very useful for debugging ...
-#
-#   sudo docker run -i -t yar_img /bin/bash
-
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 
 get_container_ip() {
@@ -237,45 +233,71 @@ create_mac_creds() {
     rm -rf $CREDS_FILE_NAME >& /dev/null
 }
 
-PRINCIPAL="dave@example.com"
+echo_if_not_silent() {
+    if [ 0 -eq $SILENT ]; then
+        echo $1
+    fi
+}
+
+cat_if_not_silent() {
+    if [ 0 -eq $SILENT ]; then
+        cat $1
+    fi
+}
+
+# did we get the command line arguments right?
+
+SILENT=0
+if [ 1 -eq $# ]; then
+    if [ "-s" == $1 ]; then
+        SILENT=1
+        shift
+    fi
+fi
+
+if [ $# != 0 ]; then
+    echo "usage: `basename $0` [-s]"
+    exit 1
+fi
 
 # spin up services
 
-echo "Starting App Server(s)"
+echo_if_not_silent "Starting App Server(s)"
 APP_SERVER=$(create_app_server)
-echo $APP_SERVER
+echo_if_not_silent $APP_SERVER
 
-echo "Starting App Server LB"
+echo_if_not_silent "Starting App Server LB"
 APP_SERVER_LB=$(create_app_server_lb $APP_SERVER)
-echo $APP_SERVER_LB
+echo_if_not_silent $APP_SERVER_LB
 
-echo "Starting Nonce Store"
+echo_if_not_silent "Starting Nonce Store"
 NONCE_STORE=$(create_nonce_store) 
-echo $NONCE_STORE
+echo_if_not_silent $NONCE_STORE
 
-echo "Starting Key Store"
+echo_if_not_silent "Starting Key Store"
 KEY_STORE=$(create_key_store) 
-echo $KEY_STORE
+echo_if_not_silent $KEY_STORE
 
-echo "Starting Key Server"
+echo_if_not_silent "Starting Key Server"
 KEY_SERVER=$(create_key_server $KEY_STORE)
-echo $KEY_SERVER
+echo_if_not_silent $KEY_SERVER
 
-echo "Starting Auth Server"
+echo_if_not_silent "Starting Auth Server"
 AUTH_SERVER=$(create_auth_server $KEY_SERVER $APP_SERVER_LB $NONCE_STORE)
-echo $AUTH_SERVER
+echo_if_not_silent $AUTH_SERVER
 
-echo "Starting Auth Server LB"
-AUTH_SERVER=$(create_auth_server_lb $AUTH_SERVER)
-echo $AUTH_SERVER
+echo_if_not_silent "Starting Auth Server LB"
+AUTH_SERVER_LB=$(create_auth_server_lb $AUTH_SERVER)
+echo $AUTH_SERVER_LB
 
 # services now running, time to provision some keys
 
-echo "Creating Credentials"
+echo_if_not_silent "Creating Credentials"
+PRINCIPAL="dave@example.com"
 rm -f ~/.yar.creds >& /dev/null
 create_basic_creds $KEY_SERVER $PRINCIPAL
 create_mac_creds $KEY_SERVER $PRINCIPAL
-echo "Credentials in ~/.yar.creds"
-cat ~/.yar.creds
+echo_if_not_silent "Credentials in ~/.yar.creds"
+cat_if_not_silent ~/.yar.creds
 
 exit 0
