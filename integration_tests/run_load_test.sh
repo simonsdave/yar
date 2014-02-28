@@ -5,8 +5,6 @@
 
 # :TODO: add check that docker images have been built
 
-SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
-
 get_deployment_config() {
     local KEY=${1:-}
     local VALUE_IF_NOT_FOUND=${2:-}
@@ -28,7 +26,7 @@ take_percentile_and_add_sanity_to_time() {
     local INPUT_FILENAME=${2:-}
     local OUTPUT_FILENAME=${3:-}
 
-    local MIN_SECONDS=$(tail -n +2 $INPUT_FILENAME | awk 'BEGIN {min = 9999999999; FS = "\t"} ; { if($2 < min) {min = $2} } END { print min }')
+    local FIRST_EPOCH_TIME=$(tail -n +2 $INPUT_FILENAME | awk 'BEGIN {min = 9999999999; FS = "\t"} ; { if($2 < min) {min = $2} } END { print min }')
 
 	NUM_LINES_IN_FILE=$(tail -n +2 $INPUT_FILENAME | wc -l)
 	NUM_LINES_IN_PERCENTILE=$(python -c "print int($NUM_LINES_IN_FILE * $PERCENTILE)")
@@ -41,9 +39,9 @@ take_percentile_and_add_sanity_to_time() {
     head \
         -n $NUM_LINES_IN_PERCENTILE | \
     awk \
-        -v ms="$MIN_SECONDS" \
+        -v first_epoch_time="$FIRST_EPOCH_TIME" \
         'BEGIN {FS = "\t"; OFS = "\t"} ; \
-        {print $1, $2 - ms, $3, $4, $5, $6; }' | \
+        {print $1, $2 - first_epoch_time, $3, $4, $5, $6; }' | \
     sort \
         --field-separator=$'\t' \
         --key=2 \
@@ -60,34 +58,42 @@ run_load_test() {
     $SCRIPT_DIR_NAME/rm_all_containers.sh
     $SCRIPT_DIR_NAME/spin_up_deployment.sh
 
-    API_KEY=$(get_deployment_config "API_KEY")
+    local API_KEY=$(get_deployment_config "API_KEY")
     # :TODO: what if API_KEY doesn't exist?
 
-    LEFT_ZERO_PADDED_CONCURRENCY=$(python -c "print ('0'*10+'$CONCURRENCY')[-4:]")
-    LOAD_TEST_RESULTS_DATA=$SCRIPT_DIR_NAME/load_test_results-$LEFT_ZERO_PADDED_CONCURRENCY-$NUMBER_OF_REQUESTS.tsv
-    LOAD_TEST_RESULTS_DATA_PERCENTILE=$SCRIPT_DIR_NAME/load_test_results-$LEFT_ZERO_PADDED_CONCURRENCY-$NUMBER_OF_REQUESTS-$PERCENTILE.tsv
-    LOAD_TEST_RESULTS_PLOT=$SCRIPT_DIR_NAME/load_test_results-$LEFT_ZERO_PADDED_CONCURRENCY-$NUMBER_OF_REQUESTS.png
+    local LEFT_ZERO_PADDED_CONCURRENCY=$(python -c "print ('0'*10+'$CONCURRENCY')[-4:]")
+
+    local PREFIX=$RESULTS_DIR/$LEFT_ZERO_PADDED_CONCURRENCY-$NUMBER_OF_REQUESTS
+
+    local RESULTS_DATA=$PREFIX.tsv
+    local RESULTS_DATA_PERCENTILE=$(mktemp)
+    local RESULTS_PLOT=$PREFIX.png
 
     ab \
         -c $CONCURRENCY \
         -n $NUMBER_OF_REQUESTS \
         -A $API_KEY: \
-        -g $LOAD_TEST_RESULTS_DATA \
+        -g $RESULTS_DATA \
         http://172.17.0.7:8000/dave.html
 
     take_percentile_and_add_sanity_to_time \
         $PERCENTILE \
-        $LOAD_TEST_RESULTS_DATA \
-        $LOAD_TEST_RESULTS_DATA_PERCENTILE
+        $RESULTS_DATA \
+        $RESULTS_DATA_PERCENTILE
 
     gnuplot \
-        -e "input_filename='$LOAD_TEST_RESULTS_DATA_PERCENTILE'" \
-        -e "output_filename='$LOAD_TEST_RESULTS_PLOT'" \
+        -e "input_filename='$RESULTS_DATA_PERCENTILE'" \
+        -e "output_filename='$RESULTS_PLOT'" \
         -e "title='Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; $PERCENTILE th Percentile'" \
         $SCRIPT_DIR_NAME/plot_load_test_results
 }
 
-rm -f load_test_results* >& /dev/null
+SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
+
+START_TIME=$(date +%Y-%m-%d-%H-%M)
+
+RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/$START_TIME
+mkdir -p $RESULTS_DIR
 
 NUMBER_OF_REQUESTS=5000
 PERCENTILE=95
@@ -101,7 +107,7 @@ run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE
 # run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE
 
 convert \
-    $SCRIPT_DIR_NAME/*.png \
-    $SCRIPT_DIR_NAME/load_test_results.pdf
+    $RESULTS_DIR/*.png \
+    $RESULTS_DIR/test-results-summary.pdf
 
 exit 0
