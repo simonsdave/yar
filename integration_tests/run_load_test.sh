@@ -23,22 +23,32 @@ get_deployment_config() {
 # an output file which represents the nth percentile of the
 # input file based on the 5th column (request time) in the
 # input file.
-take_percentile() {
+take_percentile_and_add_sanity_to_time() {
     local PERCENTILE=${1:-}
     local INPUT_FILENAME=${2:-}
     local OUTPUT_FILENAME=${3:-}
-	x=$(tail -n +2 $INPUT_FILENAME | wc -l)
-	n=$(python -c "print int($x * $PERCENTILE)")
+
+    local MIN_SECONDS=$(tail -n +2 $INPUT_FILENAME | awk 'BEGIN {min = 9999999999; FS = "\t"} ; { if($2 < min) {min = $2} } END { print min }')
+
+	NUM_LINES_IN_FILE=$(tail -n +2 $INPUT_FILENAME | wc -l)
+	NUM_LINES_IN_PERCENTILE=$(python -c "print int($NUM_LINES_IN_FILE * $PERCENTILE)")
+
 	sort \
         --field-separator=$'\t' \
         --key=5 \
-        -n $INPUT_FILENAME | \
+        -n \
+        $INPUT_FILENAME | \
     head \
-        -n $n | \
+        -n $NUM_LINES_IN_PERCENTILE | \
+    awk \
+        -v ms="$MIN_SECONDS" \
+        'BEGIN {FS = "\t"; OFS = "\t"} ; \
+        {print $1, $2 - ms, $3, $4, $5, $6; }' | \
     sort \
         --field-separator=$'\t' \
         --key=2 \
-        -n > $OUTPUT_FILENAME
+        -n \
+        > $OUTPUT_FILENAME
 }
 
 run_load_test() {
@@ -57,7 +67,7 @@ run_load_test() {
         -g $LOAD_TEST_RESULTS_DATA \
         http://172.17.0.7:8000/dave.html
 
-    take_percentile \
+    take_percentile_and_add_sanity_to_time \
         $PERCENTILE \
         $LOAD_TEST_RESULTS_DATA \
         $LOAD_TEST_RESULTS_DATA_PERCENTILE
@@ -82,12 +92,12 @@ NUMBER_OF_REQUESTS=10000
 PERCENTILE=95
 
 run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE
-run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE
-run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE
-run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE
-run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE
-run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE
-run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE
+# run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE
+# run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE
+# run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE
+# run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE
+# run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE
+# run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE
 
 convert \
     $SCRIPT_DIR_NAME/*.jpg \
