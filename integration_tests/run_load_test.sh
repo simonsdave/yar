@@ -58,7 +58,7 @@ run_load_test() {
 
     LOAD_TEST_RESULTS_DATA=$SCRIPT_DIR_NAME/load_test_results-$CONCURRENCY-$NUMBER_OF_REQUESTS.tsv
     LOAD_TEST_RESULTS_DATA_PERCENTILE=$SCRIPT_DIR_NAME/load_test_results-$CONCURRENCY-$NUMBER_OF_REQUESTS-$PERCENTILE.tsv
-    LOAD_TEST_RESULTS_PLOT=$SCRIPT_DIR_NAME/load_test_results-$CONCURRENCY-$NUMBER_OF_REQUESTS.jpg
+    LOAD_TEST_RESULTS_PLOT=$SCRIPT_DIR_NAME/load_test_results-$CONCURRENCY-$NUMBER_OF_REQUESTS.png
 
     ab \
         -c $CONCURRENCY \
@@ -88,7 +88,7 @@ API_KEY=$(get_deployment_config "API_KEY")
 
 rm -f load_test_results* >& /dev/null
 
-NUMBER_OF_REQUESTS=10000
+NUMBER_OF_REQUESTS=5000
 PERCENTILE=95
 
 run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE
@@ -100,7 +100,7 @@ run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE
 # run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE
 
 convert \
-    $SCRIPT_DIR_NAME/*.jpg \
+    $SCRIPT_DIR_NAME/*.png \
     $SCRIPT_DIR_NAME/load_test_results.pdf
 
 exit 0

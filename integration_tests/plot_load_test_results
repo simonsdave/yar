@@ -9,12 +9,13 @@
 #   http://www.bradlanders.com/2013/04/15/apache-bench-and-gnuplot-youre-probably-doing-it-wrong/
 
 # Let's output to a jpeg file
-set terminal jpeg size 1280,720
-# This sets the aspect ratio of the graph
+set terminal pngcairo size 1280,720
+
+# sets the aspect ratio of the graph
 set size 1, 1
-# The file we'll write to
+# the file this gnuplot script creates
 set output output_filename
-# The graph title
+# graph's title
 set title title
 # Where to place the legend/key
 set key left top
