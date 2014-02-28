@@ -4,6 +4,12 @@ SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 
 cd $SCRIPT_DIR_NAME
 
+pushd Auth-Server-LB
+sudo docker build -t auth_server_lb_img .
+popd
+
+exit 0
+
 pushd App-Server-LB
 sudo docker build -t app_server_lb_img .
 popd

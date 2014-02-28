@@ -157,6 +157,35 @@ create_app_server_lb() {
     echo $APP_SERVER_LB_IP:$PORT
 }
 
+create_auth_server_lb() {
+
+    AUTH_SERVER=${1:-}
+
+    PORT=8000
+
+    CFG_TEMPLATE_DIRECTORY=$SCRIPT_DIR_NAME/Auth-Server-LB
+    CFG_DIRECTORY=$CFG_TEMPLATE_DIRECTORY/artifacts
+    rm -rf $CFG_DIRECTORY >& /dev/null
+    mkdir $CFG_DIRECTORY
+    cp $CFG_TEMPLATE_DIRECTORY/haproxy.cfg.template $CFG_DIRECTORY/haproxy.cfg
+    echo "    server authserver1 $AUTH_SERVER check" >> $CFG_DIRECTORY/haproxy.cfg
+
+    AUTH_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
+    AUTH_SERVER_LB=$(sudo docker run -d -v /dev/log:/haproxy/log -v $CFG_DIRECTORY:/haproxycfg auth_server_lb_img $AUTH_SERVER_LB_CMD)
+    AUTH_SERVER_LB_IP=$(get_container_ip $AUTH_SERVER_LB)
+
+    for i in {1..10}
+    do
+        sleep 1
+        curl -s http://$AUTH_SERVER_LB_IP:$PORT/dave.html >& /dev/null
+        if [ $? == 0 ]; then
+            break
+        fi
+    done
+
+    echo $AUTH_SERVER_LB_IP:$PORT
+}
+
 create_basic_creds() {
 
     KEY_SERVER=${1:-}
@@ -234,6 +263,10 @@ echo $KEY_SERVER
 
 echo "Starting Auth Server"
 AUTH_SERVER=$(create_auth_server $KEY_SERVER $APP_SERVER_LB $NONCE_STORE)
+echo $AUTH_SERVER
+
+echo "Starting Auth Server LB"
+AUTH_SERVER=$(create_auth_server_lb $AUTH_SERVER)
 echo $AUTH_SERVER
 
 # services now running, time to provision some keys

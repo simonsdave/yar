@@ -84,7 +84,7 @@ run_load_test() {
     gnuplot \
         -e "input_filename='$RESULTS_DATA_PERCENTILE'" \
         -e "output_filename='$RESULTS_PLOT'" \
-        -e "title='Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; $PERCENTILE th Percentile'" \
+        -e "title='$START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile'" \
         $SCRIPT_DIR_NAME/plot_load_test_results
 }
 
@@ -95,7 +95,7 @@ START_TIME=$(date +%Y-%m-%d-%H-%M)
 RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/$START_TIME
 mkdir -p $RESULTS_DIR
 
-NUMBER_OF_REQUESTS=5000
+NUMBER_OF_REQUESTS=1000
 PERCENTILE=95
 
 run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE
