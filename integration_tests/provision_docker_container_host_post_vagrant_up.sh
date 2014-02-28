@@ -38,6 +38,9 @@ cp /vagrant/artifacts/yarcurl /usr/local/bin/.
 # python scripts setup and drive tests so we'll need pip
 apt-get install -y python-pip
 
+# python scripts setup and drive tests so we'll need pip
+apt-get install -y make
+
 # these utilities are used to assemble graphs of load testing results
 # can't just "apt-get install -y gnuplot" to install gnuplot because
 # that installs version 4.4 which gets confused about where fonts
@@ -45,14 +48,16 @@ apt-get install -y python-pip
 # and built from source. found the link below a very helpful guide:
 #
 #   http://priyansmurarka.wordpress.com/2013/07/02/gnuplot-on-ubuntu-12-04/
+apt-get install -y libwxgtk2.8-dev libpango1.0-dev libx11-dev libxt-dev texinfo
 cd /tmp
-apt-get install -y libwxgtk2.8-dev
-libpango1.0-dev
-libx11-dev
-libxt-dev texinfo libreadline5-dev
 curl -O ftp://ftp.dante.de/pub/tex/graphics/gnuplot/4.6.5/gnuplot-4.6.5.tar.gz
 tar xvf gnuplot-4.6.5.tar.gz
 cd gnuplot-4.6.5
-sudo make
-sudo make check
-sudo make install
+./configure
+make
+make check
+make install
+
+# this is needed for getting the convert utility that allows multiple
+# images to be combined into a single pdf at the end of the load test
+apt-get install -y imagemagick
