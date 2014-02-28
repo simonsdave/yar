@@ -56,6 +56,13 @@ run_load_test() {
     local CONCURRENCY=${2:-}
     local PERCENTILE=${3:-}
 
+    # :TODO: what if either of these scripts fail?
+    $SCRIPT_DIR_NAME/rm_all_containers.sh
+    $SCRIPT_DIR_NAME/spin_up_deployment.sh
+
+    API_KEY=$(get_deployment_config "API_KEY")
+    # :TODO: what if API_KEY doesn't exist?
+
     LOAD_TEST_RESULTS_DATA=$SCRIPT_DIR_NAME/load_test_results-$CONCURRENCY-$NUMBER_OF_REQUESTS.tsv
     LOAD_TEST_RESULTS_DATA_PERCENTILE=$SCRIPT_DIR_NAME/load_test_results-$CONCURRENCY-$NUMBER_OF_REQUESTS-$PERCENTILE.tsv
     LOAD_TEST_RESULTS_PLOT=$SCRIPT_DIR_NAME/load_test_results-$CONCURRENCY-$NUMBER_OF_REQUESTS.png
@@ -79,22 +86,15 @@ run_load_test() {
         $SCRIPT_DIR_NAME/plot_load_test_results
 }
 
-# :TODO: what if either of these scripts fail?
-$SCRIPT_DIR_NAME/rm_all_containers.sh
-$SCRIPT_DIR_NAME/spin_up_deployment.sh
-
-API_KEY=$(get_deployment_config "API_KEY")
-# :TODO: what if API_KEY doesn't exist?
-
 rm -f load_test_results* >& /dev/null
 
 NUMBER_OF_REQUESTS=5000
 PERCENTILE=95
 
 run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE
-# run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE
-# run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE
-# run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE
+run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE
+run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE
+run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE
 # run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE
 # run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE
 # run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE
