@@ -56,7 +56,7 @@ run_load_test() {
 
     # :TODO: what if either of these scripts fail?
     $SCRIPT_DIR_NAME/rm_all_containers.sh
-    $SCRIPT_DIR_NAME/spin_up_deployment.sh
+    local AUTH_SERVER_LB=$($SCRIPT_DIR_NAME/spin_up_deployment.sh -s)
 
     local API_KEY=$(get_deployment_config "API_KEY")
     # :TODO: what if API_KEY doesn't exist?
@@ -74,7 +74,7 @@ run_load_test() {
         -n $NUMBER_OF_REQUESTS \
         -A $API_KEY: \
         -g $RESULTS_DATA \
-        http://172.17.0.7:8000/dave.html
+        http://$AUTH_SERVER_LB/dave.html
 
     take_percentile_and_add_sanity_to_time \
         $PERCENTILE \
@@ -95,16 +95,16 @@ START_TIME=$(date +%Y-%m-%d-%H-%M)
 RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/$START_TIME
 mkdir -p $RESULTS_DIR
 
-NUMBER_OF_REQUESTS=1000
+NUMBER_OF_REQUESTS=5000
 PERCENTILE=95
 
 run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE
 run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE
 run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE
 run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE
-# run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE
-# run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE
-# run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE
+run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE
+run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE
+run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE
 
 convert \
     $RESULTS_DIR/*.png \
