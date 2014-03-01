@@ -38,14 +38,31 @@ To get all MAC credentials currently saved in the Key Store
 curl -s -X GET http://localhost:5984/creds/_design/creds/_view/all
 ~~~~~~
 
-To get an existing set of credentials
+To save a new set of credentials for [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
 
 ~~~~~
-curl -s -X GET http://localhost:5984/creds/<MAC key identifier>
+API_KEY=$(python -c "from yar.util.basic import APIKey; print APIKey.generate()")
+CREDS="{\"principal\": \"dave@example.com\", \"type\": \"creds_v1.0\", \"is_deleted\": false, \"basic\": {\"api_key\": \"$API_KEY\"}}"
+CONTENT_TYPE="Content-Type: application/json; charset=utf8"
+curl -v -X PUT -H "$CONTENT_TYPE" -d "$CREDS" http://localhost:5984/creds/$API_KEY
+~~~~~
+
+To get an existing set of credentials used for
+[Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
+
+~~~~~
+curl -s http://localhost:5984/creds/<api key>
+~~~~~
+
+To get an existing set of credentials used for
+[OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02)
+
+~~~~~
+curl -s http://localhost:5984/creds/<mac key identifier>
 ~~~~~
 
 To get all credentials for a principal
 
 ~~~~~
-curl -s 'http://localhost:5984/creds/_design/creds/_view/by_principal?startkey="simonsdave@gmail.com"&endkey="simonsdave@gmail.com"'
+curl -s 'http://localhost:5984/creds/_design/creds/_view/by_principal?startkey="dave@example.com"&endkey="dave@example.com"'
 ~~~~~
