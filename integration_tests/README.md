@@ -21,6 +21,9 @@ was selected as the container host.
 on [VirtualBox](https://www.virtualbox.org/)
 as the container host.
 
+Spinning Up a Deployment
+------------------------
+
 Let's walk step by step through the process of spinning up a deployment.
 We'll assume you're doing this from ground zero and don't even have
 the yar source installed on your machine.
@@ -169,6 +172,9 @@ vagrant@precise64:/vagrant$ curl -s -u bcca8cf60c8042a0a098486be74a1b32: http://
 }
 ~~~~~
 
+Logging
+-------
+
 * yar's [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server),
 [Key Server](https://github.com/simonsdave/yar/wiki/Key-Server)
 and [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server)
@@ -187,6 +193,9 @@ for 3 servers by tailing /var/log/syslog on the container host
 tail -f /var/log/syslog
 ~~~~~
 
+Load Testing
+------------
+
 * above we issued request to the deployment using
 [cURL](http://en.wikipedia.org/wiki/CURL) and
 [yarcurl](https://github.com/simonsdave/yar/wiki/Utilities#yarcurl) but if
@@ -199,12 +208,12 @@ is an example of using ab to issue 10,000 requests to the deployment's
 auth server 10 requests at a time
 
 ~~~~~
-vagrant@precise64:/vagrant$ ab -c 10 -n 10000 -A 5eed597374994bd0a078552208799434: http://172.17.0.6:8000/dave.html
+vagrant@precise64:/vagrant$ ab -c 10 -n 10000 -A bcca8cf60c8042a0a098486be74a1b32: http://172.17.0.8:8000/dave.html
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
 Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
 Licensed to The Apache Software Foundation, http://www.apache.org/
 
-Benchmarking 172.17.0.6 (be patient)
+Benchmarking 172.17.0.8 (be patient)
 Completed 1000 requests
 Completed 2000 requests
 Completed 3000 requests
@@ -219,46 +228,69 @@ Finished 10000 requests
 
 
 Server Software:        TornadoServer/3.0.1
-Server Hostname:        172.17.0.6
+Server Hostname:        172.17.0.8
 Server Port:            8000
 
 Document Path:          /dave.html
-Document Length:        104 bytes
+Document Length:        86 bytes
 
 Concurrency Level:      10
-Time taken for tests:   142.237 seconds
+Time taken for tests:   120.045 seconds
 Complete requests:      10000
-Failed requests:        7
-   (Connect: 0, Receive: 0, Length: 7, Exceptions: 0)
+Failed requests:        0
 Write errors:           0
-Non-2xx responses:      7
-Total transferred:      3069112 bytes
-HTML transferred:       1039272 bytes
-Requests per second:    70.31 [#/sec] (mean)
-Time per request:       142.237 [ms] (mean)
-Time per request:       14.224 [ms] (mean, across all concurrent requests)
-Transfer rate:          21.07 [Kbytes/sec] received
+Total transferred:      2880000 bytes
+HTML transferred:       860000 bytes
+Requests per second:    83.30 [#/sec] (mean)
+Time per request:       120.045 [ms] (mean)
+Time per request:       12.004 [ms] (mean, across all concurrent requests)
+Transfer rate:          23.43 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    8 463.9      0   31038
-Processing:    38  134 532.1    121   20086
-Waiting:       38  134 532.1    121   20086
-Total:         38  142 720.5    121   31161
+Connect:        0    0   0.1      0       2
+Processing:    34  120  15.5    120     210
+Waiting:       34  120  15.5    120     210
+Total:         34  120  15.5    120     210
 
 Percentage of the requests served within a certain time (ms)
-  50%    121
-  66%    126
-  75%    129
+  50%    120
+  66%    125
+  75%    128
   80%    130
-  90%    136
-  95%    142
-  98%    149
-  99%    156
- 100%  31161 (longest request)
+  90%    137
+  95%    146
+  98%    155
+  99%    163
+ 100%    210 (longest request)
 ~~~~~
 
-* :TODO: data for key store containers
+* running a single [Apache ab](http://httpd.apache.org/docs/2.4/programs/ab.html)
+is fine for getting a quick sense of how the yar deployment is performing - a far
+better understanding is possible with some
+creative bash scripting and gnuplot
+* [run_load_test.sh](run_load_test.sh) is a pretty sweet bash script that
+automates the entire yar load testing process
+* [run_load_test.sh](run_load_test.sh) spins up a new yar deployment (using
+[spin_up_deployment.sh](spin_up_deployment.sh), issues 5,000 requests to the
+deployment using [ab](http://httpd.apache.org/docs/2.4/programs/ab.html) and
+produces some graphs using [gnuplot](http://www.gnuplot.info/) that describe how
+the deployment performed when [ab](http://httpd.apache.org/docs/2.4/programs/ab.html)
+was running
+* [run_load_test.sh](run_load_test.sh) repeats the above at concurrency levels of 1, 5,
+10, 25, 50, 75 & 100 and then puts all of the graphs in a single pdf summary report
+
+~~~~~
+vagrant@precise64:/vagrant$ ./run_load_test.sh
+
+<<<cut a bunch of output that is really not that interesting>>>
+
+Complete results in '/vagrant/test-results/2014-03-01-13-46'
+Summary report '/vagrant/test-results/2014-03-01-13-46/test-results-summary.pdf'
+~~~~~
+
+Other Stuff
+-----------
 * as an aside, if at any point during the above you need to remove all
 containers so you can start from scratch just run rm_all_containers.sh - just
 be warned that rm_all_containers.sh kills all running containers and
@@ -266,11 +298,9 @@ removes all file systems for all containers - note the emphasis on "all" so
 if you're running this directly on Ubuntu with non-yar docker containers
 rm_all_containers.sh will remove them just as quickly as it removes
 yar containers
-
-Notes
------
 * why are bash scripts used for lots of this testing? why not use Python
 and docker-py? tried docker-py but found the API really poorly documented
 and not used extensively (so Googling for answers yielded few hits).
 The docker cli on the other hand is very well documented and lots of folks
 are using it so easy to Google for answers.
+* :TODO: data for key store containers
