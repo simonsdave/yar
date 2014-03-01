@@ -262,6 +262,8 @@ fi
 
 # spin up services
 
+echo_if_not_silent "Creating Services ..."
+echo_if_not_silent ""
 echo_if_not_silent "Starting App Server(s)"
 APP_SERVER=$(create_app_server)
 echo_if_not_silent $APP_SERVER
@@ -292,11 +294,13 @@ echo $AUTH_SERVER_LB
 
 # services now running, time to provision some keys
 
-echo_if_not_silent "Creating Credentials"
+echo_if_not_silent ""
+echo_if_not_silent "Creating Credentials ..."
 PRINCIPAL="dave@example.com"
 rm -f ~/.yar.creds >& /dev/null
 create_basic_creds $KEY_SERVER $PRINCIPAL
 create_mac_creds $KEY_SERVER $PRINCIPAL
+echo_if_not_silent ""
 echo_if_not_silent "Credentials in ~/.yar.creds"
 cat_if_not_silent ~/.yar.creds
 
