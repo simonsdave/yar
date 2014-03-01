@@ -106,8 +106,11 @@ run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE
 run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE
 run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE
 
-convert \
-    $RESULTS_DIR/*.png \
-    $RESULTS_DIR/test-results-summary.pdf
+SUMMARY_REPORT_FILENAME=$RESULTS_DIR/test-results-summary.pdf
+
+convert $RESULTS_DIR/*.png $SUMMARY_REPORT_FILENAME
+
+echo "Complete results in '$RESULTS_DIR'"
+echo "Summary report '$SUMMARY_REPORT_FILENAME'"
 
 exit 0
