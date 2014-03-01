@@ -30,7 +30,6 @@ create_creds_request = {
 the key server's response to get creds request."""
 get_creds_response = {
     "$schema": "http://json-schema.org/draft-04/schema#",
-#    "id": "http://api.cloudfeaster.com/v1.00/spider_metadata",
     "title": "Get Creds Response",
     "description": "Get Creds Response",
     "type": "object",
