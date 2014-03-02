@@ -38,7 +38,9 @@ To get all MAC credentials currently saved in the Key Store
 curl -s -X GET http://localhost:5984/creds/_design/creds/_view/all
 ~~~~~~
 
-To save a new set of credentials for [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
+To create a new set of credentials for
+[Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
+and save them to th Key Store
 
 ~~~~~
 API_KEY=$(python -c "from yar.util.basic import APIKey; print APIKey.generate()")
@@ -59,6 +61,12 @@ To get an existing set of credentials used for
 
 ~~~~~
 curl -s http://localhost:5984/creds/<mac key identifier>
+~~~~~
+
+To get all credentials for all principals (really shouldn't do this):
+
+~~~~~
+curl -s http://localhost:5984/creds/_design/creds/_view/all
 ~~~~~
 
 To get all credentials for a principal
