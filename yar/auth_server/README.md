@@ -1,4 +1,5 @@
-To start the authorization server:
+To start the Auth Server:
+
 ~~~~~
 auth_server
 ~~~~~
@@ -30,16 +31,20 @@ Options:
   --syslog=SYSLOG       syslog unix domain socket - default = None
 ~~~~~
 
-Instead of using cURL request to the app server thru the auth server it's
-recommended that
-[yarcurl.sh](https://github.com/simonsdave/yar/wiki/Utilities#yarcurlsh) be used.
-yarcurl.sh is a very simple bash
-script that computes the correct value for the HTTP Authorization header.
+When starting to use infrastructure like the Auth Server the natural instinct
+would be to send the Auth Server a request using [cURL](http://en.wikipedia.org/wiki/CURL).
+[cURL](http://en.wikipedia.org/wiki/CURL) is very effective when
+using [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
+
+~~~~~
+curl -s -u c4a8dfc4cb4b40a2a6bf1102720d9a06: http://127.0.0.1:5984/dave-was-here.html
 ~~~~~
 
-curl \
-  -v \
-  -X GET \
-  -H "Authorization: MAC id=\"h480djs93hd8\", ts=\"00000\", nonce=\"264095:dj83hs9s\", ext=\"davsim\", mac=\"SLDJd4mg43cjQfElUs3Qub4L6xE=\"" \
-  http://localhost:8000/dave.html
+To issue requests to the Auth Server using
+[OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02)
+authentication [yarcurl](../../bin/yarcurl) is the recommended command line tool
+rather than [cURL](http://en.wikipedia.org/wiki/CURL).
+
+~~~~~
+yarcurl GET http://127.0.0.1:5984/dave-was-here.html
 ~~~~~
