@@ -67,7 +67,9 @@ run_load_test() {
 
     local RESULTS_DATA=$PREFIX.tsv
     local RESULTS_DATA_PERCENTILE=$(mktemp)
-    local RESULTS_PLOT=$PREFIX.png
+    local RESULTS_PLOT="$PREFIX-1-reponse-time.png"
+    local RESULTS_PLOT_PERCENTILE="$PREFIX-2-reponse-time-percentile.png"
+    local RESULTS_PLOT_BY_TIME="$PREFIX-3-response-time-by-time-in-test.png"
 
     ab \
         -c $CONCURRENCY \
@@ -81,11 +83,26 @@ run_load_test() {
         $RESULTS_DATA \
         $RESULTS_DATA_PERCENTILE
 
+	TITLE="$START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS"
+    gnuplot \
+        -e "input_filename='$RESULTS_DATA'" \
+        -e "output_filename='$RESULTS_PLOT'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/response_time.gpcfg
+
+	TITLE="$START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$RESULTS_DATA_PERCENTILE'" \
-        -e "output_filename='$RESULTS_PLOT'" \
-        -e "title='$START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile'" \
-        $SCRIPT_DIR_NAME/plot_load_test_results
+        -e "output_filename='$RESULTS_PLOT_PERCENTILE'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/response_time.gpcfg
+
+	TITLE="$START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
+    gnuplot \
+        -e "input_filename='$RESULTS_DATA_PERCENTILE'" \
+        -e "output_filename='$RESULTS_PLOT_BY_TIME'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/response_time_by_time.gpcfg
 }
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
@@ -99,12 +116,12 @@ NUMBER_OF_REQUESTS=5000
 PERCENTILE=95
 
 run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE
-run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE
-run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE
-run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE
-run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE
-run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE
-run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE
+# run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE
+# run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE
+# run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE
+# run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE
+# run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE
+# run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE
 
 SUMMARY_REPORT_FILENAME=$RESULTS_DIR/test-results-summary.pdf
 

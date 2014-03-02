@@ -1,0 +1,31 @@
+# input variables
+#
+#	title
+#	input_filename
+#	output_filename
+set terminal pngcairo size 1280,720
+
+# sets the aspect ratio of the graph
+set size 1, 1
+
+set xlabel "Response Time (milliseconds)"
+set ylabel "Number of Requests"
+set title title
+
+# the file this gnuplot script creates
+set output output_filename
+
+set key off
+set border 3
+
+# Each bar is half the (visual) width of its x-range.
+# set boxwidth 0.1 absolute
+set boxwidth 0.75 absolute
+set style fill solid 1.0 noborder
+
+bin_width = 1.0;
+bin_number(x) = floor( x / bin_width )
+rounded(x) = bin_width * ( bin_number(x) + 0.5 )
+
+set datafile separator '\t'
+plot input_filename using (rounded($5)):(5) smooth frequency with boxes
