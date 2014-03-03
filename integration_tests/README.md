@@ -290,8 +290,8 @@ Summary report '/vagrant/test-results/2014-03-01-13-46/test-results-summary.pdf'
 ~~~~~
 
 * below is a example of the kind of graphs you'll find in the summary report
-![](sample-load-test-result-graph.png)
-* [here's](sample-load-test-summary-report.pdf) a sample of the summary report
+![](samples/sample-load-test-result-graph.png)
+* [here's](samples/sample-load-test-summary-report.pdf) a sample of the summary report
 
 Other Stuff
 -----------
