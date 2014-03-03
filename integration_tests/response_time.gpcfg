@@ -16,7 +16,6 @@ set title title
 set output output_filename
 
 set key off
-set border 3
 
 # Each bar is half the (visual) width of its x-range.
 # set boxwidth 0.1 absolute
