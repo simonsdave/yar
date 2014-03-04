@@ -8,7 +8,6 @@ get_container_ip() {
 
 get_from_json() {
     PATTERN=${1:-}
-    CREATE_ACCOUNT_OUTPUT_FILE_NAME=${2:-}
     JSON.sh | \
         grep $PATTERN |
         sed -e "s/$PATTERN//" |
