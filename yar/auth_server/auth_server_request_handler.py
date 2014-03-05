@@ -78,7 +78,7 @@ class RequestHandler(trhutil.RequestHandler):
 
     def _handle_request(self):
         auth_hdr_val = self.request.headers.get("Authorization", None)
-        if not auth_hdr_val:
+        if auth_hdr_val is None:
             self._on_auth_done(
                 is_auth_ok=False,
                 auth_failure_detail=AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)

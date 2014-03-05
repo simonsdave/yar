@@ -114,6 +114,17 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
                 response,
                 auth_server_request_handler.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
 
+    def test_empty_authorization_header(self):
+        """This test confirms that authentication fails if a zero length
+        Authorization header is supplied in a request to the auth server."""
+
+        with ControlIncludeAuthFailureDebugDetails(True):
+            response = self.fetch("/", method="GET", headers={"Authorization": ""})
+            self.assertEqual(response.code, httplib.UNAUTHORIZED)
+            self.assertAuthFailureDetail(
+                response,
+                auth_server_request_handler.AUTH_FAILURE_DETAIL_UNKNOWN_AUTHENTICATION_SCHEME)
+
     def test_invalid_authorization_header(self):
         """This test confirms that authentication fails if an Authorization
         header is supplied but it contains an unrecognized authententication
