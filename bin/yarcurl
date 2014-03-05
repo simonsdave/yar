@@ -4,6 +4,10 @@
 # A wrapper around cURL that adds an HMAC HTTP Authorization header
 # to a request directed at yar's auth server.
 #
+# Credits
+# -- the mktemp usage pattern to ensure portability across Mac OS X and Ubunutu
+# comes from http://unix.stackexchange.com/questions/30091/fix-or-alternative-for-mktemp-in-os-x
+#
 #-------------------------------------------------------------------------------
 
 usage() {
@@ -42,7 +46,7 @@ case "$HTTP_METHOD" in
             ;;
         PUT|POST)
             CONTENT_TYPE="application/json; charset=utf-8"
-            COPY_OF_STDIN=`mktemp`
+            COPY_OF_STDIN=`mktemp 2> /dev/null || mktemp -t DAS`
             cat /dev/stdin > $COPY_OF_STDIN
             ;;
         *)
@@ -95,7 +99,7 @@ get_ext() {
     if [ "$CONTENT_TYPE" == "" ] || [ "$COPY_OF_STDIN" == "" ]; then
         echo ""
     else
-        CONTENT_TYPE_PLUS_COPY_OF_STDIN=`mktemp`
+        CONTENT_TYPE_PLUS_COPY_OF_STDIN=`mktemp 2> /dev/null || mktemp -t DAS`
         echo -n $CONTENT_TYPE > $CONTENT_TYPE_PLUS_COPY_OF_STDIN
         cat $COPY_OF_STDIN >> $CONTENT_TYPE_PLUS_COPY_OF_STDIN
         openssl sha1 < $CONTENT_TYPE_PLUS_COPY_OF_STDIN
@@ -104,7 +108,7 @@ get_ext() {
 }
 EXT=$(get_ext "$CONTENT_TYPE" "$COPY_OF_STDIN")
 
-NRS=`mktemp`
+NRS=`mktemp 2> /dev/null || mktemp -t DAS`
 printf \
     '%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
     $TIMESTAMP \
