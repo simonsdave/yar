@@ -89,6 +89,9 @@ PORT=$(echo $URL | sed -e "s/^$SCHEME\:\/\/$HOST\://")
 PORT=$(echo $PORT | sed -e "s/\/.*//")
 
 URI=$(echo $URL | sed -e "s/^$SCHEME\:\/\/$HOST\:$PORT//")
+if [ "$URI" == "" ]; then
+	URI="/"
+fi
 
 TIMESTAMP=$(date +%s)
 NONCE=$(openssl rand -hex 16)
