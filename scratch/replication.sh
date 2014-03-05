@@ -80,6 +80,22 @@ configure_continuous_replication() {
 		>& /dev/null
 }
 
+TEMP_CREDS_BULK_INPUT=$(mktemp -t DAS)
+echo '{' >> $TEMP_CREDS_BULK_INPUT
+echo '    "docs": [' >> $TEMP_CREDS_BULK_INPUT
+for i in {1..10}
+    do
+		API_KEY=$(python -c "from yar.util.basic import APIKey; print APIKey.generate()")
+		CREDS="{\"_id\": \"$API_KEY\", \"principal\": \"dave@example.com\", \"type\": \"creds_v1.0\", \"is_deleted\": false, \"basic\": {\"api_key\": \"$API_KEY\"}}"
+		echo $CREDS >> $TEMP_CREDS_BULK_INPUT
+    done
+echo '    ]' >> $TEMP_CREDS_BULK_INPUT
+echo '}' >> $TEMP_CREDS_BULK_INPUT
+
+cat $TEMP_CREDS_BULK_INPUT
+
+exit 0
+
 HOST=127.0.0.1:5984
 DB1=dave001
 DB2=dave002
@@ -88,6 +104,8 @@ DB2=dave002
 create_database $HOST $DB1
 create_database $HOST $DB2
 
+    local API_KEY=$(python -c "from yar.util.basic import APIKey; print APIKey.generate()")
+    local CREDS="{\"principal\": \"dave@example.com\", \"type\": \"creds_v1.0\", \"is_deleted\": false, \"basic\": {\"api_key\": \"$API_KEY\"}}"
 for i in {1..1000}
     do
 		create_basic_api_key $HOST $DB1 > /dev/null
