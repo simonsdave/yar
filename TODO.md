@@ -42,6 +42,7 @@ to work on Ubuntu; error messages
 /Users/dave.simons/yar/bin/yarcurl: line 109: $NRS: ambiguous redirect
 /Users/dave.simons/yar/bin/yarcurl: line 117: $NRS: ambiguous redirect
 ~~~~~
+* yarcurl doesn't work on Mac OS X if port not included in the requested URL
 
 Integration Testing
 -------------------
