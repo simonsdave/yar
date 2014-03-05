@@ -10,6 +10,7 @@ of databases and views
 
 Auth Server
 -----------
+* auth server should support all standard HTTP verbs
 * performance improvement - basic authentication - cache hashed api
 key in memcached for time limit of ?1? minute to reduce overhead
 of always going out to key server
