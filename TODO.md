@@ -1,6 +1,19 @@
 To Do's
 -------
 
+CouchDB Installer
+-----------------
+* configure
+[Automatic_Compaction](https://wiki.apache.org/couchdb/Compaction#Automatic_Compaction)
+of databases and views
+* Python script to config cont replication between two key servers
+
+Auth Server
+-----------
+* performance improvement - basic authentication - cache hashed api
+key in memcached for time limit of ?1? minute to reduce overhead
+of always going out to key server
+
 Documentation
 -------------
 * describe how key store doesn't need to worry about merge conflicts
@@ -13,7 +26,6 @@ to work on Ubuntu; error messages
 /Users/dave.simons/yar/bin/yarcurl: line 109: $NRS: ambiguous redirect
 /Users/dave.simons/yar/bin/yarcurl: line 117: $NRS: ambiguous redirect
 ~~~~~
-* Python script to configure continous reflication between two key servers
 
 Integration Testing
 -------------------
