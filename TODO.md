@@ -13,6 +13,22 @@ Auth Server
 * performance improvement - basic authentication - cache hashed api
 key in memcached for time limit of ?1? minute to reduce overhead
 of always going out to key server
+* configure request routing and load balancing to app servers
+and key servers using HAProxy
+  * [How can I make haproxy route requests based on URL substrings?](http://serverfault.com/questions/306968/how-can-i-make-haproxy-route-requests-based-on-url-substrings)
+  * [HAProxy Configuration Manual - Using ACLs](http://haproxy.1wt.eu/download/1.3/doc/configuration.txt)
+~~~~~
+backend be1 # this is your default backend
+  ...
+backend be2 # this is for /tag-02 requests
+  ...
+
+frontend fe
+  ...
+  default_backend be1
+  acl url_tag02 path_beg /tag-02
+  use_backend be2 if url_tag02
+~~~~~
 
 Documentation
 -------------
