@@ -2,14 +2,14 @@
 """The key server's mainline."""
 
 import logging
+import time
 
 import tornado.httpserver
 import tornado.web
 
-from yar.util import tsh
-
 from yar.key_server import clparser
 from yar.key_server import key_server_request_handler
+from yar.util import tsh
 
 _logger = logging.getLogger("KEYSERVER.%s" % __name__)
 
@@ -18,7 +18,14 @@ if __name__ == "__main__":
     clp = clparser.CommandLineParser()
     (clo, cla) = clp.parse_args()
 
-    logging.basicConfig(level=clo.logging_level)
+    logging.Formatter.converter = time.gmtime
+    format = (
+        "%(asctime)s;%(levelname)s;%(name)s."
+        "%(funcName)s:%(lineno)d;%(message)s"
+    )
+    logging.basicConfig(
+        level=clo.logging_level,
+        format=format)
 
     if clo.syslog:
         handler = logging.handlers.SysLogHandler(address=clo.syslog)
