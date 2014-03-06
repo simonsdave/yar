@@ -53,6 +53,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             response = mock.Mock()
             response.error = "something"
             response.code = httplib.OK
+            response.request_time = 24
             callback(response)
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
@@ -79,6 +80,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
 
             response = mock.Mock()
             response.code = httplib.CREATED
+            response.request_time = 24
             callback(response)
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
@@ -105,6 +107,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             response = mock.Mock()
             response.error = None
             response.code = httplib.NOT_FOUND
+            response.request_time = 24
             callback(response)
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
@@ -136,6 +139,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
                 "Content-length": "0",
             })
             response.body = ""
+            response.request_time = 24
             callback(response)
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
@@ -168,6 +172,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             })
             response.body = "dave"
             self.assertIsNotJSON(response.body)
+            response.request_time = 24
             callback(response)
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
@@ -205,6 +210,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             self.assertIsNotValidJSON(
                 response.body,
                 key_server.jsonschemas.get_creds_response)
+            response.request_time = 24
             callback(response)
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
@@ -250,6 +256,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             self.assertIsValidJSON(
                 response.body,
                 key_server.jsonschemas.get_creds_response)
+            response.request_time = 24
             callback(response)
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"

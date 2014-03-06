@@ -73,6 +73,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             if response.body:
                 response.headers["Content-type"] = the_response_content_type
                 response.headers["Content-length"] = str(len(response.body))
+            response.request_time = 24
             callback(response)
 
         def on_async_app_server_forward_done(
@@ -250,6 +251,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             response = mock.Mock()
             response.error = "something"
             response.code = httplib.NOT_FOUND
+            response.request_time = 24
             callback(response)
 
         def on_async_app_server_forward_done(is_ok):

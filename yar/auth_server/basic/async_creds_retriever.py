@@ -44,6 +44,12 @@ class AsyncCredsRetriever(object):
 
     def _on_fetch_done(self, response):
         """Called when request to the key server returns."""
+
+        _logger.info("Key Server (%s - %s) responded in %d ms",
+            response.effective_url,
+            response.request.method,
+            int(response.request_time * 1000))
+
         expected_response_codes = [
             httplib.OK,
             httplib.NOT_FOUND,

@@ -52,6 +52,12 @@ class AsyncAppServerForwarder(object):
         http_client.fetch(http_request, self._on_forward_done)
 
     def _on_forward_done(self, response):
+
+        _logger.info("App Server (%s - %s) responded in %d ms",
+            response.effective_url,
+            response.request.method,
+            int(response.request_time * 1000))
+
         if response.error:
             self._callback(False)
             return

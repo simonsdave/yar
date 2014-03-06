@@ -105,6 +105,7 @@ class TestCaseAsyncAction(yar_test_util.TestCase):
             if response.body:
                 response.headers["Content-type"] = "application/json"
                 response.headers["Content-length"] = str(len(response_body))
+            response.request_time = 24
 
             self.assertIsNotNone(callback)
             callback(response)
@@ -187,6 +188,7 @@ class TestCaseAsyncAction(yar_test_util.TestCase):
             response.error = str(uuid.uuid4()).replace("-", "")
             response.body = None
             response.headers = tornado.httputil.HTTPHeaders()
+            response.request_time = 24
 
             callback(response)
 

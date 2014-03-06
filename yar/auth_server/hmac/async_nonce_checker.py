@@ -2,6 +2,7 @@
 with the nonce store to determine if a mac key identifier plus
 nonce combination has been previously used."""
 
+import datetime
 import logging
 
 import tornadoasyncmemcache
@@ -50,12 +51,18 @@ class AsyncNonceChecker(object):
                 maxclients=100)
 
         self._key = "%s-%s" % (self._mac_key_identifier, self._nonce)
+
         _logger.info("Asking for nonce key '%s'", self._key)
+
+        self._start_timestamp = datetime.datetime.now()
         self.__class__._ccs.get(
             self._key,
             callback=self._on_async_get_done)
 
     def _on_async_get_done(self, data):
+
+        self._log_duration("get")
+
         _logger.info(
             "Answer from asking for nonce key '%s' = '%s'",
             self._key,
@@ -64,10 +71,23 @@ class AsyncNonceChecker(object):
         if data is not None:
             self._callback(False)
         else:
+            self._start_timestamp = datetime.datetime.now()
             self.__class__._ccs.set(
                 self._key,
                 1,
                 callback=self._on_async_set_done)
 
     def _on_async_set_done(self, data):
+
+        self._log_duration("set")
+
         self._callback(True)
+
+    def _log_duration(self, operation):
+        stop_timestamp = datetime.datetime.now()
+        duration = stop_timestamp - self._start_timestamp
+        _logger.info(
+            "Nonce Store (%s - %s) responded in %d us",
+            operation,
+            self._key,
+            duration.microseconds)

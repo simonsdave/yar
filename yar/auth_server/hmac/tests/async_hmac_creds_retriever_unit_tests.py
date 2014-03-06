@@ -51,6 +51,7 @@ class TestAsyncHMACCredsRetriever(yar_test_util.TestCase):
 
             response = mock.Mock()
             response.error = "something"
+            response.request_time = 24
             callback(response)
 
         def on_async_hmac_creds_retriever_done(is_ok, mac_key_identifier):
@@ -77,6 +78,7 @@ class TestAsyncHMACCredsRetriever(yar_test_util.TestCase):
             response = mock.Mock()
             response.error = None
             response.code = httplib.NOT_FOUND
+            response.request_time = 24
             callback(response)
 
         def on_async_hmac_creds_retriever_done(is_ok, mac_key_identifier):
@@ -107,6 +109,7 @@ class TestAsyncHMACCredsRetriever(yar_test_util.TestCase):
                 "Content-length": "0",
             })
             response.body = ""
+            response.request_time = 24
             callback(response)
 
         def on_async_hmac_creds_retriever_done(is_ok, mac_key_identifier):
@@ -138,6 +141,7 @@ class TestAsyncHMACCredsRetriever(yar_test_util.TestCase):
                 "Content-type": "application/json; charset=utf8",
                 "Content-length": str(len(response.body)),
             })
+            response.request_time = 24
             callback(response)
 
         def on_async_hmac_creds_retriever_done(is_ok, mac_key_identifier):
@@ -174,6 +178,7 @@ class TestAsyncHMACCredsRetriever(yar_test_util.TestCase):
                 "Content-type": "application/json; charset=utf8",
                 "Content-length": str(len(response.body)),
             })
+            response.request_time = 24
             callback(response)
 
         def on_async_hmac_creds_retriever_done(is_ok, mac_key_identifier):
@@ -224,6 +229,7 @@ class TestAsyncHMACCredsRetriever(yar_test_util.TestCase):
                 "Content-type": "application/json; charset=utf8",
                 "Content-length": str(len(response.body)),
             })
+            response.request_time = 24
             callback(response)
 
         def on_async_hmac_creds_retriever_done(

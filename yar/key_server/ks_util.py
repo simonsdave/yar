@@ -73,6 +73,12 @@ class AsyncAction(object):
 
     def _http_client_fetch_callback(self, response):
         """Called when ```tornado.httpclient.AsyncHTTPClient``` completes."""
+
+        _logger.info("Key Store (%s - %s) responded in %d ms",
+            response.effective_url,
+            response.request.method,
+            int(response.request_time * 1000))
+
         if response.error:
             self._my_callback(False)
             return
