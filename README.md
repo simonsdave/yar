@@ -14,13 +14,15 @@ See the [Wiki](https://github.com/simonsdave/yar/wiki) for a more complete descr
 [OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02)
 and [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
   * key generation for both the above authentication schemes
-  * [Keyczar](http://www.keyczar.org/) is used extensively in both key generation and HMAC verification
+  * [Keyczar](http://www.keyczar.org/) used for both key generation and HMAC verification
   * [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server) and [Key Server](https://github.com/simonsdave/yar/wiki/Key-Server) are [Tornado](http://www.tornadoweb.org/en/stable/) servers leveraging Tornado's [asynchronous](http://www.tornadoweb.org/en/stable/networking.html) for high concurrency operation
   * [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store) is built on [CouchDB](http://couchdb.apache.org/) so the [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store) inherits all the nice architectual/operational qualities of [CouchDB](http://couchdb.apache.org/)
+  * intended deployment environment is [Ubuntu 12.04](http://releases.ubuntu.com/12.04.4/) and
+development environment is [Mac OS X](http://www.apple.com/ca/osx/)
   
 Bigger/important things on the immediate to do list:
 
-  * automated integration tests - currently working on this while learning how to best leverage [Vagrant](http://www.vagrantup.com/) and [Docker](https://www.docker.io/)
+  * automated load/stress tests - currently working on this (see [this](https://github.com/simonsdave/yar/tree/master/integration_tests)) while learning how to best leverage [Vagrant](http://www.vagrantup.com/) and [Docker](https://www.docker.io/)
   * securing keys in [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store)
   * authorization service
   * bunch more documentation
