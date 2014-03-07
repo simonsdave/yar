@@ -41,6 +41,21 @@ get_from_json() {
         sed -e "s/\"//g"
 }
 
+# given a value of length V, add N - V zeros to left pad the
+# value so the resulting value is N digits long
+#
+# for example, the following script writes 000023 to stdout
+#
+#   #!/usr/bin/env bash
+#   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
+#   source $SCRIPT_DIR_NAME/util.sh
+#   left_zero_pad 23 6
+left_zero_pad() {
+    VALUE=${1:-}
+    DESIRED_NUMBER_DIGITS=${2:-}
+    python -c "print ('0'*10+'$VALUE')[-$DESIRED_NUMBER_DIGITS:]"
+}
+
 # create a docker container to run the app server
 create_app_server() {
 
