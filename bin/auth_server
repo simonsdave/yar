@@ -32,7 +32,8 @@ if __name__ == "__main__":
     )
     logging.basicConfig(
         level=clo.logging_level,
-        format=format)
+        format=format,
+        filename=clo.logging_file)
 
     if clo.syslog:
         handler = logging.handlers.SysLogHandler(address=clo.syslog)

@@ -49,3 +49,13 @@ class CommandLineParser(optparse.OptionParser):
             default=default,
             type="unixdomainsocket",
             help=help)
+
+        default = None
+        help = "log to this file - default = %s" % default
+        self.add_option(
+            "--logfile",
+            action="store",
+            dest="logging_file",
+            default=default,
+            type="string",
+            help=help)
