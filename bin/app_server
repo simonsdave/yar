@@ -16,6 +16,7 @@ import tornado.web
 
 from yar.app_server.clparser import CommandLineParser
 from yar.util import tsh
+from yar.util import logging_config
 
 _logger = logging.getLogger("APPSERVER.%s" % __name__)
 
@@ -57,19 +58,10 @@ if __name__ == "__main__":
     clp = CommandLineParser()
     (clo, cla) = clp.parse_args()
 
-    logging.Formatter.converter = time.gmtime
-    format = (
-        "%(asctime)s;%(levelname)s;%(name)s."
-        "%(funcName)s:%(lineno)d;%(message)s"
-    )
-    logging.basicConfig(
-        level=clo.logging_level,
-        format=format,
-        filename=clo.logging_file)
-
-    if clo.syslog:
-        handler = logging.handlers.SysLogHandler(address=clo.syslog)
-        logging.getLogger().addHandler(handler)
+    logging_config.configure(
+        clo.logging_level,
+        clo.logging_file,
+        clo.syslog)
 
     tsh.install()
 
