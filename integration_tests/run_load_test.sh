@@ -29,7 +29,7 @@ take_percentile_and_add_sanity_to_time() {
     local FIRST_EPOCH_TIME=$(tail -n +2 $INPUT_FILENAME | awk 'BEGIN {min = 9999999999; FS = "\t"} ; { if($2 < min) {min = $2} } END { print min }')
 
 	NUM_LINES_IN_FILE=$(tail -n +2 $INPUT_FILENAME | wc -l)
-	NUM_LINES_IN_PERCENTILE=$(python -c "print int($NUM_LINES_IN_FILE * $PERCENTILE)")
+	NUM_LINES_IN_PERCENTILE=$(python -c "print int($NUM_LINES_IN_FILE * float($PERCENTILE)/100)")
 
 	sort \
         --field-separator=$'\t' \
@@ -45,6 +45,33 @@ take_percentile_and_add_sanity_to_time() {
     sort \
         --field-separator=$'\t' \
         --key=2 \
+        -n \
+        > $OUTPUT_FILENAME
+}
+
+# given an input file (geneated by one of the yar servers), generate
+# an output file which represents the nth percentile of the input file
+# based on the 2nd column (request time) in the input file.
+#
+# the input file is assumed to have no header rows
+generate_yar_server_log_file_percentile() {
+    local PERCENTILE=${1:-}
+    local INPUT_FILENAME=${2:-}
+    local OUTPUT_FILENAME=${3:-}
+
+	NUM_LINES_IN_FILE=$(cat $INPUT_FILENAME | wc -l)
+	NUM_LINES_IN_PERCENTILE=$(python -c "print int($NUM_LINES_IN_FILE * float($PERCENTILE)/100)")
+
+	sort \
+        --field-separator=$'\t' \
+        --key=2 \
+        -n \
+        $INPUT_FILENAME | \
+    head \
+        -n $NUM_LINES_IN_PERCENTILE | \
+    sort \
+        --field-separator=$'\t' \
+        --key=1 \
         -n \
         > $OUTPUT_FILENAME
 }
@@ -126,13 +153,20 @@ run_load_test() {
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/yar_server_response_time.gpcfg
 
+    PERCENTILETEMPFILE=$(mktemp)
+    generate_yar_server_log_file_percentile \
+        $PERCENTILE \
+        $TEMPFILE \
+        $PERCENTILETEMPFILE
+
 	TITLE="Key Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
     gnuplot \
-        -e "input_filename='$TEMPFILE'" \
+        -e "input_filename='$PERCENTILETEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-4-key-server-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/yar_server_response_time_by_time.gpcfg
 
+    rm -f $PERCENTILETEMPFILE >& /dev/null
     rm -f $TEMPFILE >& /dev/null
 
     #
@@ -156,13 +190,20 @@ run_load_test() {
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/yar_server_response_time.gpcfg
 
+    PERCENTILETEMPFILE=$(mktemp)
+    generate_yar_server_log_file_percentile \
+        $PERCENTILE \
+        $TEMPFILE \
+        $PERCENTILETEMPFILE
+
 	TITLE="Key Store Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
     gnuplot \
-        -e "input_filename='$TEMPFILE'" \
+        -e "input_filename='$PERCENTILETEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-6-key-store-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/yar_server_response_time_by_time.gpcfg
 
+    rm -f $PERCENTILETEMPFILE >& /dev/null
     rm -f $TEMPFILE >& /dev/null
 
     #
@@ -186,13 +227,20 @@ run_load_test() {
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/yar_server_response_time.gpcfg
 
+    PERCENTILETEMPFILE=$(mktemp)
+    generate_yar_server_log_file_percentile \
+        $PERCENTILE \
+        $TEMPFILE \
+        $PERCENTILETEMPFILE
+
 	TITLE="App Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
     gnuplot \
-        -e "input_filename='$TEMPFILE'" \
+        -e "input_filename='$PERCENTILETEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-8-app-server-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/yar_server_response_time_by_time.gpcfg
 
+    rm -f $PERCENTILETEMPFILE >& /dev/null
     rm -f $TEMPFILE >& /dev/null
 
 }
@@ -206,13 +254,13 @@ RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/$START_TIME
 mkdir -p $RESULTS_DIR
 
 NUMBER_OF_REQUESTS=1000
-PERCENTILE=95
+PERCENTILE=98
 
-# run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE $RESULTS_DIR
-# run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE $RESULTS_DIR
-# run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE $RESULTS_DIR
+run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE $RESULTS_DIR
+run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE $RESULTS_DIR
+run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE $RESULTS_DIR
 # run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE $RESULTS_DIR
-run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE $RESULTS_DIR
+# run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE $RESULTS_DIR
 # run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE $RESULTS_DIR
 # run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE $RESULTS_DIR
 
