@@ -67,10 +67,10 @@ cat_if_not_silent() {
     fi
 }
 
-# did we get the command line arguments right?
-
+# the script accepts an optional -s command line argument.
+# if -s exists set SILENT to 1 otherwise SILENT is set to 0.
 SILENT=0
-if [ 2 -lt $# ]; then
+if [ 2 -le $# ]; then
     if [ "-s" == $1 ]; then
         SILENT=1
         shift
@@ -79,7 +79,7 @@ fi
 
 # the script accepts an optional single command line argument
 # which is the name of the directory in which all docker
-# container files should be placed. if not such argument exists
+# container files should be placed. if no such argument exists
 # create a temp directory
 if [ $# == 0 ]; then
     DOCKER_CONTAINER_DATA=$(mktemp -d)
