@@ -55,21 +55,18 @@ run_load_test() {
     local PERCENTILE=${3:-}
     local RESULTS_DIR=${4:-}
 
-    local LEFT_ZERO_PADDED_CONCURRENCY=$(left_zero_pad $CONCURRENCY 4)
+    local RESULTS_FILE_BASE_NAME=$RESULTS_DIR/$(left_zero_pad $CONCURRENCY 4)-$NUMBER_OF_REQUESTS
 
     # :TODO: what if either of these scripts fail?
+    local DOCKER_CONTAINER_DATA=$RESULTS_DIR/$(left_zero_pad $CONCURRENCY 4)-$NUMBER_OF_REQUESTS
+    mkdir -p $DOCKER_CONTAINER_DATA
     $SCRIPT_DIR_NAME/rm_all_containers.sh
-    local AUTH_SERVER_LB=$($SCRIPT_DIR_NAME/spin_up_deployment.sh -s)
+    local AUTH_SERVER_LB=$($SCRIPT_DIR_NAME/spin_up_deployment.sh -s $DOCKER_CONTAINER_DATA)
 
     local API_KEY=$(get_deployment_config "API_KEY")
     # :TODO: what if API_KEY doesn't exist?
 
-    local PREFIX=$RESULTS_DIR/$LEFT_ZERO_PADDED_CONCURRENCY-$NUMBER_OF_REQUESTS
-
-    local RESULTS_DATA=$PREFIX.tsv
-    local RESULTS_PLOT="$PREFIX-1-response-time.png"
-    local RESULTS_PLOT_BY_TIME="$PREFIX-2-response-time-by-time-in-test.png"
-
+    local RESULTS_DATA=$RESULTS_FILE_BASE_NAME-raw-data.tsv
     ab \
         -c $CONCURRENCY \
         -n $NUMBER_OF_REQUESTS \
@@ -78,17 +75,21 @@ run_load_test() {
         http://$AUTH_SERVER_LB/dave.html
 
     #
-    # ...
+    # take ab's tsv output file and using gnuplot to create a
+    # histogram of all response times
     #
 	TITLE="$START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS"
     gnuplot \
         -e "input_filename='$RESULTS_DATA'" \
-        -e "output_filename='$RESULTS_PLOT'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-1-response-time.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/response_time.gpcfg
 
     #
-    # ...
+    # take a percentile of ab's tsv output file and using gnupot
+    # generate a plot of response time by time in the test (look
+    # at one of the output plots & this description will make more
+    # sense)
     #
     local RESULTS_DATA_PERCENTILE=$(mktemp)
 
@@ -100,7 +101,7 @@ run_load_test() {
 	TITLE="$START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$RESULTS_DATA_PERCENTILE'" \
-        -e "output_filename='$RESULTS_PLOT_BY_TIME'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-2-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/response_time_by_time.gpcfg
 }
@@ -119,10 +120,10 @@ PERCENTILE=95
 run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE $RESULTS_DIR
 run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE $RESULTS_DIR
 run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE $RESULTS_DIR
-run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE $RESULTS_DIR
-run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE $RESULTS_DIR
-run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE $RESULTS_DIR
-run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE $RESULTS_DIR
+# run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE $RESULTS_DIR
+# run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE $RESULTS_DIR
+# run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE $RESULTS_DIR
+# run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE $RESULTS_DIR
 
 SUMMARY_REPORT_FILENAME=$RESULTS_DIR/test-results-summary.pdf
 

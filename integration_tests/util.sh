@@ -59,13 +59,18 @@ left_zero_pad() {
 # create a docker container to run the app server
 create_app_server() {
 
-    DATA_DIRECTORY=$SCRIPT_DIR_NAME/App-Server/artifacts
-    rm -rf $DATA_DIRECTORY >& /dev/null
+    DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
     PORT=8080
-    APP_SERVER_CMD="app_server --log=info --lon=$PORT --syslog=/dev/log"
-    APP_SERVER=$(sudo docker run -d -v /dev/log:/dev/log yar_img $APP_SERVER_CMD)
+    APP_SERVER_CMD="app_server \
+        --log=info \
+        --lon=$PORT \
+        --logfile=/var/yar_app_server/app_server_log"
+    APP_SERVER=$(sudo docker run \
+        -d \
+        -v $DATA_DIRECTORY:/var/yar_app_server yar_img \
+        $APP_SERVER_CMD)
     APP_SERVER_IP=$(get_container_ip $APP_SERVER)
 
     for i in {1..10}
@@ -95,7 +100,11 @@ create_app_server_lb() {
     echo "    server appserver1 $APP_SERVER check" >> $CFG_DIRECTORY/haproxy.cfg
 
     APP_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
-    APP_SERVER_LB=$(sudo docker run -d -v /dev/log:/haproxy/log -v $CFG_DIRECTORY:/haproxycfg app_server_lb_img $APP_SERVER_LB_CMD)
+    APP_SERVER_LB=$(sudo docker run \
+        -d \
+        -v /dev/log:/haproxy/log \
+        -v $CFG_DIRECTORY:/haproxycfg app_server_lb_img \
+        $APP_SERVER_LB_CMD)
     APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB)
 
     for i in {1..10}
@@ -119,8 +128,12 @@ create_key_store() {
     rm -rf $DATA_DIRECTORY >& /dev/null
     mkdir -p $DATA_DIRECTORY
 	# :TODO: add check that docker images have been built
-    KEY_STORE=$(sudo docker run -d -v $DATA_DIRECTORY:/usr/local/var/lib/couchdb:rw -t key_store_img)
-    KEY_STORE_IP=$(sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' $KEY_STORE)
+    KEY_STORE=$(sudo docker run \
+        -d \
+        -v $DATA_DIRECTORY:/usr/local/var/lib/couchdb:rw \
+        -t \
+        key_store_img)
+    KEY_STORE_IP=$(get_container_ip $KEY_STORE)
 
     for i in {1..10}
     do
@@ -131,8 +144,8 @@ create_key_store() {
         fi
     done
 
-    INSTALL_CMD="key_store_installer --log=info --create=true --host=$KEY_STORE_IP:$PORT --database=$DATABASE"
-    sudo docker run -i -t yar_img $INSTALL_CMD >& /dev/null
+    INSTALLER_CMD="key_store_installer --log=info --create=true --host=$KEY_STORE_IP:$PORT --database=$DATABASE"
+    sudo docker run -i -t yar_img $INSTALLER_CMD >& /dev/null
 
     for i in {1..10}
     do
@@ -148,9 +161,22 @@ create_key_store() {
 
 # create a docker container to run the key server
 create_key_server() {
+    DATA_DIRECTORY=${1:-}
+    mkdir -p $DATA_DIRECTORY
+
+    KEY_STORE=${2:-}
+
     PORT=8070
-    KEY_SERVER_CMD="key_server --log=info --lon=$PORT --key_store=${1:-} --syslog=/dev/log"
-    KEY_SERVER=$(sudo docker run -d -v /dev/log:/dev/log yar_img $KEY_SERVER_CMD)
+    KEY_SERVER_CMD="key_server \
+        --log=info \
+        --lon=$PORT \
+        --key_store=$KEY_STORE \
+        --logfile=/var/yar_key_server/key_server_log"
+    KEY_SERVER=$(sudo docker run \
+        -d \
+        -v $DATA_DIRECTORY:/var/yar_key_server \
+        yar_img \
+        $KEY_SERVER_CMD)
     KEY_SERVER_IP=$(get_container_ip $KEY_SERVER)
 
     for i in {1..10}
@@ -169,7 +195,10 @@ create_key_server() {
 create_nonce_store() {
     PORT=11211
     NONCE_STORE_CMD=""
-    NONCE_STORE=$(sudo docker run -d nonce_store_img $NONCE_STORE_CMD)
+    NONCE_STORE=$(sudo docker run \
+        -d \
+        nonce_store_img \
+        $NONCE_STORE_CMD)
     NONCE_STORE_IP=$(get_container_ip $NONCE_STORE)
 
     for i in {1..10}
@@ -185,12 +214,26 @@ create_nonce_store() {
 
 # create a docker container to run the auth_server
 create_auth_server() {
-    KEY_SERVER=${1:-}
-    APP_SERVER=${2:-}
-    NONCE_STORE=${3:-}
+    DATA_DIRECTORY=${1:-}
+    mkdir -p $DATA_DIRECTORY
+
+    KEY_SERVER=${2:-}
+    APP_SERVER=${3:-}
+    NONCE_STORE=${4:-}
+
     PORT=8000
-    AUTH_SERVER_CMD="auth_server --log=info --lon=$PORT --keyserver=$KEY_SERVER --appserver=$APP_SERVER --noncestore=$NONCE_STORE --syslog=/dev/log"
-    AUTH_SERVER=$(sudo docker run -d -v /dev/log:/dev/log yar_img $AUTH_SERVER_CMD)
+    AUTH_SERVER_CMD="auth_server \
+        --log=info \
+        --lon=$PORT \
+        --keyserver=$KEY_SERVER \
+        --appserver=$APP_SERVER \
+        --noncestore=$NONCE_STORE \
+        --logfile=/var/auth_server/auth_server_log"
+    AUTH_SERVER=$(sudo docker run \
+        -d \
+        -v $DATA_DIRECTORY:/var/auth_server \
+        yar_img \
+        $AUTH_SERVER_CMD)
     AUTH_SERVER_IP=$(get_container_ip $AUTH_SERVER)
 
     for i in {1..10}

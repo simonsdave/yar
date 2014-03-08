@@ -70,25 +70,41 @@ cat_if_not_silent() {
 # did we get the command line arguments right?
 
 SILENT=0
-if [ 1 -eq $# ]; then
+if [ 2 -lt $# ]; then
     if [ "-s" == $1 ]; then
         SILENT=1
         shift
     fi
 fi
 
-if [ $# != 0 ]; then
-    echo "usage: `basename $0` [-s]"
-    exit 1
+# the script accepts an optional single command line argument
+# which is the name of the directory in which all docker
+# container files should be placed. if not such argument exists
+# create a temp directory
+if [ $# == 0 ]; then
+    DOCKER_CONTAINER_DATA=$(mktemp -d)
+else
+    if [ $# == 1 ]; then
+        DOCKER_CONTAINER_DATA=$1
+        if [ ! -d $DOCKER_CONTAINER_DATA ]; then
+            echo "Can't find directory '$DOCKER_CONTAINER_DATA'"
+            exit 1
+        fi
+    else
+        echo "usage: `basename $0` [-s] [<docker container data dir>]"
+        exit 1
+    fi
 fi
 
 # spin up services
 
-echo_if_not_silent "Creating Services ..."
+echo_if_not_silent "Starting Services ..."
 echo_if_not_silent ""
+
 echo_if_not_silent "Starting App Server(s)"
-APP_SERVER=$(create_app_server)
-echo_if_not_silent $APP_SERVER
+DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/App-Server
+APP_SERVER=$(create_app_server $DATA_DIRECTORY)
+echo_if_not_silent "$APP_SERVER in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting App Server LB"
 APP_SERVER_LB=$(create_app_server_lb $APP_SERVER)
@@ -103,12 +119,14 @@ KEY_STORE=$(create_key_store)
 echo_if_not_silent $KEY_STORE
 
 echo_if_not_silent "Starting Key Server"
-KEY_SERVER=$(create_key_server $KEY_STORE)
-echo_if_not_silent $KEY_SERVER
+DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Server
+KEY_SERVER=$(create_key_server $DATA_DIRECTORY $KEY_STORE)
+echo_if_not_silent "$KEY_SERVER in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Auth Server"
-AUTH_SERVER=$(create_auth_server $KEY_SERVER $APP_SERVER_LB $NONCE_STORE)
-echo_if_not_silent $AUTH_SERVER
+DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Auth-Server
+AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVER $APP_SERVER_LB $NONCE_STORE)
+echo_if_not_silent "$AUTH_SERVER in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Auth Server LB"
 AUTH_SERVER_LB=$(create_auth_server_lb $AUTH_SERVER)
