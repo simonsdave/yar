@@ -124,14 +124,14 @@ run_load_test() {
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-3-key-server-response-time.png'" \
         -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/yar_server_reponse_time.gpcfg
+        $SCRIPT_DIR_NAME/yar_server_response_time.gpcfg
 
 	TITLE="Key Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-4-key-server-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/yar_server_reponse_time_by_time.gpcfg
+        $SCRIPT_DIR_NAME/yar_server_response_time_by_time.gpcfg
 
     rm -f $TEMPFILE >& /dev/null
 
@@ -154,14 +154,14 @@ run_load_test() {
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-5-key-store-response-time.png'" \
         -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/yar_server_reponse_time.gpcfg
+        $SCRIPT_DIR_NAME/yar_server_response_time.gpcfg
 
 	TITLE="Key Store Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-6-key-store-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/yar_server_reponse_time_by_time.gpcfg
+        $SCRIPT_DIR_NAME/yar_server_response_time_by_time.gpcfg
 
     rm -f $TEMPFILE >& /dev/null
 
@@ -184,14 +184,14 @@ run_load_test() {
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-7-app-server-response-time.png'" \
         -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/yar_server_reponse_time.gpcfg
+        $SCRIPT_DIR_NAME/yar_server_response_time.gpcfg
 
 	TITLE="App Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-8-app-server-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/yar_server_reponse_time_by_time.gpcfg
+        $SCRIPT_DIR_NAME/yar_server_response_time_by_time.gpcfg
 
     rm -f $TEMPFILE >& /dev/null
 
