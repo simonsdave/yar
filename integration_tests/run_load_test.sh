@@ -57,9 +57,9 @@ run_load_test() {
 
     local RESULTS_FILE_BASE_NAME=$RESULTS_DIR/$(left_zero_pad $CONCURRENCY 4)-$NUMBER_OF_REQUESTS
 
-    # :TODO: what if either of these scripts fail?
     local DOCKER_CONTAINER_DATA=$RESULTS_DIR/$(left_zero_pad $CONCURRENCY 4)-$NUMBER_OF_REQUESTS
     mkdir -p $DOCKER_CONTAINER_DATA
+    # :TODO: what if this scripts fails?
     $SCRIPT_DIR_NAME/rm_all_containers.sh
     local AUTH_SERVER_LB=$($SCRIPT_DIR_NAME/spin_up_deployment.sh -s $DOCKER_CONTAINER_DATA)
 
@@ -78,7 +78,7 @@ run_load_test() {
     # take ab's tsv output file and using gnuplot to create a
     # histogram of all response times
     #
-	TITLE="$START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS"
+	TITLE="Auth Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS"
     gnuplot \
         -e "input_filename='$RESULTS_DATA'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-1-response-time.png'" \
@@ -98,12 +98,103 @@ run_load_test() {
         $RESULTS_DATA \
         $RESULTS_DATA_PERCENTILE
 
-	TITLE="$START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
+	TITLE="Auth Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$RESULTS_DATA_PERCENTILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-2-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/response_time_by_time.gpcfg
+
+    #
+    # during the load test the auth server was making requests
+    # to the key server. the statements below extract timing
+    # information about the requests from the auth server's
+    # log and then plots 2 different graphs of response times.
+    #
+    TEMPFILE=$(mktemp)
+    cat $DOCKER_CONTAINER_DATA/Auth-Server/auth_server_log | \
+        grep "Key Server.*responded in [0-9]\+ ms$" | \
+        awk 'BEGIN {FS = "\t"; OFS = "\t"}; { print int($1 / 1000), $5 }' | \
+        sed -s "s/\tKey Server.*responded in /\t/g" |
+        sed -s "s/[[:space:]]ms$//g" \
+        > $TEMPFILE
+
+	TITLE="Key Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS"
+    gnuplot \
+        -e "input_filename='$TEMPFILE'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-3-key-server-response-time.png'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/yar_server_reponse_time.gpcfg
+
+	TITLE="Key Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
+    gnuplot \
+        -e "input_filename='$TEMPFILE'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-4-key-server-response-time-by-time-in-test.png'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/yar_server_reponse_time_by_time.gpcfg
+
+    rm -f $TEMPFILE >& /dev/null
+
+    #
+    # during the load test the key server was making requests
+    # to the key store. the statements below extract timing
+    # information about the requests from the key server's
+    # log and then plots 2 different graphs of response times.
+    #
+    TEMPFILE=$(mktemp)
+    cat $DOCKER_CONTAINER_DATA/Key-Server/key_server_log | \
+        grep "Key Store.*responded in [0-9]\+ ms$" | \
+        awk 'BEGIN {FS = "\t"; OFS = "\t"}; { print int($1 / 1000), $5 }' | \
+        sed -s "s/\tKey Store.*responded in /\t/g" |
+        sed -s "s/[[:space:]]ms$//g" \
+        > $TEMPFILE
+
+	TITLE="Key Store Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS"
+    gnuplot \
+        -e "input_filename='$TEMPFILE'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-5-key-store-response-time.png'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/yar_server_reponse_time.gpcfg
+
+	TITLE="Key Store Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
+    gnuplot \
+        -e "input_filename='$TEMPFILE'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-6-key-store-response-time-by-time-in-test.png'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/yar_server_reponse_time_by_time.gpcfg
+
+    rm -f $TEMPFILE >& /dev/null
+
+    #
+    # during the load test the auth server was making requests
+    # to the app server. the statements below extract timing
+    # information about the requests from the auth server's
+    # log and then plots 2 different graphs of response times.
+    #
+    TEMPFILE=$(mktemp)
+    cat $DOCKER_CONTAINER_DATA/Auth-Server/auth_server_log | \
+        grep "App Server.*responded in [0-9]\+ ms$" | \
+        awk 'BEGIN {FS = "\t"; OFS = "\t"}; { print int($1 / 1000), $5 }' | \
+        sed -s "s/\tApp Server.*responded in /\t/g" |
+        sed -s "s/[[:space:]]ms$//g" \
+        > $TEMPFILE
+
+	TITLE="App Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS"
+    gnuplot \
+        -e "input_filename='$TEMPFILE'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-7-app-server-response-time.png'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/yar_server_reponse_time.gpcfg
+
+	TITLE="App Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
+    gnuplot \
+        -e "input_filename='$TEMPFILE'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-8-app-server-response-time-by-time-in-test.png'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/yar_server_reponse_time_by_time.gpcfg
+
+    rm -f $TEMPFILE >& /dev/null
+
 }
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
@@ -117,11 +208,11 @@ mkdir -p $RESULTS_DIR
 NUMBER_OF_REQUESTS=1000
 PERCENTILE=95
 
-run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE $RESULTS_DIR
-run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE $RESULTS_DIR
-run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE $RESULTS_DIR
+# run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE $RESULTS_DIR
+# run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE $RESULTS_DIR
+# run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE $RESULTS_DIR
 # run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE $RESULTS_DIR
-# run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE $RESULTS_DIR
+run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE $RESULTS_DIR
 # run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE $RESULTS_DIR
 # run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE $RESULTS_DIR
 

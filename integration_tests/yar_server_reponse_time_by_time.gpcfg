@@ -1,0 +1,19 @@
+# input variables
+#
+#	title
+#	input_filename
+#	output_filename
+
+set terminal pngcairo size 1280,720
+set size 1, 1
+set output output_filename
+set title title
+set key left top
+set grid y
+set xdata time
+set timefmt "%s"
+set xlabel 'Time in Test (minute:second)'
+set ylabel "Response Time (milliseconds)"
+set datafile separator '\t'
+plot input_filename every ::1 using 1:2 title "" with points
+exit
