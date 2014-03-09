@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+
+import httplib
+import httplib2
+import json
+
+import yar.util.basic
+
+def create_basic_creds(principal):
+    api_key = yar.util.basic.APIKey.generate()
+    rv = {
+        "_id": api_key,
+        "principal": principal,
+        "type": "creds_v1.0",
+        "is_deleted": False,
+        "basic": {
+            "api_key": api_key,
+        },
+    }
+    return rv
+
+
+def create_lots_of_creds(principal, number_of_creds):
+
+    body = {
+        "docs": [create_basic_creds(principal) for i in range(0, number_of_creds)],
+    }
+
+    http_client = httplib2.Http()
+
+    body_as_json = json.dumps(body)
+    headers = {
+        "Content-type": "application/json; charset=utf8",
+        "Content-length": str(len(body_as_json)),
+    }
+    response, content = http_client.request(
+        "http://127.0.0.1:5984/creds/_bulk_docs",
+        "POST",
+        body=body_as_json,
+        headers=headers)
+    if httplib.CREATED != response.status:
+        print "SOMETHING BAD HAPPENED - creating keys failed:-("
+
+    body_as_json = json.dumps(body)
+    headers = {
+        "Content-type": "application/json; charset=utf8",
+        "Content-length": str(len(body_as_json)),
+    }
+    response, content = http_client.request(
+        "http://127.0.0.1:5984/creds",
+        "GET")
+    if httplib.OK != response.status:
+        print "SOMETHING BAD HAPPENED - failed to get database metrics:-("
+
+    content = json.loads(content)
+    return (content["doc_count"], content["data_size"], content["disk_size"])
+
+if __name__ == "__main__":
+    principal = "dave@example.com"
+    for number_of_creds in [10,100,1000,10000,100000]:
+        (number_creds, data_size, disk_size) = create_lots_of_creds(principal, number_of_creds)
+        print "%s\t%s\t%s" % (number_creds, data_size, disk_size)
