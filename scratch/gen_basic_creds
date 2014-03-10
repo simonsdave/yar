@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import datetime
 import httplib
 import httplib2
 import json
@@ -47,7 +48,7 @@ def create_basic_creds(principal):
     return rv
 
 
-def save_lots_of_creds_in_database(database, principal, number_of_creds):
+def create_lots_of_creds_and_bulk_save_to_database(database, principal, number_of_creds):
 
     http_client = httplib2.Http()
 
@@ -58,10 +59,13 @@ def save_lots_of_creds_in_database(database, principal, number_of_creds):
     #
     #   http://couchdb.readthedocs.org/en/latest/api/database/bulk-api.html?highlight=_bulk_docs#db-bulk-docs
     #
+    start_create_creds_timestamp = datetime.datetime.now()
     body = {
         "docs": [create_basic_creds(principal) for i in range(0, number_of_creds)],
     }
+    end_create_creds_timestamp = datetime.datetime.now()
 
+    start_persist_creds_timestamp = datetime.datetime.now()
     body_as_json = json.dumps(body)
     headers = {
         "Content-type": "application/json; charset=utf8",
@@ -74,6 +78,7 @@ def save_lots_of_creds_in_database(database, principal, number_of_creds):
         headers=headers)
     if httplib.CREATED != response.status:
         pass
+    end_persist_creds_timestamp = datetime.datetime.now()
 
     #
     # now the creds have been saved, let's query the database to
@@ -94,7 +99,13 @@ def save_lots_of_creds_in_database(database, principal, number_of_creds):
         pass
 
     content = json.loads(content)
-    return (content["doc_count"], content["data_size"], content["disk_size"])
+    return (
+        content["doc_count"],
+        content["data_size"],
+        content["disk_size"],
+        (end_create_creds_timestamp - start_create_creds_timestamp).seconds,
+        (end_persist_creds_timestamp - start_persist_creds_timestamp).seconds
+    )
 
 
 def bytes_to_megabytes(bytes):
@@ -109,20 +120,31 @@ if __name__ == "__main__":
     principal = "dave@example.com"
 
     number_of_creds_to_add = [
-        10000,
-        90000,
+        1000,
+        24000,
     ]
-    # number_of_creds_to_add.extend([100000] * 9)
+    number_of_creds_to_add.extend([25000] * 39)
 
-    print "Number of Credentials\tData Size (MB)\tDisk Size (MB)"
+    header = (
+        "Number of Credentials\t"
+        "Data Size (MB)\t"
+        "Disk Size (MB)\t"
+        "Time to Create Creds (seconds)\t"
+        "Time to Persist Creds (seconds)"
+    )
+    print header
+
     for number_of_creds in number_of_creds_to_add:
-        (number_creds, data_size, disk_size) = save_lots_of_creds_in_database(
-            database,
-            principal,
-            number_of_creds)
-        print "%s\t%s\t%s" % (
+        (number_creds, data_size, disk_size, seconds_to_create_creds, seconds_to_persist_creds) = \
+            create_lots_of_creds_and_bulk_save_to_database(
+                database,
+                principal,
+                number_of_creds)
+        print "%s\t%s\t%s\t%s\t%s" % (
             number_creds,
             bytes_to_megabytes(data_size),
-            bytes_to_megabytes(disk_size))
+            bytes_to_megabytes(disk_size),
+            seconds_to_create_creds,
+            seconds_to_persist_creds)
 
     delete_database(database)
