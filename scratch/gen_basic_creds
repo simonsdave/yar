@@ -3,8 +3,32 @@
 import httplib
 import httplib2
 import json
+import subprocess
+import uuid
 
 import yar.util.basic
+
+def create_database():
+
+    database = "das"+str(uuid.uuid4()).replace("-", "")
+
+    exit_code = subprocess.call([
+        "key_store_installer",
+        "--database=%s" % database,
+        "--create=True",
+        "--delete=False",
+    ])
+    if 0 != exit_code:
+        return None
+
+    return database
+
+def delete_database(database):
+    http_client = httplib2.Http()
+    response, content = http_client.request(
+        "http://127.0.0.1:5984/%s" % database,
+        "DELETE")
+    return httplib.OK == response.status
 
 def create_basic_creds(principal):
     api_key = yar.util.basic.APIKey.generate()
@@ -20,7 +44,7 @@ def create_basic_creds(principal):
     return rv
 
 
-def create_lots_of_creds(principal, number_of_creds):
+def create_lots_of_creds(database, principal, number_of_creds):
 
     body = {
         "docs": [create_basic_creds(principal) for i in range(0, number_of_creds)],
@@ -34,12 +58,12 @@ def create_lots_of_creds(principal, number_of_creds):
         "Content-length": str(len(body_as_json)),
     }
     response, content = http_client.request(
-        "http://127.0.0.1:5984/creds/_bulk_docs",
+        "http://127.0.0.1:5984/%s/_bulk_docs" % database,
         "POST",
         body=body_as_json,
         headers=headers)
     if httplib.CREATED != response.status:
-        print "SOMETHING BAD HAPPENED - creating keys failed:-("
+        pass
 
     body_as_json = json.dumps(body)
     headers = {
@@ -47,16 +71,40 @@ def create_lots_of_creds(principal, number_of_creds):
         "Content-length": str(len(body_as_json)),
     }
     response, content = http_client.request(
-        "http://127.0.0.1:5984/creds",
+        "http://127.0.0.1:5984/%s" % database,
         "GET")
     if httplib.OK != response.status:
-        print "SOMETHING BAD HAPPENED - failed to get database metrics:-("
+        pass
 
     content = json.loads(content)
     return (content["doc_count"], content["data_size"], content["disk_size"])
 
 if __name__ == "__main__":
+    database = create_database()
+
     principal = "dave@example.com"
-    for number_of_creds in [10,100,1000,10000,100000]:
-        (number_creds, data_size, disk_size) = create_lots_of_creds(principal, number_of_creds)
-        print "%s\t%s\t%s" % (number_creds, data_size, disk_size)
+
+    number_of_creds_to_add = [
+        10000,
+        90000,
+        100000,
+        100000,
+        100000,
+        100000,
+        100000,
+        100000,
+        100000,
+        100000,
+        100000,
+    ]
+    for number_of_creds in number_of_creds_to_add:
+        (number_creds, data_size_in_bytes, disk_size_in_bytes) = create_lots_of_creds(
+            database,
+            principal,
+            number_of_creds)
+        print "%s\t%s\t%s" % (
+            number_creds,
+            int(data_size_in_bytes / (1024 * 1024)),
+            int(disk_size_in_bytes / (1024 * 1024)))
+
+    delete_database(database)
