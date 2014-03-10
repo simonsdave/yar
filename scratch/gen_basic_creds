@@ -10,12 +10,13 @@ import uuid
 import yar.util.basic
 
 
-def create_database():
+def create_database(host):
 
     database = "das"+str(uuid.uuid4()).replace("-", "")
 
     exit_code = subprocess.call([
         "key_store_installer",
+        "--host=%s" % host,
         "--database=%s" % database,
         "--create=True",
         "--delete=False",
@@ -23,13 +24,13 @@ def create_database():
     if 0 != exit_code:
         return None
 
-    return database
+    return "%s/%s" % (host, database)
 
 
 def delete_database(database):
     http_client = httplib2.Http()
     response, content = http_client.request(
-        "http://127.0.0.1:5984/%s" % database,
+        "http://%s" % database,
         "DELETE")
     return httplib.OK == response.status
 
@@ -72,7 +73,7 @@ def create_lots_of_creds_and_bulk_save_to_database(database, principal, number_o
         "Content-length": str(len(body_as_json)),
     }
     response, content = http_client.request(
-        "http://127.0.0.1:5984/%s/_bulk_docs" % database,
+        "http://%s/_bulk_docs" % database,
         "POST",
         body=body_as_json,
         headers=headers)
@@ -93,7 +94,7 @@ def create_lots_of_creds_and_bulk_save_to_database(database, principal, number_o
         "Content-length": str(len(body_as_json)),
     }
     response, content = http_client.request(
-        "http://127.0.0.1:5984/%s" % database,
+        "http://%s" % database,
         "GET")
     if httplib.OK != response.status:
         pass
@@ -115,7 +116,9 @@ def bytes_to_megabytes(bytes):
 
 
 if __name__ == "__main__":
-    database = create_database()
+    host = "127.0.0.1:5984"
+
+    database = create_database(host)
 
     principal = "dave@example.com"
 
