@@ -8,6 +8,7 @@ import uuid
 
 import yar.util.basic
 
+
 def create_database():
 
     database = "das"+str(uuid.uuid4()).replace("-", "")
@@ -23,12 +24,14 @@ def create_database():
 
     return database
 
+
 def delete_database(database):
     http_client = httplib2.Http()
     response, content = http_client.request(
         "http://127.0.0.1:5984/%s" % database,
         "DELETE")
     return httplib.OK == response.status
+
 
 def create_basic_creds(principal):
     api_key = yar.util.basic.APIKey.generate()
@@ -44,13 +47,20 @@ def create_basic_creds(principal):
     return rv
 
 
-def create_lots_of_creds(database, principal, number_of_creds):
+def save_lots_of_creds_in_database(database, principal, number_of_creds):
 
+    http_client = httplib2.Http()
+
+    #
+    # using CouchDB's bulk insertion api provides signifiant performance
+    # improvements over inserting credentials one by one. docs for the API
+    # can be found at:
+    #
+    #   http://couchdb.readthedocs.org/en/latest/api/database/bulk-api.html?highlight=_bulk_docs#db-bulk-docs
+    #
     body = {
         "docs": [create_basic_creds(principal) for i in range(0, number_of_creds)],
     }
-
-    http_client = httplib2.Http()
 
     body_as_json = json.dumps(body)
     headers = {
@@ -65,6 +75,13 @@ def create_lots_of_creds(database, principal, number_of_creds):
     if httplib.CREATED != response.status:
         pass
 
+    #
+    # now the creds have been saved, let's query the database to
+    # get a sense of its size. API docs for this database request
+    # can be found at:
+    #
+    #   http://couchdb.readthedocs.org/en/latest/api/database/common.html#get--db
+    #
     body_as_json = json.dumps(body)
     headers = {
         "Content-type": "application/json; charset=utf8",
@@ -78,6 +95,7 @@ def create_lots_of_creds(database, principal, number_of_creds):
 
     content = json.loads(content)
     return (content["doc_count"], content["data_size"], content["disk_size"])
+
 
 if __name__ == "__main__":
     database = create_database()
@@ -98,7 +116,7 @@ if __name__ == "__main__":
         100000,
     ]
     for number_of_creds in number_of_creds_to_add:
-        (number_creds, data_size_in_bytes, disk_size_in_bytes) = create_lots_of_creds(
+        (number_creds, data_size_in_bytes, disk_size_in_bytes) = save_lots_of_creds_in_database(
             database,
             principal,
             number_of_creds)
