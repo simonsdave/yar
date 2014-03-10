@@ -114,6 +114,7 @@ if __name__ == "__main__":
     ]
     # number_of_creds_to_add.extend([100000] * 9)
 
+    print "Number of Credentials\tData Size (MB)\tDisk Size (MB)"
     for number_of_creds in number_of_creds_to_add:
         (number_creds, data_size, disk_size) = save_lots_of_creds_in_database(
             database,
