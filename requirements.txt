@@ -11,3 +11,4 @@ nose-cov==1.6
 pep8==1.4.6
 radon==0.4.5
 Sphinx==1.2.1
+locustio==0.7.0
