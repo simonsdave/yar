@@ -38,8 +38,12 @@ cp /vagrant/artifacts/yarcurl /usr/local/bin/.
 # python scripts setup and drive tests so we'll need pip
 apt-get install -y python-pip
 
-# python scripts setup and drive tests so we'll need pip
+# why do we need make?
 apt-get install -y make
+
+# Locust is built on gevent and gevent requires python-dev
+# to be installed
+apt-get install -y python-dev
 
 # these utilities are used to assemble graphs of load testing results
 # can't just "apt-get install -y gnuplot" to install gnuplot because
