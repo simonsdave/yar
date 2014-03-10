@@ -97,6 +97,12 @@ def save_lots_of_creds_in_database(database, principal, number_of_creds):
     return (content["doc_count"], content["data_size"], content["disk_size"])
 
 
+def bytes_to_megabytes(bytes):
+    """Convert an integer value representing a number of bytes into another
+    integer value representing the equivalent number of megabytes."""
+    return int(bytes / (1024.0 * 1024.0))
+
+
 if __name__ == "__main__":
     database = create_database()
 
@@ -105,24 +111,17 @@ if __name__ == "__main__":
     number_of_creds_to_add = [
         10000,
         90000,
-        100000,
-        100000,
-        100000,
-        100000,
-        100000,
-        100000,
-        100000,
-        100000,
-        100000,
     ]
+    # number_of_creds_to_add.extend([100000] * 9)
+
     for number_of_creds in number_of_creds_to_add:
-        (number_creds, data_size_in_bytes, disk_size_in_bytes) = save_lots_of_creds_in_database(
+        (number_creds, data_size, disk_size) = save_lots_of_creds_in_database(
             database,
             principal,
             number_of_creds)
         print "%s\t%s\t%s" % (
             number_creds,
-            int(data_size_in_bytes / (1024 * 1024)),
-            int(disk_size_in_bytes / (1024 * 1024)))
+            bytes_to_megabytes(data_size),
+            bytes_to_megabytes(disk_size))
 
     delete_database(database)
