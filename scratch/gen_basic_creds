@@ -3,20 +3,23 @@
 import datetime
 import httplib
 import httplib2
+import logging
 import json
+import optparse
 import subprocess
 import uuid
 
+from yar.util import clparserutil
 import yar.util.basic
 
 
-def create_database(host):
+def create_database(key_store_host):
 
     database = "das"+str(uuid.uuid4()).replace("-", "")
 
     exit_code = subprocess.call([
         "key_store_installer",
-        "--host=%s" % host,
+        "--host=%s" % key_store_host,
         "--database=%s" % database,
         "--create=True",
         "--delete=False",
@@ -24,7 +27,7 @@ def create_database(host):
     if 0 != exit_code:
         return None
 
-    return "%s/%s" % (host, database)
+    return "%s/%s" % (key_store_host, database)
 
 
 def delete_database(database):
@@ -115,10 +118,37 @@ def bytes_to_megabytes(bytes):
     return int(bytes / (1024.0 * 1024.0))
 
 
-if __name__ == "__main__":
-    host = "127.0.0.1:5984"
+class CommandLineParser(optparse.OptionParser):
 
-    database = create_database(host)
+    def __init__(self):
+
+        description = (
+            "The Key Store Credentials Generator is a load testing "
+            "analyze the Key Store's characteristics when the Key "
+            "Store contains lots of credentials."
+        )
+        optparse.OptionParser.__init__(
+            self,
+            "usage: %prog [options]",
+            description=description,
+            option_class=clparserutil.Option)
+
+        default = "127.0.0.1:5984"
+        help = "where's CouchDB running - default = %s" % default
+        self.add_option(
+            "--ksh",
+            action="store",
+            dest="key_store_host",
+            default=default,
+            type="hostcolonport",
+            help=help)
+
+
+if __name__ == "__main__":
+    clp = CommandLineParser()
+    (clo, cla) = clp.parse_args()
+
+    database = create_database(clo.key_store_host)
 
     principal = "dave@example.com"
 
@@ -126,7 +156,7 @@ if __name__ == "__main__":
         1000,
         24000,
     ]
-    number_of_creds_to_add.extend([25000] * 39)
+    # number_of_creds_to_add.extend([25000] * 39)
 
     header = (
         "Number of Credentials\t"
