@@ -7,6 +7,7 @@ import logging
 import json
 import optparse
 import subprocess
+import tempfile
 import uuid
 
 from yar.util import clparserutil
@@ -156,7 +157,7 @@ if __name__ == "__main__":
         1000,
         24000,
     ]
-    # number_of_creds_to_add.extend([25000] * 39)
+    number_of_creds_to_add.extend([25000] * 39)
 
     header = (
         "Number of Credentials\t"
@@ -181,3 +182,25 @@ if __name__ == "__main__":
             seconds_to_persist_creds)
 
     delete_database(database)
+
+"""
+SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
+TITLE="DAS"
+gnuplot \
+        -e "input_filename='$SCRIPT_DIR_NAME/ooo'" \
+        -e "output_filename='$SCRIPT_DIR_NAME/dave.png'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/key_store_size.gpcfg
+"""
+
+"""
+>>> f = NamedTemporaryFile(delete=False)
+>>> f
+<open file '<fdopen>', mode 'w+b' at 0x384698>
+>>> f.name
+'/var/folders/5q/5qTPn6xq2RaWqk+1Ytw3-U+++TI/-Tmp-/tmpG7V1Y0'
+>>> f.write("Hello World!\n")
+>>> f.close()
+>>> os.unlink(f.name)
+>>> os.path.exists(f.name)
+"""
