@@ -28,6 +28,8 @@ apt-get install -y libmemcached-tools
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
 sh -c "echo deb http://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
 apt-get update
+# as of 12 Mar this installs docker 0.9
+# :TODO: how do versions get controlled with apt-get?
 apt-get install -y lxc-docker
 
 # these utilities are exceptionally useful during

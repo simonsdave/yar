@@ -29,7 +29,7 @@ create_basic_api_key() {
 }
 
 get_container_ip() {
-    sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' ${1:-}
+    sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${1:-}
 }
 
 get_from_json() {
