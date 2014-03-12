@@ -41,9 +41,9 @@ MAINTAINER Dave Simons
 
 RUN apt-get update
 
-# unclear why if a vagrant ubuntu 12.04 install has these
-# and a docker based install of ubuntu 12.04 needs to have
-# them explicitly installed
+# if a vagrant ubuntu 12.04 install has these packages
+# installed why does a docker based install of ubuntu 12.04
+# need to have them installed explicitly
 RUN apt-get install -y curl
 RUN apt-get install -y build-essential
 RUN apt-get install -y erlang-base erlang-dev erlang-nox erlang-eunit
