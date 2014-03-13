@@ -115,8 +115,9 @@ NONCE_STORE=$(create_nonce_store)
 echo_if_not_silent $NONCE_STORE
 
 echo_if_not_silent "Starting Key Store"
-KEY_STORE=$(create_key_store) 
-echo_if_not_silent $KEY_STORE
+DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Store
+KEY_STORE=$(create_key_store $DATA_DIRECTORY) 
+echo_if_not_silent "$KEY_STORE in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Key Server"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Server

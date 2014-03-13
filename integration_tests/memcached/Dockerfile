@@ -1,15 +1,15 @@
 # to build the image
 #
-#   sudo docker build -t nonce_store_img .
+#   sudo docker build -t memcached_img .
 #
 # for testing/debugging
 #
-#   sudo docker run -i -t nonce_store_img /bin/bash
+#   sudo docker run -i -t memcached_img /bin/bash
 #
 # spin up real nonnce store
 #
-#   NONCE_STORE=$(sudo docker run -d nonce_store_img)
-#   NONCE_STORE_IP=$(sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' $NONCE_STORE)
+#   MEMCACHED=$(sudo docker run -d memcached_img)
+#   MEMCACHED_IP=$(sudo docker inspect -format '{{ .NetworkSettings.IPAddress }}' $MEMCACHED)
 #
 # references
 #

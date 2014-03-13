@@ -8,11 +8,11 @@
 #
 # create image
 #
-#   sudo docker build -t key_store_img .
+#   sudo docker build -t couchdb_img .
 #
 # once the image is built get key store running:
 #
-#   KEY_STORE=$(sudo docker run -d key_store_img)
+#   KEY_STORE=$(sudo docker run -d couchdb_img)
 #
 # now verify couchdb is running and accessible
 #
@@ -22,7 +22,7 @@
 # very useful for interactive testing/debugging
 #
 #   sudo docker run -i -t ubuntu:12.04 /bin/bash
-#   sudo docker run -i -t key_store_img /bin/bash
+#   sudo docker run -i -t couchdb_img /bin/bash
 #
 # couchdb configuration files
 #

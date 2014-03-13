@@ -121,18 +121,19 @@ create_app_server_lb() {
 
 # create a docker container to run the key store
 create_key_store() {
+
+    DATA_DIRECTORY=${1:-}
+    mkdir -p $DATA_DIRECTORY
+
     PORT=5984
     DATABASE=creds
 
-    DATA_DIRECTORY=$SCRIPT_DIR_NAME/Key-Store/artifacts
-    rm -rf $DATA_DIRECTORY >& /dev/null
-    mkdir -p $DATA_DIRECTORY
 	# :TODO: add check that docker images have been built
     KEY_STORE=$(sudo docker run \
         -d \
         -v $DATA_DIRECTORY:/usr/local/var/lib/couchdb:rw \
         -t \
-        key_store_img)
+        couchdb_img)
     KEY_STORE_IP=$(get_container_ip $KEY_STORE)
 
     for i in {1..10}
@@ -144,7 +145,11 @@ create_key_store() {
         fi
     done
 
-    INSTALLER_CMD="key_store_installer --log=info --create=true --host=$KEY_STORE_IP:$PORT --database=$DATABASE"
+    INSTALLER_CMD="key_store_installer \
+        --log=info \
+        --create=true \
+        --host=$KEY_STORE_IP:$PORT \
+        --database=$DATABASE"
     sudo docker run -i -t yar_img $INSTALLER_CMD >& /dev/null
 
     for i in {1..10}
@@ -197,7 +202,7 @@ create_nonce_store() {
     NONCE_STORE_CMD=""
     NONCE_STORE=$(sudo docker run \
         -d \
-        nonce_store_img \
+        memcached_img \
         $NONCE_STORE_CMD)
     NONCE_STORE_IP=$(get_container_ip $NONCE_STORE)
 
