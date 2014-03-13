@@ -86,13 +86,21 @@ run_load_test() {
 
     local DOCKER_CONTAINER_DATA=$RESULTS_DIR/$(left_zero_pad $CONCURRENCY 4)-$NUMBER_OF_REQUESTS
     mkdir -p $DOCKER_CONTAINER_DATA
-    # :TODO: what if this scripts fails?
-    $SCRIPT_DIR_NAME/rm_all_containers.sh
-    local AUTH_SERVER_LB=$($SCRIPT_DIR_NAME/spin_up_deployment.sh -s $DOCKER_CONTAINER_DATA)
 
+    # :TODO: what if this scripts fails?
+	echo "Removing all existing deployments"
+    $SCRIPT_DIR_NAME/rm_all_containers.sh
+
+    # :TODO: what if this scripts fails?
+	echo "Spinning up a deployment"
+    local AUTH_SERVER_LB=$($SCRIPT_DIR_NAME/spin_up_deployment.sh -s $DOCKER_CONTAINER_DATA)
+    echo "Deployment end point = $AUTH_SERVER_LB"
+
+	echo "Spinning up a new deployment"
     local API_KEY=$(get_deployment_config "API_KEY")
     # :TODO: what if API_KEY doesn't exist?
 
+	echo "Starting to drive load"
     local RESULTS_DATA=$RESULTS_FILE_BASE_NAME-raw-data.tsv
     ab \
         -c $CONCURRENCY \
@@ -253,16 +261,16 @@ START_TIME=$(date +%Y-%m-%d-%H-%M)
 RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/$START_TIME
 mkdir -p $RESULTS_DIR
 
-NUMBER_OF_REQUESTS=1000
+NUMBER_OF_REQUESTS=5000
 PERCENTILE=98
 
 run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE $RESULTS_DIR
 run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE $RESULTS_DIR
 run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE $RESULTS_DIR
-# run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE $RESULTS_DIR
-# run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE $RESULTS_DIR
-# run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE $RESULTS_DIR
-# run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE $RESULTS_DIR
+run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE $RESULTS_DIR
+run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE $RESULTS_DIR
+run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE $RESULTS_DIR
+run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE $RESULTS_DIR
 
 SUMMARY_REPORT_FILENAME=$RESULTS_DIR/test-results-summary.pdf
 
