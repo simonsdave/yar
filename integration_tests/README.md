@@ -1,3 +1,7 @@
+**WARNING - as of 13 Mar '14 Dave has broken this integration
+test framework and a way that he doesn't understand:-( The
+auth server now fails to start.**
+
 Testing and experimenting with a full yar deployment
 is done by creating a series of
 [Docker](https://www.docker.io/) containers to run
