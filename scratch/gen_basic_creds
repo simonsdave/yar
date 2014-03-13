@@ -6,7 +6,9 @@ import httplib2
 import logging
 import json
 import optparse
+import os
 import subprocess
+import sys
 import tempfile
 import uuid
 
@@ -151,22 +153,22 @@ if __name__ == "__main__":
 
     database = create_database(clo.key_store_host)
 
+    f = tempfile.NamedTemporaryFile(delete=False)
+
     principal = "dave@example.com"
 
-    number_of_creds_to_add = [
-        1000,
-        24000,
-    ]
-    number_of_creds_to_add.extend([25000] * 39)
+    number_of_creds_to_add = [1000, 24000]
+    number_of_creds_to_add.extend([25000] * 10)
+    # number_of_creds_to_add.extend([25000] * 39)
 
     header = (
         "Number of Credentials\t"
         "Data Size (MB)\t"
         "Disk Size (MB)\t"
         "Time to Create Creds (seconds)\t"
-        "Time to Persist Creds (seconds)"
+        "Time to Persist Creds (seconds)\n"
     )
-    print header
+    f.write(header)
 
     for number_of_creds in number_of_creds_to_add:
         (number_creds, data_size, disk_size, seconds_to_create_creds, seconds_to_persist_creds) = \
@@ -174,33 +176,42 @@ if __name__ == "__main__":
                 database,
                 principal,
                 number_of_creds)
-        print "%s\t%s\t%s\t%s\t%s" % (
+        f.write("%s\t%s\t%s\t%s\t%s\n" % (
             number_creds,
             bytes_to_megabytes(data_size),
             bytes_to_megabytes(disk_size),
             seconds_to_create_creds,
-            seconds_to_persist_creds)
+            seconds_to_persist_creds))
+
+    f.close()
+    print f.name
+
+    output_filename = os.path.join(
+        os.path.abspath(os.path.split(sys.argv[0])[0]),
+        "dave.gif")
+
+    gpcfg_file = tempfile.NamedTemporaryFile(delete=False)
+    gpcfg_file.write("# set terminal pngcairo size 1280,720\n")
+    gpcfg_file.write("set terminal gif giant\n")
+    gpcfg_file.write("set size 1, 1\n")
+    gpcfg_file.write("set xlabel 'Number of Credentials'\n")
+    gpcfg_file.write("set ylabel 'Size (MB)'\n")
+    gpcfg_file.write("title='DAS'\n")
+    gpcfg_file.write("set title title\n")
+    gpcfg_file.write("set key left top\n")
+    gpcfg_file.write("set style line 1 lc rgb '#0000ff' lt 1 lw 2 pt 7 pi -1 ps 1.5\n")
+    gpcfg_file.write("set style line 2 lc rgb '#ff0000' lt 1 lw 2 pt 7 pi -1 ps 1.5\n")
+    gpcfg_file.write("set output '%s'\n" % output_filename)
+    gpcfg_file.write("set datafile separator '\\t'\n")
+    gpcfg_file.write("input_filename='%s'\n" % f.name)
+    gpcfg_file.write("plot input_filename using 1:2 title 'Data Size' with linespoints ls 1, \\\n")
+    gpcfg_file.write("     input_filename using 1:3 title 'Disk Size' with linespoints ls 2\n")
+    gpcfg_file.write("exit")
+    gpcfg_file.close()
+
+    gnuplot_exit_code = subprocess.call([
+        "gnuplot",
+        gpcfg_file.name,
+    ])
 
     delete_database(database)
-
-"""
-SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
-TITLE="DAS"
-gnuplot \
-        -e "input_filename='$SCRIPT_DIR_NAME/ooo'" \
-        -e "output_filename='$SCRIPT_DIR_NAME/dave.png'" \
-        -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/key_store_size.gpcfg
-"""
-
-"""
->>> f = NamedTemporaryFile(delete=False)
->>> f
-<open file '<fdopen>', mode 'w+b' at 0x384698>
->>> f.name
-'/var/folders/5q/5qTPn6xq2RaWqk+1Ytw3-U+++TI/-Tmp-/tmpG7V1Y0'
->>> f.write("Hello World!\n")
->>> f.close()
->>> os.unlink(f.name)
->>> os.path.exists(f.name)
-"""
