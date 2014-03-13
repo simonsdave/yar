@@ -156,3 +156,13 @@ class RequestHandler(trhutil.RequestHandler):
             self.set_status(httplib.INTERNAL_SERVER_ERROR)
 
         self.finish()
+
+    def set_default_headers(self):
+        """The less a potential threat knows about security infrastructre
+        the better. With that in mind, this method attempts to remove the
+        Server HTTP header if it appears in a response. This won't
+        protect against app servers returning such a header since yar
+        just proxies the response but it will prevent this header from leaking
+        out in scenarios such as authentocation failure because no
+        Authorization header was found in the request."""
+        self.clear_header("Server")

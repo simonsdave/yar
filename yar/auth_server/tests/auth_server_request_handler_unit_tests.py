@@ -103,6 +103,19 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
         auth_failure_debug_details = self._get_auth_failure_debug_details(response)
         self.assertTrue(0 == len(auth_failure_debug_details))
 
+    def test_no_server_header_in_response(self):
+        """This test confirms that no Server http header appears in
+        the auth server's response when authentication fails because
+        no Authorization header is supplied in a request."""
+
+        with ControlIncludeAuthFailureDebugDetails(True):
+            response = self.fetch("/", method="GET", headers={})
+            self.assertEqual(response.code, httplib.UNAUTHORIZED)
+            self.assertAuthFailureDetail(
+                response,
+                auth_server_request_handler.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
+            self.assertTrue("Server" not in response.headers)
+
     def test_no_authorization_header(self):
         """This test confirms that authentication fails if no Authorization
         header is supplied in the auth server's."""
