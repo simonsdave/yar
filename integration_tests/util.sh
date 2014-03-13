@@ -69,7 +69,8 @@ create_app_server() {
         --logfile=/var/yar_app_server/app_server_log"
     APP_SERVER=$(sudo docker run \
         -d \
-        -v $DATA_DIRECTORY:/var/yar_app_server yar_img \
+        -v $DATA_DIRECTORY:/var/yar_app_server \
+        yar_img \
         $APP_SERVER_CMD)
     APP_SERVER_IP=$(get_container_ip $APP_SERVER)
 
@@ -87,25 +88,24 @@ create_app_server() {
 
 # create a docker container to run the app server load balancer
 create_app_server_lb() {
+    DATA_DIRECTORY=${1:-}
+    mkdir -p $DATA_DIRECTORY
 
-    APP_SERVER=${1:-}
+    APP_SERVER=${2:-}
 
-    PORT=8080
-
-    CFG_TEMPLATE_DIRECTORY=$SCRIPT_DIR_NAME/App-Server-LB
-    CFG_DIRECTORY=$SCRIPT_DIR_NAME/App-Server-LB/artifacts
-    rm -rf $CFG_DIRECTORY >& /dev/null
-    mkdir $CFG_DIRECTORY
-    cp $CFG_TEMPLATE_DIRECTORY/haproxy.cfg.template $CFG_DIRECTORY/haproxy.cfg
-    echo "    server appserver1 $APP_SERVER check" >> $CFG_DIRECTORY/haproxy.cfg
+    cp $SCRIPT_DIR_NAME/app_server_haproxy.cfg.template $DATA_DIRECTORY/haproxy.cfg
+    echo "    server appserver1 $APP_SERVER check" >> $DATA_DIRECTORY/haproxy.cfg
 
     APP_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
     APP_SERVER_LB=$(sudo docker run \
         -d \
         -v /dev/log:/haproxy/log \
-        -v $CFG_DIRECTORY:/haproxycfg app_server_lb_img \
+        -v $DATA_DIRECTORY:/haproxycfg \
+        haproxy_img \
         $APP_SERVER_LB_CMD)
     APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB)
+
+    PORT=8080
 
     for i in {1..10}
     do
@@ -234,6 +234,7 @@ create_auth_server() {
         --appserver=$APP_SERVER \
         --noncestore=$NONCE_STORE \
         --logfile=/var/auth_server/auth_server_log"
+    echo $AUTH_SERVER_CMD
     AUTH_SERVER=$(sudo docker run \
         -d \
         -v $DATA_DIRECTORY:/var/auth_server \
@@ -255,21 +256,24 @@ create_auth_server() {
 
 # create a docker container to run the auth server load balancer
 create_auth_server_lb() {
+    DATA_DIRECTORY=${1:-}
+    mkdir -p $DATA_DIRECTORY
 
-    AUTH_SERVER=${1:-}
+    AUTH_SERVER=${2:-}
 
-    PORT=8000
-
-    CFG_TEMPLATE_DIRECTORY=$SCRIPT_DIR_NAME/Auth-Server-LB
-    CFG_DIRECTORY=$CFG_TEMPLATE_DIRECTORY/artifacts
-    rm -rf $CFG_DIRECTORY >& /dev/null
-    mkdir $CFG_DIRECTORY
-    cp $CFG_TEMPLATE_DIRECTORY/haproxy.cfg.template $CFG_DIRECTORY/haproxy.cfg
-    echo "    server authserver1 $AUTH_SERVER check" >> $CFG_DIRECTORY/haproxy.cfg
+    cp $SCRIPT_DIR_NAME/auth_server_haproxy.cfg.template $DATA_DIRECTORY/haproxy.cfg
+    echo "    server authserver1 $AUTH_SERVER check" >> $DATA_DIRECTORY/haproxy.cfg
 
     AUTH_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
-    AUTH_SERVER_LB=$(sudo docker run -d -v /dev/log:/haproxy/log -v $CFG_DIRECTORY:/haproxycfg auth_server_lb_img $AUTH_SERVER_LB_CMD)
+    AUTH_SERVER_LB=$(sudo docker run \
+        -d \
+        -v /dev/log:/haproxy/log \
+        -v $DATA_DIRECTORY:/haproxycfg \
+        haproxy_img \
+        $AUTH_SERVER_LB_CMD)
     AUTH_SERVER_LB_IP=$(get_container_ip $AUTH_SERVER_LB)
+
+    PORT=8000
 
     for i in {1..10}
     do

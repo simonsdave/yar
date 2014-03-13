@@ -107,8 +107,9 @@ APP_SERVER=$(create_app_server $DATA_DIRECTORY)
 echo_if_not_silent "$APP_SERVER in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting App Server LB"
-APP_SERVER_LB=$(create_app_server_lb $APP_SERVER)
-echo_if_not_silent $APP_SERVER_LB
+DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/App-Server-LB
+APP_SERVER_LB=$(create_app_server_lb $DATA_DIRECTORY $APP_SERVER)
+echo_if_not_silent "$APP_SERVER_LB in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Nonce Store"
 NONCE_STORE=$(create_nonce_store) 
@@ -130,8 +131,9 @@ AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVER $APP_SERVER_LB $NON
 echo_if_not_silent "$AUTH_SERVER in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Auth Server LB"
-AUTH_SERVER_LB=$(create_auth_server_lb $AUTH_SERVER)
-echo $AUTH_SERVER_LB
+DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Auth-Server-LB
+AUTH_SERVER_LB=$(create_auth_server_lb $DATA_DIRECTORY $AUTH_SERVER)
+echo "$AUTH_SERVER_LB in $DATA_DIRECTORY"
 
 # services now running, time to provision some keys
 
