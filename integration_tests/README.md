@@ -8,22 +8,32 @@ is done by creating a series of
 instances of the various yar services. The number, type
 and size of these containers can be varied to validate
 yar's operation in various deployment configurations.
-
 The intended deployment OS for yar is
 [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
-and therefore the Docker containers used for integration
-testing also run this OS.
+and therefore the Docker containers run this OS.
+
+Spinning Up a Docker Container Host
+-----------------------------------
 
 The primary development environment for yar has been, and
-continues to be, Mac OS X. Docker support for Mac OS X
-is limited and thus a better supported Docker container
-host is required for testsing.
-Again, [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
-was selected as the container host.
+continues to be, [Mac OS X](http://www.apple.com/ca/osx/).
+[Docker](https://www.docker.io/) support for [Mac OS X](http://www.apple.com/ca/osx/)
+is limited and thus a better supported OS for the [Docker](https://www.docker.io/) container
+host is required.
+[Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
+was again selected as the container host.
 [Vagrant](http://www.vagrantup.com/) is used to spin a
 [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
 on [VirtualBox](https://www.virtualbox.org/)
-as the container host.
+as the container host. One little gotcha with this (it's always the little things:-)).
+*the precise64 [box](http://docs.vagrantup.com/v2/boxes.html) comes with version X.Y
+of the Linux kernel and per the
+[Docker install instructions](http://docs.docker.io/en/latest/installation/ubuntulinux/)
+we see that version Z.A of the Linux kernel is required.*
+* create box with upgraded kernel and add to local machine's box
+* change container host to use above image 
+* build container host and put in local box container
+
 
 Spinning Up a Deployment
 ------------------------
