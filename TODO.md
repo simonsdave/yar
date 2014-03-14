@@ -4,7 +4,6 @@ To Do's
 General
 -------
 * rename CouchDB to couchdb - need to change create_images.sh
-* instructions for building precise64 ubuntu with 3.8 kernel
 
 CouchDB Installer
 -----------------

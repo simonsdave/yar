@@ -1,7 +1,3 @@
-**WARNING - as of 13 Mar '14 Dave has broken this integration
-test framework and a way that he doesn't understand:-( The
-auth server now fails to start.**
-
 Testing and experimenting with a full yar deployment
 is done by creating a series of
 [Docker](https://www.docker.io/) containers to run
@@ -15,25 +11,52 @@ and therefore the Docker containers run this OS.
 Spinning Up a Docker Container Host
 -----------------------------------
 
-The primary development environment for yar has been, and
-continues to be, [Mac OS X](http://www.apple.com/ca/osx/).
-[Docker](https://www.docker.io/) support for [Mac OS X](http://www.apple.com/ca/osx/)
-is limited and thus a better supported OS for the [Docker](https://www.docker.io/) container
-host is required.
+The primary development environment for yar is
+[Mac OS X](http://www.apple.com/ca/osx/).
+[Docker](https://www.docker.io/) doesn't support
+[Mac OS X](http://www.apple.com/ca/osx/)
+so a [Vagrant](http://www.vagrantup.com/) provisioned
+[VirtualBox](https://www.virtualbox.org/)
+VM running [Ubuntu 12.04](http://releases.ubuntu.com/12.04/) is
+used as the [Docker](https://www.docker.io/) container host. 
+There's one little gotcha to address = the default
 [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
-was again selected as the container host.
-[Vagrant](http://www.vagrantup.com/) is used to spin a
+[box](http://docs.vagrantup.com/v2/boxes.html)
+runs the 3.2 Linux kernel but 
+[Docker requires](http://docs.docker.io/en/latest/installation/ubuntulinux/)
+version 3.8 of the Linux kernel. So, we need create a local
 [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
-on [VirtualBox](https://www.virtualbox.org/)
-as the container host. One little gotcha with this (it's always the little things:-)).
-*the precise64 [box](http://docs.vagrantup.com/v2/boxes.html) comes with version X.Y
-of the Linux kernel and per the
-[Docker install instructions](http://docs.docker.io/en/latest/installation/ubuntulinux/)
-we see that version Z.A of the Linux kernel is required.*
-* create box with upgraded kernel and add to local machine's box
-* change container host to use above image 
-* build container host and put in local box container
+[box](http://docs.vagrantup.com/v2/boxes.html)
+with the 3.8 Linux kernel. Let's walk through this process step by step
+assuming you're starting from scratch.
 
+* get the source code by running the following in a new terminal window
+
+~~~~~
+cd; git clone https://github.com/simonsdave/yar.git; cd yar; source bin/cfg4dev
+~~~~~
+
+* ...
+
+~~~~~
+(env)>cd integration_tests/docker_container_host
+(env)>vagrant up
+<<<lots of messages>>>
+(env)>vagrant status
+Current machine states:
+default                   running (virtualbox)
+~~~~~
+
+* [vagrant package](https://docs.vagrantup.com/v2/cli/package.html)
+
+~~~~~
+(env)>vagrant package --output precise64-3.8-kernel.box
+[default] Attempting graceful shutdown of VM...
+[default] Clearing any previously set forwarded ports...
+[default] Creating temporary directory for export...
+[default] Exporting VM...
+[default] Compressing package to: /Users/dave/yar/integration_tests/precise64-3.8-kernel/precise64-3.8-kernel.box
+~~~~~
 
 Spinning Up a Deployment
 ------------------------
@@ -322,3 +345,4 @@ and not used extensively (so Googling for answers yielded few hits).
 The docker cli on the other hand is very well documented and lots of folks
 are using it so easy to Google for answers.
 * :TODO: data for key store containers
+
