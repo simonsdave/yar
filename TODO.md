@@ -1,12 +1,21 @@
 To Do's
 -------
 
+General
+-------
+* rename CouchDB to couchdb - need to change create_images.sh
+* generate new sample reports
+    * image
+    * pdf
+* instructions for building precise64 ubuntu with 3.8 kernel
+
 CouchDB Installer
 -----------------
 * configure
 [Automatic_Compaction](https://wiki.apache.org/couchdb/Compaction#Automatic_Compaction)
 of databases and views
-* Python script to config cont replication between two key stores
+* write Python script to config cont replication between master & its backup
+* write Python script to config cont replication between master & its backup
 
 Auth Server
 -----------
