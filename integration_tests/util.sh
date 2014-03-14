@@ -234,7 +234,6 @@ create_auth_server() {
         --appserver=$APP_SERVER \
         --noncestore=$NONCE_STORE \
         --logfile=/var/auth_server/auth_server_log"
-    echo $AUTH_SERVER_CMD
     AUTH_SERVER=$(sudo docker run \
         -d \
         -v $DATA_DIRECTORY:/var/auth_server \
