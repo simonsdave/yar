@@ -70,11 +70,9 @@ cat_if_not_silent() {
 # the script accepts an optional -s command line argument.
 # if -s exists set SILENT to 1 otherwise SILENT is set to 0.
 SILENT=0
-if [ 2 -le $# ]; then
-    if [ "-s" == $1 ]; then
-        SILENT=1
-        shift
-    fi
+if [ "-s" == ${1:-} ]; then
+    SILENT=1
+    shift
 fi
 
 # the script accepts an optional single command line argument
