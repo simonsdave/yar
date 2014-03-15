@@ -87,6 +87,21 @@ run_load_test() {
     local DOCKER_CONTAINER_DATA=$RESULTS_DIR/$(left_zero_pad $CONCURRENCY 4)-$NUMBER_OF_REQUESTS
     mkdir -p $DOCKER_CONTAINER_DATA
 
+    #
+    # generate a title page for summary report
+    #
+    REPORT_TEXT="Number of Requests  = $NUMBER_OF_REQUESTS"
+    REPORT_TEXT="$REPORT_TEXT\nConcurrency = $CONCURRENCY"
+    REPORT_TEXT="$REPORT_TEXT\nPercentile = $PERCENTILE"
+
+    convert \
+        -background lightgray \
+        -fill black \
+        -size 1280x720 \
+        label:"$REPORT_TEXT" \
+        -gravity center \
+        $RESULTS_FILE_BASE_NAME.png
+
     # :TODO: what if this scripts fails?
 	echo "Removing all existing deployments"
     $SCRIPT_DIR_NAME/rm_all_containers.sh
@@ -264,13 +279,24 @@ mkdir -p $RESULTS_DIR
 NUMBER_OF_REQUESTS=5000
 PERCENTILE=98
 
-run_load_test $NUMBER_OF_REQUESTS 1 $PERCENTILE $RESULTS_DIR
-run_load_test $NUMBER_OF_REQUESTS 5 $PERCENTILE $RESULTS_DIR
-run_load_test $NUMBER_OF_REQUESTS 10 $PERCENTILE $RESULTS_DIR
-run_load_test $NUMBER_OF_REQUESTS 25 $PERCENTILE $RESULTS_DIR
-run_load_test $NUMBER_OF_REQUESTS 50 $PERCENTILE $RESULTS_DIR
-run_load_test $NUMBER_OF_REQUESTS 75 $PERCENTILE $RESULTS_DIR
-run_load_test $NUMBER_OF_REQUESTS 100 $PERCENTILE $RESULTS_DIR
+# generate a title page for the summary report
+REPORT_TEXT="yar load test ($START_TIME)\n"
+REPORT_TEXT="$REPORT_TEXT\nNumber of Requests  = $NUMBER_OF_REQUESTS"
+REPORT_TEXT="$REPORT_TEXT\nPercentile = $PERCENTILE"
+
+convert \
+    -background lightgray \
+    -fill black \
+    -size 1280x720 \
+    label:"$REPORT_TEXT" \
+    -gravity center \
+    $RESULTS_DIR/0000-$NUMBER_OF_REQUESTS.png
+
+# run the load test
+for CONCURRENCY in 1 5 10 25 50 75 100
+do
+    run_load_test $NUMBER_OF_REQUESTS $CONCURRENCY $PERCENTILE $RESULTS_DIR
+done
 
 SUMMARY_REPORT_FILENAME=$RESULTS_DIR/test-results-summary.pdf
 
