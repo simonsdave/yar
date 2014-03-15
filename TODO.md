@@ -42,9 +42,8 @@ Integration Testing
 Authorization
 -------------
 * key concepts
-  * authentication
-  * authorization
-  * accounting
+  * authentication, authorization, accounting ([AAA](http://en.wikipedia.org/wiki/AAA_protocol))
+  * [tokenization](https://www.youtube.com/watch?feature=player_embedded&v=-DqCtdc30LY)
 * initial capabilities not in scope
   * groups of principles
   * explicitly denying access (what's the name of this?) - once this is
