@@ -157,7 +157,7 @@ to the local repo of boxes
 > [box](http://docs.vagrantup.com/v2/boxes.html)
 > name *docker-container-host* right because
 > it's referred to by name in
-> [this Vagrantfile](../Vagrantfile.sh)
+> [this Vagrantfile](Vagrantfile.sh)
 
 ~~~~~
 (env)>vagrant box list
@@ -176,10 +176,16 @@ precise64-3.8-kernel  (virtualbox)
 (env)>
 ~~~~~
 
-Spinning Up a Deployment
-------------------------
+Running a Load Test
+-------------------
 
-Let's walk step by step through the process of spinning up a deployment.
+With the above instructions we now have a
+[Vagrant](http://www.vagrantup.com/)
+[box](http://docs.vagrantup.com/v2/boxes.html)
+running [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
+and 90% of what we need to run a load test.
+Let's walk through the process of spinning up
+a VM to run a load test.
 We'll assume you're doing this from ground zero and don't even have
 the yar source installed on your machine.
 
@@ -189,57 +195,66 @@ the yar source installed on your machine.
 cd; git clone https://github.com/simonsdave/yar.git; cd yar; source bin/cfg4dev
 ~~~~~
 
-* provision the container host
+* spin up the [box](http://docs.vagrantup.com/v2/boxes.html)
 
 ~~~~~
-cd integration_tests; ./provision_docker_container_host.sh
+cd integration_tests; ./provision.sh
+<<<cut lots of messages>>>
+[default] Mounting shared folders...
+[default] -- /vagrant
+[default] Running provisioner: shell...
+[default] Running: /var/folders/wg/vg0nq7dd3hddk_fvzwq6sg6m0000gn/T/vagrant-shell20140315-84734-1ludnvy
 ~~~~~
 
-* it will take a few minutes, you'll see lots of messages rushing by on your
-terminal window as provision_docker_container_host.sh packages up yar
-for install by pip, uses Vagrant to spin up a virtual machine
-that's the container host on VirtualBox.
-* once the virtual machine is running, use vagrant to ssh into the VM
+* once the VM is running, ssh into the VM
 and get to the directory that gives you access to the 
-testing scripts
+test scripts
 
 ~~~~~
 (env)>vagrant ssh
-Welcome to Ubuntu 12.04 LTS (GNU/Linux 3.2.0-23-generic x86_64)
+Welcome to Ubuntu 12.04 LTS (GNU/Linux 3.8.0-37-generic x86_64)
 
  * Documentation:  https://help.ubuntu.com/
 Welcome to your Vagrant-built virtual machine.
 Last login: Fri Sep 14 06:23:18 2012 from 10.0.2.2
-vagrant@precise64:~$ cd /vagrant
+vagrant@precise64:~$ cd /vagrant/
 vagrant@precise64:/vagrant$ ls -la
-total 68
-drwxr-xr-x  1 vagrant vagrant   748 Mar  1 12:42 .
-drwxr-xr-x 24 root    root     4096 Mar  1 12:43 ..
-drwxr-xr-x  1 vagrant vagrant   170 Feb 28 23:19 App-Server-LB
-drwxr-xr-x  1 vagrant vagrant   136 Mar  1 12:42 artifacts
-drwxr-xr-x  1 vagrant vagrant   170 Mar  1 12:24 Auth-Server-LB
--rwxr-xr-x  1 vagrant vagrant   408 Mar  1 12:36 create_images.sh
--rw-r--r--  1 vagrant vagrant  6148 Feb 28 20:34 .DS_Store
--rwxr-xr-x  1 vagrant vagrant    25 Feb 28 20:47 .gitignore
-drwxr-xr-x  1 vagrant vagrant   136 Feb 28 23:19 Key-Store
-drwxr-xr-x  1 vagrant vagrant   102 Feb 27 22:56 Nonce-Store
--rw-r--r--  1 vagrant vagrant  1239 Feb 28 14:37 plot_load_test_results
--rwxr-xr-x  1 vagrant vagrant  2171 Feb 28 17:10 provision_docker_container_host_post_vagrant_up.sh
--rwxr-xr-x  1 vagrant vagrant   685 Feb 27 22:56 provision_docker_container_host.sh
--rw-r--r--  1 vagrant vagrant 10791 Feb 27 22:56 README.md
--rwxr-xr-x  1 vagrant vagrant   438 Feb 27 22:56 rm_all_containers.sh
--rwxr-xr-x  1 vagrant vagrant  3441 Feb 28 23:07 run_load_test.sh
--rwxr-xr-x  1 vagrant vagrant  7851 Feb 28 22:35 spin_up_deployment.sh
-drwxr-xr-x  1 vagrant vagrant   136 Feb 27 22:56 SSL-Term
-drwxr-xr-x  1 vagrant vagrant   374 Feb 28 23:07 test-results
-drwxr-xr-x  1 vagrant vagrant   102 Feb 27 22:57 .vagrant
--rw-r--r--  1 vagrant vagrant  4700 Mar  1 12:24 Vagrantfile
-drwxr-xr-x  1 vagrant vagrant   136 Mar  1 12:42 yar
+total 140
+drwxr-xr-x  1 vagrant vagrant  1020 Mar 15 13:00 .
+drwxr-xr-x 24 root    root     4096 Mar 14 00:46 ..
+-rw-r--r--  1 vagrant vagrant   601 Mar 14 00:27 app_server_haproxy.cfg.template
+drwxr-xr-x  1 vagrant vagrant   136 Mar 15 13:00 artifacts
+-rw-r--r--  1 vagrant vagrant   561 Mar 14 00:27 auth_server_haproxy.cfg.template
+drwxr-xr-x  1 vagrant vagrant   102 Mar 14 00:27 CouchDB
+-rwxr-xr-x  1 vagrant vagrant   311 Mar 14 00:27 create_images.sh
+drwxr-xr-x  1 vagrant vagrant   204 Mar 15 12:31 docker-container-host
+-rw-r--r--  1 vagrant vagrant  6148 Mar 15 11:40 .DS_Store
+-rwxr-xr-x  1 vagrant vagrant    25 Mar 14 00:27 .gitignore
+drwxr-xr-x  1 vagrant vagrant   102 Mar 14 00:27 haproxy
+drwxr-xr-x  1 vagrant vagrant   102 Mar 14 00:27 memcached
+drwxr-xr-x  1 vagrant vagrant   170 Mar 14 01:32 precise64-3.8-kernel
+-rwxr-xr-x  1 vagrant vagrant   205 Mar 15 12:42 provision_post_vagrant_up.sh
+-rwxr-xr-x  1 vagrant vagrant   685 Mar 14 00:27 provision.sh
+-rw-r--r--  1 vagrant vagrant 18247 Mar 15 12:57 README.md
+-rw-r--r--  1 vagrant vagrant 32768 Mar 15 13:03 .README.md.swp
+-rw-r--r--  1 vagrant vagrant  1239 Mar 14 00:27 response_time_by_time.gpcfg
+-rw-r--r--  1 vagrant vagrant   673 Mar 14 00:27 response_time.gpcfg
+-rwxr-xr-x  1 vagrant vagrant   466 Mar 14 00:27 rm_all_containers.sh
+-rwxr-xr-x  1 vagrant vagrant 10320 Mar 15 11:40 run_load_test.sh
+drwxr-xr-x  1 vagrant vagrant   170 Mar 14 11:51 samples
+-rwxr-xr-x  1 vagrant vagrant  4260 Mar 15 11:40 spin_up_deployment.sh
+drwxr-xr-x  1 vagrant vagrant   238 Mar 14 11:10 test-results
+-rw-r--r--  1 vagrant vagrant  7128 Mar 14 11:03 util.sh
+drwxr-xr-x  1 vagrant vagrant   102 Mar 14 01:31 .vagrant
+-rw-r--r--  1 vagrant vagrant   302 Mar 15 12:41 Vagrantfile
+drwxr-xr-x  1 vagrant vagrant   136 Mar 15 13:00 yar
+-rw-r--r--  1 vagrant vagrant   395 Mar 14 00:27 yar_server_response_time_by_time.gpcfg
+-rw-r--r--  1 vagrant vagrant   508 Mar 14 00:27 yar_server_response_time.gpcfg
 vagrant@precise64:/vagrant$
 ~~~~~
 
-* now let's create the Docker images for
-yar services by running create_images.sh
+* now let's create the docker images for
+the yar services by running create_images.sh
 
 ~~~~~
 ./create_images.sh
@@ -254,44 +269,44 @@ has completed
 
 ~~~~~
 vagrant@precise64:/vagrant$ sudo docker images
-REPOSITORY           TAG                 IMAGE ID            CREATED              VIRTUAL SIZE
-yar_img              latest              1c8045e67082        41 seconds ago      444.9 MB
-key_store_img        latest              3165591d3b4e        3 minutes ago       563 MB
-nonce_store_img      latest              3d11114f6091        7 minutes ago       265.5 MB
-auth_server_lb_img   latest              8b3c3e0be13f        8 minutes ago       226 MB
-app_server_lb_img    latest              8b3c3e0be13f        8 minutes ago       226 MB
-ubuntu               12.04               9cd978db300e        3 weeks ago         204.4 MB
+REPOSITORY          TAG                 IMAGE ID            CREATED              VIRTUAL SIZE
+yar_img             latest              d770e7883a5b        About a minute ago   445.2 MB
+couchdb_img         latest              db88127069f7        3 minutes ago        563.2 MB
+memcached_img       latest              7fd1a46bdae4        6 minutes ago        265.8 MB
+haproxy_img         latest              a457fedc88f9        6 minutes ago        226.3 MB
+ubuntu              12.04               9cd978db300e        5 weeks ago          204.4 MB
 ~~~~~
 
 * now we have everything we need to spin up a complete, simple yar deployment
-and we'll do this using ./spin_up_deployment.sh
+and we'll do this by running ./spin_up_deployment.sh
 
 ~~~~~
 vagrant@precise64:/vagrant$ ./spin_up_deployment.sh
-Creating Services ...
+Starting Services ...
 
 Starting App Server(s)
-172.17.0.2:8080
+172.17.0.2:8080 in /tmp/tmp.qsomtrJz1H/App-Server
 Starting App Server LB
-172.17.0.3:8080
+172.17.0.3:8080 in /tmp/tmp.qsomtrJz1H/App-Server-LB
 Starting Nonce Store
 172.17.0.4:11211
 Starting Key Store
-172.17.0.5:5984/creds
+172.17.0.5:5984/creds in /tmp/tmp.qsomtrJz1H/Key-Store
 Starting Key Server
-172.17.0.6:8070
+172.17.0.6:8070 in /tmp/tmp.qsomtrJz1H/Key-Server
 Starting Auth Server
-172.17.0.7:8000
+172.17.0.7:8000 in /tmp/tmp.qsomtrJz1H/Auth-Server
 Starting Auth Server LB
-172.17.0.8:8000
+172.17.0.8:8000 in /tmp/tmp.qsomtrJz1H/Auth-Server-LB
 
 Creating Credentials ...
 
 Credentials in ~/.yar.creds
-API_KEY=bcca8cf60c8042a0a098486be74a1b32
-MAC_KEY_IDENTIFIER=147751cc8b8f4007ba12e4aeacc9a5bc
-MAC_KEY=rb5C1RVB29EtnvU8eGms_ZwKzBv_mMU54FeKZTxEi78
+API_KEY=bd95fc48d57a4034939f04ef56fac46d
+MAC_KEY_IDENTIFIER=4b480f4f9a2343089b9f8cbe534cb522
+MAC_KEY=iPBKxnbbylBFUOK4qS-gS8ak7bQRyA4aVyey_e944XE
 MAC_ALGORITHM=hmac-sha-1
+vagrant@precise64:/vagrant$
 ~~~~~
 
 * so what did ./spin_up_deployment.sh just do? it spun up a
@@ -300,14 +315,15 @@ highly simplified but complete deployment of yar
 
 ~~~~~
 vagrant@precise64:/vagrant$ sudo docker ps
-CONTAINER ID        IMAGE                      COMMAND                CREATED              STATUS              PORTS               NAMES
-245d71b20960        app_server_lb_img:latest   haproxy -f /haproxyc   37 seconds ago       Up 36 seconds                           hungry_lumiere
-a48896a577d3        yar_img:latest             auth_server --log=in   38 seconds ago       Up 38 seconds                           drunk_einstein
-7941d4098e9d        yar_img:latest             key_server --log=inf   39 seconds ago       Up 39 seconds                           backstabbing_engelbart
-5220789c8bae        key_store_img:latest       /bin/sh -c couchdb     57 seconds ago       Up 57 seconds       5984/tcp            thirsty_galileo
-de29033b58c5        nonce_store_img:latest     /bin/sh -c memcached   58 seconds ago       Up 58 seconds       11211/tcp           stupefied_lovelace
-b5e9f99d6404        app_server_lb_img:latest   haproxy -f /haproxyc   About a minute ago   Up 59 seconds                           berserk_ptolemy
-e3f638c85c23        yar_img:latest             app_server --log=inf   About a minute ago   Up About a minute                       jovial_tesla
+CONTAINER ID        IMAGE                  COMMAND                CREATED              STATUS              PORTS               NAMES
+5c1514791174        haproxy_img:latest     haproxy -f /haproxyc   About a minute ago   Up About a minute                       dreamy_wright
+886ffd903d05        yar_img:latest         auth_server --log=in   About a minute ago   Up About a minute                       furious_fermat
+e160d943acc3        yar_img:latest         key_server --log=inf   About a minute ago   Up About a minute                       grave_lovelace
+de58bfa2ce11        couchdb_img:latest     /bin/sh -c couchdb     About a minute ago   Up About a minute   5984/tcp            focused_wozniak
+494464ec2278        memcached_img:latest   /bin/sh -c memcached   About a minute ago   Up About a minute   11211/tcp           high_bohr
+2ea0d8cd56ea        haproxy_img:latest     haproxy -f /haproxyc   About a minute ago   Up About a minute                       sleepy_brattain
+bb9ac51a422c        yar_img:latest         app_server --log=inf   About a minute ago   Up About a minute                       mad_hawking
+vagrant@precise64:/vagrant$
 ~~~~~
 
 * spin_up_deployment.sh also 
@@ -316,54 +332,36 @@ and [OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/h
 authentication
 * you can issue requests to using
 [cURL](http://en.wikipedia.org/wiki/CURL) and
-[yarcurl](https://github.com/simonsdave/yar/wiki/Utilities#yarcurl) - go ahead, try it
+[yarcurl](../bin/yarcurl) - go ahead, try it
 
 ~~~~~
-vagrant@precise64:/vagrant$ curl -s -u bcca8cf60c8042a0a098486be74a1b32: http://172.17.0.8:8000/dave.html | jpp
+vagrant@precise64:/vagrant$ curl -s -u bd95fc48d57a4034939f04ef56fac46d: http://172.17.0.8:8000 | jpp
 {
     "auth": "YAR dave@example.com",
     "status": "ok",
-    "when": "2014-03-01 13:23:36.066555"
+    "when": "2014-03-15 13:22:04.410721"
+}
+vagrant@precise64:/vagrant$ yarcurl GET http://172.17.0.8:8000 | jpp
+{
+    "auth": "YAR dave@example.com",
+    "status": "ok",
+    "when": "2014-03-15 13:25:10.753733"
 }
 ~~~~~
 
-Logging
--------
-
-* yar's [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server),
-[Key Server](https://github.com/simonsdave/yar/wiki/Key-Server)
-and [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server)
-are all capabile of logging to
-[syslog](http://manpages.ubuntu.com/manpages/precise/man8/rsyslogd.8.html)
-(see the --syslog command line option for each of these servers)
-* ./spin_up_deployment.sh maps the /dev/log device for each
-[Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server),
-[Key Server](https://github.com/simonsdave/yar/wiki/Key-Server)
-and [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server)
-to the host container's /dev/log and tells these servers
-to log to syslog which is useful because it means you can watch log output
-for 3 servers by tailing /var/log/syslog on the container host
-
-~~~~~
-tail -f /var/log/syslog
-~~~~~
-
-Load Testing
-------------
-
 * above we issued request to the deployment using
 [cURL](http://en.wikipedia.org/wiki/CURL) and
-[yarcurl](https://github.com/simonsdave/yar/wiki/Utilities#yarcurl) but if
+[yarcurl](../bin/yarcurl) but if
 you want to get a sense of how yar performs under load you'll
 want to issue repeated requests at various concurrency levels - a simple
 way to get going down that path is to use
 [Apache's ab](http://httpd.apache.org/docs/2.4/programs/ab.html) utility which
-was installed on the container host by provision_docker_container_host.sh - below
+you'll find has already been installed for you - below
 is an example of using ab to issue 10,000 requests to the deployment's
 auth server 10 requests at a time
 
 ~~~~~
-vagrant@precise64:/vagrant$ ab -c 10 -n 10000 -A bcca8cf60c8042a0a098486be74a1b32: http://172.17.0.8:8000/dave.html
+vagrant@precise64:/vagrant$ ab -c 10 -n 10000 -A bd95fc48d57a4034939f04ef56fac46d: http://172.17.0.8:8000/dave.html
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
 Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
 Licensed to The Apache Software Foundation, http://www.apache.org/
@@ -390,34 +388,34 @@ Document Path:          /dave.html
 Document Length:        86 bytes
 
 Concurrency Level:      10
-Time taken for tests:   120.045 seconds
+Time taken for tests:   128.914 seconds
 Complete requests:      10000
 Failed requests:        0
 Write errors:           0
 Total transferred:      2880000 bytes
 HTML transferred:       860000 bytes
-Requests per second:    83.30 [#/sec] (mean)
-Time per request:       120.045 [ms] (mean)
-Time per request:       12.004 [ms] (mean, across all concurrent requests)
-Transfer rate:          23.43 [Kbytes/sec] received
+Requests per second:    77.57 [#/sec] (mean)
+Time per request:       128.914 [ms] (mean)
+Time per request:       12.891 [ms] (mean, across all concurrent requests)
+Transfer rate:          21.82 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
 Connect:        0    0   0.1      0       2
-Processing:    34  120  15.5    120     210
-Waiting:       34  120  15.5    120     210
-Total:         34  120  15.5    120     210
+Processing:    30  129  24.4    125     255
+Waiting:       30  128  24.4    125     255
+Total:         30  129  24.4    125     255
 
 Percentage of the requests served within a certain time (ms)
-  50%    120
-  66%    125
-  75%    128
-  80%    130
-  90%    137
-  95%    146
-  98%    155
-  99%    163
- 100%    210 (longest request)
+  50%    125
+  66%    134
+  75%    141
+  80%    145
+  90%    160
+  95%    173
+  98%    190
+  99%    201
+ 100%    255 (longest request)
 ~~~~~
 
 * running a single [Apache ab](http://httpd.apache.org/docs/2.4/programs/ab.html)
@@ -463,4 +461,3 @@ and not used extensively (so Googling for answers yielded few hits).
 The docker cli on the other hand is very well documented and lots of folks
 are using it so easy to Google for answers.
 * :TODO: data for key store containers
-
