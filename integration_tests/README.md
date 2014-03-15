@@ -1,3 +1,6 @@
+> these instructions are not totally in sync with the code
+> updates coming soon ...
+
 Testing and experimenting with a full yar deployment
 is done by creating a series of
 [Docker](https://www.docker.io/) containers to run
@@ -8,8 +11,8 @@ The intended deployment OS for yar is
 [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
 and therefore the Docker containers run this OS.
 
-Spinning Up a Docker Container Host
------------------------------------
+Creating a Box with Correct Linux Kernel
+----------------------------------------
 
 The primary development environment for yar is
 [Mac OS X](http://www.apple.com/ca/osx/).
@@ -28,15 +31,19 @@ version 3.8 of the Linux kernel. So, we need create a local
 [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
 [box](http://docs.vagrantup.com/v2/boxes.html)
 with the 3.8 Linux kernel. Let's walk through this process step by step
-assuming you're starting from scratch.
+assuming you don't have the yar source code on your machine.
 
-* get the source code by running the following in a new terminal window
+* get the source code and pre-reqs by running the
+following in a new terminal window
 
 ~~~~~
 cd; git clone https://github.com/simonsdave/yar.git; cd yar; source bin/cfg4dev
 ~~~~~
 
-* ...
+* use [Vagrant](http://www.vagrantup.com/) to spin up
+the [VirtualBox](https://www.virtualbox.org/)
+[box](http://docs.vagrantup.com/v2/boxes.html)
+that will become the docker container host
 
 ~~~~~
 (env)>cd integration_tests/docker_container_host
@@ -47,7 +54,10 @@ Current machine states:
 default                   running (virtualbox)
 ~~~~~
 
-* [vagrant package](https://docs.vagrantup.com/v2/cli/package.html)
+* use [Vagrant](http://www.vagrantup.com/)'s
+[package](https://docs.vagrantup.com/v2/cli/package.html)
+command to create the
+[box](http://docs.vagrantup.com/v2/boxes.html)
 
 ~~~~~
 (env)>vagrant package --output precise64-3.8-kernel.box
@@ -56,7 +66,45 @@ default                   running (virtualbox)
 [default] Creating temporary directory for export...
 [default] Exporting VM...
 [default] Compressing package to: /Users/dave/yar/integration_tests/precise64-3.8-kernel/precise64-3.8-kernel.box
+(env)>ls -l
+total 1145888
+-rw-r--r--  1 dave  staff        381 14 Mar 07:59 Vagrantfile
+-rw-r--r--  1 dave  staff  586685947 14 Mar 09:24 precise64-3.8-kernel.box
+-rw-r--r--  1 dave  staff        184 14 Mar 07:59 provision.sh
+(env)>
 ~~~~~
+
+* use [Vagrant](http://www.vagrantup.com/)'s
+[box add](https://docs.vagrantup.com/v2/cli/box.html)
+command to add the
+[box](http://docs.vagrantup.com/v2/boxes.html)
+to the local repo of boxes
+
+> in the code below it's important to get the 
+> [box](http://docs.vagrantup.com/v2/boxes.html)
+> name *precise64-3.8-kernel* right because
+> it's referred to by name in
+> [this Vagrantfile](Vagrantfile.sh)
+
+~~~~~
+(env)>vagrant box list
+precise64 (virtualbox)
+ubuntu    (virtualbox)
+(env)>vagrant box add precise64-3.8-kernel precise64-3.8-kernel.box
+Downloading or copying the box...
+Extracting box...te: 136M/s, Estimated time remaining: 0:00:01)
+Successfully added box 'precise64-3.8-kernel' with provider 'virtualbox'!
+(env)>vagrant box list
+precise64            (virtualbox)
+precise64-3.8-kernel (virtualbox)
+ubuntu               (virtualbox)
+(env)>
+~~~~~
+
+Creating a Box with Correct Linux Kernel
+----------------------------------------
+
+* :TODO: pull out items from the text below
 
 Spinning Up a Deployment
 ------------------------
@@ -78,7 +126,7 @@ cd integration_tests; ./provision_docker_container_host.sh
 ~~~~~
 
 * it will take a few minutes, you'll see lots of messages rushing by on your
-terminal windows as provision_docker_container_host.sh packages up yar
+terminal window as provision_docker_container_host.sh packages up yar
 for install by pip, uses Vagrant to spin up a virtual machine
 that's the container host on VirtualBox.
 * once the virtual machine is running, use vagrant to ssh into the VM
