@@ -100,7 +100,7 @@ run_load_test() {
         -size 1280x720 \
         label:"$REPORT_TEXT" \
         -gravity center \
-        $RESULTS_FILE_BASE_NAME.png
+        $RESULTS_FILE_BASE_NAME-0-section-title.png
 
     # :TODO: what if this scripts fails?
 	echo "Removing all existing deployments"
