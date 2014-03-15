@@ -1,8 +1,8 @@
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "precise64-3.8-kernel"
-  config.vm.provision "shell", path: "provision_docker_container_host_post_vagrant_up.sh"
+  config.vm.box = "docker-container-host"
+  config.vm.provision "shell", path: "provision_post_vagrant_up.sh"
   config.vm.provider :virtualbox do |vb|
     vb.customize ["modifyvm", :id, "--memory", "4096"]
   end

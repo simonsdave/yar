@@ -32,11 +32,6 @@ apt-get update
 # :TODO: how do versions get controlled with apt-get?
 apt-get install -y lxc-docker
 
-# these utilities are exceptionally useful during
-# load/stress testing in the container host
-cp /vagrant/artifacts/jpp /usr/local/bin/.
-cp /vagrant/artifacts/yarcurl /usr/local/bin/.
-
 # python scripts setup and drive tests so we'll need pip
 apt-get install -y python-pip
 
