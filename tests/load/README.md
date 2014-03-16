@@ -27,8 +27,9 @@ runs the 3.2 Linux kernel but
 version 3.8 of the Linux kernel. So, we need create a local
 [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
 [box](http://docs.vagrantup.com/v2/boxes.html)
-with the 3.8 Linux kernel. Let's walk through this process step by step
-assuming you don't have the yar source code on your machine.
+with the 3.8 Linux kernel.
+Let's walk through this process step by step.
+We'll assume you don't have the yar source code on your machine.
 
 * get the source code and pre-reqs by running the
 following in a new terminal window
@@ -37,13 +38,13 @@ following in a new terminal window
 cd; git clone https://github.com/simonsdave/yar.git; cd yar; source bin/cfg4dev
 ~~~~~
 
-* use [Vagrant](http://www.vagrantup.com/) to spin up
-the [VirtualBox](https://www.virtualbox.org/)
+* use [Vagrant](http://www.vagrantup.com/) to provision
+a [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
 [box](http://docs.vagrantup.com/v2/boxes.html)
-that will become the docker container host
+with version 3.8 of the Linux kernel
 
 ~~~~~
-(env)>cd integration_tests/precise64-3.8-kernel
+(env)>cd tests/load/precise64-3.8-kernel
 (env)>vagrant up
 <<<lots of messages>>>
 (env)>vagrant status
@@ -53,7 +54,7 @@ default                   running (virtualbox)
 
 * use [Vagrant](http://www.vagrantup.com/)'s
 [package](https://docs.vagrantup.com/v2/cli/package.html)
-command to create the
+command to create a
 [box](http://docs.vagrantup.com/v2/boxes.html)
 
 ~~~~~
@@ -62,7 +63,7 @@ command to create the
 [default] Clearing any previously set forwarded ports...
 [default] Creating temporary directory for export...
 [default] Exporting VM...
-[default] Compressing package to: /Users/dave/yar/integration_tests/precise64-3.8-kernel/precise64-3.8-kernel.box
+[default] Compressing package to: /Users/dave/yar/tests/load/precise64-3.8-kernel/precise64-3.8-kernel.box
 (env)>ls -l
 total 1145888
 -rw-r--r--  1 dave  staff        381 14 Mar 07:59 Vagrantfile
@@ -117,7 +118,7 @@ the [VirtualBox](https://www.virtualbox.org/)
 that will become the docker container host
 
 ~~~~~
-(env)>cd integration_tests/docker-container-host
+(env)>cd tests/load/docker-container-host
 (env)>vagrant up
 <<<lots of messages>>>
 Processing triggers for libc-bin ...
@@ -143,7 +144,7 @@ command to create the
 [default] Clearing any previously set forwarded ports...
 [default] Creating temporary directory for export...
 [default] Exporting VM...
-[default] Compressing package to: /Users/dave/yar/integration_tests/docker-container-host/docker-container-host.box
+[default] Compressing package to: /Users/dave/yar/tests/load/docker-container-host/docker-container-host.box
 (env)>
 ~~~~~
 
@@ -198,7 +199,7 @@ cd; git clone https://github.com/simonsdave/yar.git; cd yar; source bin/cfg4dev
 * spin up the [box](http://docs.vagrantup.com/v2/boxes.html)
 
 ~~~~~
-cd integration_tests; ./provision.sh
+cd tests/load; ./provision.sh
 <<<cut lots of messages>>>
 [default] Mounting shared folders...
 [default] -- /vagrant
