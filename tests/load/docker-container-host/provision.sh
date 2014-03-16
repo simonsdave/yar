@@ -2,6 +2,60 @@
 
 apt-get update
 
+# :TODO: not sure I totally get this, until Docker 0.9 I believe lxc was
+# installed by Docker but this no longer seems to be the case so we're
+# manually installing it before Docker is installed
+apt-get install -y lxc
+
+# http://docs.docker.io/en/latest/installation/ubuntulinux/#ubuntu-precise-12-04-lts-64-bit
+#
+# probably useful to know that Docker's logs are in /var/log/upstart/docker.log
+
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+sh -c "echo deb http://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
+apt-get update
+# as of 12 Mar this installs docker 0.9
+# :TODO: how do versions get controlled with apt-get?
+apt-get install -y lxc-docker
+
+# force Docker to use the lxc execution engine because (as per
+# http://blog.docker.io/2013/10/gathering-lxc-docker-containers-metrics/)
+# we want to get access to things like CPU and memory usage metrics
+# using cgroups. with Docker 0.9 they've introduced something
+# (that I don't understand) which disables the cgroups stuff.
+#
+# to convince yourself that this is working the following should help
+#
+# run this command
+#
+#   ls -la /sys/fs/cgroup/memory/lxc
+#
+# and won't see any container IDs
+#
+# start a container running in the background (not it's gotta be
+# in the background otherwise the cgroup psudeo-files won't be there)
+#
+#   CONTAINER_ID=$(sudo docker run -d ubuntu /bin/sh -c "while true; do echo $(date) - hello world; sleep 1; done")
+#
+# convince yourself the container is running by doing something like
+#
+#   sudo docker logs $CONTAINER_ID
+#
+# now try the ls again this time attempting to get the memory
+# currently being used by the container
+#
+#   ls -la /sys/fs/cgroup/memory/lxc/$CONTAINER_ID/memory.usage_in_bytes
+
+sed -i 's/#DOCKER_OPTS="-dns 8.8.8.8 -dns 8.8.4.4"/DOCKER_OPTS="-e lxc"/g' /etc/default/docker
+
+# based on http://docs.docker.io/en/latest/installation/ubuntulinux/
+# tell kernel to collect memory metrics - this is disabled by default
+#
+# for a more complete story on container monitoring see
+# http://blog.docker.io/2013/10/gathering-lxc-docker-containers-metrics/
+
+sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="cgroup_enable=memory"/g' /etc/default/grub
+
 # curl's a generally useful utility across SO many platforms ...
 apt-get install -y curl
 
@@ -21,16 +75,6 @@ apt-get install -y apache2-utils
 
 # simple command line tools for poking @ memcached
 apt-get install -y libmemcached-tools
-
-# :TODO: reminder - docker recommends updating linux kernel - who to do this?
-
-# http://docs.docker.io/en/latest/installation/ubuntulinux/#ubuntu-precise-12-04-lts-64-bit
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
-sh -c "echo deb http://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
-apt-get update
-# as of 12 Mar this installs docker 0.9
-# :TODO: how do versions get controlled with apt-get?
-apt-get install -y lxc-docker
 
 # python scripts setup and drive tests so we'll need pip
 apt-get install -y python-pip
@@ -61,4 +105,11 @@ make install
 
 # this is needed for getting the convert utility that allows multiple
 # images to be combined into a single pdf at the end of the load test
+# as well as a bunch of other image manipulation magic
 apt-get install -y imagemagick
+
+# at the start of this script several changes were made
+# to boot parameters. let's quickly restart the VM so
+# these changes take effect
+
+shutdown -r now
