@@ -41,20 +41,6 @@ get_from_json() {
         sed -e "s/\"//g"
 }
 
-# it's very useful to generate a unique/temp database name
-# which is what this functon does. for example, the following
-# script writes a database name to stdout
-#
-#   #!/usr/bin/env bash
-#   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
-#   source $SCRIPT_DIR_NAME/util.sh
-#   DATABASE_NAME=$(generate_temp_database_name)
-#   echo $DATABASE_NAME
-#
-generate_temp_database_name() {
-    python -c "import uuid; print 'das'+str(uuid.uuid4()).replace('-', '')"
-}
-
 # given a value of length V, add N - V zeros to left pad the
 # value so the resulting value is N digits long
 #
