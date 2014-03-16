@@ -1,0 +1,14 @@
+set terminal pngcairo size 1280,720
+set size 1, 1
+set xlabel xaxis_label
+set ylabel yaxis_label
+title='Key Store Size as Function of Number of Credentials'
+set title title
+set key left top
+set style line 1 lc rgb '#0000ff' lt 1 lw 2 pt 7 pi -1 ps 1.5
+set style line 2 lc rgb '#ff0000' lt 1 lw 2 pt 7 pi -1 ps 1.5
+set output output_filename
+set datafile separator '\t'
+plot input_filename using 1:2 title 'Data Size' with linespoints ls 1, \
+     input_filename using 1:3 title 'Disk Size' with linespoints ls 2
+exit
