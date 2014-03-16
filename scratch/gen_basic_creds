@@ -1,217 +1,72 @@
 #!/usr/bin/env python
+"""What's the real problem this script is trying to solve?
+Was trying to:
 
-import datetime
-import httplib
-import httplib2
-import logging
-import json
-import optparse
+1/ explore how database size grows as a function of number
+of sets of credentials
+2/ run load tests with key stores containing a reasonable
+data shape
+3/ explore how credential retrieval time is affected by
+the number of sets of credentials
+
+The problem was that generating credentials and loading up
+databases with lots of credentials takes a while. So the
+solution was to pre-generate a whole bunch of credentials
+and save them in files that could be uploaded to CouchDB
+using CouchDB's bulk document upload capability.
+
+Why 25,000 credentials in most of the JSON files? Why
+not just put all credentials in a single JSON file?
+Found that really large JSON files took a very long
+time to upload and smaller files were much faster.
+After some adhoc testing 25,000 seemed to be the a
+good balance between file size and time to upload. No
+real magic here just fiddled with it a bit.
+
+Why 1K, 10K and then a bunch with 25K? Wanted to graph
+the growth of the database as a function of the number
+of sets of credentials.
+
+Files are generated in in same directory as this script."""
+
 import os
-import subprocess
 import sys
-import tempfile
 import uuid
 
-from yar.util import clparserutil
 import yar.util.basic
 
+def create_file(number_of_creds, filename):
 
-def create_database(key_store_host):
+    # :TODO: what about MAC creds?
 
-    database = "das"+str(uuid.uuid4()).replace("-", "")
-
-    exit_code = subprocess.call([
-        "key_store_installer",
-        "--host=%s" % key_store_host,
-        "--database=%s" % database,
-        "--create=True",
-        "--delete=False",
-    ])
-    if 0 != exit_code:
-        return None
-
-    return "%s/%s" % (key_store_host, database)
-
-
-def delete_database(database):
-    http_client = httplib2.Http()
-    response, content = http_client.request(
-        "http://%s" % database,
-        "DELETE")
-    return httplib.OK == response.status
-
-
-def create_basic_creds(principal):
-    api_key = yar.util.basic.APIKey.generate()
-    rv = {
-        "_id": api_key,
-        "principal": principal,
-        "type": "creds_v1.0",
-        "is_deleted": False,
-        "basic": {
-            "api_key": api_key,
-        },
-    }
-    return rv
-
-
-def create_lots_of_creds_and_bulk_save_to_database(database, principal, number_of_creds):
-
-    http_client = httplib2.Http()
-
-    #
-    # using CouchDB's bulk insertion api provides signifiant performance
-    # improvements over inserting credentials one by one. docs for the API
-    # can be found at:
-    #
-    #   http://couchdb.readthedocs.org/en/latest/api/database/bulk-api.html?highlight=_bulk_docs#db-bulk-docs
-    #
-    start_create_creds_timestamp = datetime.datetime.now()
-    body = {
-        "docs": [create_basic_creds(principal) for i in range(0, number_of_creds)],
-    }
-    end_create_creds_timestamp = datetime.datetime.now()
-
-    start_persist_creds_timestamp = datetime.datetime.now()
-    body_as_json = json.dumps(body)
-    headers = {
-        "Content-type": "application/json; charset=utf8",
-        "Content-length": str(len(body_as_json)),
-    }
-    response, content = http_client.request(
-        "http://%s/_bulk_docs" % database,
-        "POST",
-        body=body_as_json,
-        headers=headers)
-    if httplib.CREATED != response.status:
-        pass
-    end_persist_creds_timestamp = datetime.datetime.now()
-
-    #
-    # now the creds have been saved, let's query the database to
-    # get a sense of its size. API docs for this database request
-    # can be found at:
-    #
-    #   http://couchdb.readthedocs.org/en/latest/api/database/common.html#get--db
-    #
-    body_as_json = json.dumps(body)
-    headers = {
-        "Content-type": "application/json; charset=utf8",
-        "Content-length": str(len(body_as_json)),
-    }
-    response, content = http_client.request(
-        "http://%s" % database,
-        "GET")
-    if httplib.OK != response.status:
-        pass
-
-    content = json.loads(content)
-    return (
-        content["doc_count"],
-        content["data_size"],
-        content["disk_size"],
-        (end_create_creds_timestamp - start_create_creds_timestamp).seconds,
-        (end_persist_creds_timestamp - start_persist_creds_timestamp).seconds
-    )
-
-
-def bytes_to_megabytes(bytes):
-    """Convert an integer value representing a number of bytes into another
-    integer value representing the equivalent number of megabytes."""
-    return int(bytes / (1024.0 * 1024.0))
-
-
-class CommandLineParser(optparse.OptionParser):
-
-    def __init__(self):
-
-        description = (
-            "The Key Store Credentials Generator is a load testing "
-            "analyze the Key Store's characteristics when the Key "
-            "Store contains lots of credentials."
+    with open(filename, "w") as f:
+        f.write('{"docs": [\n')
+        fmt = (
+            '{"_id": "%s", '
+            '"principal": "%s@example.com", '
+            '"type": "creds_v1.0", '
+            '"is_deleted": false, '
+            '"basic": {'
+            '"api_key": "%s"'
+            '}'
+            '}%s\n'
         )
-        optparse.OptionParser.__init__(
-            self,
-            "usage: %prog [options]",
-            description=description,
-            option_class=clparserutil.Option)
-
-        default = "127.0.0.1:5984"
-        help = "where's CouchDB running - default = %s" % default
-        self.add_option(
-            "--ksh",
-            action="store",
-            dest="key_store_host",
-            default=default,
-            type="hostcolonport",
-            help=help)
+        for i in range(0, number_of_creds):
+            api_key = yar.util.basic.APIKey.generate()
+            principal = str(uuid.uuid4()).replace("-", "")
+            comma_or_nothing = "" if i == (number_of_creds - 1) else ","
+            f.write(fmt % (api_key, principal, api_key, comma_or_nothing))
+        f.write(']}\n')
 
 
 if __name__ == "__main__":
-    clp = CommandLineParser()
-    (clo, cla) = clp.parse_args()
 
-    database = create_database(clo.key_store_host)
+    abs_base_path = os.path.abspath(os.path.split(sys.argv[0])[0])
 
-    f = tempfile.NamedTemporaryFile(delete=False)
-
-    principal = "dave@example.com"
-
-    number_of_creds_to_add = [1000, 24000]
-    number_of_creds_to_add.extend([25000] * 10)
-    # number_of_creds_to_add.extend([25000] * 39)
-
-    header = (
-        "Number of Credentials\t"
-        "Data Size (MB)\t"
-        "Disk Size (MB)\t"
-        "Time to Create Creds (seconds)\t"
-        "Time to Persist Creds (seconds)\n"
-    )
-    f.write(header)
-
-    for number_of_creds in number_of_creds_to_add:
-        (number_creds, data_size, disk_size, seconds_to_create_creds, seconds_to_persist_creds) = \
-            create_lots_of_creds_and_bulk_save_to_database(
-                database,
-                principal,
-                number_of_creds)
-        f.write("%s\t%s\t%s\t%s\t%s\n" % (
-            number_creds,
-            bytes_to_megabytes(data_size),
-            bytes_to_megabytes(disk_size),
-            seconds_to_create_creds,
-            seconds_to_persist_creds))
-
-    f.close()
-    print f.name
-
-    output_filename = os.path.join(
-        os.path.abspath(os.path.split(sys.argv[0])[0]),
-        "dave.gif")
-
-    gpcfg_file = tempfile.NamedTemporaryFile(delete=False)
-    gpcfg_file.write("# set terminal pngcairo size 1280,720\n")
-    gpcfg_file.write("set terminal gif giant\n")
-    gpcfg_file.write("set size 1, 1\n")
-    gpcfg_file.write("set xlabel 'Number of Credentials'\n")
-    gpcfg_file.write("set ylabel 'Size (MB)'\n")
-    gpcfg_file.write("title='DAS'\n")
-    gpcfg_file.write("set title title\n")
-    gpcfg_file.write("set key left top\n")
-    gpcfg_file.write("set style line 1 lc rgb '#0000ff' lt 1 lw 2 pt 7 pi -1 ps 1.5\n")
-    gpcfg_file.write("set style line 2 lc rgb '#ff0000' lt 1 lw 2 pt 7 pi -1 ps 1.5\n")
-    gpcfg_file.write("set output '%s'\n" % output_filename)
-    gpcfg_file.write("set datafile separator '\\t'\n")
-    gpcfg_file.write("input_filename='%s'\n" % f.name)
-    gpcfg_file.write("plot input_filename using 1:2 title 'Data Size' with linespoints ls 1, \\\n")
-    gpcfg_file.write("     input_filename using 1:3 title 'Disk Size' with linespoints ls 2\n")
-    gpcfg_file.write("exit")
-    gpcfg_file.close()
-
-    gnuplot_exit_code = subprocess.call([
-        "gnuplot",
-        gpcfg_file.name,
-    ])
-
-    delete_database(database)
+    number_of_creds = [1000, 10000, 25000 - (1000 + 10000)]
+    number_of_creds.extend([25000]*((1000000-25000)/25000))
+    for i in range(0, len(number_of_creds)):
+        filename = "%s.json" % (('0'*10 + str(i))[-4:])
+        filename = os.path.join(abs_base_path, filename)
+        print "Creating '%s' with %d credentials" % (filename, number_of_creds[i])
+        create_file(number_of_creds[i], filename)
