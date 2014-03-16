@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 cleanup_yar_dist() {
-    pushd ..
+    pushd ../..
     rm -rf build >& /dev/null
     rm -rf yar.egg-info >& /dev/null
     rm -rf dist >& /dev/null
@@ -9,7 +9,7 @@ cleanup_yar_dist() {
 }
 
 build_yar_dist() {
-    pushd ..
+    pushd ../..
     python setup.py sdist
     popd
 }
@@ -21,20 +21,18 @@ fi
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 
-if [ "$PWD" != "$SCRIPT_DIR_NAME" ]; then
-    cd $SCRIPT_DIR_NAME
-fi
+cd $SCRIPT_DIR_NAME
 
 cleanup_yar_dist
 rm -rf yar/artifacts >& /dev/null
-mkdir yar/artifacts
+mkdir -p yar/artifacts
 build_yar_dist
-cp ../dist/yar-*.*.tar.gz yar/artifacts/.
+cp ../../dist/yar-*.*.tar.gz yar/artifacts/.
 cleanup_yar_dist
 
 rm -rf artifacts >& /dev/null
-mkdir artifacts
-cp ../bin/jpp artifacts/.
-cp ../bin/yarcurl artifacts/.
+mkdir -p artifacts
+cp ../../bin/jpp artifacts/.
+cp ../../bin/yarcurl artifacts/.
 
 vagrant up
