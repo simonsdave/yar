@@ -268,18 +268,31 @@ run_load_test() {
 
 }
 
+#
+# this is where the test's mainline really begins
+#
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source $SCRIPT_DIR_NAME/util.sh
 
 START_TIME=$(date +%Y-%m-%d-%H-%M)
 
-RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/$START_TIME
+RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/full-deployment-load-test/$START_TIME
 mkdir -p $RESULTS_DIR
 
 NUMBER_OF_REQUESTS=5000
 PERCENTILE=98
 
-# generate a title page for the summary report
+#
+# run the load test
+#
+for CONCURRENCY in 1 5 10 25 50 75 100
+do
+    run_load_test $NUMBER_OF_REQUESTS $CONCURRENCY $PERCENTILE $RESULTS_DIR
+done
+
+#
+# generate the title page and last page of the summary report
+#
 REPORT_TEXT="yar load test ($START_TIME)\n"
 REPORT_TEXT="$REPORT_TEXT\nNumber of Requests  = $NUMBER_OF_REQUESTS"
 REPORT_TEXT="$REPORT_TEXT\nPercentile = $PERCENTILE"
@@ -292,16 +305,23 @@ convert \
     -gravity center \
     $RESULTS_DIR/0000-$NUMBER_OF_REQUESTS.png
 
-# run the load test
-for CONCURRENCY in 1 5 10 25 50 75 100
-do
-    run_load_test $NUMBER_OF_REQUESTS $CONCURRENCY $PERCENTILE $RESULTS_DIR
-done
+convert \
+    -background lightgray \
+    -fill black \
+    -size 1280x720 \
+    label:"End of Report:-)" \
+    -gravity center \
+    $RESULTS_DIR/9999-$NUMBER_OF_REQUESTS.png
 
+#
+# generate the summary report
+#
 SUMMARY_REPORT_FILENAME=$RESULTS_DIR/test-results-summary.pdf
-
 convert $RESULTS_DIR/*.png $SUMMARY_REPORT_FILENAME
 
+#
+# all done, just let folks know where to find the results
+#
 echo "Complete results in '$RESULTS_DIR'"
 echo "Summary report '$SUMMARY_REPORT_FILENAME'"
 
