@@ -447,6 +447,13 @@ Summary report '/vagrant/test-results/2014-03-01-13-46/test-results-summary.pdf'
 ![](samples/sample-load-test-result-graph.png)
 * [here's](samples/sample-load-test-summary-report.pdf) a sample of the summary report
 
+Key Store Load Test
+-------------------
+
+* [key_store_load_test.sh](key_store_load_test.sh) is used to ...
+![](samples/sample-key-store-size-graph.png)
+* ...
+
 Other Stuff
 -----------
 * as an aside, if at any point during the above you need to remove all
