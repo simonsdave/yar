@@ -19,6 +19,49 @@ get_from_json() {
         sed -e "s/\"//g"
 }
 
+# get the value associated with a key in ~/.yar.creds
+#
+# for example, the following script gets the API key from ~/.yar.creds
+#
+#   #!/usr/bin/env bash
+#   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
+#   source $SCRIPT_DIR_NAME/util.sh
+#   API_KEY=$(get_creds_config "API_KEY")
+#   echo $API_KEY
+get_creds_config() {
+    local KEY=${1:-}
+    local VALUE_IF_NOT_FOUND=${2:-}
+    local VALUE=`grep "^\\s*$KEY\\s*=" ~/.yar.creds | \
+        sed -e "s/^[[:space:]]*$KEY[[:space:]]*=[[:space:]]*//"`
+    if [ "$VALUE" == "" ]; then
+        echo $VALUE_IF_NOT_FOUND
+    else
+        echo $VALUE
+    fi
+}
+
+# get the value associated with a key in ~/.yar.deployment
+#
+# for example, the following script gets the auth server
+# container ID from ~/.yar.deployment
+#
+#   #!/usr/bin/env bash
+#   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
+#   source $SCRIPT_DIR_NAME/util.sh
+#   AUTH_SERVER_CONTAINER_ID=$(get_deployment_config "AUTH_SERVER_CONTAINER_ID")
+#   echo $AUTH_SERVER_CONTAINER_ID
+get_deployment_config() {
+    local KEY=${1:-}
+    local VALUE_IF_NOT_FOUND=${2:-}
+    local VALUE=`grep "^\\s*$KEY\\s*=" ~/.yar.deployment | \
+        sed -e "s/^[[:space:]]*$KEY[[:space:]]*=[[:space:]]*//"`
+    if [ "$VALUE" == "" ]; then
+        echo $VALUE_IF_NOT_FOUND
+    else
+        echo $VALUE
+    fi
+}
+
 # given a value of length V, add N - V zeros to left pad the
 # value so the resulting value is N digits long
 #
@@ -37,20 +80,20 @@ left_zero_pad() {
 # create a docker container to run the app server
 create_app_server() {
 
-    DATA_DIRECTORY=${1:-}
+    local DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
-    PORT=8080
-    APP_SERVER_CMD="app_server \
+    local PORT=8080
+    local APP_SERVER_CMD="app_server \
         --log=info \
         --lon=$PORT \
         --logfile=/var/yar_app_server/app_server_log"
-    APP_SERVER=$(sudo docker run \
+    local APP_SERVER=$(sudo docker run \
         -d \
         -v $DATA_DIRECTORY:/var/yar_app_server \
         yar_img \
         $APP_SERVER_CMD)
-    APP_SERVER_IP=$(get_container_ip $APP_SERVER)
+    local APP_SERVER_IP=$(get_container_ip $APP_SERVER)
 
     echo "APP_SERVER_CONTAINER_ID=$APP_SERVER" >> ~/.yar.deployment
     echo "APP_SERVER_IP=$APP_SERVER_IP" >> ~/.yar.deployment
@@ -69,22 +112,23 @@ create_app_server() {
 
 # create a docker container to run the app server load balancer
 create_app_server_lb() {
-    DATA_DIRECTORY=${1:-}
+
+    local DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
-    APP_SERVER=${2:-}
+    local APP_SERVER=${2:-}
 
     cp $SCRIPT_DIR_NAME/app_server_haproxy.cfg.template $DATA_DIRECTORY/haproxy.cfg
     echo "    server appserver1 $APP_SERVER check" >> $DATA_DIRECTORY/haproxy.cfg
 
-    APP_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
-    APP_SERVER_LB=$(sudo docker run \
+    local APP_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
+    local APP_SERVER_LB=$(sudo docker run \
         -d \
         -v /dev/log:/haproxy/log \
         -v $DATA_DIRECTORY:/haproxycfg \
         haproxy_img \
         $APP_SERVER_LB_CMD)
-    APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB)
+    local APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB)
 
     echo "APP_SERVER_LB_CONTAINER_ID=$APP_SERVER_LB" >> ~/.yar.deployment
     echo "APP_SERVER_LB_IP=$APP_SERVER_LB_IP" >> ~/.yar.deployment
@@ -106,19 +150,19 @@ create_app_server_lb() {
 # create a docker container to run the key store
 create_key_store() {
 
-    DATA_DIRECTORY=${1:-}
+    local DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
-    PORT=5984
-    DATABASE=creds
+    local PORT=5984
+    local DATABASE=creds
 
 	# :TODO: add check that docker images have been built
-    KEY_STORE=$(sudo docker run \
+    local KEY_STORE=$(sudo docker run \
         -d \
         -v $DATA_DIRECTORY:/usr/local/var/lib/couchdb:rw \
         -t \
         couchdb_img)
-    KEY_STORE_IP=$(get_container_ip $KEY_STORE)
+    local KEY_STORE_IP=$(get_container_ip $KEY_STORE)
 
     echo "KEY_STORE_CONTAINER_ID=$KEY_STORE" >> ~/.yar.deployment
     echo "KEY_STORE_IP=$KEY_STORE_IP" >> ~/.yar.deployment
@@ -132,7 +176,7 @@ create_key_store() {
         fi
     done
 
-    INSTALLER_CMD="key_store_installer \
+    local INSTALLER_CMD="key_store_installer \
         --log=info \
         --create=true \
         --host=$KEY_STORE_IP:$PORT \
@@ -153,23 +197,24 @@ create_key_store() {
 
 # create a docker container to run the key server
 create_key_server() {
-    DATA_DIRECTORY=${1:-}
+
+    local DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
-    KEY_STORE=${2:-}
+    local KEY_STORE=${2:-}
 
-    PORT=8070
-    KEY_SERVER_CMD="key_server \
+    local PORT=8070
+    local KEY_SERVER_CMD="key_server \
         --log=info \
         --lon=$PORT \
         --key_store=$KEY_STORE \
         --logfile=/var/yar_key_server/key_server_log"
-    KEY_SERVER=$(sudo docker run \
+    local KEY_SERVER=$(sudo docker run \
         -d \
         -v $DATA_DIRECTORY:/var/yar_key_server \
         yar_img \
         $KEY_SERVER_CMD)
-    KEY_SERVER_IP=$(get_container_ip $KEY_SERVER)
+    local KEY_SERVER_IP=$(get_container_ip $KEY_SERVER)
 
     echo "KEY_SERVER_CONTAINER_ID=$KEY_SERVER" >> ~/.yar.deployment
     echo "KEY_SERVER_IP=$KEY_SERVER_IP" >> ~/.yar.deployment
@@ -188,13 +233,14 @@ create_key_server() {
 
 # create a docker container to run the nonce store
 create_nonce_store() {
-    PORT=11211
-    NONCE_STORE_CMD=""
-    NONCE_STORE=$(sudo docker run \
+
+    local PORT=11211
+    local NONCE_STORE_CMD=""
+    local NONCE_STORE=$(sudo docker run \
         -d \
         memcached_img \
         $NONCE_STORE_CMD)
-    NONCE_STORE_IP=$(get_container_ip $NONCE_STORE)
+    local NONCE_STORE_IP=$(get_container_ip $NONCE_STORE)
 
     echo "NONCE_STORE_CONTAINER_ID=$NONCE_STORE" >> ~/.yar.deployment
     echo "NONCE_STORE_IP=$NONCE_STORE_IP" >> ~/.yar.deployment
@@ -212,27 +258,28 @@ create_nonce_store() {
 
 # create a docker container to run the auth_server
 create_auth_server() {
-    DATA_DIRECTORY=${1:-}
+
+    local DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
-    KEY_SERVER=${2:-}
-    APP_SERVER=${3:-}
-    NONCE_STORE=${4:-}
+    local KEY_SERVER=${2:-}
+    local APP_SERVER=${3:-}
+    local NONCE_STORE=${4:-}
 
-    PORT=8000
-    AUTH_SERVER_CMD="auth_server \
+    local PORT=8000
+    local AUTH_SERVER_CMD="auth_server \
         --log=info \
         --lon=$PORT \
         --keyserver=$KEY_SERVER \
         --appserver=$APP_SERVER \
         --noncestore=$NONCE_STORE \
         --logfile=/var/auth_server/auth_server_log"
-    AUTH_SERVER=$(sudo docker run \
+    local AUTH_SERVER=$(sudo docker run \
         -d \
         -v $DATA_DIRECTORY:/var/auth_server \
         yar_img \
         $AUTH_SERVER_CMD)
-    AUTH_SERVER_IP=$(get_container_ip $AUTH_SERVER)
+    local AUTH_SERVER_IP=$(get_container_ip $AUTH_SERVER)
 
     echo "AUTH_SERVER_CONTAINER_ID=$AUTH_SERVER" >> ~/.yar.deployment
     echo "AUTH_SERVER_IP=$AUTH_SERVER_IP" >> ~/.yar.deployment
@@ -251,27 +298,28 @@ create_auth_server() {
 
 # create a docker container to run the auth server load balancer
 create_auth_server_lb() {
-    DATA_DIRECTORY=${1:-}
+
+    local DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
-    AUTH_SERVER=${2:-}
+    local AUTH_SERVER=${2:-}
 
     cp $SCRIPT_DIR_NAME/auth_server_haproxy.cfg.template $DATA_DIRECTORY/haproxy.cfg
     echo "    server authserver1 $AUTH_SERVER check" >> $DATA_DIRECTORY/haproxy.cfg
 
-    AUTH_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
-    AUTH_SERVER_LB=$(sudo docker run \
+    local AUTH_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
+    local AUTH_SERVER_LB=$(sudo docker run \
         -d \
         -v /dev/log:/haproxy/log \
         -v $DATA_DIRECTORY:/haproxycfg \
         haproxy_img \
         $AUTH_SERVER_LB_CMD)
-    AUTH_SERVER_LB_IP=$(get_container_ip $AUTH_SERVER_LB)
+    local AUTH_SERVER_LB_IP=$(get_container_ip $AUTH_SERVER_LB)
 
     echo "AUTH_SERVER_LB_CONTAINER_ID=$AUTH_SERVER_LB" >> ~/.yar.deployment
     echo "AUTH_SERVER_LB_IP=$AUTH_SERVER_LB_IP" >> ~/.yar.deployment
 
-    PORT=8000
+    local PORT=8000
 
     for i in {1..10}
     do

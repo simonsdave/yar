@@ -5,18 +5,6 @@
 
 # :TODO: add check that docker images have been built
 
-get_deployment_config() {
-    local KEY=${1:-}
-    local VALUE_IF_NOT_FOUND=${2:-}
-    local VALUE=`grep "^\\s*$KEY\\s*=" ~/.yar.creds | \
-        sed -e "s/^[[:space:]]*$KEY[[:space:]]*=[[:space:]]*//"`
-    if [ "$VALUE" == "" ]; then
-        echo $VALUE_IF_NOT_FOUND
-    else
-        echo $VALUE
-    fi
-}
-
 # given an input file (geneated by apache benchmark), generate
 # an output file which represents the nth percentile of the
 # input file based on the 5th column (request time) in the
@@ -112,7 +100,7 @@ run_load_test() {
     echo "Deployment end point = $AUTH_SERVER_LB"
 
 	echo "Spinning up a new deployment"
-    local API_KEY=$(get_deployment_config "API_KEY")
+    local API_KEY=$(get_creds_config "API_KEY")
     # :TODO: what if API_KEY doesn't exist?
 
 	echo "Starting to drive load"
@@ -279,14 +267,13 @@ START_TIME=$(date +%Y-%m-%d-%H-%M)
 RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/full-deployment-load-test/$START_TIME
 mkdir -p $RESULTS_DIR
 
-NUMBER_OF_REQUESTS=20000
+NUMBER_OF_REQUESTS=5000
 PERCENTILE=98
 
 #
 # run the load test
 #
-# for CONCURRENCY in 1 5 10 25 50 75 100
-for CONCURRENCY in 25
+for CONCURRENCY in 1 5 10 25 50 75 100
 do
     run_load_test $NUMBER_OF_REQUESTS $CONCURRENCY $PERCENTILE $RESULTS_DIR
 done
