@@ -6,28 +6,6 @@
 #	SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 #	source $SCRIPT_DIR_NAME/util.sh
 
-# generate an api key for use with basic authentication
-# and then save the api key to a key store
-create_basic_api_key() {
-	local KEY_STORE=${1:-}
-	
-	local API_KEY=$(python -c "from yar.util.basic import APIKey; print APIKey.generate()")
-	local CREDS="{\"principal\": \"dave@example.com\", \"type\": \"creds_v1.0\", \"is_deleted\": false, \"basic\": {\"api_key\": \"$API_KEY\"}}"
-	local CONTENT_TYPE="Content-Type: application/json; charset=utf8"
-	curl \
-		-s \
-		-X PUT \
-		-H "$CONTENT_TYPE" \
-		-d "$CREDS" \
-		http://$KEY_STORE/$API_KEY \
-		>& /dev/null
-	if [ "$?" == "0" ]; then
-		echo "$API_KEY"
-	else
-		echo ""
-	fi
-}
-
 get_container_ip() {
     sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${1:-}
 }
@@ -74,6 +52,9 @@ create_app_server() {
         $APP_SERVER_CMD)
     APP_SERVER_IP=$(get_container_ip $APP_SERVER)
 
+    echo "APP_SERVER_CONTAINER_ID=$APP_SERVER" >> ~/.yar.deployment
+    echo "APP_SERVER_IP=$APP_SERVER_IP" >> ~/.yar.deployment
+
     for i in {1..10}
     do
         sleep 1
@@ -105,7 +86,10 @@ create_app_server_lb() {
         $APP_SERVER_LB_CMD)
     APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB)
 
-    PORT=8080
+    echo "APP_SERVER_LB_CONTAINER_ID=$APP_SERVER_LB" >> ~/.yar.deployment
+    echo "APP_SERVER_LB_IP=$APP_SERVER_LB_IP" >> ~/.yar.deployment
+
+    local PORT=8080
 
     for i in {1..10}
     do
@@ -135,6 +119,9 @@ create_key_store() {
         -t \
         couchdb_img)
     KEY_STORE_IP=$(get_container_ip $KEY_STORE)
+
+    echo "KEY_STORE_CONTAINER_ID=$KEY_STORE" >> ~/.yar.deployment
+    echo "KEY_STORE_IP=$KEY_STORE_IP" >> ~/.yar.deployment
 
     for i in {1..10}
     do
@@ -184,6 +171,9 @@ create_key_server() {
         $KEY_SERVER_CMD)
     KEY_SERVER_IP=$(get_container_ip $KEY_SERVER)
 
+    echo "KEY_SERVER_CONTAINER_ID=$KEY_SERVER" >> ~/.yar.deployment
+    echo "KEY_SERVER_IP=$KEY_SERVER_IP" >> ~/.yar.deployment
+
     for i in {1..10}
     do
         sleep 1
@@ -205,6 +195,9 @@ create_nonce_store() {
         memcached_img \
         $NONCE_STORE_CMD)
     NONCE_STORE_IP=$(get_container_ip $NONCE_STORE)
+
+    echo "NONCE_STORE_CONTAINER_ID=$NONCE_STORE" >> ~/.yar.deployment
+    echo "NONCE_STORE_IP=$NONCE_STORE_IP" >> ~/.yar.deployment
 
     for i in {1..10}
     do
@@ -241,6 +234,9 @@ create_auth_server() {
         $AUTH_SERVER_CMD)
     AUTH_SERVER_IP=$(get_container_ip $AUTH_SERVER)
 
+    echo "AUTH_SERVER_CONTAINER_ID=$AUTH_SERVER" >> ~/.yar.deployment
+    echo "AUTH_SERVER_IP=$AUTH_SERVER_IP" >> ~/.yar.deployment
+
     for i in {1..10}
     do
         sleep 1
@@ -271,6 +267,9 @@ create_auth_server_lb() {
         haproxy_img \
         $AUTH_SERVER_LB_CMD)
     AUTH_SERVER_LB_IP=$(get_container_ip $AUTH_SERVER_LB)
+
+    echo "AUTH_SERVER_LB_CONTAINER_ID=$AUTH_SERVER_LB" >> ~/.yar.deployment
+    echo "AUTH_SERVER_LB_IP=$AUTH_SERVER_LB_IP" >> ~/.yar.deployment
 
     PORT=8000
 

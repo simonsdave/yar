@@ -279,13 +279,14 @@ START_TIME=$(date +%Y-%m-%d-%H-%M)
 RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/full-deployment-load-test/$START_TIME
 mkdir -p $RESULTS_DIR
 
-NUMBER_OF_REQUESTS=5000
+NUMBER_OF_REQUESTS=20000
 PERCENTILE=98
 
 #
 # run the load test
 #
-for CONCURRENCY in 1 5 10 25 50 75 100
+# for CONCURRENCY in 1 5 10 25 50 75 100
+for CONCURRENCY in 25
 do
     run_load_test $NUMBER_OF_REQUESTS $CONCURRENCY $PERCENTILE $RESULTS_DIR
 done

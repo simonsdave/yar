@@ -4,6 +4,9 @@
 # test environment by killing off all running docker containers
 # and then removing all docker containers.
 
+rm -f ~/.yar.creds >& /dev/null
+rm -f ~/.yar.deployment >& /dev/null
+
 if [ "$(sudo docker ps --no-trunc -q | wc -l)" != "0" ]; then
     sudo docker kill `sudo docker ps --no-trunc -q` >& /dev/null
 fi

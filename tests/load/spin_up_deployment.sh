@@ -137,12 +137,15 @@ else
 	echo "$AUTH_SERVER_LB in $DATA_DIRECTORY"
 fi
 
+echo_if_not_silent ""
+echo_if_not_silent "Deployment in ~/.yar.deployment"
+cat_if_not_silent ~/.yar.deployment
+
 # services now running, time to provision some keys
 
 echo_if_not_silent ""
 echo_if_not_silent "Creating Credentials ..."
 PRINCIPAL="dave@example.com"
-rm -f ~/.yar.creds >& /dev/null
 create_basic_creds $KEY_SERVER $PRINCIPAL
 create_mac_creds $KEY_SERVER $PRINCIPAL
 echo_if_not_silent ""
