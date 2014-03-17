@@ -12,7 +12,7 @@ import httplib2
 import yar.key_store.design_docs
 from yar.key_store.clparser import CommandLineParser
 
-_logger = logging.getLogger("KEYSTORE.%s" % __name__)
+_logger = logging.getLogger("KEYSTORE_INSTALLER.%s" % __name__)
 
 
 def _is_couchdb_accessible(host):
