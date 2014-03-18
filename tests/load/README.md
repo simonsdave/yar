@@ -162,7 +162,6 @@ to the local repo of boxes
 
 ~~~~~
 (env)>vagrant box list
-awsec2               (aws)
 precise64            (virtualbox)
 precise64-3.8-kernel (virtualbox)
 (env)>vagrant box add docker-container-host docker-container-host.box
@@ -170,7 +169,6 @@ Downloading or copying the box...
 Extracting box...te: 26.2M/s, Estimated time remaining: 0:00:01)
 Successfully added box 'docker-container-host' with provider 'virtualbox'!
 (env)>vagrant box list
-awsec2                (aws)
 docker-container-host (virtualbox)
 precise64             (virtualbox)
 precise64-3.8-kernel  (virtualbox)
