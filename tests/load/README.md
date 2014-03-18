@@ -449,10 +449,19 @@ Summary report '/vagrant/test-results/2014-03-01-13-46/test-results-summary.pdf'
 
 Key Store Load Test
 -------------------
+* [key_store_load_test.sh](key_store_load_test.sh) is used to explore
+  * how the size of the key store increases as the number of credentials increases
+  * how the time to retrieve credentials is affected by the number of credentials
+* just like the deployment load tests described above,
+the load test is run in the docker container
+host - [key_store_load_test.sh](key_store_load_test.sh)
+runs directly on the [VirtualBox](https://www.virtualbox.org/)
+and the key store runs in a [Docker](https://www.docker.io/) container
+* :TODO: add details on how to run the key store load test
 
-* [key_store_load_test.sh](key_store_load_test.sh) is used to ...
 ![](samples/sample-key-store-size-graph.png)
-* ...
+
+* [here's](samples/sample-key-store-summary-report.pdf) a sample of the summary report
 
 Other Stuff
 -----------
