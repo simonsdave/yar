@@ -102,7 +102,7 @@ echo_if_not_silent ""
 echo_if_not_silent "Starting App Server(s)"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/App-Server
 if ! APP_SERVER=$(create_app_server $DATA_DIRECTORY); then
-    echo "App Server failed to start" >&2
+    echo_to_stderr_if_not_silent "App Server failed to start"
     exit 1
 fi
 echo_if_not_silent "$APP_SERVER in $DATA_DIRECTORY"
@@ -113,7 +113,10 @@ APP_SERVER_LB=$(create_app_server_lb $DATA_DIRECTORY $APP_SERVER)
 echo_if_not_silent "$APP_SERVER_LB in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Nonce Store"
-NONCE_STORE=$(create_nonce_store) 
+if ! NONCE_STORE=$(create_nonce_store); then 
+    echo_to_stderr_if_not_silent "Nonce Store failed to start"
+    exit 1
+fi
 echo_if_not_silent $NONCE_STORE
 
 echo_if_not_silent "Starting Key Store"

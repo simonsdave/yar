@@ -153,7 +153,7 @@ left_zero_pad() {
 }
 
 #
-# create a docker container run an app server
+# create a docker container to run an app server
 #
 # arguments
 #   1   name of data directory - mkdir -p called on this name
@@ -325,14 +325,36 @@ create_key_server() {
     echo $KEY_SERVER_IP:$PORT
 }
 
-# create a docker container to run the nonce store
+#
+# create a docker container to run a nonce store
+#
+# arguments
+#   1   name of data directory - mkdir -p called on this name
+#   2   port on which to run the app server (optional, default = 8080)
+#
+# exit codes
+#   0   ok
+#   1   general/non-specific failure - nonce store container not started
+#   2   can't find memcached_img
+#
 create_nonce_store() {
 
+    local RAM=128
     local PORT=11211
-    local NONCE_STORE_CMD=""
+
+    local IMAGE_NAME=memcached_img
+    if ! does_image_exist $IMAGE_NAME; then
+        echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
+        return 2
+    fi
+
+    local NONCE_STORE_CMD="memcached \
+        -m $RAM \
+        -p $PORT \
+        -u daemon"
     local NONCE_STORE=$(sudo docker run \
         -d \
-        memcached_img \
+        $IMAGE_NAME \
         $NONCE_STORE_CMD)
     local NONCE_STORE_IP=$(get_container_ip $NONCE_STORE)
 
@@ -342,12 +364,14 @@ create_nonce_store() {
     for i in {1..10}
     do
         sleep 1
-        if [ "$(memcstat --servers=$NONCE_STORE_IP:$PORT | wc -l)" != "0" ]; then
-            break
+        if echo stats | nc $NONCE_STORE_IP $PORT >& /dev/null; then
+            echo $NONCE_STORE_IP:$PORT
+            return 0
         fi
     done
 
-    echo $NONCE_STORE_IP:$PORT
+    echo_to_stderr_if_not_silent "Could not verify availability of Nonce Store on $NONCE_STORE_IP:$PORT"
+    return 1
 }
 
 # create a docker container to run the auth_server
