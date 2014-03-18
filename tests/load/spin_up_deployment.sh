@@ -101,7 +101,10 @@ echo_if_not_silent ""
 
 echo_if_not_silent "Starting App Server(s)"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/App-Server
-APP_SERVER=$(create_app_server $DATA_DIRECTORY)
+if ! APP_SERVER=$(create_app_server $DATA_DIRECTORY); then
+    echo "App Server failed to start" >&2
+    exit 1
+fi
 echo_if_not_silent "$APP_SERVER in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting App Server LB"
