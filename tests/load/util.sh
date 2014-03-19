@@ -19,6 +19,76 @@ get_from_json() {
         sed -e "s/\"//g"
 }
 
+#
+# if the variable $SILENT is not 0 then the first argument to this
+# function is assumed to be a string and the function echo's
+# the string to stdout
+#
+# exit codes
+#   0   always
+#
+
+echo_if_not_silent() {
+    if [ 0 -eq $SILENT ]; then
+        echo $1
+    fi
+}
+
+#
+# if the variable $SILENT is not 0 then the first argument to this
+# function is assumed to be a string and the function echo's
+# the string to stdout
+#
+# exit codes
+#   0   always
+#
+
+echo_to_stderr_if_not_silent() {
+    if [ 0 -eq $SILENT ]; then
+        echo $1 >&2
+    fi
+
+    return 0
+}
+
+#
+# if the variable $SILENT is not 0 then the first argument to this
+# function is assumed to be a file name and the function cats the
+# contents of the file to stdout
+#
+# exit codes
+#   0   always
+#
+
+cat_if_not_silent() {
+    if [ 0 -eq $SILENT ]; then
+        cat $1
+    fi
+
+    return 0
+}
+
+#
+# test if a docker image exists in the local repo
+#
+# arguments
+#   1   docker image name
+#
+# exit codes
+#   0   image exists
+#   1   image does not exist
+#
+does_image_exist() {
+    local IMAGE_NAME=${1:-IAMGE_NAME_THAT_SHOULD_NEVER_EXIST}
+    local IMAGE_EXISTS=$(sudo docker images | grep ^$IMAGE_NAME | wc -l)
+    if [ "$IMAGE_EXISTS" == "0" ]; then
+        return 1
+    else
+        return 0
+    fi
+}
+
+#
 # get the value associated with a key in ~/.yar.creds
 #
 # for example, the following script gets the API key from ~/.yar.creds
@@ -28,6 +98,7 @@ get_from_json() {
 #   source $SCRIPT_DIR_NAME/util.sh
 #   API_KEY=$(get_creds_config "API_KEY")
 #   echo $API_KEY
+#
 get_creds_config() {
     local KEY=${1:-}
     local VALUE_IF_NOT_FOUND=${2:-}
@@ -40,6 +111,7 @@ get_creds_config() {
     fi
 }
 
+#
 # get the value associated with a key in ~/.yar.deployment
 #
 # for example, the following script gets the auth server
@@ -50,6 +122,7 @@ get_creds_config() {
 #   source $SCRIPT_DIR_NAME/util.sh
 #   AUTH_SERVER_CONTAINER_ID=$(get_deployment_config "AUTH_SERVER_CONTAINER_ID")
 #   echo $AUTH_SERVER_CONTAINER_ID
+#
 get_deployment_config() {
     local KEY=${1:-}
     local VALUE_IF_NOT_FOUND=${2:-}
@@ -62,6 +135,7 @@ get_deployment_config() {
     fi
 }
 
+#
 # given a value of length V, add N - V zeros to left pad the
 # value so the resulting value is N digits long
 #
@@ -71,19 +145,38 @@ get_deployment_config() {
 #   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 #   source $SCRIPT_DIR_NAME/util.sh
 #   left_zero_pad 23 6
+#
 left_zero_pad() {
     VALUE=${1:-}
     DESIRED_NUMBER_DIGITS=${2:-}
     python -c "print ('0'*10+'$VALUE')[-$DESIRED_NUMBER_DIGITS:]"
 }
 
-# create a docker container to run the app server
+#
+# create a docker container to run an app server
+#
+# arguments
+#   1   name of data directory - mkdir -p called on this name
+#   2   port on which to run the app server (optional, default = 8080)
+#
+# exit codes
+#   0   ok
+#   1   general/non-specific failure - app server container not started
+#   2   can't find yar_img
+#
 create_app_server() {
 
     local DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
-    local PORT=8080
+    local PORT=${2:-8080}
+
+    local IMAGE_NAME=yar_img
+    if ! does_image_exist $IMAGE_NAME; then
+        echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
+        return 2
+    fi
+
     local APP_SERVER_CMD="app_server \
         --log=info \
         --lon=$PORT \
@@ -91,7 +184,7 @@ create_app_server() {
     local APP_SERVER=$(sudo docker run \
         -d \
         -v $DATA_DIRECTORY:/var/yar_app_server \
-        yar_img \
+        $IMAGE_NAME \
         $APP_SERVER_CMD)
     local APP_SERVER_IP=$(get_container_ip $APP_SERVER)
 
@@ -101,22 +194,44 @@ create_app_server() {
     for i in {1..10}
     do
         sleep 1
-        curl -s http://$APP_SERVER_IP:$PORT/dave.html >& /dev/null
-        if [ $? == 0 ]; then
-            break
+        if curl http://$APP_SERVER_IP:$PORT/dave.html >& /dev/null; then
+            echo $APP_SERVER_IP:$PORT
+            return 0
         fi
     done
 
-    echo $APP_SERVER_IP:$PORT
+    echo_to_stderr_if_not_silent "Could not verify availability of App Server on $APP_SERVER_IP:$PORT"
+    return 1
 }
 
-# create a docker container to run the app server load balancer
+#
+# create a docker container to run an app server load balancer
+#
+# arguments
+#   1   name of data directory - mkdir -p called on this name
+#   2   the app server
+#
+# exit codes
+#   0   ok
+#   1   general/non-specific failure - app server container not started
+#   2   can't find yar_img
+#
 create_app_server_lb() {
 
     local DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
+    # :TODO: this whole thing with port numbers, app
+    # server & template isn't right - review and fix
     local APP_SERVER=${2:-}
+
+    local PORT=8080
+
+    local IMAGE_NAME=haproxy_img
+    if ! does_image_exist $IMAGE_NAME; then
+        echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
+        return 2
+    fi
 
     cp $SCRIPT_DIR_NAME/app_server_haproxy.cfg.template $DATA_DIRECTORY/haproxy.cfg
     echo "    server appserver1 $APP_SERVER check" >> $DATA_DIRECTORY/haproxy.cfg
@@ -126,25 +241,24 @@ create_app_server_lb() {
         -d \
         -v /dev/log:/haproxy/log \
         -v $DATA_DIRECTORY:/haproxycfg \
-        haproxy_img \
+        $IMAGE_NAME \
         $APP_SERVER_LB_CMD)
     local APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB)
 
     echo "APP_SERVER_LB_CONTAINER_ID=$APP_SERVER_LB" >> ~/.yar.deployment
     echo "APP_SERVER_LB_IP=$APP_SERVER_LB_IP" >> ~/.yar.deployment
 
-    local PORT=8080
-
     for i in {1..10}
     do
         sleep 1
-        curl -s http://$APP_SERVER_LB_IP:$PORT/dave.html >& /dev/null
-        if [ $? == 0 ]; then
-            break
+        if curl http://$APP_SERVER_LB_IP:$PORT/dave.html >& /dev/null; then
+            echo $APP_SERVER_LB_IP:$PORT
+            return 0
         fi
     done
 
-    echo $APP_SERVER_LB_IP:$PORT
+    echo_to_stderr_if_not_silent "Could not verify availability of App Server LB on $APP_SERVER_LB_IP:$PORT"
+    return 1
 }
 
 # create a docker container to run the key store
@@ -170,8 +284,7 @@ create_key_store() {
     for i in {1..10}
     do
         sleep 1
-        curl -s http://$KEY_SERVER_IP:$PORT >& /dev/null
-        if [ $? == 0 ]; then
+        if curl -s http://$KEY_SERVER_IP:$PORT >& /dev/null; then
             break
         fi
     done
@@ -182,15 +295,6 @@ create_key_store() {
         --host=$KEY_STORE_IP:$PORT \
         --database=$DATABASE"
     sudo docker run -i -t yar_img $INSTALLER_CMD >& /dev/null
-
-    for i in {1..10}
-    do
-        sleep 1
-        curl -s http://$KEY_STORE_IP:$PORT/$DATABASE >& /dev/null
-        if [ $? == 0 ]; then
-            break
-        fi
-    done
 
     echo $KEY_STORE_IP:$PORT/$DATABASE
 }
@@ -231,14 +335,42 @@ create_key_server() {
     echo $KEY_SERVER_IP:$PORT
 }
 
-# create a docker container to run the nonce store
+#
+# create a docker container to run a nonce store
+#
+# arguments
+#   1   name of data directory - mkdir -p called on this name
+#   2   port on which to run the nonce store (optional, default = 11211)
+#   3   MB of RAM for nonce store to use to store nonces (optional, default = 128)
+#
+# exit codes
+#   0   ok
+#   1   general/non-specific failure - nonce store container not started
+#   2   can't find memcached_img
+#
 create_nonce_store() {
 
-    local PORT=11211
-    local NONCE_STORE_CMD=""
+    local DATA_DIRECTORY=${1:-}
+    mkdir -p $DATA_DIRECTORY
+
+    local PORT=${2:-11211}
+
+    local RAM=${3:-128}
+
+    local IMAGE_NAME=memcached_img
+    if ! does_image_exist $IMAGE_NAME; then
+        echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
+        return 2
+    fi
+
+    local NONCE_STORE_CMD="memcached.sh \
+        $PORT \
+        $RAM \
+        /var/nonce_store/nonce_store_log"
     local NONCE_STORE=$(sudo docker run \
         -d \
-        memcached_img \
+        -v $DATA_DIRECTORY:/var/nonce_store \
+        $IMAGE_NAME \
         $NONCE_STORE_CMD)
     local NONCE_STORE_IP=$(get_container_ip $NONCE_STORE)
 
@@ -248,12 +380,14 @@ create_nonce_store() {
     for i in {1..10}
     do
         sleep 1
-        if [ "$(memcstat --servers=$NONCE_STORE_IP:$PORT | wc -l)" != "0" ]; then
-            break
+        if echo stats | nc $NONCE_STORE_IP $PORT >& /dev/null; then
+            echo $NONCE_STORE_IP:$PORT
+            return 0
         fi
     done
 
-    echo $NONCE_STORE_IP:$PORT
+    echo_to_stderr_if_not_silent "Could not verify availability of Nonce Store on $NONCE_STORE_IP:$PORT"
+    return 1
 }
 
 # create a docker container to run the auth_server

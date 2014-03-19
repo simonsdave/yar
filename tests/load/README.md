@@ -162,7 +162,6 @@ to the local repo of boxes
 
 ~~~~~
 (env)>vagrant box list
-awsec2               (aws)
 precise64            (virtualbox)
 precise64-3.8-kernel (virtualbox)
 (env)>vagrant box add docker-container-host docker-container-host.box
@@ -170,7 +169,6 @@ Downloading or copying the box...
 Extracting box...te: 26.2M/s, Estimated time remaining: 0:00:01)
 Successfully added box 'docker-container-host' with provider 'virtualbox'!
 (env)>vagrant box list
-awsec2                (aws)
 docker-container-host (virtualbox)
 precise64             (virtualbox)
 precise64-3.8-kernel  (virtualbox)
@@ -465,16 +463,18 @@ and the key store runs in a [Docker](https://www.docker.io/) container
 
 Other Stuff
 -----------
-* as an aside, if at any point during the above you need to remove all
-containers so you can start from scratch just run rm_all_containers.sh - just
-be warned that rm_all_containers.sh kills all running containers and
-removes all file systems for all containers - note the emphasis on "all" so
-if you're running this directly on Ubuntu with non-yar docker containers
-rm_all_containers.sh will remove them just as quickly as it removes
-yar containers
+* if at any point you need to remove all
+containers so you can start from scratch just run [rm_all_containers.sh](rm_all_containers.sh) - just
+be warned, [rm_all_containers.sh](rm_all_containers.sh) kills **all** running containers and
+removes **all** file systems for all containers - note the emphasis on **all** -> 
+if you're running yar containers right beside non-yar containers
+[rm_all_containers.sh](rm_all_containers.sh) will remove the non-year containers
+and file systems just as quickly and forcefully as it removes yar containers and file systems
 * why are bash scripts used for lots of this testing? why not use Python
-and docker-py? tried docker-py but found the API really poorly documented
+and [docker-py](https://github.com/dotcloud/docker-py)?
+tried [docker-py](https://github.com/dotcloud/docker-py) but found the API to be poorly documented
 and not used extensively (so Googling for answers yielded few hits).
-The docker cli on the other hand is very well documented and lots of folks
+The [Docker cli](http://docs.docker.io/en/latest/reference/commandline/cli/)
+on the other hand is very well documented and lots of folks
 are using it so easy to Google for answers.
-* :TODO: data for key store containers
+

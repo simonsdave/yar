@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+#
+# this script is intended to be called by Vagrant when provisioning
+# the docker container host
+#
+
 apt-get update
 
 # :TODO: not sure I totally get this, until Docker 0.9 I believe lxc was
@@ -56,6 +61,14 @@ sed -i 's/#DOCKER_OPTS="-dns 8.8.8.8 -dns 8.8.4.4"/DOCKER_OPTS="-e lxc"/g' /etc/
 
 sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="cgroup_enable=memory"/g' /etc/default/grub
 
+#
+# build all docker images that don't depend on yar specific code
+#
+
+sudo docker build -t memcached_img /vagrant/memcached
+sudo docker build -t haproxy_img /vagrant/haproxy
+sudo docker build -t couchdb_img /vagrant/couchdb
+
 # curl's a generally useful utility across SO many platforms ...
 apt-get install -y curl
 
@@ -72,9 +85,6 @@ cd
 # for apache benchmark
 # http://httpd.apache.org/docs/2.2/programs/ab.html
 apt-get install -y apache2-utils
-
-# simple command line tools for poking @ memcached
-apt-get install -y libmemcached-tools
 
 # python scripts setup and drive tests so we'll need pip
 apt-get install -y python-pip

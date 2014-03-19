@@ -23,10 +23,5 @@ RUN apt-get update
 
 RUN apt-get install -y memcached
 
-EXPOSE 11211
-
-CMD ["-m", "128"]
-
-USER daemon
-
-ENTRYPOINT memcached
+ADD memcached.sh /usr/local/bin/memcached.sh
+RUN chown root.root /usr/local/bin/memcached.sh
