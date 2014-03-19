@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# http://blog.docker.io/2013/07/effortless-monitoring-with-collectd-graphite-and-docker/
+
 # /sys/fs/cgroup/cpuacct/lxc/00abfd6674a9afa0349bcdba831c12783d71bbfa6c0306b4c141a3c9f4f4cd71/cpuacct.usage
 #	the total CPU time (in nanoseconds) consumed by all tasks in this cgroup 
 
@@ -12,6 +14,30 @@
 # https://collectd.org/wiki/index.php/First_steps
 # sudo apt-get install collectd
 # /etc/collectd
+
+# configuration
+# -- /etc/collectd/collectd.conf
+# output
+# -- /var/lib/collectd/csv/precise64
+# enable csv output by uncommenting
+# -- LoadPlugin csv
+# collect metrics every second
+# -- Interval 1
+# https://collectd.org/wiki/index.php/Plugin:Table
+# sudo service collectd restart
+# http://collectd.org/documentation/manpages/collectd.conf.5.shtml#plugin_table
+
+<Plugin table>
+  <Table "/sys/fs/cgroup/memory/lxc/e821276ca185e737e7fb560ea7096fb4889cfdedb43a37848ed1f47f790b75a0/memory.usage_in_bytes">
+    Instance "e821276ca185e737e7fb560ea7096fb4889cfdedb43a37848ed1f47f790b75a0-memory"
+    Separator " \\n"
+    <Result>
+      Type gauge
+      InstancesFrom 0
+      ValuesFrom 0
+    </Result>
+  </Table>
+</Plugin>
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source $SCRIPT_DIR_NAME/util.sh
