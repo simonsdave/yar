@@ -204,13 +204,34 @@ create_app_server() {
     return 1
 }
 
-# create a docker container to run the app server load balancer
+#
+# create a docker container to run an app server load balancer
+#
+# arguments
+#   1   name of data directory - mkdir -p called on this name
+#   2   the app server
+#
+# exit codes
+#   0   ok
+#   1   general/non-specific failure - app server container not started
+#   2   can't find yar_img
+#
 create_app_server_lb() {
 
     local DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
+    # :TODO: this whole thing with port numbers, app
+    # server & template isn't right - review and fix
     local APP_SERVER=${2:-}
+
+    local PORT=8080
+
+    local IMAGE_NAME=haproxy_img
+    if ! does_image_exist $IMAGE_NAME; then
+        echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
+        return 2
+    fi
 
     cp $SCRIPT_DIR_NAME/app_server_haproxy.cfg.template $DATA_DIRECTORY/haproxy.cfg
     echo "    server appserver1 $APP_SERVER check" >> $DATA_DIRECTORY/haproxy.cfg
@@ -220,25 +241,24 @@ create_app_server_lb() {
         -d \
         -v /dev/log:/haproxy/log \
         -v $DATA_DIRECTORY:/haproxycfg \
-        haproxy_img \
+        $IMAGE_NAME \
         $APP_SERVER_LB_CMD)
     local APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB)
 
     echo "APP_SERVER_LB_CONTAINER_ID=$APP_SERVER_LB" >> ~/.yar.deployment
     echo "APP_SERVER_LB_IP=$APP_SERVER_LB_IP" >> ~/.yar.deployment
 
-    local PORT=8080
-
     for i in {1..10}
     do
         sleep 1
-        curl -s http://$APP_SERVER_LB_IP:$PORT/dave.html >& /dev/null
-        if [ $? == 0 ]; then
-            break
+        if curl http://$APP_SERVER_LB_IP:$PORT/dave.html >& /dev/null; then
+            echo $APP_SERVER_LB_IP:$PORT
+            return 0
         fi
     done
 
-    echo $APP_SERVER_LB_IP:$PORT
+    echo_to_stderr_if_not_silent "Could not verify availability of App Server LB on $APP_SERVER_LB_IP:$PORT"
+    return 1
 }
 
 # create a docker container to run the key store

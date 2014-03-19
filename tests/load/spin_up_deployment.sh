@@ -109,7 +109,10 @@ echo_if_not_silent "$APP_SERVER in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting App Server LB"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/App-Server-LB
-APP_SERVER_LB=$(create_app_server_lb $DATA_DIRECTORY $APP_SERVER)
+if ! APP_SERVER_LB=$(create_app_server_lb $DATA_DIRECTORY $APP_SERVER); then
+    echo_to_stderr_if_not_silent "App Server failed to start"
+    exit 1
+fi
 echo_if_not_silent "$APP_SERVER_LB in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Nonce Store"
