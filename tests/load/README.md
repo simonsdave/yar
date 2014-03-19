@@ -27,88 +27,33 @@ version 3.8 of the Linux kernel. So, we need create a local
 with the 3.8 Linux kernel.
 
 * [these instructions](precise64-3.8-kernel/README.md) describe how to create
-the [box](http://docs.vagrantup.com/v2/boxes.html)
+a [box](http://docs.vagrantup.com/v2/boxes.html) called *precise64-3.8-kernel*
+and make the [box](http://docs.vagrantup.com/v2/boxes.html)
+available in the local [box](http://docs.vagrantup.com/v2/boxes.html) repo
 
 > NOTE - creating the [box](http://docs.vagrantup.com/v2/boxes.html)
 with the right kernel version is a one time operation - you don't have
-to do this before running each load test - create the [box](http://docs.vagrantup.com/v2/boxes.html)
+to do this before running each load test - create the
+[box](http://docs.vagrantup.com/v2/boxes.html)
 once and reuse it again and again
 
-Creating a Docker Container Host Box
-------------------------------------
+Creating a Base Docker Container Host Box
+-----------------------------------------
 
-Let's walk through this process step by step
-assuming you don't have the yar source code on your machine.
+We now have a [box](http://docs.vagrantup.com/v2/boxes.html) with the right
+version of the kernel on which we can build a Base Docker Container Host.
 
-* get the source code and pre-reqs by running the
-following in a new terminal window
+* [these instructions](docker-container-host/README.md) describe how to create
+a [box](http://docs.vagrantup.com/v2/boxes.html) called *docker-container-host*
+and make the [box](http://docs.vagrantup.com/v2/boxes.html)
+available in the local [box](http://docs.vagrantup.com/v2/boxes.html) repo
 
-~~~~~
-cd; git clone https://github.com/simonsdave/yar.git; cd yar; source bin/cfg4dev
-~~~~~
-
-* use [Vagrant](http://www.vagrantup.com/) to spin up
-the [VirtualBox](https://www.virtualbox.org/)
+> NOTE - creating the Base Docker Container Host
 [box](http://docs.vagrantup.com/v2/boxes.html)
-that will become the docker container host
-
-~~~~~
-(env)>cd tests/load/docker-container-host
-(env)>vagrant up
-<<<lots of messages>>>
-Processing triggers for libc-bin ...
-ldconfig deferred processing now taking place
-(env)>vagrant status
-Current machine states:
-default                   running (virtualbox)
-
-The VM is running. To stop this VM, you can run `vagrant halt` to
-shut it down forcefully, or you can run `vagrant suspend` to simply
-suspend the virtual machine. In either case, to restart it again,
-simply run `vagrant up`.
-~~~~~
-
-* use [Vagrant](http://www.vagrantup.com/)'s
-[package](https://docs.vagrantup.com/v2/cli/package.html)
-command to create the
+is a one time operation - you don't have
+to do this before running each load test - create the
 [box](http://docs.vagrantup.com/v2/boxes.html)
-
-~~~~~
-(env)>vagrant package --output docker-container-host.box
-[default] Attempting graceful shutdown of VM...
-[default] Clearing any previously set forwarded ports...
-[default] Creating temporary directory for export...
-[default] Exporting VM...
-[default] Compressing package to: /Users/dave/yar/tests/load/docker-container-host/docker-container-host.box
-(env)>
-~~~~~
-
-* use [Vagrant](http://www.vagrantup.com/)'s
-[box add](https://docs.vagrantup.com/v2/cli/box.html)
-command to add the
-[box](http://docs.vagrantup.com/v2/boxes.html)
-to the local repo of boxes
-
-> in the code below it's important to get the 
-> [box](http://docs.vagrantup.com/v2/boxes.html)
-> name *docker-container-host* right because
-> it's referred to by name in
-> [this Vagrantfile](Vagrantfile.sh)
-
-~~~~~
-(env)>vagrant box list
-precise64            (virtualbox)
-precise64-3.8-kernel (virtualbox)
-(env)>vagrant box add docker-container-host docker-container-host.box
-Downloading or copying the box...
-Extracting box...te: 26.2M/s, Estimated time remaining: 0:00:01)
-Successfully added box 'docker-container-host' with provider 'virtualbox'!
-(env)>vagrant box list
-docker-container-host (virtualbox)
-precise64             (virtualbox)
-precise64-3.8-kernel  (virtualbox)
-(env)>
-~~~~~
+once and reuse it again and again
 
 Running a Load Test
 -------------------
