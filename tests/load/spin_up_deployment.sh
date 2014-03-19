@@ -113,11 +113,12 @@ APP_SERVER_LB=$(create_app_server_lb $DATA_DIRECTORY $APP_SERVER)
 echo_if_not_silent "$APP_SERVER_LB in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Nonce Store"
-if ! NONCE_STORE=$(create_nonce_store); then 
+DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Nonce-Store
+if ! NONCE_STORE=$(create_nonce_store $DATA_DIRECTORY); then 
     echo_to_stderr_if_not_silent "Nonce Store failed to start"
     exit 1
 fi
-echo_if_not_silent $NONCE_STORE
+echo_if_not_silent "$NONCE_STORE in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Key Store"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Store

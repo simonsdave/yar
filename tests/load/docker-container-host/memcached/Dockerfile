@@ -22,3 +22,6 @@ MAINTAINER Dave Simons
 RUN apt-get update
 
 RUN apt-get install -y memcached
+
+ADD memcached.sh /usr/local/bin/memcached.sh
+RUN chown root.root /usr/local/bin/memcached.sh

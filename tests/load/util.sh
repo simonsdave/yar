@@ -264,8 +264,7 @@ create_key_store() {
     for i in {1..10}
     do
         sleep 1
-        curl -s http://$KEY_SERVER_IP:$PORT >& /dev/null
-        if [ $? == 0 ]; then
+        if curl -s http://$KEY_SERVER_IP:$PORT >& /dev/null; then
             break
         fi
     done
@@ -276,15 +275,6 @@ create_key_store() {
         --host=$KEY_STORE_IP:$PORT \
         --database=$DATABASE"
     sudo docker run -i -t yar_img $INSTALLER_CMD >& /dev/null
-
-    for i in {1..10}
-    do
-        sleep 1
-        curl -s http://$KEY_STORE_IP:$PORT/$DATABASE >& /dev/null
-        if [ $? == 0 ]; then
-            break
-        fi
-    done
 
     echo $KEY_STORE_IP:$PORT/$DATABASE
 }
@@ -330,7 +320,8 @@ create_key_server() {
 #
 # arguments
 #   1   name of data directory - mkdir -p called on this name
-#   2   port on which to run the app server (optional, default = 8080)
+#   2   port on which to run the nonce store (optional, default = 11211)
+#   3   MB of RAM for nonce store to use to store nonces (optional, default = 128)
 #
 # exit codes
 #   0   ok
@@ -339,8 +330,12 @@ create_key_server() {
 #
 create_nonce_store() {
 
-    local RAM=128
-    local PORT=11211
+    local DATA_DIRECTORY=${1:-}
+    mkdir -p $DATA_DIRECTORY
+
+    local PORT=${2:-11211}
+
+    local RAM=${3:-128}
 
     local IMAGE_NAME=memcached_img
     if ! does_image_exist $IMAGE_NAME; then
@@ -348,12 +343,13 @@ create_nonce_store() {
         return 2
     fi
 
-    local NONCE_STORE_CMD="memcached \
-        -m $RAM \
-        -p $PORT \
-        -u daemon"
+    local NONCE_STORE_CMD="memcached.sh \
+        $PORT \
+        $RAM \
+        /var/nonce_store/nonce_store_log"
     local NONCE_STORE=$(sudo docker run \
         -d \
+        -v $DATA_DIRECTORY:/var/nonce_store \
         $IMAGE_NAME \
         $NONCE_STORE_CMD)
     local NONCE_STORE_IP=$(get_container_ip $NONCE_STORE)
