@@ -125,7 +125,10 @@ echo_if_not_silent "$NONCE_STORE in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Key Store"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Store
-KEY_STORE=$(create_key_store $DATA_DIRECTORY) 
+if !  KEY_STORE=$(create_key_store $DATA_DIRECTORY); then 
+    echo_to_stderr_if_not_silent "Key Store failed to start"
+    exit 1
+fi
 echo_if_not_silent "$KEY_STORE in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Key Server"
@@ -148,7 +151,7 @@ else
 fi
 
 echo_if_not_silent ""
-echo_if_not_silent "Deployment in ~/.yar.deployment"
+echo_if_not_silent "Deployment Description in ~/.yar.deployment"
 cat_if_not_silent ~/.yar.deployment
 
 # services now running, time to provision some keys

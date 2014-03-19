@@ -261,21 +261,38 @@ create_app_server_lb() {
     return 1
 }
 
-# create a docker container to run the key store
+#
+# create a docker container to run a key store
+#
+# arguments
+#   1   name of data directory - mkdir -p called on this name
+#   2   the port on which the key store should run (optional - default = 5984
+#   3   the database name (optional - default = creds)
+#
+# exit codes
+#   0   ok
+#   1   general/non-specific failure - app server container not started
+#   2   can't find yar_img
+#
 create_key_store() {
 
     local DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
-    local PORT=5984
-    local DATABASE=creds
+    local PORT=${2:-5984}
+    local DATABASE=${3:-creds}
 
-	# :TODO: add check that docker images have been built
+    local IMAGE_NAME=couchdb_img
+    if ! does_image_exist $IMAGE_NAME; then
+        echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
+        return 2
+    fi
+
     local KEY_STORE=$(sudo docker run \
         -d \
         -v $DATA_DIRECTORY:/usr/local/var/lib/couchdb:rw \
         -t \
-        couchdb_img)
+        $IMAGE_NAME)
     local KEY_STORE_IP=$(get_container_ip $KEY_STORE)
 
     echo "KEY_STORE_CONTAINER_ID=$KEY_STORE" >> ~/.yar.deployment
@@ -284,7 +301,7 @@ create_key_store() {
     for i in {1..10}
     do
         sleep 1
-        if curl -s http://$KEY_SERVER_IP:$PORT >& /dev/null; then
+        if curl -s http://$KEY_STORE_IP:$PORT >& /dev/null; then
             break
         fi
     done
@@ -296,7 +313,17 @@ create_key_store() {
         --database=$DATABASE"
     sudo docker run -i -t yar_img $INSTALLER_CMD >& /dev/null
 
+    for i in {1..10}
+    do
+        sleep 1
+        if curl -s http://$KEY_STORE_IP:$PORT/$DATABASE >& /dev/null; then
+            break
+        fi
+    done
+
     echo $KEY_STORE_IP:$PORT/$DATABASE
+
+    return 0
 }
 
 # create a docker container to run the key server
