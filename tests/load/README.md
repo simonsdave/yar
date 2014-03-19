@@ -4,9 +4,6 @@ is done by creating a series of
 instances of the various yar services. The number, type
 and size of these containers can be varied to validate
 yar's operation in various deployment configurations.
-The intended deployment OS for yar is
-[Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
-and therefore the Docker containers run this OS.
 
 Creating a Box with Correct Linux Kernel
 ----------------------------------------
@@ -28,76 +25,14 @@ version 3.8 of the Linux kernel. So, we need create a local
 [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
 [box](http://docs.vagrantup.com/v2/boxes.html)
 with the 3.8 Linux kernel.
-Let's walk through this process step by step.
-We'll assume you don't have the yar source code on your machine.
 
-* get the source code and pre-reqs by running the
-following in a new terminal window
+* [these instructions](precise64-3.8-kernel/README.md) describe how to create
+the [box](http://docs.vagrantup.com/v2/boxes.html)
 
-~~~~~
-cd; git clone https://github.com/simonsdave/yar.git; cd yar; source bin/cfg4dev
-~~~~~
-
-* use [Vagrant](http://www.vagrantup.com/) to provision
-a [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
-[box](http://docs.vagrantup.com/v2/boxes.html)
-with version 3.8 of the Linux kernel
-
-~~~~~
-(env)>cd tests/load/precise64-3.8-kernel
-(env)>vagrant up
-<<<lots of messages>>>
-(env)>vagrant status
-Current machine states:
-default                   running (virtualbox)
-~~~~~
-
-* use [Vagrant](http://www.vagrantup.com/)'s
-[package](https://docs.vagrantup.com/v2/cli/package.html)
-command to create a
-[box](http://docs.vagrantup.com/v2/boxes.html)
-
-~~~~~
-(env)>vagrant package --output precise64-3.8-kernel.box
-[default] Attempting graceful shutdown of VM...
-[default] Clearing any previously set forwarded ports...
-[default] Creating temporary directory for export...
-[default] Exporting VM...
-[default] Compressing package to: /Users/dave/yar/tests/load/precise64-3.8-kernel/precise64-3.8-kernel.box
-(env)>ls -l
-total 1145888
--rw-r--r--  1 dave  staff        381 14 Mar 07:59 Vagrantfile
--rw-r--r--  1 dave  staff  586685947 14 Mar 09:24 precise64-3.8-kernel.box
--rw-r--r--  1 dave  staff        184 14 Mar 07:59 provision.sh
-(env)>
-~~~~~
-
-* use [Vagrant](http://www.vagrantup.com/)'s
-[box add](https://docs.vagrantup.com/v2/cli/box.html)
-command to add the
-[box](http://docs.vagrantup.com/v2/boxes.html)
-to the local repo of boxes
-
-> in the code below it's important to get the 
-> [box](http://docs.vagrantup.com/v2/boxes.html)
-> name *precise64-3.8-kernel* right because
-> it's referred to by name in
-> [this Vagrantfile](Vagrantfile.sh)
-
-~~~~~
-(env)>vagrant box list
-precise64 (virtualbox)
-ubuntu    (virtualbox)
-(env)>vagrant box add precise64-3.8-kernel precise64-3.8-kernel.box
-Downloading or copying the box...
-Extracting box...te: 136M/s, Estimated time remaining: 0:00:01)
-Successfully added box 'precise64-3.8-kernel' with provider 'virtualbox'!
-(env)>vagrant box list
-precise64            (virtualbox)
-precise64-3.8-kernel (virtualbox)
-ubuntu               (virtualbox)
-(env)>
-~~~~~
+> NOTE - creating the [box](http://docs.vagrantup.com/v2/boxes.html)
+with the right kernel version is a one time operation - you don't have
+to do this before running each load test - create the [box](http://docs.vagrantup.com/v2/boxes.html)
+once and reuse it again and again
 
 Creating a Docker Container Host Box
 ------------------------------------
