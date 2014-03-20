@@ -288,10 +288,14 @@ create_key_store() {
         return 2
     fi
 
+# RUN chown -R couchdb:couchdb /usr/local/var/log/couchdb
+# RUN chown -R couchdb:couchdb /usr/local/var/lib/couchdb
+# RUN chown -R couchdb:couchdb /usr/local/var/run/couchdb
+# RUN chown -R couchdb:couchdb /usr/local/etc/couchdb
+
     local KEY_STORE=$(sudo docker run \
         -d \
         -v $DATA_DIRECTORY:/usr/local/var/lib/couchdb:rw \
-        -t \
         $IMAGE_NAME)
     local KEY_STORE_IP=$(get_container_ip $KEY_STORE)
 
@@ -311,7 +315,7 @@ create_key_store() {
         --create=true \
         --host=$KEY_STORE_IP:$PORT \
         --database=$DATABASE"
-    sudo docker run -i -t yar_img $INSTALLER_CMD >& /dev/null
+    sudo docker run -i yar_img $INSTALLER_CMD >& /dev/null
 
     for i in {1..10}
     do
