@@ -63,13 +63,14 @@ if __name__ == "__main__":
 
     abs_base_path = os.path.abspath(os.path.split(sys.argv[0])[0])
 
-    number_of_creds = [1000, 10000, 25000 - (1000 + 10000)]
-#    number_of_creds.extend([25000]*((1000000-25000)/25000))
+    number_of_creds = [1000, 10000, 14000]
+    number_of_creds.extend([25000] * 199)
+    assert 5000000 == sum(number_of_creds)
     for i in range(0, len(number_of_creds)):
         filename = "%s-%s.json" % (
             str(i).zfill(4),
             str(number_of_creds[i]).zfill(8),
         )
         filename = os.path.join(abs_base_path, filename)
-        print "Creating '%s' with %d credentials" % (filename, number_of_creds[i])
+        print "Creating '%s'" % filename
         _create_file(number_of_creds[i], filename)
