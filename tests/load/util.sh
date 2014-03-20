@@ -417,7 +417,20 @@ create_nonce_store() {
     return 1
 }
 
-# create a docker container to run the auth_server
+#
+# create a docker container to run an auth_server
+#
+# arguments
+#   1   name of data directory - mkdir -p called on this name
+#   2   key server
+#   3   app server
+#   4   nonce store
+#
+# exit codes
+#   0   ok
+#   1   general/non-specific failure - nonce store container not started
+#   2   can't find yar_img
+#
 create_auth_server() {
 
     local DATA_DIRECTORY=${1:-}
@@ -428,6 +441,13 @@ create_auth_server() {
     local NONCE_STORE=${4:-}
 
     local PORT=8000
+
+    local IMAGE_NAME=yar_img
+    if ! does_image_exist $IMAGE_NAME; then
+        echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
+        return 2
+    fi
+
     local AUTH_SERVER_CMD="auth_server \
         --log=info \
         --lon=$PORT \
@@ -438,7 +458,7 @@ create_auth_server() {
     local AUTH_SERVER=$(sudo docker run \
         -d \
         -v $DATA_DIRECTORY:/var/auth_server \
-        yar_img \
+        $IMAGE_NAME \
         $AUTH_SERVER_CMD)
     local AUTH_SERVER_IP=$(get_container_ip $AUTH_SERVER)
 
@@ -448,13 +468,14 @@ create_auth_server() {
     for i in {1..10}
     do
         sleep 1
-        curl -s http://$AUTH_SERVER_IP:$PORT >& /dev/null
-        if [ $? == 0 ]; then
-            break
+        if curl -s http://$AUTH_SERVER_IP:$PORT >& /dev/null; then
+            echo $AUTH_SERVER_IP:$PORT
+            return 0
         fi
     done
 
-    echo $AUTH_SERVER_IP:$PORT
+    echo_to_stderr_if_not_silent "Could not verify availability of Auth Server on $AUTH_SERVER_IP:$PORT"
+    return 1
 }
 
 # create a docker container to run the auth server load balancer
