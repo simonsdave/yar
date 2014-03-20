@@ -36,8 +36,7 @@ mkdir -p $RESULTS_DIR
 #
 # create a key store in an isolated container
 #
-KEY_STORE_DATA=$(mktemp -d)
-KEY_STORE=$(create_key_store $KEY_STORE_DATA)
+KEY_STORE=$(create_key_store $RESULTS_DIR/couchdb)
 
 #
 # load up the newly created key store with a bunch
