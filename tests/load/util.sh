@@ -326,7 +326,18 @@ create_key_store() {
     return 0
 }
 
-# create a docker container to run the key server
+#
+# create a docker container to run a key server
+#
+# arguments
+#   1   name of data directory - mkdir -p called on this name
+#   2   key store
+#
+# exit codes
+#   0   ok
+#   1   general/non-specific failure - app server container not started
+#   2   can't find yar_img
+#
 create_key_server() {
 
     local DATA_DIRECTORY=${1:-}
@@ -335,6 +346,13 @@ create_key_server() {
     local KEY_STORE=${2:-}
 
     local PORT=8070
+
+    local IMAGE_NAME=yar_img
+    if ! does_image_exist $IMAGE_NAME; then
+        echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
+        return 2
+    fi
+
     local KEY_SERVER_CMD="key_server \
         --log=info \
         --lon=$PORT \
@@ -343,7 +361,7 @@ create_key_server() {
     local KEY_SERVER=$(sudo docker run \
         -d \
         -v $DATA_DIRECTORY:/var/yar_key_server \
-        yar_img \
+        $IMAGE_NAME \
         $KEY_SERVER_CMD)
     local KEY_SERVER_IP=$(get_container_ip $KEY_SERVER)
 
@@ -353,13 +371,14 @@ create_key_server() {
     for i in {1..10}
     do
         sleep 1
-        curl -s http://$KEY_SERVER_IP:$PORT/v1.0/creds >& /dev/null
-        if [ $? == 0 ]; then
-            break
+        if curl -s http://$KEY_SERVER_IP:$PORT/v1.0/creds >& /dev/null; then
+            echo $KEY_SERVER_IP:$PORT
+            return 0
         fi
     done
 
-    echo $KEY_SERVER_IP:$PORT
+    echo_to_stderr_if_not_silent "Could not verify availability of Key Server on $KEY_SERVER_IP:$PORT"
+    return 1
 }
 
 #

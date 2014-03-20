@@ -125,7 +125,7 @@ echo_if_not_silent "$NONCE_STORE in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Key Store"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Store
-if !  KEY_STORE=$(create_key_store $DATA_DIRECTORY); then 
+if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY); then 
     echo_to_stderr_if_not_silent "Key Store failed to start"
     exit 1
 fi
@@ -133,7 +133,10 @@ echo_if_not_silent "$KEY_STORE in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Key Server"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Server
-KEY_SERVER=$(create_key_server $DATA_DIRECTORY $KEY_STORE)
+if ! KEY_SERVER=$(create_key_server $DATA_DIRECTORY $KEY_STORE); then
+    echo_to_stderr_if_not_silent "Key Server failed to start"
+    exit 1
+fi
 echo_if_not_silent "$KEY_SERVER in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Auth Server"
