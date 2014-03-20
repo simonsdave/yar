@@ -13,9 +13,15 @@ SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source $SCRIPT_DIR_NAME/util.sh
 
 # this script accepts no command line arguments
-if [ $# != 0 ]; then
-    echo "usage: `basename $0`"
-    exit 1
+if [ $# = 0 ]; then
+    DESIRED_NUMBER_OF_CREDS=20000000
+else
+    if [ $# != 1 ]; then
+        echo "usage: `basename $0` [<desired # of creds>]"
+        exit 1
+    else
+        DESIRED_NUMBER_OF_CREDS=$1
+    fi
 fi
 
 START_TIME=$(date +%Y-%m-%d-%H-%M)
@@ -36,9 +42,9 @@ KEY_STORE=$(create_key_store $KEY_STORE_DATA)
 #
 DATABASE_METRICS=$RESULTS_DIR/key-store-size.tsv
 
+TOTAL_NUMBER_OF_CREDS=0
 for CREDS in $SCRIPT_DIR_NAME/lots-of-creds/*.json
 do
-
     echo "Uploading $CREDS"
 
     curl \
@@ -63,6 +69,12 @@ do
     echo -e "$DOC_COUNT\t$DATA_SIZE\t$DISK_SIZE" >> $DATABASE_METRICS
 
     rm $TEMP_DATABASE_METRICS
+
+    NUMBER_OF_CREDS=$(echo $CREDS | sed s/\\/.*\\/[[:digit:]]*-0*// | sed s/.json$//)
+    TOTAL_NUMBER_OF_CREDS=$(python -c "print $TOTAL_NUMBER_OF_CREDS + int($NUMBER_OF_CREDS)")
+    if [ $DESIRED_NUMBER_OF_CREDS -le $TOTAL_NUMBER_OF_CREDS ]; then
+        break
+    fi
 
 done
 
