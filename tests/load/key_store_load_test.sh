@@ -12,7 +12,11 @@
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source $SCRIPT_DIR_NAME/util.sh
 
-# this script accepts no command line arguments
+#
+# this script accepts a single optional command line argument
+# which defines the rough number of credentials to load into
+# the key store
+#
 if [ $# = 0 ]; then
     DESIRED_NUMBER_OF_CREDS=20000000
 else
