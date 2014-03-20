@@ -37,8 +37,8 @@ to do this before running each load test - create the
 [box](http://docs.vagrantup.com/v2/boxes.html)
 once and reuse it again and again
 
-Creating a Base Docker Container Host Box
------------------------------------------
+Creating a Base Docker Container Host
+-------------------------------------
 
 We now have a [box](http://docs.vagrantup.com/v2/boxes.html) with the right
 version of the kernel on which we can build a Base Docker Container Host.
@@ -55,39 +55,36 @@ to do this before running each load test - create the
 [box](http://docs.vagrantup.com/v2/boxes.html)
 once and reuse it again and again
 
-Running a Load Test
--------------------
+Creating a Docker Container Host
+--------------------------------
 
-With the above instructions we now have a
-[Vagrant](http://www.vagrantup.com/)
+Using instructions we created a Base Docker Container Host
+as a [Vagrant](http://www.vagrantup.com/)
 [box](http://docs.vagrantup.com/v2/boxes.html)
 running [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
-and 90% of what we need to run a load test.
-Let's walk through the process of spinning up
-a VM to run a load test.
-We'll assume you're doing this from ground zero and don't even have
-the yar source installed on your machine.
-
-* get the source code by running the following in a new terminal window
+and called it docker-container-host.
+This [box](http://docs.vagrantup.com/v2/boxes.html) has
+90% of what we need to run a load test.
+The steps below finish creation of the Docker Container Host.
+In the steps below we'll assume you've got the yar source
+installed at ~/yar.
 
 ~~~~~
-cd; git clone https://github.com/simonsdave/yar.git; cd yar; source bin/cfg4dev
+cd; cd yar; source bin/cfg4dev; cd tests/load
 ~~~~~
 
 * spin up the [box](http://docs.vagrantup.com/v2/boxes.html)
 
 ~~~~~
-cd tests/load; ./provision.sh
+(env)>./provision.sh
 <<<cut lots of messages>>>
 [default] Mounting shared folders...
 [default] -- /vagrant
 [default] Running provisioner: shell...
-[default] Running: /var/folders/wg/vg0nq7dd3hddk_fvzwq6sg6m0000gn/T/vagrant-shell20140315-84734-1ludnvy
+[default] Running: /var/folders/wg/vg0nq7dd3hddk_fvzwq6sg6m0000gn/T/vagrant-shell20140319-28781-y73vu0
 ~~~~~
 
 * once the VM is running, ssh into the VM
-and get to the directory that gives you access to the 
-test scripts
 
 ~~~~~
 (env)>vagrant ssh
@@ -96,68 +93,42 @@ Welcome to Ubuntu 12.04 LTS (GNU/Linux 3.8.0-37-generic x86_64)
  * Documentation:  https://help.ubuntu.com/
 Welcome to your Vagrant-built virtual machine.
 Last login: Fri Sep 14 06:23:18 2012 from 10.0.2.2
+vagrant@precise64:~$
+~~~~~
+
+* now get to the directory that gives you access to the test scripts - do
+and ls to convince yourself you're in the right spot:-)
+
+~~~~~
 vagrant@precise64:~$ cd /vagrant/
-vagrant@precise64:/vagrant$ ls -la
-total 140
-drwxr-xr-x  1 vagrant vagrant  1020 Mar 15 13:00 .
-drwxr-xr-x 24 root    root     4096 Mar 14 00:46 ..
--rw-r--r--  1 vagrant vagrant   601 Mar 14 00:27 app_server_haproxy.cfg.template
-drwxr-xr-x  1 vagrant vagrant   136 Mar 15 13:00 artifacts
--rw-r--r--  1 vagrant vagrant   561 Mar 14 00:27 auth_server_haproxy.cfg.template
-drwxr-xr-x  1 vagrant vagrant   102 Mar 14 00:27 CouchDB
--rwxr-xr-x  1 vagrant vagrant   311 Mar 14 00:27 create_images.sh
-drwxr-xr-x  1 vagrant vagrant   204 Mar 15 12:31 docker-container-host
--rw-r--r--  1 vagrant vagrant  6148 Mar 15 11:40 .DS_Store
--rwxr-xr-x  1 vagrant vagrant    25 Mar 14 00:27 .gitignore
-drwxr-xr-x  1 vagrant vagrant   102 Mar 14 00:27 haproxy
-drwxr-xr-x  1 vagrant vagrant   102 Mar 14 00:27 memcached
-drwxr-xr-x  1 vagrant vagrant   170 Mar 14 01:32 precise64-3.8-kernel
--rwxr-xr-x  1 vagrant vagrant   205 Mar 15 12:42 provision_post_vagrant_up.sh
--rwxr-xr-x  1 vagrant vagrant   685 Mar 14 00:27 provision.sh
--rw-r--r--  1 vagrant vagrant 18247 Mar 15 12:57 README.md
--rw-r--r--  1 vagrant vagrant 32768 Mar 15 13:03 .README.md.swp
--rw-r--r--  1 vagrant vagrant  1239 Mar 14 00:27 response_time_by_time.gpcfg
--rw-r--r--  1 vagrant vagrant   673 Mar 14 00:27 response_time.gpcfg
--rwxr-xr-x  1 vagrant vagrant   466 Mar 14 00:27 rm_all_containers.sh
--rwxr-xr-x  1 vagrant vagrant 10320 Mar 15 11:40 run_load_test.sh
-drwxr-xr-x  1 vagrant vagrant   170 Mar 14 11:51 samples
--rwxr-xr-x  1 vagrant vagrant  4260 Mar 15 11:40 spin_up_deployment.sh
-drwxr-xr-x  1 vagrant vagrant   238 Mar 14 11:10 test-results
--rw-r--r--  1 vagrant vagrant  7128 Mar 14 11:03 util.sh
-drwxr-xr-x  1 vagrant vagrant   102 Mar 14 01:31 .vagrant
--rw-r--r--  1 vagrant vagrant   302 Mar 15 12:41 Vagrantfile
-drwxr-xr-x  1 vagrant vagrant   136 Mar 15 13:00 yar
--rw-r--r--  1 vagrant vagrant   395 Mar 14 00:27 yar_server_response_time_by_time.gpcfg
--rw-r--r--  1 vagrant vagrant   508 Mar 14 00:27 yar_server_response_time.gpcfg
 vagrant@precise64:/vagrant$
 ~~~~~
 
-* now let's create the docker images for
-the yar services by running create_images.sh
+* now let's create the last set of Docker images for
+using [create_images.sh](create_images.sh)
 
 ~~~~~
 ./create_images.sh
 ~~~~~
 
-* this will take several minutes to run as 5 Docker images are created - one
-for each of the Key Store, the Nonce Store, load balancer for the Auth Servers,
-the load balancer for App Servers and a final one for
-the running the Auth Server, Key Server and App Server - use Docker's
-images command to see the list of available images once create_images.sh
-has completed
+* [create_images.sh](create_images.sh) will take several minutes to run - use Docker's
+images command to see the list of available images once [create_images.sh](create_images.sh) has completed
 
 ~~~~~
 vagrant@precise64:/vagrant$ sudo docker images
 REPOSITORY          TAG                 IMAGE ID            CREATED              VIRTUAL SIZE
-yar_img             latest              d770e7883a5b        About a minute ago   445.2 MB
-couchdb_img         latest              db88127069f7        3 minutes ago        563.2 MB
-memcached_img       latest              7fd1a46bdae4        6 minutes ago        265.8 MB
-haproxy_img         latest              a457fedc88f9        6 minutes ago        226.3 MB
-ubuntu              12.04               9cd978db300e        5 weeks ago          204.4 MB
+yar_img             latest              3c2bfb8bec39        6 minutes ago       445.2 MB
+couchdb_img         latest              0bafed05b219        22 hours ago        563.3 MB
+haproxy_img         latest              11898726ec3f        22 hours ago        226.3 MB
+memcached_img       latest              ea543914e488        22 hours ago        265.8 MB
+ubuntu              12.04               9cd978db300e        6 weeks ago         204.4 MB
 ~~~~~
 
-* now we have everything we need to spin up a complete, simple yar deployment
-and we'll do this by running ./spin_up_deployment.sh
+Congratulations! You now have everything that's necessary to 
+run some load tests:-)
+
+Running Load Tests
+------------------
 
 ~~~~~
 vagrant@precise64:/vagrant$ ./spin_up_deployment.sh
