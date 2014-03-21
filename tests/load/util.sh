@@ -288,14 +288,15 @@ create_key_store() {
         return 2
     fi
 
-# RUN chown -R couchdb:couchdb /usr/local/var/log/couchdb
-# RUN chown -R couchdb:couchdb /usr/local/var/lib/couchdb
-# RUN chown -R couchdb:couchdb /usr/local/var/run/couchdb
-# RUN chown -R couchdb:couchdb /usr/local/etc/couchdb
-
+    mkdir -p $DATA_DIRECTORY/data
+    # cp $SCRIPT_DIR_NAME/creds.couch $DATA_DIRECTORY/data
+    mkdir -p $DATA_DIRECTORY/log
+    mkdir -p $DATA_DIRECTORY/run
     local KEY_STORE=$(sudo docker run \
         -d \
-        -v $DATA_DIRECTORY:/usr/local/var/lib/couchdb:rw \
+        -v $DATA_DIRECTORY/data:/usr/local/var/lib/couchdb \
+        -v $DATA_DIRECTORY/log:/usr/local/var/log/couchdb \
+        -v $DATA_DIRECTORY/run:/usr/local/var/run/couchdb \
         $IMAGE_NAME)
     local KEY_STORE_IP=$(get_container_ip $KEY_STORE)
 
