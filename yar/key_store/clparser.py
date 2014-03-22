@@ -75,3 +75,13 @@ class CommandLineParser(optparse.OptionParser):
             default=default,
             type="boolean",
             help=help)
+
+        default = True,
+        help = "create design docs - default = %s" % default
+        self.add_option(
+            "--createdesign",
+            action="store",
+            dest="create_design_docs",
+            default=default,
+            type="boolean",
+            help=help)

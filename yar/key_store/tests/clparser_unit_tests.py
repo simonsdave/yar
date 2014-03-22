@@ -22,6 +22,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
 
         self.assertFalse(clo.delete)
         self.assertTrue(clo.create)
+        self.assertTrue(clo.create_design_docs)
         self.assertEqual(clo.database, "creds")
         self.assertEqual(clo.host, "127.0.0.1:5984")
         self.assertEqual(clo.logging_level, logging.ERROR)
@@ -38,6 +39,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
 
         self.assertFalse(clo.delete)
         self.assertTrue(clo.create)
+        self.assertTrue(clo.create_design_docs)
         self.assertEqual(clo.database, "creds")
         self.assertEqual(clo.host, "127.0.0.1:5984")
         self.assertEqual(clo.logging_level, logging.INFO)
@@ -54,6 +56,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
 
         self.assertFalse(clo.delete)
         self.assertTrue(clo.create)
+        self.assertTrue(clo.create_design_docs)
         self.assertEqual(clo.database, "creds")
         self.assertEqual(clo.host, args[-1])
         self.assertEqual(clo.logging_level, logging.ERROR)
@@ -70,6 +73,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
 
         self.assertFalse(clo.delete)
         self.assertTrue(clo.create)
+        self.assertTrue(clo.create_design_docs)
         self.assertEqual(clo.database, args[-1])
         self.assertEqual(clo.host, "127.0.0.1:5984")
         self.assertEqual(clo.logging_level, logging.ERROR)
@@ -86,6 +90,24 @@ class CommandLineParserUnitTase(unittest.TestCase):
 
         self.assertFalse(clo.delete)
         self.assertFalse(clo.create)
+        self.assertTrue(clo.create_design_docs)
+        self.assertEqual(clo.database, "creds")
+        self.assertEqual(clo.host, "127.0.0.1:5984")
+        self.assertEqual(clo.logging_level, logging.ERROR)
+
+    def test_create_design_docs(self):
+        """Verify the command line parser correctly parses
+        the --createdesign command line arg."""
+        args = [
+            "--createdesign", "f",
+        ]
+
+        clp = CommandLineParser()
+        (clo, cla) = clp.parse_args(args)
+
+        self.assertFalse(clo.delete)
+        self.assertTrue(clo.create)
+        self.assertFalse(clo.create_design_docs)
         self.assertEqual(clo.database, "creds")
         self.assertEqual(clo.host, "127.0.0.1:5984")
         self.assertEqual(clo.logging_level, logging.ERROR)
@@ -102,6 +124,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
 
         self.assertTrue(clo.delete)
         self.assertTrue(clo.create)
+        self.assertTrue(clo.create_design_docs)
         self.assertEqual(clo.database, "creds")
         self.assertEqual(clo.host, "127.0.0.1:5984")
         self.assertEqual(clo.logging_level, logging.ERROR)
