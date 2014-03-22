@@ -1,6 +1,6 @@
 Creating a base Docker Container Host
 [box](http://docs.vagrantup.com/v2/boxes.html)
-is simple. Let's start from sractch assuming
+is simple. Let's start from scratch assuming
 you don't even have the yar source code.
 
 * first we'll get the source code and pre-reqs
