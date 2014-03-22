@@ -21,12 +21,14 @@ if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY); then
     echo "Failed to create key store"
     exit 1
 fi
+echo "Key Store available @ '$KEY_STORE'"
 echo "Key Store data saved in '$DATA_DIRECTORY'"
 
 #
 # iterate over each of the json files containing previously
 # generated credentials taking a copy of the key store after
-# each millionth upload and save the copy to :TODO:
+# each millionth upload and save the copy to the same
+# directory as this script
 #
 TOTAL_NUMBER_OF_CREDS=0
 # for CREDS in $SCRIPT_DIR_NAME/*.json
@@ -49,7 +51,7 @@ do
     NUMBER_OF_CREDS=$(echo $CREDS | sed s/\\/.*\\/[[:digit:]]*-0*// | sed s/.json$//)
     TOTAL_NUMBER_OF_CREDS=$(python -c "print $TOTAL_NUMBER_OF_CREDS + int($NUMBER_OF_CREDS)")
     if [ $(($TOTAL_NUMBER_OF_CREDS % 10000)) == 0 ];then
-        ls -la $DATA_DIRECTORY/data/creds.couch
+        cp $DATA_DIRECTORY/data/creds.couch $SCRIPT_DIR_NAME/$TOTAL_NUMBER_OF_CREDS.creds.couch
     fi
 
 done
