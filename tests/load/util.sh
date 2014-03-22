@@ -262,25 +262,27 @@ create_app_server_lb() {
 }
 
 #
-# create a docker container to run a key store
+# create a docker container with a key store running on
+# port 5984 with a database called creds
 #
 # arguments
 #   1   name of data directory - mkdir -p called on this name
-#   2   the port on which the key store should run (optional - default = 5984
-#   3   the database name (optional - default = creds)
+#   2   couchdb file with pre-loaded credentials - optional
 #
 # exit codes
 #   0   ok
 #   1   general/non-specific failure - app server container not started
-#   2   can't find yar_img
+#   2   can't find couchdb_img
 #
 create_key_store() {
 
     local DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
-    local PORT=${2:-5984}
-    local DATABASE=${3:-creds}
+    local EXISTING_CREDS=${2:-}
+
+    local PORT=5984
+    local DATABASE=creds
 
     local IMAGE_NAME=couchdb_img
     if ! does_image_exist $IMAGE_NAME; then
@@ -289,48 +291,75 @@ create_key_store() {
     fi
 
     mkdir -p $DATA_DIRECTORY/data
-    # cp $SCRIPT_DIR_NAME/creds.couch $DATA_DIRECTORY/data
+    if [ "$EXISTING_CREDS" != "" ]; then
+        if ! cp $EXISTING_CREDS $DATA_DIRECTORY/data/$DATABASE.couch >& /dev/null; then
+            echo_to_stderr_if_not_silent "Couldn't use existing creds file '$EXISTING_CREDS'"
+            return 4
+        fi
+    fi
     mkdir -p $DATA_DIRECTORY/log
     mkdir -p $DATA_DIRECTORY/run
+
     local KEY_STORE=$(sudo docker run \
         -d \
         -v $DATA_DIRECTORY/data:/usr/local/var/lib/couchdb \
         -v $DATA_DIRECTORY/log:/usr/local/var/log/couchdb \
         -v $DATA_DIRECTORY/run:/usr/local/var/run/couchdb \
         $IMAGE_NAME)
+
     local KEY_STORE_IP=$(get_container_ip $KEY_STORE)
 
     echo "KEY_STORE_CONTAINER_ID=$KEY_STORE" >> ~/.yar.deployment
     echo "KEY_STORE_IP=$KEY_STORE_IP" >> ~/.yar.deployment
 
-    # :TODO: what if yar_img hasn't been created?
+    #
+    # wait for couchdb to start
+    #
     for i in {1..10}
     do
         sleep 1
         if curl -s http://$KEY_STORE_IP:$PORT >& /dev/null; then
-            break
+
+            #
+            # if we've preloaded credentials into the key store
+            # then we don't need to create a credentials database
+            # but we should install all design docs
+            #
+            if [ "$EXISTING_CREDS" == "" ]; then
+
+                # :TODO: what if yar_img hasn't been created?
+                local INSTALLER_CMD="key_store_installer \
+                    --log=info \
+                    --create=true \
+                    --host=$KEY_STORE_IP:$PORT \
+                    --database=$DATABASE"
+                # :TODO: what if yar_img hasn't been created?
+                sudo docker run -i yar_img $INSTALLER_CMD >& /dev/null
+
+            else
+                X=1
+            fi
+
+            #
+            # confirm the database has been created
+            #
+            for i in {1..10}
+            do
+                sleep 1
+                if curl -s http://$KEY_STORE_IP:$PORT/$DATABASE >& /dev/null; then
+                    echo $KEY_STORE_IP:$PORT/$DATABASE
+                    return 
+                fi
+            done
+
+            echo_to_stderr_if_not_silent "Could not verify availability of Key Store's CouchDB database on $KEY_STORE_IP:$PORT/$DATABASE"
+            return 3
+
         fi
     done
 
-    # :TODO: what if yar_img hasn't been created?
-    local INSTALLER_CMD="key_store_installer \
-        --log=info \
-        --create=true \
-        --host=$KEY_STORE_IP:$PORT \
-        --database=$DATABASE"
-    sudo docker run -i yar_img $INSTALLER_CMD >& /dev/null
-
-    for i in {1..10}
-    do
-        sleep 1
-        if curl -s http://$KEY_STORE_IP:$PORT/$DATABASE >& /dev/null; then
-            break
-        fi
-    done
-
-    echo $KEY_STORE_IP:$PORT/$DATABASE
-
-    return 0
+    echo_to_stderr_if_not_silent "Could not verify availability of CouchDB on Key Store on $KEY_STORE_IP:$PORT"
+    return 4
 }
 
 #

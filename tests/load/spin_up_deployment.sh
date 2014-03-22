@@ -55,46 +55,48 @@ create_mac_creds() {
     rm -rf $CREDS_FILE_NAME >& /dev/null
 }
 
-echo_if_not_silent() {
-    if [ 0 -eq $SILENT ]; then
-        echo $1
-    fi
-}
-
-cat_if_not_silent() {
-    if [ 0 -eq $SILENT ]; then
-        cat $1
-    fi
-}
-
-# the script accepts an optional -s command line argument.
-# if -s exists set SILENT to 1 otherwise SILENT is set to 0.
+#
+# parse command line arguments
+#
 SILENT=0
-if [ "-s" == ${1:-} ]; then
-    SILENT=1
-    shift
-fi
+DOCKER_CONTAINER_DATA=""
+DEPLOYMENT_PROFILE=""
 
-# the script accepts an optional single command line argument
-# which is the name of the directory in which all docker
-# container files should be placed. if no such argument exists
-# create a temp directory
-if [ $# == 0 ]; then
+while [[ 0 -ne $# ]]
+do
+    KEY="$1"
+    shift
+    case $KEY in
+        -p|--profile)
+            DEPLOYMENT_PROFILE=${1:-}
+            shift
+            ;;
+        -d|--data)
+            DOCKER_CONTAINER_DATA=${1:-}
+            shift
+            ;;
+        -s|--silent)
+            SILENT=1
+            ;;
+        *)
+            echo "usage: `basename $0` [-s] [-d <docker container data dir>] [-p <profile>]"
+            exit 1
+            ;;
+    esac
+done
+
+if [ "$DOCKER_CONTAINER_DATA" == "" ]; then
     DOCKER_CONTAINER_DATA=$(mktemp -d)
 else
-    if [ $# == 1 ]; then
-        DOCKER_CONTAINER_DATA=$1
-        if [ ! -d $DOCKER_CONTAINER_DATA ]; then
-            echo "Can't find directory '$DOCKER_CONTAINER_DATA'"
-            exit 1
-        fi
-    else
-        echo "usage: `basename $0` [-s] [<docker container data dir>]"
-        exit 1
+    if [ ! -d $DOCKER_CONTAINER_DATA ]; then
+        echo "Can't find directory '$DOCKER_CONTAINER_DATA'"
+        exit 2
     fi
 fi
 
+#
 # spin up services
+#
 
 echo_if_not_silent "Starting Services ..."
 echo_if_not_silent ""
@@ -124,8 +126,15 @@ fi
 echo_if_not_silent "$NONCE_STORE in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Key Store"
+EXISTING_CREDS=""
+if [ "$DEPLOYMENT_PROFILE" != "" ]; then
+    KEY_STORE_SIZE=`cat $DEPLOYMENT_PROFILE | get_from_json '\["key_store"\,"number_of_creds"\]'`
+    if [ "$KEY_STORE_SIZE" != "" ]; then
+        EXISTING_CREDS=$SCRIPT_DIR_NAME/lots-of-creds/$KEY_STORE_SIZE.creds.couch
+    fi
+fi
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Store
-if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY); then 
+if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY $EXISTING_CREDS); then 
     echo_to_stderr_if_not_silent "Key Store failed to start"
     exit 1
 fi
