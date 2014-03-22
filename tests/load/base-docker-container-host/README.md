@@ -1,4 +1,4 @@
-Creating a Base Docker Container Host
+Creating a base Docker Container Host
 [box](http://docs.vagrantup.com/v2/boxes.html)
 is simple. Let's start from sractch assuming
 you don't even have the yar source code.
@@ -14,15 +14,15 @@ cd; git clone https://github.com/simonsdave/yar.git; cd yar; source bin/cfg4dev
 [box](http://docs.vagrantup.com/v2/boxes.html)
 
 ~~~~~
-(env)>cd tests/load/docker-container-host
+(env)>cd tests/load/base-docker-container-host
 ~~~~~
 
 * use [Vagrant](http://www.vagrantup.com/) to spin up
 the [VirtualBox](https://www.virtualbox.org/)
 [box](http://docs.vagrantup.com/v2/boxes.html)
-that will become the base docker container host
+that will become the base Docker Container Host
 
-> NOTE - if you get an error talk about a missing
+> NOTE - if you get an error talking about a missing
 > box called *precise64-3.8-kernel* it just means
 > you have to run through the steps described
 > [here](../precise64-3.8-kernel/README.md)
@@ -49,12 +49,12 @@ command to create a
 in the local directory
 
 ~~~~~
-(env)>vagrant package --output docker-container-host.box
+(env)>vagrant package --output base-docker-container-host.box
 [default] Attempting graceful shutdown of VM...
 [default] Clearing any previously set forwarded ports...
 [default] Creating temporary directory for export...
 [default] Exporting VM...
-[default] Compressing package to: /Users/dave/yar/tests/load/docker-container-host/docker-container-host.box
+[default] Compressing package to: /Users/dave/yar/tests/load/base-docker-container-host/base-docker-container-host.box
 (env)>
 ~~~~~
 
@@ -66,28 +66,28 @@ to the local repo of boxes
 
 > IMPORTANT - in the code below it's important to get the 
 > [box](http://docs.vagrantup.com/v2/boxes.html)
-> name *docker-container-host* right because
+> name *base-docker-container-host* right because
 > it's referred to by name in
 > [this Vagrantfile](../Vagrantfile.sh)
 
 ~~~~~
-(env)>vagrant box add docker-container-host docker-container-host.box
+(env)>vagrant box add base-docker-container-host base-docker-container-host.box
 Downloading or copying the box...
 Extracting box...te: 26.2M/s, Estimated time remaining: 0:00:01)
-Successfully added box 'docker-container-host' with provider 'virtualbox'!
+Successfully added box 'base-docker-container-host' with provider 'virtualbox'!
 ~~~~~
 
 * we're done and to convince yourself of this
 use [Vagrant](http://www.vagrantup.com/)'s
 [box list](https://docs.vagrantup.com/v2/cli/box.html)
-to see the *docker-container-host*
+to see the *base-docker-container-host*
 [box](http://docs.vagrantup.com/v2/boxes.html)
 in local box repo
 
 ~~~~~
 (env)>vagrant box list
-docker-container-host (virtualbox)
-precise64             (virtualbox)
-precise64-3.8-kernel  (virtualbox)
+base-docker-container-host (virtualbox)
+precise64                  (virtualbox)
+precise64-3.8-kernel       (virtualbox)
 (env)>
 ~~~~~
