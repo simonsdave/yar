@@ -268,6 +268,7 @@ create_app_server_lb() {
 # arguments
 #   1   name of data directory - mkdir -p called on this name
 #   2   couchdb file with pre-loaded credentials - optional
+#   3   true or false flag 
 #
 # exit codes
 #   0   ok
@@ -280,6 +281,8 @@ create_key_store() {
     mkdir -p $DATA_DIRECTORY
 
     local EXISTING_CREDS=${2:-}
+
+    local CREATE_DESIGN_DOCS=${3:-true}
 
     local PORT=5984
     local DATABASE=creds
@@ -331,14 +334,24 @@ create_key_store() {
                 local INSTALLER_CMD="key_store_installer \
                     --log=info \
                     --create=true \
+                    --createdesign=$CREATE_DESIGN_DOCS \
                     --host=$KEY_STORE_IP:$PORT \
                     --database=$DATABASE"
-                # :TODO: what if yar_img hasn't been created?
-                sudo docker run -i yar_img $INSTALLER_CMD >& /dev/null
 
             else
-                X=1
+
+                local INSTALLER_CMD="key_store_installer \
+                    --log=info \
+                    --delete=false \
+                    --create=false \
+                    --createdesign=true \
+                    --host=$KEY_STORE_IP:$PORT \
+                    --database=$DATABASE"
+
             fi
+
+            # :TODO: what if yar_img hasn't been created?
+            sudo docker run -i yar_img $INSTALLER_CMD >& /dev/null
 
             #
             # confirm the database has been created
