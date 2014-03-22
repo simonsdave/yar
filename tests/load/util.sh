@@ -303,6 +303,7 @@ create_key_store() {
     echo "KEY_STORE_CONTAINER_ID=$KEY_STORE" >> ~/.yar.deployment
     echo "KEY_STORE_IP=$KEY_STORE_IP" >> ~/.yar.deployment
 
+    # :TODO: what if yar_img hasn't been created?
     for i in {1..10}
     do
         sleep 1
@@ -311,6 +312,7 @@ create_key_store() {
         fi
     done
 
+    # :TODO: what if yar_img hasn't been created?
     local INSTALLER_CMD="key_store_installer \
         --log=info \
         --create=true \
