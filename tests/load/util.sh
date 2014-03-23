@@ -12,8 +12,15 @@ get_container_ip() {
 
 get_from_json() {
     PATTERN=${1:-}
-    JSON.sh | \
-        grep $PATTERN |
+    VALUE_IF_NOT_FOUND=${2:-}
+
+    VALUE=$(JSON.sh | grep $PATTERN)
+
+    if [ "$VALUE" == "" ]; then
+        echo $VALUE_IF_NOT_FOUND
+    fi
+
+    echo $VALUE |
         sed -e "s/$PATTERN//" |
         sed -e "s/[[:space:]]//g" |
         sed -e "s/\"//g"
@@ -190,6 +197,7 @@ create_app_server() {
 
     echo "APP_SERVER_CONTAINER_ID=$APP_SERVER" >> ~/.yar.deployment
     echo "APP_SERVER_IP=$APP_SERVER_IP" >> ~/.yar.deployment
+    echo "APP_SERVER_END_POINT=$APP_SERVER_IP:$PORT" >> ~/.yar.deployment
 
     for i in {1..10}
     do
@@ -247,6 +255,7 @@ create_app_server_lb() {
 
     echo "APP_SERVER_LB_CONTAINER_ID=$APP_SERVER_LB" >> ~/.yar.deployment
     echo "APP_SERVER_LB_IP=$APP_SERVER_LB_IP" >> ~/.yar.deployment
+    echo "APP_SERVER_LB_END_POINT=$APP_SERVER_LB_IP:$PORT" >> ~/.yar.deployment
 
     for i in {1..10}
     do
@@ -314,6 +323,7 @@ create_key_store() {
 
     echo "KEY_STORE_CONTAINER_ID=$KEY_STORE" >> ~/.yar.deployment
     echo "KEY_STORE_IP=$KEY_STORE_IP" >> ~/.yar.deployment
+    echo "KEY_STORE_END_POINT=$KEY_STORE_IP:$PORT" >> ~/.yar.deployment
 
     #
     # wait for couchdb to start
@@ -416,6 +426,7 @@ create_key_server() {
 
     echo "KEY_SERVER_CONTAINER_ID=$KEY_SERVER" >> ~/.yar.deployment
     echo "KEY_SERVER_IP=$KEY_SERVER_IP" >> ~/.yar.deployment
+    echo "KEY_SERVER_END_POINT=$KEY_SERVER_IP:$PORT" >> ~/.yar.deployment
 
     for i in {1..10}
     do
@@ -471,6 +482,7 @@ create_nonce_store() {
 
     echo "NONCE_STORE_CONTAINER_ID=$NONCE_STORE" >> ~/.yar.deployment
     echo "NONCE_STORE_IP=$NONCE_STORE_IP" >> ~/.yar.deployment
+    echo "NONCE_STORE_END_POINT=$NONCE_STORE_IP:$PORT" >> ~/.yar.deployment
 
     for i in {1..10}
     do
@@ -532,6 +544,7 @@ create_auth_server() {
 
     echo "AUTH_SERVER_CONTAINER_ID=$AUTH_SERVER" >> ~/.yar.deployment
     echo "AUTH_SERVER_IP=$AUTH_SERVER_IP" >> ~/.yar.deployment
+    echo "AUTH_SERVER_END_POINT=$AUTH_SERVER_IP:$PORT" >> ~/.yar.deployment
 
     for i in {1..10}
     do
@@ -554,6 +567,8 @@ create_auth_server_lb() {
 
     local AUTH_SERVER=${2:-}
 
+    local PORT=8000
+
     cp $SCRIPT_DIR_NAME/auth_server_haproxy.cfg.template $DATA_DIRECTORY/haproxy.cfg
     echo "    server authserver1 $AUTH_SERVER check" >> $DATA_DIRECTORY/haproxy.cfg
 
@@ -568,8 +583,7 @@ create_auth_server_lb() {
 
     echo "AUTH_SERVER_LB_CONTAINER_ID=$AUTH_SERVER_LB" >> ~/.yar.deployment
     echo "AUTH_SERVER_LB_IP=$AUTH_SERVER_LB_IP" >> ~/.yar.deployment
-
-    local PORT=8000
+    echo "AUTH_SERVER_LB_END_POINT=$AUTH_SERVER_LB_IP:$PORT" >> ~/.yar.deployment
 
     for i in {1..10}
     do
