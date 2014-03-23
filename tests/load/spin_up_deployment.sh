@@ -158,12 +158,11 @@ echo_if_not_silent "$AUTH_SERVER in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Auth Server LB"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Auth-Server-LB
-AUTH_SERVER_LB=$(create_auth_server_lb $DATA_DIRECTORY $AUTH_SERVER)
-if [ 1 -eq $SILENT ]; then
-	echo $AUTH_SERVER_LB
-else
-	echo "$AUTH_SERVER_LB in $DATA_DIRECTORY"
+if ! AUTH_SERVER_LB=$(create_auth_server_lb $DATA_DIRECTORY $AUTH_SERVER); then
+    echo_to_stderr_if_not_silent "Auth Server LB failed to start"
+    exit 1
 fi
+echo_if_not_silent "$AUTH_SERVER_LB in $DATA_DIRECTORY"
 
 echo_if_not_silent ""
 echo_if_not_silent "Deployment Description in ~/.yar.deployment"
