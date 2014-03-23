@@ -64,23 +64,63 @@ generate_yar_server_log_file_percentile() {
         > $OUTPUT_FILENAME
 }
 
+# this function encapsulates the real meat of the test
 run_load_test() {
-    local NUMBER_OF_REQUESTS=${1:-}
+    local TEST_PROFILE=${1:-}
+
+    local NUMBER_OF_REQUESTS=`get_from_json '\["number_of_requests"\]' 5000 < $TEST_PROFILE`
+    local PERCENTILE=`get_from_json '\["percentile"\]' 98 < $TEST_PROFILE`
+
     local CONCURRENCY=${2:-}
-    local PERCENTILE=${3:-}
-    local RESULTS_DIR=${4:-}
+    local RESULTS_DIR=${3:-}
 
     local RESULTS_FILE_BASE_NAME=$RESULTS_DIR/$(left_zero_pad $CONCURRENCY 4)-$NUMBER_OF_REQUESTS
 
     local DOCKER_CONTAINER_DATA=$RESULTS_DIR/$(left_zero_pad $CONCURRENCY 4)-$NUMBER_OF_REQUESTS
     mkdir -p $DOCKER_CONTAINER_DATA
 
+    # :TODO: what if this scripts fails?
+	echo "$CONCURRENCY: Removing all existing containers"
+    $SCRIPT_DIR_NAME/rm_all_containers.sh
+
+    # :TODO: what if this scripts fails?
+	echo "$CONCURRENCY: Spinning up a deployment"
+    if ! $SCRIPT_DIR_NAME/spin_up_deployment.sh -s -d $DOCKER_CONTAINER_DATA -p $TEST_PROFILE; then
+        echo "$CONCURRENCY: Error spinning up deployment"
+        return 1
+    fi
+    local AUTH_SERVER_LB=$(get_deployment_config "AUTH_SERVER_LB_END_POINT")
+    echo "$CONCURRENCY: Deployment end point = $AUTH_SERVER_LB"
+
+	echo "$CONCURRENCY: Getting creds"
+    local API_KEY=$(get_creds_config "API_KEY")
+    # :TODO: what if API_KEY doesn't exist?
+
+	echo "$CONCURRENCY: Starting to drive load"
+    local RESULTS_DATA=$RESULTS_FILE_BASE_NAME-raw-data.tsv
+    ab \
+        -c $CONCURRENCY \
+        -n $NUMBER_OF_REQUESTS \
+        -A $API_KEY: \
+        -g $RESULTS_DATA \
+        http://$AUTH_SERVER_LB/dave.html \
+        >& /dev/null
+
     #
-    # generate a title page for summary report
+    # all that's left to do now is generate some graphs for inclusion
+    # in the summary report
     #
-    REPORT_TEXT="Number of Requests  = $NUMBER_OF_REQUESTS"
-    REPORT_TEXT="$REPORT_TEXT\nConcurrency = $CONCURRENCY"
-    REPORT_TEXT="$REPORT_TEXT\nPercentile = $PERCENTILE"
+	echo "$CONCURRENCY: Generating graphs"
+
+    #
+    # generate a section title page for summary report
+    #
+    REPORT_TEXT="Concurrency = $CONCURRENCY\n"
+    while read LINE
+    do
+        # :TODO: replace tabs with 4 x spaces
+        REPORT_TEXT="$REPORT_TEXT\n$LINE"
+    done < $TEST_PROFILE
 
     convert \
         -background lightgray \
@@ -90,33 +130,11 @@ run_load_test() {
         -gravity center \
         $RESULTS_FILE_BASE_NAME-0-section-title.png
 
-    # :TODO: what if this scripts fails?
-	echo "Removing all existing deployments"
-    $SCRIPT_DIR_NAME/rm_all_containers.sh
-
-    # :TODO: what if this scripts fails?
-	echo "Spinning up a deployment"
-    local AUTH_SERVER_LB=$($SCRIPT_DIR_NAME/spin_up_deployment.sh -s $DOCKER_CONTAINER_DATA)
-    echo "Deployment end point = $AUTH_SERVER_LB"
-
-	echo "Spinning up a new deployment"
-    local API_KEY=$(get_creds_config "API_KEY")
-    # :TODO: what if API_KEY doesn't exist?
-
-	echo "Starting to drive load"
-    local RESULTS_DATA=$RESULTS_FILE_BASE_NAME-raw-data.tsv
-    ab \
-        -c $CONCURRENCY \
-        -n $NUMBER_OF_REQUESTS \
-        -A $API_KEY: \
-        -g $RESULTS_DATA \
-        http://$AUTH_SERVER_LB/dave.html
-
     #
     # take ab's tsv output file and using gnuplot to create a
     # histogram of all response times
     #
-	TITLE="Auth Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS"
+	TITLE="Auth Server Response Time - $START_TIME: Concurrency = $CONCURRENCY"
     gnuplot \
         -e "input_filename='$RESULTS_DATA'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-1-response-time.png'" \
@@ -136,7 +154,7 @@ run_load_test() {
         $RESULTS_DATA \
         $RESULTS_DATA_PERCENTILE
 
-	TITLE="Auth Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
+	TITLE="Auth Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$RESULTS_DATA_PERCENTILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-2-response-time-by-time-in-test.png'" \
@@ -157,7 +175,7 @@ run_load_test() {
         sed -s "s/[[:space:]]ms$//g" \
         > $TEMPFILE
 
-	TITLE="Key Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS"
+	TITLE="Key Server Response Time - $START_TIME: Concurrency = $CONCURRENCY"
     gnuplot \
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-3-key-server-response-time.png'" \
@@ -170,7 +188,7 @@ run_load_test() {
         $TEMPFILE \
         $PERCENTILETEMPFILE
 
-	TITLE="Key Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
+	TITLE="Key Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-4-key-server-response-time-by-time-in-test.png'" \
@@ -194,7 +212,7 @@ run_load_test() {
         sed -s "s/[[:space:]]ms$//g" \
         > $TEMPFILE
 
-	TITLE="Key Store Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS"
+	TITLE="Key Store Response Time - $START_TIME: Concurrency = $CONCURRENCY"
     gnuplot \
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-5-key-store-response-time.png'" \
@@ -207,7 +225,7 @@ run_load_test() {
         $TEMPFILE \
         $PERCENTILETEMPFILE
 
-	TITLE="Key Store Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
+	TITLE="Key Store Response Time - $START_TIME: Concurrency = $CONCURRENCY; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-6-key-store-response-time-by-time-in-test.png'" \
@@ -231,7 +249,7 @@ run_load_test() {
         sed -s "s/[[:space:]]ms$//g" \
         > $TEMPFILE
 
-	TITLE="App Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS"
+	TITLE="App Server Response Time - $START_TIME: Concurrency = $CONCURRENCY"
     gnuplot \
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-7-app-server-response-time.png'" \
@@ -244,7 +262,7 @@ run_load_test() {
         $TEMPFILE \
         $PERCENTILETEMPFILE
 
-	TITLE="App Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; Number of Requests = $NUMBER_OF_REQUESTS; ${PERCENTILE}th Percentile"
+	TITLE="App Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-8-app-server-response-time-by-time-in-test.png'" \
@@ -262,28 +280,45 @@ run_load_test() {
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source $SCRIPT_DIR_NAME/util.sh
 
+if [ $# != 1 ]; then
+    echo "usage: `basename $0` <profile>"
+    exit 1
+fi
+
+TEST_PROFILE=${1:-}
+if [ ! -r $TEST_PROFILE ]; then
+    echo "Could not read test profile '$TEST_PROFILE'"
+    exit 1
+fi
+
 START_TIME=$(date +%Y-%m-%d-%H-%M)
 
 RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/full-deployment-load-test/$START_TIME
 mkdir -p $RESULTS_DIR
 
-NUMBER_OF_REQUESTS=5000
-PERCENTILE=98
-
 #
-# run the load test
+# run the load test at various concurrency levels
 #
-for CONCURRENCY in 1 5 10 25 50 75 100
+for i in {0..100}   # assuming 100 different concurrency levels is enough?
 do
-    run_load_test $NUMBER_OF_REQUESTS $CONCURRENCY $PERCENTILE $RESULTS_DIR
+    CONCURRENCY=`get_from_json "\[\"concurrency\"\,$i\]" "" < $TEST_PROFILE`
+    if [ "$CONCURRENCY" == "" ]; then
+        break
+    fi
+    run_load_test $TEST_PROFILE $CONCURRENCY $RESULTS_DIR
 done
 
 #
 # generate the title page and last page of the summary report
 #
+NUMBER_OF_REQUESTS=`get_from_json '\["number_of_requests"\]' 5000 < $TEST_PROFILE`
+
 REPORT_TEXT="yar load test ($START_TIME)\n"
-REPORT_TEXT="$REPORT_TEXT\nNumber of Requests  = $NUMBER_OF_REQUESTS"
-REPORT_TEXT="$REPORT_TEXT\nPercentile = $PERCENTILE"
+while read LINE
+do
+    # :TODO: replace tabs with 4 x spaces
+    REPORT_TEXT="$REPORT_TEXT\n$LINE"
+done < $TEST_PROFILE
 
 convert \
     -background lightgray \
