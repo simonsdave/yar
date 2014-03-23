@@ -29,7 +29,7 @@ fi
 #
 echo "Creating Key Store"
 DATA_DIRECTORY=$(mktemp -d)
-if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY); then
+if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY "" false); then
     echo "Failed to create key store"
     exit 1
 fi
@@ -50,7 +50,8 @@ rm -f $SCRIPT_DIR_NAME/*.creds.couch >& /dev/null
 #
 TOTAL_NUMBER_OF_CREDS=0
 # for CREDS in $SCRIPT_DIR_NAME/*.json
-for CREDS in $SCRIPT_DIR_NAME/00[0-5][0-9]-*.json
+# for CREDS in $SCRIPT_DIR_NAME/00[0-5][0-9]-*.json
+for CREDS in $SCRIPT_DIR_NAME/000[0-9]-*.json
 do
     echo "Uploading '$CREDS'"
 
