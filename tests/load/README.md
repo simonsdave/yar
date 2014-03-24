@@ -58,7 +58,7 @@ once and reuse it again and again
 Creating a Docker Container Host
 --------------------------------
 
-Using instructions we created a Base Docker Container Host
+Using the above instructions we created a Base Docker Container Host
 as a [Vagrant](http://www.vagrantup.com/)
 [box](http://docs.vagrantup.com/v2/boxes.html)
 running [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
