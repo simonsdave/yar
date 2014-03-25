@@ -5,4 +5,4 @@ contains scripts that pre-generate large numbers of credentials
 for use during a load test. For more details on these scripts
 take a quick look at the commentary at the start of the scripts.
 See [gen_basic_creds](gen_basic_creds)
-and [create_big_key_stores.sh](create_big_key_stores.sh).
+and [create_big_key_stores](create_big_key_stores).
