@@ -41,13 +41,14 @@ class CommandLineParser(optparse.OptionParser):
             type="hostcolonportsparsed",
             help=help)
 
-        default = "YAR",
+        default = "YAR"
         help = "app server's authorization method - default = %s" % default
         self.add_option(
             "--authmethod",
             action="store",
             dest="app_server_auth_method",
             default=default,
+            type="string",
             help=help)
 
         default = "127.0.0.1:8070"
