@@ -60,7 +60,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
 
     def test_key_store(self):
         """Verify the command line parser correctly parses
-        the --keystore command line arg."""
+        the --key_store command line arg."""
         args = [
             "--key_store", "1.1.1.1:7878/bindle",
         ]
@@ -76,7 +76,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
 
     def test_syslog(self):
         """Verify the command line parser correctly parses
-        the --keystore command line arg."""
+        the --syslog command line arg."""
         args = [
             "--syslog", "/dave/was/here",
         ]
@@ -92,7 +92,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
 
     def test_logging_file(self):
         """Verify the command line parser correctly parses
-        the --keystore command line arg."""
+        the --logfile command line arg."""
         args = [
             "--logfile", "/dave/was/here.log",
         ]
