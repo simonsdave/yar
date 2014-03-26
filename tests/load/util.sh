@@ -277,7 +277,7 @@ create_app_server_lb() {
 # arguments
 #   1   name of data directory - mkdir -p called on this name
 #   2   couchdb file with pre-loaded credentials - optional
-#   3   true or false flag 
+#   3   'true' or 'false' indicating if design docs should be created
 #
 # exit codes
 #   0   ok
@@ -340,7 +340,6 @@ create_key_store() {
             #
             if [ "$EXISTING_CREDS" == "" ]; then
 
-                # :TODO: what if yar_img hasn't been created?
                 local INSTALLER_CMD="key_store_installer \
                     --log=info \
                     --create=true \
@@ -371,7 +370,7 @@ create_key_store() {
                 sleep 1
                 if curl -s http://$KEY_STORE_IP:$PORT/$DATABASE >& /dev/null; then
                     echo $KEY_STORE_IP:$PORT/$DATABASE
-                    return 
+                    return 0
                 fi
             done
 
