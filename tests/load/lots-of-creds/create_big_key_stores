@@ -17,8 +17,27 @@ SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source $SCRIPT_DIR_NAME/../util.sh
 
 #
-# this script accepts no command line arguments
+# this script accepts one optional argument (--cfs) which
+# is used to specify the number of sets of credentials which
+# should be saved in each couch file
 #
+COUCH_FILE_SIZE=1000000
+
+while [[ 0 -ne $# ]]
+do
+    KEY="$1"
+    shift
+    case $KEY in
+        --cfs)
+            COUCH_FILE_SIZE=${1:-}
+            shift
+            ;;
+        *)
+            echo "usage: `basename $0` [--cfs <couch file size>]"
+            exit 1
+            ;;
+    esac
+done
 if [ $# != 0 ]; then
     echo "usage: `basename $0`"
     exit 1
@@ -28,7 +47,8 @@ fi
 # create a key store in an isolated container
 #
 echo "Creating Key Store"
-DATA_DIRECTORY=$(mktemp -d)
+DATA_DIRECTORY=$SCRIPT_DIR_NAME/temp_couchdb
+rm -rf DATA_DIRECTORY=$SCRIPT_DIR_NAME/temp_couchdb >& /dev/null
 if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY "" false); then
     echo "Failed to create key store"
     exit 1
@@ -69,7 +89,7 @@ do
 
     NUMBER_OF_CREDS=$(echo $CREDS | sed s/\\/.*\\/[[:digit:]]*-0*// | sed s/.json$//)
     TOTAL_NUMBER_OF_CREDS=$(python -c "print $TOTAL_NUMBER_OF_CREDS + int($NUMBER_OF_CREDS)")
-    if [ $(($TOTAL_NUMBER_OF_CREDS % 100000)) == 0 ];then
+    if [ $(($TOTAL_NUMBER_OF_CREDS % $COUCH_FILE_SIZE)) == 0 ];then
         SECONDS_TO_SLEEP=10
         echo "Sleeping $SECONDS_TO_SLEEP seconds to give CouchDB time to flush to disk"
         sleep $SECONDS_TO_SLEEP
