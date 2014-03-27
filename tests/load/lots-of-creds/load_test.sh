@@ -9,7 +9,6 @@ echo "Creating Key Store"
 DATA_DIRECTORY=$(mktemp -d)
 EXISTING_CREDS=$SCRIPT_DIR_NAME/50000.creds.couch
 if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY $EXISTING_CREDS); then
-# if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY ""); then
     echo "Failed to create key store"
     exit 1
 fi
