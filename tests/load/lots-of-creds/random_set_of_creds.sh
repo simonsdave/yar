@@ -19,7 +19,7 @@ curl \
     -s \
     -X PUT \
     -H "Content-Type: application/json; charset=utf8" \
-    -d @$SCRIPT_DIR_NAME/load_test.js \
-    http://$KEY_STORE/_design/loadtest
+    -d @$SCRIPT_DIR_NAME/random_set_of_creds.js \
+    http://$KEY_STORE/_design/random_set_of_creds
 
-curl -X GET http://$KEY_STORE/_design/loadtest/_view/random_set_of_creds?group=true
+curl -X GET http://$KEY_STORE/_design/random_set_of_creds/_view/all?group=true
