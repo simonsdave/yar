@@ -283,6 +283,7 @@ create_app_server_lb() {
 #   0   ok
 #   1   general/non-specific failure - app server container not started
 #   2   can't find couchdb_img
+#   3   can't find yar_img
 #
 create_key_store() {
 
@@ -359,8 +360,15 @@ create_key_store() {
 
             fi
 
-            # :TODO: what if yar_img hasn't been created?
-            sudo docker run -i yar_img $INSTALLER_CMD >& /dev/null
+            local IMAGE_NAME=yar_img
+            if ! does_image_exist $IMAGE_NAME; then
+                echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
+                return 3
+            fi
+            sudo docker run \
+                -i $IMAGE_NAME \
+                $INSTALLER_CMD \
+                >& /dev/null
 
             #
             # confirm the database has been created
