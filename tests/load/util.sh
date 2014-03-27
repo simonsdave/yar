@@ -36,7 +36,7 @@ get_from_json() {
 #
 
 echo_if_not_silent() {
-    if [ 0 -eq $SILENT ]; then
+    if [ 0 -eq ${SILENT:-0} ]; then
         echo $1
     fi
 }
@@ -51,8 +51,8 @@ echo_if_not_silent() {
 #
 
 echo_to_stderr_if_not_silent() {
-    if [ 0 -eq $SILENT ]; then
-        echo $1 >&2
+    if [ 0 -eq ${SILENT:-0} ]; then
+        echo ${1:-} >&2
     fi
 
     return 0
@@ -68,7 +68,7 @@ echo_to_stderr_if_not_silent() {
 #
 
 cat_if_not_silent() {
-    if [ 0 -eq $SILENT ]; then
+    if [ 0 -eq ${SILENT:-0} ]; then
         cat $1
     fi
 
