@@ -276,7 +276,7 @@ create_app_server_lb() {
 #
 # arguments
 #   1   name of data directory - mkdir -p called on this name
-#   2   couchdb file with pre-loaded credentials - optional
+#   2   seed the key store with this number of credentials - optional
 #   3   'true' or 'false' indicating if design docs should be created
 #
 # exit codes
@@ -290,7 +290,7 @@ create_key_store() {
     local DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
-    local EXISTING_CREDS=${2:-}
+    local KEY_STORE_SIZE=${2:-}
 
     local CREATE_DESIGN_DOCS=${3:-true}
 
@@ -304,9 +304,11 @@ create_key_store() {
     fi
 
     mkdir -p $DATA_DIRECTORY/data
-    if [ "$EXISTING_CREDS" != "" ]; then
-        if ! cp $EXISTING_CREDS $DATA_DIRECTORY/data/$DATABASE.couch >& /dev/null; then
-            echo_to_stderr_if_not_silent "Couldn't use existing creds file '$EXISTING_CREDS'"
+    if [ "$KEY_STORE_SIZE" != "" ]; then
+        local SCRIPT_DIR_NAME="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
+        COUCH_FILE=$SCRIPT_DIR_NAME/lots-of-creds/$KEY_STORE_SIZE.creds.couch
+        if ! cp $COUCH_FILE $DATA_DIRECTORY/data/$DATABASE.couch >& /dev/null; then
+            echo_to_stderr_if_not_silent "Couldn't use existing creds file '$COUCH_FILE'"
             return 4
         fi
     fi

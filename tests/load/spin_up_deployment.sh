@@ -126,15 +126,12 @@ fi
 echo_if_not_silent "$NONCE_STORE in $DATA_DIRECTORY"
 
 echo_if_not_silent "Starting Key Store"
-EXISTING_CREDS=""
+KEY_STORE_SIZE=""
 if [ "$DEPLOYMENT_PROFILE" != "" ]; then
     KEY_STORE_SIZE=`cat $DEPLOYMENT_PROFILE | get_from_json '\["key_store"\,"number_of_creds"\]'`
-    if [ "$KEY_STORE_SIZE" != "" ]; then
-        EXISTING_CREDS=$SCRIPT_DIR_NAME/lots-of-creds/$KEY_STORE_SIZE.creds.couch
-    fi
 fi
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Store
-if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY $EXISTING_CREDS); then 
+if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY $KEY_STORE_SIZE); then 
     echo_to_stderr_if_not_silent "Key Store failed to start"
     exit 1
 fi
