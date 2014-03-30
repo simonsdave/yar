@@ -83,7 +83,6 @@ run_load_test() {
 	echo "$CONCURRENCY: Removing all existing containers"
     $SCRIPT_DIR_NAME/rm_all_containers.sh
 
-    # :TODO: what if this scripts fails?
 	echo "$CONCURRENCY: Spinning up a deployment"
     if ! $SCRIPT_DIR_NAME/spin_up_deployment.sh -s -d $DOCKER_CONTAINER_DATA -p $TEST_PROFILE; then
         echo "$CONCURRENCY: Error spinning up deployment"
