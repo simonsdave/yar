@@ -282,6 +282,7 @@ source $SCRIPT_DIR_NAME/util.sh
 #
 # parse command line arguments
 #
+VERBOSE=0
 TEST_PROFILE=""
 
 while [[ 0 -ne $# ]]
@@ -289,19 +290,24 @@ do
     KEY="$1"
     shift
     case $KEY in
+        -v|--verbose)
+            VERBOSE=1
+            ;;
         -p|--profile)
             TEST_PROFILE=${1:-}
             shift
             ;;
         *)
-            echo "usage: `basename $0` [-p <test profile>]"
+            echo "usage: `basename $0` [-v] [-p <test profile>]"
             exit 1
             ;;
     esac
 done
 
+#
 # if a test profile was not specified via the --profile command line
 # argument then create a reasonable default test profile
+#
 if [ "$TEST_PROFILE" == "" ]; then
 	TEST_PROFILE=$(mktemp 2> /dev/null || mktemp -t DAS)
 	echo '{'									>> $TEST_PROFILE
@@ -313,7 +319,7 @@ if [ "$TEST_PROFILE" == "" ]; then
     echo '    }'								>> $TEST_PROFILE
 	echo '}'									>> $TEST_PROFILE
 
-	cat $TEST_PROFILE
+	echo_if_verbose "No test profile specified - using default - see test report for details"
 else
 	if [ ! -r $TEST_PROFILE ]; then
 		echo "Could not read test profile '$TEST_PROFILE'"
@@ -321,6 +327,9 @@ else
 	fi
 fi
 
+#
+# little bit of pre-test setup ...
+#
 START_TIME=$(date +%Y-%m-%d-%H-%M)
 
 RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/full-deployment-load-test/$START_TIME
