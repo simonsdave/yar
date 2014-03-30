@@ -27,6 +27,36 @@ get_from_json() {
 }
 
 #
+# if the variable $VERBOSE is 1 then the first argument to this
+# function is assumed to be a string and the function echo's
+# the string to stdout
+#
+# exit codes
+#   0   always
+#
+echo_if_verbose() {
+    if [ 1 -eq ${VERBOSE:-0} ]; then
+        echo $1
+    fi
+}
+
+#
+# if the variable $VERBOSE is 1 then the first argument to this
+# function is assumed to be a file name and the function cats the
+# contents of the file to stdout
+#
+# exit codes
+#   0   always
+#
+cat_if_verbose() {
+    if [ 1 -eq ${VERBOSE:-0} ]; then
+        cat $1
+    fi
+
+    return 0
+}
+
+#
 # if the variable $SILENT is not 0 then the first argument to this
 # function is assumed to be a string and the function echo's
 # the string to stdout
@@ -34,7 +64,6 @@ get_from_json() {
 # exit codes
 #   0   always
 #
-
 echo_if_not_silent() {
     if [ 0 -eq ${SILENT:-0} ]; then
         echo $1
@@ -49,7 +78,6 @@ echo_if_not_silent() {
 # exit codes
 #   0   always
 #
-
 echo_to_stderr_if_not_silent() {
     if [ 0 -eq ${SILENT:-0} ]; then
         echo ${1:-} >&2
@@ -66,7 +94,6 @@ echo_to_stderr_if_not_silent() {
 # exit codes
 #   0   always
 #
-
 cat_if_not_silent() {
     if [ 0 -eq ${SILENT:-0} ]; then
         cat $1
