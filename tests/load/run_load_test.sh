@@ -309,7 +309,7 @@ done
 # argument then create a reasonable default test profile
 #
 if [ "$TEST_PROFILE" == "" ]; then
-	TEST_PROFILE=$(mktemp 2> /dev/null || mktemp -t DAS)
+	TEST_PROFILE=$(platform_safe_mktemp)
 	echo '{'									>> $TEST_PROFILE
     echo '    "concurrency": [1, 5, 10, 25],'	>> $TEST_PROFILE
     echo '    "number_of_requests": 1000,'		>> $TEST_PROFILE
