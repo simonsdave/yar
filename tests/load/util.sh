@@ -26,6 +26,20 @@ get_from_json() {
         sed -e "s/\"//g"
 }
 
+
+#
+# a few BASH script should be able to run on both Ubuntu
+# and OS X - mktemp operates slightly differently on these
+# two platforms - this function insulates scripts from
+# the differences
+#
+# exit codes
+#   0   always
+#
+platform_safe_mktemp() {
+	mktemp 2> /dev/null || mktemp -t DAS
+}
+
 #
 # if the variable $VERBOSE is 1 then the first argument to this
 # function is assumed to be a string and the function echo's
