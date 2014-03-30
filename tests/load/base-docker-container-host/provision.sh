@@ -96,6 +96,17 @@ apt-get install -y make
 # to be installed
 apt-get install -y python-dev
 
+# pyzmq requires Cython
+# pip install Cython
+# locustio requires pyzmq
+apt-get install python-zmq
+# pip install pyzmq
+
+# Locust is a modern Python based load generator.
+# Either Apache Benchmark or Locust are used to
+# load/stress a yar deployment.
+pip install locustio
+
 # these utilities are used to assemble graphs of load testing results
 # can't just "apt-get install -y gnuplot" to install gnuplot because
 # that installs version 4.4 which gets confused about where fonts
