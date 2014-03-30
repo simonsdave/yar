@@ -298,7 +298,7 @@ do
             shift
             ;;
         *)
-            echo "usage: `basename $0` [-v] [-p <test profile>]"
+            echo_to_stderr "usage: `basename $0` [-v] [-p <test profile>]"
             exit 1
             ;;
     esac
@@ -322,7 +322,7 @@ if [ "$TEST_PROFILE" == "" ]; then
 	echo_if_verbose "No test profile specified - using default - see test report for details"
 else
 	if [ ! -r $TEST_PROFILE ]; then
-		echo "Could not read test profile '$TEST_PROFILE'"
+		echo_to_stderr "Could not read test profile '$TEST_PROFILE'"
 		exit 1
 	fi
 fi
