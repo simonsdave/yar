@@ -35,6 +35,7 @@ Development Prerequisites
   * [CouchDB 1.2 & 1.3](http://couchdb.apache.org/)
   * [memcached 1.4.13](http://memcached.org/)
   * [command line tools for Xcode](https://developer.apple.com/downloads/index.action)
+  * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 * see
 [requirements.txt](https://github.com/simonsdave/yar/blob/master/requirements.txt "requirements.txt")
 for the complete list of python packages on which yar depends
