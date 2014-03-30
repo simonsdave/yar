@@ -26,6 +26,17 @@ get_from_json() {
         sed -e "s/\"//g"
 }
 
+#
+# write the first argument to this function (which is assumed
+# to be a string) to stderr
+#
+# exit codes
+#   0   always
+#
+echo_to_stderr() {
+	echo ${1:-} >&2
+	return 0
+}
 
 #
 # a few BASH script should be able to run on both Ubuntu
@@ -38,6 +49,7 @@ get_from_json() {
 #
 platform_safe_mktemp() {
 	mktemp 2> /dev/null || mktemp -t DAS
+	return 0
 }
 
 #
@@ -52,6 +64,7 @@ echo_if_verbose() {
     if [ 1 -eq ${VERBOSE:-0} ]; then
         echo $1
     fi
+    return 0
 }
 
 #
@@ -66,7 +79,6 @@ cat_if_verbose() {
     if [ 1 -eq ${VERBOSE:-0} ]; then
         cat $1
     fi
-
     return 0
 }
 
@@ -82,6 +94,7 @@ echo_if_not_silent() {
     if [ 0 -eq ${SILENT:-0} ]; then
         echo $1
     fi
+    return 0
 }
 
 #
@@ -94,7 +107,7 @@ echo_if_not_silent() {
 #
 echo_to_stderr_if_not_silent() {
     if [ 0 -eq ${SILENT:-0} ]; then
-        echo ${1:-} >&2
+		echo_to_stderr ${1:-}
     fi
 
     return 0
