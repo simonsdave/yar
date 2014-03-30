@@ -328,6 +328,18 @@ else
 fi
 
 #
+# load test setup isn't totally straight forward so do a little
+# poking around to see if there's anything that might be an indication
+# of why a load test might fail
+# 
+if ! ls $SCRIPT_DIR_NAME/lots-of-creds/*.couch >& /dev/null; then
+	echo_if_verbose "Couldn't find any .couch files in '$SCRIPT_DIR_NAME/lots-of-creds'"
+	echo_if_verbose "-- Might have trouble starting Key Store"
+	echo_if_verbose "-- or Key Store might take long time to start"
+	echo_if_verbose "-- if .couch files are downloaded."
+fi
+
+#
 # little bit of pre-test setup ...
 #
 START_TIME=$(date +%Y-%m-%d-%H-%M)
