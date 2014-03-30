@@ -279,15 +279,46 @@ run_load_test() {
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source $SCRIPT_DIR_NAME/util.sh
 
-if [ $# != 1 ]; then
-    echo "usage: `basename $0` <profile>"
-    exit 1
-fi
+#
+# parse command line arguments
+#
+TEST_PROFILE=""
 
-TEST_PROFILE=${1:-}
-if [ ! -r $TEST_PROFILE ]; then
-    echo "Could not read test profile '$TEST_PROFILE'"
-    exit 1
+while [[ 0 -ne $# ]]
+do
+    KEY="$1"
+    shift
+    case $KEY in
+        -p|--profile)
+            TEST_PROFILE=${1:-}
+            shift
+            ;;
+        *)
+            echo "usage: `basename $0` [-p <test profile>]"
+            exit 1
+            ;;
+    esac
+done
+
+# if a test profile was not specified via the --profile command line
+# argument then create a reasonable default test profile
+if [ "$TEST_PROFILE" == "" ]; then
+	TEST_PROFILE=$(mktemp 2> /dev/null || mktemp -t DAS)
+	echo '{'									>> $TEST_PROFILE
+    echo '    "concurrency": [1, 5, 10, 25],'	>> $TEST_PROFILE
+    echo '    "number_of_requests": 1000,'		>> $TEST_PROFILE
+    echo '    "percentile": 99,'				>> $TEST_PROFILE
+    echo '    "key_store": {'					>> $TEST_PROFILE
+    echo '        "number_of_creds": 100000'	>> $TEST_PROFILE
+    echo '    }'								>> $TEST_PROFILE
+	echo '}'									>> $TEST_PROFILE
+
+	cat $TEST_PROFILE
+else
+	if [ ! -r $TEST_PROFILE ]; then
+		echo "Could not read test profile '$TEST_PROFILE'"
+		exit 1
+	fi
 fi
 
 START_TIME=$(date +%Y-%m-%d-%H-%M)
