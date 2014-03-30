@@ -29,12 +29,14 @@ Bigger/important things on the immediate to do list:
 
 Development Prerequisites 
 -------------------------
-* code written and tested on Mac OS X 10.8.4 using:
-  * [Python 2.7.2](http://www.python.org/)
-  * [virtualenv 1.9.1](https://pypi.python.org/pypi/virtualenv)
-  * [CouchDB 1.2 & 1.3](http://couchdb.apache.org/)
-  * [memcached 1.4.13](http://memcached.org/)
-  * [command line tools (OS X Mountain Lion) for Xcode - April 2013](https://developer.apple.com/downloads/index.action)
+* code written and tested on Mac OS X using:
+  * [Python 2.7](http://www.python.org/)
+  * [virtualenv](https://pypi.python.org/pypi/virtualenv)
+  * [CouchDB](http://couchdb.apache.org/)
+  * [memcached](http://memcached.org/)
+  * [command line tools for Xcode](https://developer.apple.com/downloads/index.action)
+  * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+  * [Vagrant](http://www.vagrantup.com/)
 * see
 [requirements.txt](https://github.com/simonsdave/yar/blob/master/requirements.txt "requirements.txt")
 for the complete list of python packages on which yar depends
@@ -49,7 +51,7 @@ In the instructions below it's assumed yar is installed to your home directory.
 
 > Before you start working through the instructions below make sure you
 > have installed the components described above. In particular, if you don't install
-> [command line tools (OS X Mountain Lion) for Xcode - April 2013](https://developer.apple.com/downloads/index.action)
+> [command line tools for Xcode](https://developer.apple.com/downloads/index.action)
 > you'll find it hard to debug the error messages produced by **source bin/cfg4dev**. 
 
 * get the source code by running the following in a new terminal window
