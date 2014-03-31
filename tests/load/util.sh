@@ -351,23 +351,23 @@ create_key_store() {
     local PORT=5984
     local DATABASE=creds
 
-    local IMAGE_NAME=couchdb_img
-    if ! does_image_exist $IMAGE_NAME; then
-        echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
-        return 2
-    fi
-
     mkdir -p $DATA_DIRECTORY/data
     if [ "$KEY_STORE_SIZE" != "" ]; then
         local SCRIPT_DIR_NAME="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
         COUCH_FILE=$SCRIPT_DIR_NAME/lots-of-creds/$KEY_STORE_SIZE.creds.couch
         if ! cp $COUCH_FILE $DATA_DIRECTORY/data/$DATABASE.couch >& /dev/null; then
-            echo_to_stderr_if_not_silent "Couldn't use existing creds file '$COUCH_FILE'"
+            echo_to_stderr_if_not_silent "Couldn't use existing couch file '$COUCH_FILE'"
             return 4
         fi
     fi
     mkdir -p $DATA_DIRECTORY/log
     mkdir -p $DATA_DIRECTORY/run
+
+    local IMAGE_NAME=couchdb_img
+    if ! does_image_exist $IMAGE_NAME; then
+        echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
+        return 2
+    fi
 
     local KEY_STORE=$(sudo docker run \
         -d \
@@ -395,10 +395,11 @@ create_key_store() {
             # then we don't need to create a credentials database
             # but we should install all design docs
             #
-            if [ "$EXISTING_CREDS" == "" ]; then
+            if [ "$KEY_STORE_SIZE" == "" ]; then
 
                 local INSTALLER_CMD="key_store_installer \
                     --log=info \
+                    --delete=false \
                     --create=true \
                     --createdesign=$CREATE_DESIGN_DOCS \
                     --host=$KEY_STORE_IP:$PORT \
