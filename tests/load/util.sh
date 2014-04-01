@@ -354,7 +354,7 @@ create_key_store() {
     mkdir -p $DATA_DIRECTORY/data
     if [ "$KEY_STORE_SIZE" != "" ]; then
         local SCRIPT_DIR_NAME="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
-        COUCH_FILE=$SCRIPT_DIR_NAME/lots-of-creds/$KEY_STORE_SIZE.creds.couch
+        local COUCH_FILE=$SCRIPT_DIR_NAME/lots-of-creds/$KEY_STORE_SIZE.creds.couch
         if ! cp $COUCH_FILE $DATA_DIRECTORY/data/$DATABASE.couch >& /dev/null; then
             echo_to_stderr_if_not_silent "Couldn't use existing couch file '$COUCH_FILE'"
             return 4
@@ -389,6 +389,10 @@ create_key_store() {
     do
         sleep 1
         if curl -s http://$KEY_STORE_IP:$PORT >& /dev/null; then
+
+            #
+            # couchdb has successfully started ...
+            #
 
             #
             # if we've preloaded credentials into the key store
@@ -447,6 +451,77 @@ create_key_store() {
 
     echo_to_stderr_if_not_silent "Could not verify availability of CouchDB on Key Store on $KEY_STORE_IP:$PORT"
     return 4
+}
+
+#
+# Given a key store and an integer value P from 1 to 100, select at
+# random P percent of the key store's creds save the creds to
+# ~/.yar.creds.random.set
+# 
+# arguments
+#   1   key store - required - <ip>:<port>/<database>
+#   2   % of key store's credentials to extract
+#
+# implementation details
+#
+# install the view which takes a hash of each set of
+# creds and, in a deterministic manner, maps
+# the hash to a number between 1 and 100 effectively
+# dividing the cred space into 100 1 percent
+# sets. repeatedly call the view to grab sets of
+# creds and write those creds to ~/.yar.creds.random.set
+#
+extract_random_set_of_creds_from_key_store() {
+
+    local KEY_STORE=${1:-}
+    local PERCENT_OF_CREDS=${2:-}
+
+    local CREDS_OUTPUT_FILE=~/.yar.creds.random.set
+
+    rm -f $CREDS_OUTPUT_FILE >& /dev/null
+
+    local SCRIPT_DIR_NAME="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
+
+    curl \
+        -X PUT \
+        -H "Content-Type: application/json; charset=utf8" \
+        -d @$SCRIPT_DIR_NAME/lots-of-creds/random_set_of_creds.js \
+        http://$KEY_STORE/_design/random_set_of_creds \
+        >& /dev/null
+    # :TODO: what if curl fails?
+
+    let "END = 100 - $PERCENT_OF_CREDS + 1"
+    START=$(shuf -i 1-$END -n 1)
+    let "END = $START + $PERCENT_OF_CREDS - 1"
+    for i in $(seq $START $END)
+    do
+        CREDS=$(platform_safe_mktemp)
+        curl -s http://$KEY_STORE/_design/random_set_of_creds/_view/all?key=$i >& $CREDS
+        # :TODO: what if curl fails?
+        cat $CREDS | \
+            grep '^{"id"' | \
+            sed -e 's/^{"id":"//' | \
+            sed -e 's/".*$//' \
+            >> $CREDS_OUTPUT_FILE
+        rm -f $CREDS >& /dev/null
+    done
+
+    # 
+    # :TODO: sort out DELETE which does no work right now
+    # because no doc rev id is supplied.
+    #
+    # think actually we want purge rather than DELETE although even purge
+    # won't reclaim disk space according to:
+    #
+    #   http://couchdb.readthedocs.org/en/latest/api/database/misc.html
+    # 
+    curl \
+        -X DELETE \
+        http://$KEY_STORE/_design/random_set_of_creds \
+        >& /dev/null
+    # :TODO: what if curl fails?
+
+    return 1
 }
 
 #
