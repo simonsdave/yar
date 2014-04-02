@@ -1,4 +1,5 @@
-When running load tests it's important to make sure the key store
+When running load tests it's important to make sure the
+[Key Store](../../yar/key_store)
 contains enough credentials to make it representitive of a key
 store which could be found in a real deploment. This directory
 contains scripts that pre-generate large numbers of credentials
