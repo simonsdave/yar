@@ -438,7 +438,11 @@ create_key_store() {
             do
                 sleep 1
                 if curl -s http://$KEY_STORE_IP:$PORT/$DATABASE >& /dev/null; then
+
+                    echo "KEY_STORE_DB=$KEY_STORE_IP:$PORT/$DATABASE" >> ~/.yar.deployment
+
                     echo $KEY_STORE_IP:$PORT/$DATABASE
+
                     return 0
                 fi
             done
