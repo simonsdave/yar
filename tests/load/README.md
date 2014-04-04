@@ -43,7 +43,7 @@ Creating a Base Docker Container Host
 We now have a [box](http://docs.vagrantup.com/v2/boxes.html) with the right
 version of the kernel on which we can build a Base Docker Container Host.
 
-* [these instructions](docker-container-host/README.md) describe how to create
+* [these instructions](base-docker-container-host/README.md) describe how to create
 a [box](http://docs.vagrantup.com/v2/boxes.html) called *docker-container-host*
 and make the [box](http://docs.vagrantup.com/v2/boxes.html)
 available in the local [box](http://docs.vagrantup.com/v2/boxes.html) repo
