@@ -178,19 +178,18 @@ if ! AUTH_SERVER_LB=$(create_auth_server_lb $DATA_DIRECTORY $AUTH_SERVER); then
 fi
 echo_if_not_silent "$AUTH_SERVER_LB in $DATA_DIRECTORY"
 
-echo_if_not_silent ""
+#
+# used to cat ~/.yar.deployment but that started to seem like overkill
+#
 echo_if_not_silent "Deployment Description in ~/.yar.deployment"
-cat_if_not_silent ~/.yar.deployment
 
-# services now running, time to provision some keys
-
-echo_if_not_silent ""
-echo_if_not_silent "Creating Credentials ..."
+#
+# services now running, time to provision some creds
+#
+rm -rf ~/.yar.creds >& /dev/null
 PRINCIPAL="dave@example.com"
 create_basic_creds $KEY_SERVER $PRINCIPAL
 create_mac_creds $KEY_SERVER $PRINCIPAL
-echo_if_not_silent ""
 echo_if_not_silent "Credentials in ~/.yar.creds"
-cat_if_not_silent ~/.yar.creds
 
 exit 0
