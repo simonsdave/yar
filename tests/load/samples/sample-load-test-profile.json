@@ -3,6 +3,7 @@
     "number_of_requests": 1000,
     "percentile": 99,
     "key_store": {
-        "number_of_creds": 100000
+        "number_of_creds": 50000,
+        "percent_active_creds": 2
     }
 }
