@@ -1,4 +1,3 @@
-# Deployment Configuration
 * Internet into a switch with [port mirroring](http://en.wikipedia.org/wiki/Port_mirroring) capability
 * mirrored port on switch sends traffic to [Snort](http://www.snort.org/) acting as phase 1 [IDS](http://en.wikipedia.org/wiki/Intrusion_detection_system) - note, this style of Snort deployment is well suited to IDS - if we wanted [IPS](http://en.wikipedia.org/wiki/Intrusion_prevention_system) we'd deploy Snort as a proxy between Internet and Firewall (see below)
 * Firewall - probably Cisco but if not next most popular choice would be
