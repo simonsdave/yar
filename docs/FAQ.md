@@ -62,7 +62,7 @@ Here's a quick summary of the steps for generating an HMAC:
 * the above is important because unless [Keyczar](http://www.keyczar.org/) is available for your
 favorite language you'll have to reverse the above encoding scheme for the MAC key before passing
 the key to the HMAC function - this isn't hard as long as you know the right steps - here's
-how it's done in a bash script (see [yarcurl.sh](https://github.com/simonsdave/yar/blob/master/bin/yarcurl.sh) for the complete story):
+how it's done in a bash script (see [yarcurl](../bin/yarcurl) for the complete story):
 
 ~~~~~
 MAC_KEY=$(echo -n $MAC_KEY | sed -e "s/\-/\+/g" | sed -e "s/\_/\//g")=
