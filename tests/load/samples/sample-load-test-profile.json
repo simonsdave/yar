@@ -4,6 +4,19 @@
     "percentile": 99,
     "key_store": {
         "number_of_creds": 50000,
+        #
+        # after loading up the key store with a large number
+        # of creds, it's useful to think about a percent of
+        # those being active while running a load test. so,
+        # for example, you could have a key store with 1MM
+        # creds but only 3 percent (30K) are actually active
+        # and thus only those 3 percent should be used
+        # during the load test
+        #
+        # percent_active_creds is used to specify the
+        # percentage of a key store's credentials which
+        # are active and should be used during a load
+        # test.
         "percent_active_creds": 2
     }
 }
