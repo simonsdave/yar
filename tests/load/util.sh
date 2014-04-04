@@ -14,7 +14,7 @@ get_from_json() {
     PATTERN=${1:-}
     VALUE_IF_NOT_FOUND=${2:-}
 
-    VALUE=$(JSON.sh | grep $PATTERN)
+    VALUE=$(grep -v "^\\s*#" | JSON.sh | grep $PATTERN)
 
     if [ "$VALUE" == "" ]; then
         echo $VALUE_IF_NOT_FOUND
