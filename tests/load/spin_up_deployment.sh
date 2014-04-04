@@ -149,7 +149,7 @@ fi
 
 if [ "$DEPLOYMENT_PROFILE" != "" ]; then
     PERCENT_ACTIVE_CREDS=`cat $DEPLOYMENT_PROFILE | get_from_json '\["key_store"\,"percent_active_creds"\]' ""`
-    if [ $PERCENT_ACTIVE_CREDS != "" ]; then 
+    if [ "$PERCENT_ACTIVE_CREDS" != "" ]; then 
         extract_random_set_of_creds_from_key_store $KEY_STORE $PERCENT_ACTIVE_CREDS
     fi
 fi
