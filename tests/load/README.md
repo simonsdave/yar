@@ -58,11 +58,11 @@ once and reuse it again and again
 Creating a Docker Container Host
 --------------------------------
 
-Using the above instructions we created a Base Docker Container Host
+Using the above instructions you created a Base Docker Container Host
 as a [Vagrant](http://www.vagrantup.com/)
 [box](http://docs.vagrantup.com/v2/boxes.html)
 running [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
-and called it docker-container-host.
+and called it base-docker-container-host.
 This [box](http://docs.vagrantup.com/v2/boxes.html) has
 90% of what we need to run a load test.
 The steps below finish creation of the Docker Container Host.
@@ -97,7 +97,7 @@ vagrant@precise64:~$
 ~~~~~
 
 * now get to the directory that gives you access to the test scripts - do
-and ls to convince yourself you're in the right spot:-)
+an ls to convince yourself you're in the right spot:-)
 
 ~~~~~
 vagrant@precise64:~$ cd /vagrant/
@@ -129,6 +129,8 @@ run some load tests:-)
 
 Running Load Tests
 ------------------
+
+:TODO: these instructions need updating ...
 
 ~~~~~
 vagrant@precise64:/vagrant$ ./spin_up_deployment.sh
@@ -328,4 +330,3 @@ and not used extensively (so Googling for answers yielded few hits).
 The [Docker cli](http://docs.docker.io/en/latest/reference/commandline/cli/)
 on the other hand is very well documented and lots of folks
 are using it so easy to Google for answers.
-
