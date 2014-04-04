@@ -9,7 +9,7 @@ coverage html
 An HTML version of the coverage report can now be found in coverage_report/index.html
 
 ### Against which attack vectors does yar provide defenses?
-See [Attack Vectors](Attack_Vectors.md].
+See [Attack Vectors](Attack_Vectors.md).
 
 ### How are keys generated?
 See [Key Generation](../yar/key_server#key-generation).
@@ -75,12 +75,12 @@ MAC_KEY=$(echo -n $MAC_KEY | base64 --decode)
   1. add an = to the end
   1. base64 decode the key
 
-### How do I debug authorization failures?
+### How do I debug authentication failures?
 This is hard. It's the one knock against using HMACs.
-First step would be to restart the [[Auth Server]] using debug level logging.
+First step would be to restart the [Auth Server](../yar/auth_server) using debug level logging.
 This will generate additional logging output but more importantly it will generate
 lots of additional HTTP X-Auth-Server headers that provide detailed insight into how
-the authentication server is computing the HMAC. 99% of the time reviewing this output
+the [Auth Server](../yar/auth_server) is computing the HMAC. 99% of the time reviewing this output
 will help you track down the problem.
 
 ### What's up with the name "yar"?
