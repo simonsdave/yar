@@ -95,9 +95,15 @@ else
 fi
 
 #
+# some cleanup before we start the meat of this script
+#
+rm -f ~/.yar.deployment >& /dev/null
+rm -f ~/.yar.creds.random.set >& /dev/null
+rm -f ~/.yar.creds >& /dev/null
+
+#
 # spin up services
 #
-
 echo_if_not_silent "Starting Services ..."
 echo_if_not_silent ""
 
@@ -181,15 +187,22 @@ echo_if_not_silent "$AUTH_SERVER_LB in $DATA_DIRECTORY"
 #
 # used to cat ~/.yar.deployment but that started to seem like overkill
 #
-echo_if_not_silent "Deployment Description in ~/.yar.deployment"
+if [ -r ~/.yar.deployment ]; then
+    echo_if_not_silent "Deployment Description in ~/.yar.deployment"
+fi
+
+if [ -r ~/.yar.creds.random.set ]; then
+    echo_if_not_silent "Random set of creds in ~/.yar.creds.random.set"
+fi
 
 #
 # services now running, time to provision some creds
 #
-rm -rf ~/.yar.creds >& /dev/null
 PRINCIPAL="dave@example.com"
 create_basic_creds $KEY_SERVER $PRINCIPAL
 create_mac_creds $KEY_SERVER $PRINCIPAL
-echo_if_not_silent "Credentials in ~/.yar.creds"
+if [ -r ~/.yar.creds ]; then
+    echo_if_not_silent "Creds in ~/.yar.creds"
+fi
 
 exit 0
