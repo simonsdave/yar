@@ -99,7 +99,7 @@ apt-get install -y python-dev
 # pyzmq requires Cython
 # pip install Cython
 # locustio requires pyzmq
-apt-get install python-zmq
+apt-get install -y python-zmq
 # pip install pyzmq
 
 # Locust is a modern Python based load generator.
