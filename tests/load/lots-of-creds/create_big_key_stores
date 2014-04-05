@@ -48,7 +48,7 @@ fi
 #
 echo "Creating Key Store"
 DATA_DIRECTORY=$SCRIPT_DIR_NAME/temp_couchdb
-rm -rf DATA_DIRECTORY=$SCRIPT_DIR_NAME/temp_couchdb >& /dev/null
+rm -rf $DATA_DIRECTORY >& /dev/null
 if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY "" false); then
     echo "Failed to create key store"
     exit 1
@@ -75,24 +75,43 @@ for CREDS in $SCRIPT_DIR_NAME/000[0-9]-*.json
 do
     echo "Uploading '$CREDS'"
 
-    curl \
+    STATUS_CODE=$(curl \
         -s \
+        -o /dev/null \
+        --write-out '%{http_code}' \
         -X POST \
         -H "Content-Type: application/json; charset=utf8" \
         -d @$CREDS \
-        http://$KEY_STORE/_bulk_docs \
-        >& /dev/null
-    if [ $? != 0 ];then
-        echo "Failed to upload '$CREDS' to key store @ '$$KEY_STORE'"
+        http://$KEY_STORE/_bulk_docs)
+    if [ $? -ne 0 ] || [ "$STATUS_CODE" != "201" ]; then
+        echo "Failed to upload '$CREDS' to key store @ '$KEY_STORE'"
         exit 2
     fi
 
     NUMBER_OF_CREDS=$(echo $CREDS | sed s/\\/.*\\/[[:digit:]]*-0*// | sed s/.json$//)
     TOTAL_NUMBER_OF_CREDS=$(python -c "print $TOTAL_NUMBER_OF_CREDS + int($NUMBER_OF_CREDS)")
     if [ $(($TOTAL_NUMBER_OF_CREDS % $COUCH_FILE_SIZE)) == 0 ];then
-        SECONDS_TO_SLEEP=10
-        echo "Sleeping $SECONDS_TO_SLEEP seconds to give CouchDB time to flush to disk"
-        sleep $SECONDS_TO_SLEEP
+        #
+        # local.ini for CouchDB should have been configured with
+        #
+        # [couchdb]
+        # delayed_commits = false
+        #
+        # but in case not, we'll issue the request below to force
+        # to 'manually' force a flush to disk
+        #
+        STATUS_CODE=$(curl \
+            -s \
+            -o /dev/null \
+            --write-out '%{http_code}' \
+            -X POST \
+            -H "Content-Type: application/json; charset=utf8" \
+            http://$KEY_STORE/_ensure_full_commit)
+        if [ $? -ne 0 ] || [ "$STATUS_CODE" != "201" ]; then
+            echo "Flush to disk failed on key store '$KEY_STORE'"
+            exit 2
+        fi
+
         DEST=$SCRIPT_DIR_NAME/$TOTAL_NUMBER_OF_CREDS.creds.couch
         echo "Creating '$DEST'"
         cp $DATA_DIRECTORY/data/creds.couch $DEST

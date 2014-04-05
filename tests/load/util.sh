@@ -14,7 +14,7 @@ get_from_json() {
     PATTERN=${1:-}
     VALUE_IF_NOT_FOUND=${2:-}
 
-    VALUE=$(JSON.sh | grep $PATTERN)
+    VALUE=$(grep -v "^\\s*#" | JSON.sh | grep $PATTERN)
 
     if [ "$VALUE" == "" ]; then
         echo $VALUE_IF_NOT_FOUND
@@ -438,7 +438,11 @@ create_key_store() {
             do
                 sleep 1
                 if curl -s http://$KEY_STORE_IP:$PORT/$DATABASE >& /dev/null; then
+
+                    echo "KEY_STORE_DB=$KEY_STORE_IP:$PORT/$DATABASE" >> ~/.yar.deployment
+
                     echo $KEY_STORE_IP:$PORT/$DATABASE
+
                     return 0
                 fi
             done

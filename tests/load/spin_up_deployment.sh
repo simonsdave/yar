@@ -95,9 +95,15 @@ else
 fi
 
 #
+# some cleanup before we start the meat of this script
+#
+rm -f ~/.yar.deployment >& /dev/null
+rm -f ~/.yar.creds.random.set >& /dev/null
+rm -f ~/.yar.creds >& /dev/null
+
+#
 # spin up services
 #
-
 echo_if_not_silent "Starting Services ..."
 echo_if_not_silent ""
 
@@ -143,7 +149,7 @@ fi
 
 if [ "$DEPLOYMENT_PROFILE" != "" ]; then
     PERCENT_ACTIVE_CREDS=`cat $DEPLOYMENT_PROFILE | get_from_json '\["key_store"\,"percent_active_creds"\]' ""`
-    if [ $PERCENT_ACTIVE_CREDS != "" ]; then 
+    if [ "$PERCENT_ACTIVE_CREDS" != "" ]; then 
         extract_random_set_of_creds_from_key_store $KEY_STORE $PERCENT_ACTIVE_CREDS
     fi
 fi
@@ -178,19 +184,25 @@ if ! AUTH_SERVER_LB=$(create_auth_server_lb $DATA_DIRECTORY $AUTH_SERVER); then
 fi
 echo_if_not_silent "$AUTH_SERVER_LB in $DATA_DIRECTORY"
 
-echo_if_not_silent ""
-echo_if_not_silent "Deployment Description in ~/.yar.deployment"
-cat_if_not_silent ~/.yar.deployment
+#
+# used to cat ~/.yar.deployment but that started to seem like overkill
+#
+if [ -r ~/.yar.deployment ]; then
+    echo_if_not_silent "Deployment Description in ~/.yar.deployment"
+fi
 
-# services now running, time to provision some keys
+if [ -r ~/.yar.creds.random.set ]; then
+    echo_if_not_silent "Random set of creds in ~/.yar.creds.random.set"
+fi
 
-echo_if_not_silent ""
-echo_if_not_silent "Creating Credentials ..."
+#
+# services now running, time to provision some creds
+#
 PRINCIPAL="dave@example.com"
 create_basic_creds $KEY_SERVER $PRINCIPAL
 create_mac_creds $KEY_SERVER $PRINCIPAL
-echo_if_not_silent ""
-echo_if_not_silent "Credentials in ~/.yar.creds"
-cat_if_not_silent ~/.yar.creds
+if [ -r ~/.yar.creds ]; then
+    echo_if_not_silent "Creds in ~/.yar.creds"
+fi
 
 exit 0
