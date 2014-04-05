@@ -55,12 +55,12 @@ RUN cd apache-couchdb-1.5.0; ./configure; make; make install
 
 RUN adduser --gecos --disabled-login --disabled-password --no-create-home couchdb
 
+ADD local.ini /usr/local/etc/couchdb/local.ini
+
 RUN chown -R couchdb:couchdb /usr/local/var/log/couchdb
 RUN chown -R couchdb:couchdb /usr/local/var/lib/couchdb
 RUN chown -R couchdb:couchdb /usr/local/var/run/couchdb
 RUN chown -R couchdb:couchdb /usr/local/etc/couchdb
-
-RUN sed -i 's/;bind_address = 127.0.0.1/bind_address = 0.0.0.0/g' /usr/local/etc/couchdb/local.ini
 
 EXPOSE 5984
 
