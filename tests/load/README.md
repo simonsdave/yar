@@ -78,17 +78,25 @@ cd; cd yar; source bin/cfg4dev; cd tests/load
 ~~~~~
 (env)>./provision.sh
 <<<cut lots of messages>>>
-[default] Mounting shared folders...
-[default] -- /vagrant
-[default] Running provisioner: shell...
-[default] Running: /var/folders/wg/vg0nq7dd3hddk_fvzwq6sg6m0000gn/T/vagrant-shell20140319-28781-y73vu0
+Cleaning up...
+ ---> 296a0d185246
+Successfully built 296a0d185246
+Removing intermediate container 5a44c1ec3b91
+Removing intermediate container 982f1a0f2c5c
+Removing intermediate container ffe5092ef8a5
+Removing intermediate container 886099a5276f
+Removing intermediate container 30ad71f4f716
+Removing intermediate container 2847bcb40322
+Removing intermediate container a877af84d9d1
+Removing intermediate container d984d433d10b
+(env)>
 ~~~~~
 
 * once the VM is running, ssh into the VM
 
 ~~~~~
 (env)>vagrant ssh
-Welcome to Ubuntu 12.04 LTS (GNU/Linux 3.8.0-37-generic x86_64)
+Welcome to Ubuntu 12.04 LTS (GNU/Linux 3.8.0-38-generic x86_64)
 
  * Documentation:  https://help.ubuntu.com/
 Welcome to your Vagrant-built virtual machine.
@@ -96,32 +104,20 @@ Last login: Fri Sep 14 06:23:18 2012 from 10.0.2.2
 vagrant@precise64:~$
 ~~~~~
 
-* now get to the directory that gives you access to the test scripts - do
-an ls to convince yourself you're in the right spot:-)
+* now you'll be able to see the [Docker](https://www.docker.io/)
+images that will be used to create [Docker](https://www.docker.io/)
+containers that will be used for load testing yar
+* to see the [Docker](https://www.docker.io/) images use
+the docker images command
 
 ~~~~~
-vagrant@precise64:~$ cd /vagrant/
-vagrant@precise64:/vagrant$
-~~~~~
-
-* now let's create the last set of Docker images for
-using [create_images.sh](create_images.sh)
-
-~~~~~
-./create_images.sh
-~~~~~
-
-* [create_images.sh](create_images.sh) will take several minutes to run - use Docker's
-images command to see the list of available images once [create_images.sh](create_images.sh) has completed
-
-~~~~~
-vagrant@precise64:/vagrant$ sudo docker images
-REPOSITORY          TAG                 IMAGE ID            CREATED              VIRTUAL SIZE
-yar_img             latest              3c2bfb8bec39        6 minutes ago       445.2 MB
-couchdb_img         latest              0bafed05b219        22 hours ago        563.3 MB
-haproxy_img         latest              11898726ec3f        22 hours ago        226.3 MB
-memcached_img       latest              ea543914e488        22 hours ago        265.8 MB
-ubuntu              12.04               9cd978db300e        6 weeks ago         204.4 MB
+vagrant@precise64:~$ sudo docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+yar_img             latest              e9fe52ca3e07        59 seconds ago      445.3 MB
+couchdb_img         latest              3c98699e421f        30 minutes ago      563.4 MB
+haproxy_img         latest              6b12916c8aa7        33 minutes ago      226.4 MB
+memcached_img       latest              e527fd882aab        33 minutes ago      265.9 MB
+ubuntu              12.04               9cd978db300e        8 weeks ago         204.4 MB
 ~~~~~
 
 Congratulations! You now have everything that's necessary to 
