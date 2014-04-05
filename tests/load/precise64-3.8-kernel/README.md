@@ -62,17 +62,10 @@ in the local directory
 
 ~~~~~
 (env)>vagrant package --output precise64-3.8-kernel.box
-[default] Attempting graceful shutdown of VM...
-[default] Clearing any previously set forwarded ports...
-[default] Creating temporary directory for export...
-[default] Exporting VM...
-[default] Compressing package to: /Users/dave/yar/tests/load/precise64-3.8-kernel/precise64-3.8-kernel.box
-(env)>ls -l
-total 1145888
--rw-r--r--  1 dave  staff        381 14 Mar 07:59 Vagrantfile
--rw-r--r--  1 dave  staff  586685947 14 Mar 09:24 precise64-3.8-kernel.box
--rw-r--r--  1 dave  staff        184 14 Mar 07:59 provision.sh
-(env)>
+==> default: Attempting graceful shutdown of VM...
+==> default: Clearing any previously set forwarded ports...
+==> default: Exporting VM...
+==> default: Compressing package to: /Users/dave/yar/tests/load/precise64-3.8-kernel/precise64-3.8-kernel.box
 ~~~~~
 
 * use [Vagrant](http://www.vagrantup.com/)'s
@@ -89,9 +82,9 @@ to the local repo of boxes
 
 ~~~~~
 (env)>vagrant box add precise64-3.8-kernel precise64-3.8-kernel.box
-Downloading or copying the box...
-Extracting box...te: 136M/s, Estimated time remaining: 0:00:01)
-Successfully added box 'precise64-3.8-kernel' with provider 'virtualbox'!
+==> box: Adding box 'precise64-3.8-kernel' (v0) for provider:
+    box: Downloading: file:///Users/dave/yar/tests/load/precise64-3.8-kernel/precise64-3.8-kernel.box
+==> box: Successfully added box 'precise64-3.8-kernel' (v0) for 'virtualbox'!
 ~~~~~
 
 * we're done and to convince yourself of this 
@@ -103,8 +96,7 @@ in local box repo
 
 ~~~~~
 (env)>vagrant box list
-precise64            (virtualbox)
-precise64-3.8-kernel (virtualbox)
-ubuntu               (virtualbox)
+precise64            (virtualbox, 0)
+precise64-3.8-kernel (virtualbox, 0)
 (env)>
 ~~~~~

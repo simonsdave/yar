@@ -50,11 +50,10 @@ in the local directory
 
 ~~~~~
 (env)>vagrant package --output base-docker-container-host.box
-[default] Attempting graceful shutdown of VM...
-[default] Clearing any previously set forwarded ports...
-[default] Creating temporary directory for export...
-[default] Exporting VM...
-[default] Compressing package to: /Users/dave/yar/tests/load/base-docker-container-host/base-docker-container-host.box
+==> default: Attempting graceful shutdown of VM...
+==> default: Clearing any previously set forwarded ports...
+==> default: Exporting VM...
+==> default: Compressing package to: /Users/dave/yar/tests/load/base-docker-container-host/base-docker-container-host.box
 (env)>
 ~~~~~
 
@@ -72,9 +71,10 @@ to the local repo of boxes
 
 ~~~~~
 (env)>vagrant box add base-docker-container-host base-docker-container-host.box
-Downloading or copying the box...
-Extracting box...te: 26.2M/s, Estimated time remaining: 0:00:01)
-Successfully added box 'base-docker-container-host' with provider 'virtualbox'!
+==> box: Adding box 'base-docker-container-host' (v0) for provider:
+    box: Downloading: file:///Users/dave/yar/tests/load/base-docker-container-host/base-docker-container-host.box
+==> box: Successfully added box 'base-docker-container-host' (v0) for 'virtualbox'!
+(env)>
 ~~~~~
 
 * we're done and to convince yourself of this
@@ -86,8 +86,8 @@ in local box repo
 
 ~~~~~
 (env)>vagrant box list
-base-docker-container-host (virtualbox)
-precise64                  (virtualbox)
-precise64-3.8-kernel       (virtualbox)
+base-docker-container-host (virtualbox, 0)
+precise64                  (virtualbox, 0)
+precise64-3.8-kernel       (virtualbox, 0)
 (env)>
 ~~~~~
