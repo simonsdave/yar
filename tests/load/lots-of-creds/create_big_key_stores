@@ -48,7 +48,7 @@ fi
 #
 echo "Creating Key Store"
 DATA_DIRECTORY=$SCRIPT_DIR_NAME/temp_couchdb
-rm -rf DATA_DIRECTORY=$SCRIPT_DIR_NAME/temp_couchdb >& /dev/null
+rm -rf $DATA_DIRECTORY >& /dev/null
 if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY "" false); then
     echo "Failed to create key store"
     exit 1
