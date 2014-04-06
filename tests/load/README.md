@@ -69,11 +69,17 @@ The steps below finish creation of the Docker Container Host.
 In the steps below we'll assume you've got the yar source
 installed at ~/yar.
 
+* first let's get to the right directory
+
 ~~~~~
 cd; cd yar; source bin/cfg4dev; cd tests/load
 ~~~~~
 
 * spin up the [box](http://docs.vagrantup.com/v2/boxes.html)
+
+> NOTE - to spin up the the [box](http://docs.vagrantup.com/v2/boxes.html),
+> [provision.sh](provision.sh) is used rather than
+> [vagrant up](https://docs.vagrantup.com/v2/cli/up.html)
 
 ~~~~~
 (env)>./provision.sh
