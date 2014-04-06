@@ -165,7 +165,7 @@ run_load_test() {
         -e "input_filename='$RESULTS_DATA'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-1-response-time.png'" \
         -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/gpcfg/response_time.gpcfg
+        $SCRIPT_DIR_NAME/gp.cfg/response_time
 
     #
     # take a percentile of ab's tsv output file and using gnupot
@@ -185,7 +185,7 @@ run_load_test() {
         -e "input_filename='$RESULTS_DATA_PERCENTILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-2-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/gpcfg/response_time_by_time.gpcfg
+        $SCRIPT_DIR_NAME/gp.cfg/response_time_by_time
 
     #
     # during the load test the auth server was making requests
@@ -206,7 +206,7 @@ run_load_test() {
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-3-key-server-response-time.png'" \
         -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/gpcfg/yar_server_response_time.gpcfg
+        $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
     PERCENTILETEMPFILE=$(mktemp)
     generate_yar_server_log_file_percentile \
@@ -219,7 +219,7 @@ run_load_test() {
         -e "input_filename='$PERCENTILETEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-4-key-server-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/gpcfg/yar_server_response_time_by_time.gpcfg
+        $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time_by_time
 
     rm -f $PERCENTILETEMPFILE >& /dev/null
     rm -f $TEMPFILE >& /dev/null
@@ -243,7 +243,7 @@ run_load_test() {
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-5-key-store-response-time.png'" \
         -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/gpcfg/yar_server_response_time.gpcfg
+        $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
     PERCENTILETEMPFILE=$(mktemp)
     generate_yar_server_log_file_percentile \
@@ -256,7 +256,7 @@ run_load_test() {
         -e "input_filename='$PERCENTILETEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-6-key-store-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/gpcfg/yar_server_response_time_by_time.gpcfg
+        $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time_by_time
 
     rm -f $PERCENTILETEMPFILE >& /dev/null
     rm -f $TEMPFILE >& /dev/null
@@ -280,7 +280,7 @@ run_load_test() {
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-7-app-server-response-time.png'" \
         -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/gpcfg/yar_server_response_time.gpcfg
+        $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
     PERCENTILETEMPFILE=$(mktemp)
     generate_yar_server_log_file_percentile \
@@ -293,7 +293,7 @@ run_load_test() {
         -e "input_filename='$PERCENTILETEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-8-app-server-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/gpcfg/yar_server_response_time_by_time.gpcfg
+        $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time_by_time
 
     rm -f $PERCENTILETEMPFILE >& /dev/null
     rm -f $TEMPFILE >& /dev/null

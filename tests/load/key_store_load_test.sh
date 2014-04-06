@@ -120,7 +120,7 @@ gnuplot \
     -e "output_filename='$RESULTS_DIR/02-Key-Store-Size.png'" \
     -e "xaxis_label='Number of Credentials (000s)'" \
     -e "yaxis_label='Size (MB)'" \
-    $SCRIPT_DIR_NAME/gpcfg/key_store_size.gpcfg
+    $SCRIPT_DIR_NAME/gp.cfg/key_store_size
 
 rm $SUMMARY_DATABASE_METRICS
 
