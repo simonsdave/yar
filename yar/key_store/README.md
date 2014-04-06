@@ -72,7 +72,7 @@ curl -s http://localhost:5984/creds/_design/creds/_view/all
 To get all credentials for a principal
 
 ~~~~~
-curl -s 'http://localhost:5984/creds/_design/creds/_view/by_principal?startkey="dave@example.com"&endkey="dave@example.com"'
+curl -s 'http://localhost:5984/creds/_design/creds/_view/by_principal?key="dave@example.com"'
 ~~~~~
 
 To delete an existing set of credentials used for
