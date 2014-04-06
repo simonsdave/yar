@@ -12,8 +12,6 @@ from requests.auth import HTTPBasicAuth
 with open(os.path.expanduser("~/.yar.creds.random.set"), "r") as f:
     _api_keys = [line.strip() for line in f]
 
-_start_time = time.time()
-
 
 class Behavior(TaskSet):
     min_wait = 0
@@ -23,12 +21,12 @@ class Behavior(TaskSet):
     def get_request(self):
         api_key = _api_keys[int(random.uniform(0, len(_api_keys) - 1))]
         response = self.client.get(
-            "/dave-was-here.html",
+            "/dave.html",
             auth=HTTPBasicAuth(api_key, ""))
-        print "<<<%s>>>>>>%s<<<>>>%s<<<" % (
-            int(round(time.time() - _start_time)),
+        print "TO_GET_TAB_TO_WORK\t%d\t%s\tNOTHING_BY_DESIGN\t%d" % (
+            int(time.time()),
             response.status_code,
-            response.elapsed.total_seconds())
+            1000 * response.elapsed.total_seconds())
 
 
 class User(HttpLocust):

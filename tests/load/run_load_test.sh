@@ -91,19 +91,44 @@ run_load_test() {
     local AUTH_SERVER_LB=$(get_deployment_config "AUTH_SERVER_LB_END_POINT")
     echo "$CONCURRENCY: Deployment end point = $AUTH_SERVER_LB"
 
-	echo "$CONCURRENCY: Getting creds"
-    local API_KEY=$(get_creds_config "API_KEY")
-    # :TODO: what if API_KEY doesn't exist?
-
 	echo "$CONCURRENCY: Starting to drive load"
     local RESULTS_DATA=$RESULTS_FILE_BASE_NAME-raw-data.tsv
-    ab \
-        -c $CONCURRENCY \
-        -n $NUMBER_OF_REQUESTS \
-        -A $API_KEY: \
-        -g $RESULTS_DATA \
-        http://$AUTH_SERVER_LB/dave.html \
-        >& /dev/null
+	if [ -r ~/.yar.creds.random.set ]; then
+
+		echo "$CONCURRENCY: Using locust"
+
+		TEMP_RESULTS_DATA=$(platform_safe_mktemp)
+
+		locust \
+			-f ./locustfile.py \
+			-H http://$AUTH_SERVER_LB \
+			--no-web \
+			-n $NUMBER_OF_REQUESTS \
+			-c $CONCURRENCY \
+			-r $CONCURRENCY \
+			--logfile=$TEMP_RESULTS_DATA
+
+		grep TO_GET_TAB_TO_WORK $TEMP_RESULTS_DATA > $RESULTS_DATA
+
+		rm -f $TEMP_RESULTS_DATA >& /dev/null
+
+	else
+
+		echo "$CONCURRENCY: Using Apache Bench"
+
+		echo "$CONCURRENCY: Getting creds"
+		local API_KEY=$(get_creds_config "API_KEY")
+		# :TODO: what if API_KEY doesn't exist?
+
+		ab \
+			-c $CONCURRENCY \
+			-n $NUMBER_OF_REQUESTS \
+			-A $API_KEY: \
+			-g $RESULTS_DATA \
+			http://$AUTH_SERVER_LB/dave.html \
+			>& /dev/null
+
+	fi
 
     #
     # all that's left to do now is generate some graphs for inclusion

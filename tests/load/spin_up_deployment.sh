@@ -191,6 +191,10 @@ if [ -r ~/.yar.deployment ]; then
     echo_if_not_silent "Deployment Description in ~/.yar.deployment"
 fi
 
+if [ -r ~/.yar.creds ]; then
+    echo_if_not_silent "Creds in ~/.yar.deployment"
+fi
+
 if [ -r ~/.yar.creds.random.set ]; then
     echo_if_not_silent "Random set of creds in ~/.yar.creds.random.set"
 fi
