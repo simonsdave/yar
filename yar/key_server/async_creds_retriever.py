@@ -32,11 +32,9 @@ class AsyncCredsRetriever(AsyncAction):
             if principal:
                 fmt = (
                     '_design/creds/_view/by_principal?'
-                    'startkey="%s"'
-                    '&'
-                    'endkey="%s"'
+                    'key="%s"'
                 )
-                path = fmt % (principal, principal)
+                path = fmt % principal
             else:
                 path = "_design/creds/_view/all"
 

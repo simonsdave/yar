@@ -219,12 +219,9 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             self.assertIsNotNone(acr)
 
             expected_path_fmt = (
-                '_design/creds/_view/by_principal?'
-                'startkey="%s"'
-                '&'
-                'endkey="%s"'
+                '_design/creds/_view/by_principal?key="%s"'
             )
-            expected_path = expected_path_fmt % (the_principal, the_principal)
+            expected_path = expected_path_fmt % the_principal
             self.assertIsNotNone(path)
             self.assertEqual(path, expected_path)
 
