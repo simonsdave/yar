@@ -295,7 +295,7 @@ create_app_server_lb() {
         return 2
     fi
 
-    cp $SCRIPT_DIR_NAME/app_server_haproxy.cfg.template $DATA_DIRECTORY/haproxy.cfg
+    cp $SCRIPT_DIR_NAME/haproxy.cfg/app_server $DATA_DIRECTORY/haproxy.cfg
     echo "    server appserver1 $APP_SERVER check" >> $DATA_DIRECTORY/haproxy.cfg
 
     local APP_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
@@ -712,7 +712,7 @@ create_auth_server_lb() {
 
     local PORT=8000
 
-    cp $SCRIPT_DIR_NAME/auth_server_haproxy.cfg.template $DATA_DIRECTORY/haproxy.cfg
+    cp $SCRIPT_DIR_NAME/haproxy.cfg/auth_server $DATA_DIRECTORY/haproxy.cfg
     echo "    server authserver1 $AUTH_SERVER check" >> $DATA_DIRECTORY/haproxy.cfg
 
     local AUTH_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
