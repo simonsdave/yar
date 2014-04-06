@@ -97,7 +97,8 @@ run_load_test() {
 
 		echo "$CONCURRENCY: Using locust"
 
-		TEMP_RESULTS_DATA=$(platform_safe_mktemp)
+		LOCUST_LOGFILE=$RESULTS_FILE_BASE_NAME-locust-logfile.tsv
+		LOCUST_STDOUT_AND_STDERR=$RESULTS_FILE_BASE_NAME-locust-stdout-and-stderr.tsv
 
 		locust \
 			-f ./locustfile.py \
@@ -106,9 +107,10 @@ run_load_test() {
 			-n $NUMBER_OF_REQUESTS \
 			-c $CONCURRENCY \
 			-r $CONCURRENCY \
-			--logfile=$TEMP_RESULTS_DATA
+			--logfile=$LOCUST_LOGFILE \
+			>& $LOCUST_STDOUT_AND_STDERR
 
-		grep TO_GET_TAB_TO_WORK $TEMP_RESULTS_DATA > $RESULTS_DATA
+		grep TO_GET_TAB_TO_WORK $LOCUST_LOGFILE > $RESULTS_DATA
 
 		rm -f $TEMP_RESULTS_DATA >& /dev/null
 
