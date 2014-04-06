@@ -58,7 +58,7 @@ do
         http://$KEY_STORE/_bulk_docs \
         >& /dev/null
 
-    TEMP_DATABASE_METRICS=$(mktemp 2> /dev/null || mktemp -t DAS)
+    TEMP_DATABASE_METRICS=$(platform_safe_mktemp)
 
     curl \
         -s \
@@ -106,7 +106,7 @@ convert \
 # we try to graph them (bytes -> MB & and of credentials ->
 # '000 of credentials)
 #
-SUMMARY_DATABASE_METRICS=$(mktemp 2> /dev/null || mktemp -t DAS)
+SUMMARY_DATABASE_METRICS=$(platform_safe_mktemp)
 
 awk 'BEGIN {FS = "\t"; OFS = "\t"} ; \
     { print int($1/1000), int($2/(1024*1024)), int($3/(1024*1024)) }' \
