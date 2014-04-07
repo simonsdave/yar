@@ -1,30 +1,39 @@
-So you've spent time writing an awesome RESTful API and now you want to secure it.
+So you've spent time writing an awesome RESTful API and now you want to "secure it".
 You'll soon find there are a number of commerical API management solutions available.
-What you'll also find is that there's lots of open source components that it feels like
-should be pretty easy to stitch together to create your own API Management solution.
-It's that last point that motivated this project. How hard could it really be? Well, turned
-out to be more work than I originally thought but it wasn't crazy hard.
-With about 1,500 lines of Python this project realizes an API Management solution with
-the capabilities outlined below.
-Is the project complete? No. Yar is still a work in progress. Below you'll find the
-list of big/important things that are on the immediate to do list.
-See the [Wiki](https://github.com/simonsdave/yar/wiki) for a more complete description and discussion of yar.
+You'll also find there are lots of open source components that make it feel like
+it should be pretty easy to stitch together your own API Management solution.
+It's that last point that really motivated this project.
+How hard could it really be?
+Well, turned out to be more work than I originally thought (surprise)
+but it wasn't crazy hard and it's been super interesting.
+yar's about 1,500 lines of Python and leverages a ton of amazing open source
+components to provide a high quality, robust and feature rich
+API Management solution.
+
+When thinking about yar it's useful to have read [this story/vision](docs/Story.md)
+so you have some context.
+
+So what is yar and what capabilities does it provide?
+yar is a reverse proxy that sits in front of a RESTful API
+to realize an API Management solution with the following capabilities:
 
   * authentication using
 [OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02)
 and [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
   * key generation for both the above authentication schemes
-  * [Keyczar](http://www.keyczar.org/) used for both key generation and HMAC verification
-  * [Auth Server](https://github.com/simonsdave/yar/wiki/Auth-Server) and [Key Server](https://github.com/simonsdave/yar/wiki/Key-Server) are [Tornado](http://www.tornadoweb.org/en/stable/) servers leveraging Tornado's [asynchronous](http://www.tornadoweb.org/en/stable/networking.html) for high concurrency operation
+  * [Keyczar](http://www.keyczar.org/) used for both key generation and MAC verification
+  * [Auth Server](yar/auth_server) and [Key Server](yar/key_server) are [Tornado](http://www.tornadoweb.org/en/stable/) servers leveraging Tornado's [asynchronous/high concurrency capabilites](http://www.tornadoweb.org/en/stable/networking.html) - yar's high concurrency capability is veridied with an [extensive and automated load testing framework](tests/load) that leverages [Vagrant](http://www.vagrantup.com/), [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Docker](https://www.docker.io/)
   * [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store) is built on [CouchDB](http://couchdb.apache.org/) so the [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store) inherits all the nice architectual/operational qualities of [CouchDB](http://couchdb.apache.org/)
   * intended deployment environment is [Ubuntu 12.04](http://releases.ubuntu.com/12.04.4/) and
 development environment is [Mac OS X](http://www.apple.com/ca/osx/)
   
-Bigger/important things on the immediate to do list:
+Is the project complete? Nope! yar is still a work in progress. Below you'll find the
+list of big/important things that are on the short term to do list.
 
-  * automated load/stress tests - currently working on this (see [this](https://github.com/simonsdave/yar/tree/master/integration_tests)) while learning how to best leverage [Vagrant](http://www.vagrantup.com/) and [Docker](https://www.docker.io/)
-  * securing keys in [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store)
-  * authorization service
+  * automated load testing - currently working on this - see [this](tests/load)
+  * securing credentials in [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store)
+  * authorization
+  * tokenization
   * bunch more documentation
 
 Development Prerequisites 
