@@ -22,16 +22,16 @@ to realize an API Management solution with the following capabilities:
 and [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
   * key generation for both the above authentication schemes
   * [Keyczar](http://www.keyczar.org/) used for both key generation and MAC verification
-  * [Auth Server](yar/auth_server) and [Key Server](yar/key_server) are [Tornado](http://www.tornadoweb.org/en/stable/) servers leveraging Tornado's [asynchronous/high concurrency capabilites](http://www.tornadoweb.org/en/stable/networking.html) - yar's high concurrency capability is veridied with an [extensive and automated load testing framework](tests/load) that leverages [Vagrant](http://www.vagrantup.com/), [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Docker](https://www.docker.io/)
-  * [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store) is built on [CouchDB](http://couchdb.apache.org/) so the [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store) inherits all the nice architectual/operational qualities of [CouchDB](http://couchdb.apache.org/)
+  * [Auth Server](yar/auth_server) and [Key Server](yar/key_server) are [Tornado](http://www.tornadoweb.org/en/stable/) servers leveraging Tornado's [asynchronous/high concurrency capabilites](http://www.tornadoweb.org/en/stable/networking.html) - yar's high concurrency capability is verified with an [extensive and automated load testing framework](tests/load) that leverages [Vagrant](http://www.vagrantup.com/), [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Docker](https://www.docker.io/)
+  * [Key Store](yar/key_store) is built on [CouchDB](http://couchdb.apache.org/) so the [Key Store](yar/key_store) inherits all the nice architectual/operational qualities of [CouchDB](http://couchdb.apache.org/)
   * intended deployment environment is [Ubuntu 12.04](http://releases.ubuntu.com/12.04.4/) and
 development environment is [Mac OS X](http://www.apple.com/ca/osx/)
   
 Is the project complete? Nope! yar is still a work in progress. Below you'll find the
 list of big/important things that are on the short term to do list.
 
-  * automated load testing - currently working on this - see [this](tests/load)
-  * securing credentials in [Key Store](https://github.com/simonsdave/yar/wiki/Key-Store)
+  * automated load testing - currently working on [this](tests/load)
+  * securing credentials in [Key Store](yar/key_store)
   * authorization
   * tokenization
   * bunch more documentation
@@ -117,7 +117,7 @@ curl \
 * using the credentials returned by the above [cURL](http://en.wikipedia.org/wiki/CURL)
 request, create a new file called ~/.yar.creds
 in the following format (this file will be used in a bit by
-[yarcurl](https://github.com/simonsdave/yar/wiki/Utilities#yarcurl)):
+[yarcurl](bin/yarcurl)):
 
 ~~~~~
 MAC_KEY_IDENTIFIER=35c3913e63ce451d9f58fed1125a2594
@@ -150,10 +150,9 @@ cd; cd yar; source bin/cfg4dev
 ~~~~~
 
 * In the same window that you executed the above commands, you'll now use
-[yarcurl](https://github.com/simonsdave/yar/wiki/Utilities#yarcurl) 
+[yarcurl](bin/yarcurl) 
 to issue a request to the app server via the auth server:
 
 ~~~~~
 yarcurl GET http://127.0.0.1:8000/dave-was-here.html
 ~~~~~
-
