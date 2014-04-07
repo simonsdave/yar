@@ -78,7 +78,7 @@ to the local repo of boxes
 > [box](http://docs.vagrantup.com/v2/boxes.html)
 > name *precise64-3.8-kernel* right because
 > it's referred to by name in
-> [this Vagrantfile](../docker-container-host/Vagrantfile.sh)
+> [this Vagrantfile](../base-docker-container-host/Vagrantfile)
 
 ~~~~~
 (env)>vagrant box add precise64-3.8-kernel precise64-3.8-kernel.box
