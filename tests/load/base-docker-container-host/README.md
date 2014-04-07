@@ -67,7 +67,7 @@ to the local repo of boxes
 > [box](http://docs.vagrantup.com/v2/boxes.html)
 > name *base-docker-container-host* right because
 > it's referred to by name in
-> [this Vagrantfile](../Vagrantfile.sh)
+> [this Vagrantfile](../Vagrantfile)
 
 ~~~~~
 (env)>vagrant box add base-docker-container-host base-docker-container-host.box
