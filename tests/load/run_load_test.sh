@@ -155,7 +155,8 @@ run_load_test() {
     # take ab's tsv output file and using gnuplot to create a
     # histogram of all response times
     #
-	TITLE="Auth Server Response Time - $START_TIME: Concurrency = $CONCURRENCY"
+	TITLE="Auth Server Response Time - $START_TIME"
+    TITLE="$TITLE: Concurrency = $CONCURRENCY"
     gnuplot \
         -e "input_filename='$RESULTS_DATA'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-1-response-time.png'" \
@@ -175,7 +176,9 @@ run_load_test() {
         $RESULTS_DATA \
         $RESULTS_DATA_PERCENTILE
 
-	TITLE="Auth Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; ${PERCENTILE}th Percentile"
+	TITLE="Auth Server Response Time - $START_TIME"
+    TITLE="$TITLE: Concurrency = $CONCURRENCY"
+    TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$RESULTS_DATA_PERCENTILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-2-response-time-by-time-in-test.png'" \
@@ -196,7 +199,8 @@ run_load_test() {
         sed -s "s/[[:space:]]ms$//g" \
         > $TEMPFILE
 
-	TITLE="Key Server Response Time - $START_TIME: Concurrency = $CONCURRENCY"
+	TITLE="Key Server Response Time - $START_TIME"
+    TITLE="$TITLE: Concurrency = $CONCURRENCY"
     gnuplot \
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-3-key-server-response-time.png'" \
@@ -209,7 +213,9 @@ run_load_test() {
         $TEMPFILE \
         $PERCENTILETEMPFILE
 
-	TITLE="Key Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; ${PERCENTILE}th Percentile"
+	TITLE="Key Server Response Time - $START_TIME"
+    TITLE="$TITLE: Concurrency = $CONCURRENCY"
+    TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-4-key-server-response-time-by-time-in-test.png'" \
@@ -233,7 +239,8 @@ run_load_test() {
         sed -s "s/[[:space:]]ms$//g" \
         > $TEMPFILE
 
-	TITLE="Key Store Response Time - $START_TIME: Concurrency = $CONCURRENCY"
+	TITLE="Key Store Response Time - $START_TIME"
+	TITLE="$TITLE: Concurrency = $CONCURRENCY"
     gnuplot \
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-5-key-store-response-time.png'" \
@@ -246,7 +253,9 @@ run_load_test() {
         $TEMPFILE \
         $PERCENTILETEMPFILE
 
-	TITLE="Key Store Response Time - $START_TIME: Concurrency = $CONCURRENCY; ${PERCENTILE}th Percentile"
+	TITLE="Key Store Response Time - $START_TIME"
+    TITLE="$TITLE: Concurrency = $CONCURRENCY"
+    TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-6-key-store-response-time-by-time-in-test.png'" \
@@ -270,7 +279,8 @@ run_load_test() {
         sed -s "s/[[:space:]]ms$//g" \
         > $TEMPFILE
 
-	TITLE="App Server Response Time - $START_TIME: Concurrency = $CONCURRENCY"
+	TITLE="App Server Response Time - $START_TIME"
+    TITLE="$TITLE: Concurrency = $CONCURRENCY"
     gnuplot \
         -e "input_filename='$TEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-7-app-server-response-time.png'" \
@@ -283,7 +293,9 @@ run_load_test() {
         $TEMPFILE \
         $PERCENTILETEMPFILE
 
-	TITLE="App Server Response Time - $START_TIME: Concurrency = $CONCURRENCY; ${PERCENTILE}th Percentile"
+	TITLE="App Server Response Time - $START_TIME"
+    TITLE="$TITLE: Concurrency = $CONCURRENCY"
+    TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
         -e "output_filename='$RESULTS_FILE_BASE_NAME-8-app-server-response-time-by-time-in-test.png'" \
