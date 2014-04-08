@@ -1,3 +1,4 @@
+##Story
 * Internet into a switch with [port mirroring](http://en.wikipedia.org/wiki/Port_mirroring) capability
 * mirrored port on switch sends traffic to [Snort](http://www.snort.org/) acting as phase 1 [IDS](http://en.wikipedia.org/wiki/Intrusion_detection_system) - note, this style of Snort deployment is well suited to IDS - if we wanted [IPS](http://en.wikipedia.org/wiki/Intrusion_prevention_system) we'd deploy Snort as a proxy between Internet and Firewall (see below)
 * Firewall - probably Cisco but if not next most popular choice would be
@@ -10,4 +11,7 @@ would want to base the firewall on a [firewall centric Linux distro](http://en.w
 * load balancer to distribute traffic across auth servers - node(s) used for SSL Termination could do this except we have snort in there or could use haproxy, nginx or Apache
 * auth servers make requests to key servers using "client side haproxy pattern" & key servers likewise do the same to couchdb instances
 * after authentication, authorization & accounting (done in auth server) traffic needs to be routed to app server or key server (yes requests to the key server should go thru the auth server too!)
+
+##References
+* [this](http://threatpost.com/seriousness-of-openssl-heartbleed-bug-sets-in/105309) article on the heartbleed bug is a great reminder of why we're fanatical about limiting what's running on edge devices
 
