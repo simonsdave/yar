@@ -150,6 +150,31 @@ does_image_exist() {
 }
 
 #
+# seems like a common'ish yar practice is to use JSON as a format
+# for configuration files. this work just fine except that there's
+# no good way to comment these files and comments are critical
+# in all but the most trivial configuration file. the yar practice
+# that has emerged is to use the JSON format but treat any lines
+# that begin with a # as the first non-whitespace character as
+# a comment.
+#
+# this function reads stdin, removes all lines that have a # character
+# as the first non-whitespace character and apply "nice" formatting
+# to the remaining lines assuming those lines represent a JSON file
+#
+# arguments
+#   none
+#
+# exit codes
+#   0   always
+#
+remove_comments_and_format_json() {
+    # :TODO: what if stdin isn't a valid JSON file?
+    grep -v '^\s*#' | python -mjson.tool
+    return 0
+}
+
+#
 # get the value associated with a key in ~/.yar.creds
 #
 # for example, the following script gets the API key from ~/.yar.creds

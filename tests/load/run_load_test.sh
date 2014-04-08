@@ -141,13 +141,7 @@ run_load_test() {
     #
     # generate a section title page for summary report
     #
-    REPORT_TEXT="Concurrency = $CONCURRENCY\n"
-    while read LINE
-    do
-        # :TODO: replace tabs with 4 x spaces
-        REPORT_TEXT="$REPORT_TEXT\n$LINE"
-    done < $TEST_PROFILE
-
+    REPORT_TEXT="Concurrency = $CONCURRENCY\n\n$(cat $TEST_PROFILE | remove_comments_and_format_json)"
     convert \
         -background lightgray \
         -fill black \
@@ -391,13 +385,7 @@ done
 #
 NUMBER_OF_REQUESTS=`get_from_json '\["number_of_requests"\]' 5000 < $TEST_PROFILE`
 
-REPORT_TEXT="yar load test ($START_TIME)\n"
-while read LINE
-do
-    # :TODO: replace tabs with 4 x spaces
-    REPORT_TEXT="$REPORT_TEXT\n$LINE"
-done < $TEST_PROFILE
-
+REPORT_TEXT="yar load test ($START_TIME)\n\n$(cat $TEST_PROFILE | remove_comments_and_format_json)"
 convert \
     -background lightgray \
     -fill black \
