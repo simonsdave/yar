@@ -10,7 +10,7 @@ yar's about 1,500 lines of Python and leverages a ton of amazing open source
 components to provide a high quality, robust and feature rich
 API Management solution.
 
-When thinking about yar it's useful to have read [this story/vision](docs/Story.md)
+When thinking about yar it's useful to have read [this story/vision](docs/story.md)
 so you have some context.
 
 So what is yar and what capabilities does it provide?
