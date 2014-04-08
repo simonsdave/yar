@@ -141,7 +141,8 @@ run_load_test() {
     #
     # generate a section title page for summary report
     #
-    REPORT_TEXT="Concurrency = $CONCURRENCY\n\n$(cat $TEST_PROFILE | remove_comments_and_format_json)"
+    REPORT_TEXT="Concurrency = $CONCURRENCY"
+    REPORT_TEXT="$REPORT_TEXT\n\n$(remove_comments_and_format_json < $TEST_PROFILE)"
     convert \
         -background lightgray \
         -fill black \
@@ -385,7 +386,8 @@ done
 #
 NUMBER_OF_REQUESTS=`get_from_json '\["number_of_requests"\]' 5000 < $TEST_PROFILE`
 
-REPORT_TEXT="yar load test ($START_TIME)\n\n$(cat $TEST_PROFILE | remove_comments_and_format_json)"
+REPORT_TEXT="yar load test ($START_TIME)"
+REPORT_TEXT="$REPORT_TEXT\n\n$(remove_comments_and_format_json < $TEST_PROFILE)"
 convert \
     -background lightgray \
     -fill black \
