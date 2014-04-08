@@ -129,6 +129,14 @@ make install
 # as well as a bunch of other image manipulation magic
 apt-get install -y imagemagick
 
+#
+# install collectd 4.10 @ /usr/sbin/collectd
+# config owned by root.root & @ /etc/collectd/collectd.conf
+# to start collectd = sudo service collectd restart
+# output @ /var/lib/collectd/precise64
+#
+apt-get install -y collectd
+
 # at the start of this script several changes were made
 # to boot parameters. let's quickly restart the VM so
 # these changes take effect
