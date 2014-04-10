@@ -48,7 +48,7 @@ Development Prerequisites
   * [Vagrant](http://www.vagrantup.com/)
 * see
 [requirements.txt](https://github.com/simonsdave/yar/blob/master/requirements.txt "requirements.txt")
-for the complete list of python packages on which yar depends
+for the complete list of Python packages on which yar depends
 
 Development Quick Start
 -----------------------
