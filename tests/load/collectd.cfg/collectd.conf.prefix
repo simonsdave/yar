@@ -26,9 +26,7 @@
 #
 # output
 #
-#   /var/lib/collectd/precise64
-#
-# sudo service collectd stop; sudo rm -rf /var/lib/collectd; sudo cp /vagrant/collectd.conf /etc/collectd/.; sudo service collectd start
+#   /var/lib/collectd/csv/precise64
 #
 
 FQDNLookup true
@@ -58,32 +56,3 @@ LoadPlugin swap
 # http://collectd.org/documentation/manpages/collectd.conf.5.shtml#plugin_table
 LoadPlugin table
 LoadPlugin users
-
-# Include "/etc/collectd/filters.conf"
-# Include "/etc/collectd/thresholds.conf"
-
-<Plugin csv>
-	DataDir "/var/lib/collectd/csv"
-	StoreRates false
-</Plugin>
-
-<Plugin table>
-  <Table "/sys/fs/cgroup/memory/lxc/4bd1051900b81561b79b895b53a242db53fa785ea6a85bb2a1692e637bb98872/memory.usage_in_bytes">
-    Instance "4bd1051900b81561b79b895b53a242db53fa785ea6a85bb2a1692e637bb98872-memory"
-    Separator " \\n"
-    <Result>
-      Type gauge
-      InstancesFrom 0
-      ValuesFrom 0
-    </Result>
-  </Table>
-  <Table "/sys/fs/cgroup/memory/lxc/84ad0113138a5e97c4a7e163764718056de444eedfcaa11a35106a01a1ce77b6/memory.usage_in_bytes">
-    Instance "84ad0113138a5e97c4a7e163764718056de444eedfcaa11a35106a01a1ce77b6-memory"
-    Separator " \\n"
-    <Result>
-      Type gauge
-      InstancesFrom 0
-      ValuesFrom 0
-    </Result>
-  </Table>
-</Plugin>

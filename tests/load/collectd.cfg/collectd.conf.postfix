@@ -1,0 +1,4 @@
+<Plugin csv>
+  DataDir "/var/lib/collectd/csv"
+  StoreRates false
+</Plugin>

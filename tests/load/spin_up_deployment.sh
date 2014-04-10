@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
-
 source $SCRIPT_DIR_NAME/util.sh
 
 create_basic_creds() {
@@ -97,6 +96,12 @@ fi
 #
 # some cleanup before we start the meat of this script
 #
+echo_if_not_silent "Removing all existing containers"
+if ! $SCRIPT_DIR_NAME/rm_all_containers.sh; then
+    echo_to_stderr_if_not_silent "Error removing all existing containers"
+    return 1
+fi
+
 rm -f ~/.yar.deployment >& /dev/null
 rm -f ~/.yar.creds.random.set >& /dev/null
 rm -f ~/.yar.creds >& /dev/null
@@ -104,17 +109,24 @@ rm -f ~/.yar.creds >& /dev/null
 #
 # spin up services
 #
-echo_if_not_silent "Starting Services ..."
-echo_if_not_silent ""
+echo_if_not_silent "Starting yar Services ..."
 
+#
+# App Server
+#
 echo_if_not_silent "Starting App Server(s)"
+
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/App-Server
 if ! APP_SERVER=$(create_app_server $DATA_DIRECTORY); then
     echo_to_stderr_if_not_silent "App Server failed to start"
     exit 1
 fi
+
 echo_if_not_silent "$APP_SERVER in $DATA_DIRECTORY"
 
+#
+# App Server LB
+#
 echo_if_not_silent "Starting App Server LB"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/App-Server-LB
 if ! APP_SERVER_LB=$(create_app_server_lb $DATA_DIRECTORY $APP_SERVER); then
@@ -123,6 +135,9 @@ if ! APP_SERVER_LB=$(create_app_server_lb $DATA_DIRECTORY $APP_SERVER); then
 fi
 echo_if_not_silent "$APP_SERVER_LB in $DATA_DIRECTORY"
 
+#
+# Nonce Store
+#
 echo_if_not_silent "Starting Nonce Store"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Nonce-Store
 if ! NONCE_STORE=$(create_nonce_store $DATA_DIRECTORY); then 
@@ -168,6 +183,9 @@ if ! KEY_SERVER=$(create_key_server $DATA_DIRECTORY $KEY_STORE); then
 fi
 echo_if_not_silent "$KEY_SERVER in $DATA_DIRECTORY"
 
+#
+# Auth Server
+#
 echo_if_not_silent "Starting Auth Server"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Auth-Server
 if ! AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVER $APP_SERVER_LB $NONCE_STORE); then
@@ -176,6 +194,9 @@ if ! AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVER $APP_SERVER_LB
 fi
 echo_if_not_silent "$AUTH_SERVER in $DATA_DIRECTORY"
 
+#
+# Auth Server LB
+#
 echo_if_not_silent "Starting Auth Server LB"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Auth-Server-LB
 if ! AUTH_SERVER_LB=$(create_auth_server_lb $DATA_DIRECTORY $AUTH_SERVER); then
@@ -183,6 +204,16 @@ if ! AUTH_SERVER_LB=$(create_auth_server_lb $DATA_DIRECTORY $AUTH_SERVER); then
     exit 1
 fi
 echo_if_not_silent "$AUTH_SERVER_LB in $DATA_DIRECTORY"
+
+#
+# services now running ... let's provision some creds
+#
+PRINCIPAL="dave@example.com"
+create_basic_creds $KEY_SERVER $PRINCIPAL
+create_mac_creds $KEY_SERVER $PRINCIPAL
+if [ -r ~/.yar.creds ]; then
+    echo_if_not_silent "Creds in ~/.yar.creds"
+fi
 
 #
 # used to cat ~/.yar.deployment but that started to seem like overkill
@@ -197,16 +228,6 @@ fi
 
 if [ -r ~/.yar.creds.random.set ]; then
     echo_if_not_silent "Random set of creds in ~/.yar.creds.random.set"
-fi
-
-#
-# services now running, time to provision some creds
-#
-PRINCIPAL="dave@example.com"
-create_basic_creds $KEY_SERVER $PRINCIPAL
-create_mac_creds $KEY_SERVER $PRINCIPAL
-if [ -r ~/.yar.creds ]; then
-    echo_if_not_silent "Creds in ~/.yar.creds"
 fi
 
 exit 0

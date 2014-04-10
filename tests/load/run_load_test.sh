@@ -64,24 +64,24 @@ generate_yar_server_log_file_percentile() {
         > $OUTPUT_FILENAME
 }
 
+#
 # this function encapsulates the real meat of the test
+#
+# exit codes
+#   0   ok
+#
 run_load_test() {
     local TEST_PROFILE=${1:-}
+    local CONCURRENCY=${2:-}
+    local RESULTS_DIR=${3:-}
 
     local NUMBER_OF_REQUESTS=`get_from_json '\["number_of_requests"\]' 5000 < $TEST_PROFILE`
     local PERCENTILE=`get_from_json '\["percentile"\]' 98 < $TEST_PROFILE`
-
-    local CONCURRENCY=${2:-}
-    local RESULTS_DIR=${3:-}
 
     local RESULTS_FILE_BASE_NAME=$RESULTS_DIR/$(left_zero_pad $CONCURRENCY 4)-$NUMBER_OF_REQUESTS
 
     local DOCKER_CONTAINER_DATA=$RESULTS_DIR/$(left_zero_pad $CONCURRENCY 4)-$NUMBER_OF_REQUESTS
     mkdir -p $DOCKER_CONTAINER_DATA
-
-    # :TODO: what if this scripts fails?
-	echo "$CONCURRENCY: Removing all existing containers"
-    $SCRIPT_DIR_NAME/rm_all_containers.sh
 
 	echo "$CONCURRENCY: Spinning up a deployment"
     if ! $SCRIPT_DIR_NAME/spin_up_deployment.sh -s -d $DOCKER_CONTAINER_DATA -p $TEST_PROFILE; then
@@ -91,6 +91,14 @@ run_load_test() {
     local AUTH_SERVER_LB=$(get_deployment_config "AUTH_SERVER_LB_END_POINT")
     echo "$CONCURRENCY: Deployment end point = $AUTH_SERVER_LB"
 
+    #
+    # test is about to begin ... time to start collecting metrics
+    #
+    start_collecting_metrics
+
+    #
+    # all the setup is now complete ... load generation is next ...
+    #
 	echo "$CONCURRENCY: Starting to drive load"
     local RESULTS_DATA=$RESULTS_FILE_BASE_NAME-raw-data.tsv
 	if [ -r ~/.yar.creds.random.set ]; then
@@ -131,6 +139,11 @@ run_load_test() {
 			>& /dev/null
 
 	fi
+
+    #
+    # test is over ... we can stop collecting metrics
+    #
+    stop_collecting_metrics
 
     #
     # all that's left to do now is generate some graphs for inclusion

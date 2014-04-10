@@ -764,3 +764,60 @@ create_auth_server_lb() {
 
     echo $AUTH_SERVER_LB_IP:$PORT
 }
+
+#
+# as the function's name says ... stop the mechanism used
+# to collect container specific metrics
+#
+# exit status
+#   0   ok
+#   n   where n is non-zero indicates failure; n will be
+#       the status code of "service collectd stop"
+#
+stop_collecting_metrics() {
+    sudo service collectd stop >& /dev/null
+}
+
+#
+# as the function's name says ... start the mechanism used
+# to collect container specific metrics
+#
+# exit status
+#   0   ok
+#   n   where n is non-zero indicates failure; n will be
+#       the status code of "service collectd restart"
+#
+start_collecting_metrics() {
+
+    # this should be overkill as collectd should
+    # already have been stopped
+    sudo service collectd stop >& /dev/null
+
+    # :TODO: /var/lib/collectd is embedded in 
+    # /vagrant/collectd.cfg/collectd.conf.postfix
+    # so a change in /vagrant/collectd.cfg/collectd.conf.postfix
+    # won't be reflected in this code - should
+    # only be defining this directory in one location
+    sudo rm -rf /var/lib/collectd >& /dev/null
+
+    TEMP_COLLECTD_CONF=$(platform_safe_mktemp)
+
+    cat /vagrant/collectd.cfg/collectd.conf.prefix >> $TEMP_COLLECTD_CONF
+
+    for PUSEDO_FILE in /sys/fs/cgroup/memory/lxc/*/memory.usage_in_bytes
+    do
+        CONTAINER_ID=$(echo $PUSEDO_FILE | \
+            sed -e "s/^\/sys\/fs\/cgroup\/memory\/lxc\///" | \
+            sed -e "s/\/memory.usage_in_bytes$//")
+
+        cat /vagrant/collectd.cfg/collectd.conf.memory_used | \
+            sed -e "s/%CONTAINER_ID%/$CONTAINER_ID/g" \
+            >> $TEMP_COLLECTD_CONF
+    done
+
+    cat /vagrant/collectd.cfg/collectd.conf.postfix >> $TEMP_COLLECTD_CONF
+
+    sudo mv $TEMP_COLLECTD_CONF /etc/collectd/collectd.conf
+
+    sudo service collectd restart >& /dev/null
+}
