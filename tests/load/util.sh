@@ -821,3 +821,83 @@ start_collecting_metrics() {
 
     sudo service collectd restart >& /dev/null
 }
+
+#
+# assuming start_collecting_metrics() and stop_collecting_metrics()
+# have been used to collect metrics, calling this function is used
+# to generate a graph for the memory used by a particular container.
+#
+# arguments
+#   1   graph's title
+#   2   key @ which the container's id can be found
+#   3   filename into which the graph should be generated
+#
+# exit codes
+#   0   ok
+#
+gen_mem_used_graph() {
+
+    local GRAPH_TITLE=${1:-}
+    local CONTAINER_ID_KEY=${2:-}
+    local GRAPH_FILENAME=${3:-}
+
+    CONTAINER_ID=$(get_deployment_config "$CONTAINER_ID_KEY")
+
+    #
+    # :TRICKY: there's a tricky bit of code in the line below related to
+    # the way we take the first 16 characters of CONTAINER_ID. collectd
+    # only seems to use the first 60'ish characters from the container ID
+    # to create the output file directory. The first 16 characters are more
+    # than enough to uniquely identify the directory. The reason for the
+    # * on the end of the directory name is acknowledgement of the 60'ish
+    # statement & the fact that 16 characters is more than enough to identity
+    # the directory.
+    #
+    METRICS_DIR=/var/lib/collectd/csv/precise64/table-${CONTAINER_ID:0:16}*
+
+    #
+    # take all collectd output files (which are all files in $METRICS_DIR
+    # starting with gauge-), cat them into a single file and strip out the
+    # "epoch,value" headers
+    #
+    OBSERVATIONS_1=$(platform_safe_mktemp)
+
+    cat $METRICS_DIR/gauge-* | \
+        grep "^[0-9]" | \
+        sort --field-separator=$',' --key=1 -n \
+        > $OBSERVATIONS_1
+
+    #
+    # so we've now got all the metrics in a single file order by time.
+    # next step is to massage the metrics in preperation for graphing.
+    #
+    FIRST_TIME=$(head -1 $OBSERVATIONS_1 | sed -e "s/\,.\+$//g")
+
+    AWK_PROG=$(platform_safe_mktemp)
+    echo 'BEGIN       {FS = ","; OFS = ","}'                                >> $AWK_PROG
+    echo '/^[0-9]+/   {print $1 - first_time, int(1 + $2/(1024.0*1024.0))}' >> $AWK_PROG
+
+    OBSERVATIONS_2=$(platform_safe_mktemp)
+
+    cat $OBSERVATIONS_1 | awk -v first_time=$FIRST_TIME -f $AWK_PROG > $OBSERVATIONS_2
+
+    rm $AWK_PROG
+
+    #
+    # finally! let's generate a graph:-)
+    #
+    gnuplot \
+        -e "input_filename='$OBSERVATIONS_2'" \
+        -e "output_filename='$GRAPH_FILENAME'" \
+        -e "title='$GRAPH_TITLE'" \
+        $SCRIPT_DIR_NAME/gp.cfg/mem_used \
+        >& /dev/null
+    if [ $? -ne 0 ]; then
+        echo_to_stderr_if_not_silent "Error generating graph '$GRAPH_TITLE'"
+    fi
+
+    rm $OBSERVATIONS_1
+    rm $OBSERVATIONS_2
+
+    return 0
+}

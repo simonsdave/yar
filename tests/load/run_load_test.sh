@@ -162,7 +162,7 @@ run_load_test() {
         -size 1280x720 \
         label:"$REPORT_TEXT" \
         -gravity center \
-        $RESULTS_FILE_BASE_NAME-0-section-title.png
+        $RESULTS_FILE_BASE_NAME-00-section-title.png
 
     #
     # take ab's tsv output file and using gnuplot to create a
@@ -172,7 +172,7 @@ run_load_test() {
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     gnuplot \
         -e "input_filename='$RESULTS_DATA'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-1-response-time.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-01-response-time.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/response_time
 
@@ -194,7 +194,7 @@ run_load_test() {
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$RESULTS_DATA_PERCENTILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-2-response-time-by-time-in-test.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-02-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/response_time_by_time
 
@@ -216,7 +216,7 @@ run_load_test() {
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     gnuplot \
         -e "input_filename='$TEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-3-key-server-response-time.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-03-key-server-response-time.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
@@ -231,7 +231,7 @@ run_load_test() {
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-4-key-server-response-time-by-time-in-test.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-04-key-server-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time_by_time
 
@@ -256,7 +256,7 @@ run_load_test() {
 	TITLE="$TITLE: Concurrency = $CONCURRENCY"
     gnuplot \
         -e "input_filename='$TEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-5-key-store-response-time.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-05-key-store-response-time.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
@@ -271,7 +271,7 @@ run_load_test() {
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-6-key-store-response-time-by-time-in-test.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-06-key-store-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time_by_time
 
@@ -296,7 +296,7 @@ run_load_test() {
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     gnuplot \
         -e "input_filename='$TEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-7-app-server-response-time.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-07-app-server-response-time.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
@@ -311,12 +311,40 @@ run_load_test() {
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-8-app-server-response-time-by-time-in-test.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-08-app-server-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time_by_time
 
     rm -f $PERCENTILETEMPFILE >& /dev/null
     rm -f $TEMPFILE >& /dev/null
+
+    #
+    # metrics graphing ...
+    #
+    gen_mem_used_graph \
+        "Auth Server Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "AUTH_SERVER_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-20-auth-server-memory-usage.png"
+
+    gen_mem_used_graph \
+        "Key Server Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "KEY_SERVER_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-21-key-server-memory-usage.png"
+
+    gen_mem_used_graph \
+        "Key Store Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "KEY_STORE_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-22-key-store-memory-usage.png"
+
+    gen_mem_used_graph \
+        "Nonce Store Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "NONCE_STORE_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-23-nonce-store-memory-usage.png"
+
+    gen_mem_used_graph \
+        "App Server Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "APP_SERVER_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-23-app-server-memory-usage.png"
 
 }
 
