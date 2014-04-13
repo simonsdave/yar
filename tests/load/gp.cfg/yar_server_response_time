@@ -3,11 +3,11 @@
 #	title
 #	input_filename
 #	output_filename
-set terminal pngcairo size 1280,720
+set terminal pngcairo size 3200,1800 font "Ubuntu,36"
 set size 1, 1
 set xlabel "Response Time (milliseconds)"
 set ylabel "Number of Requests"
-set title title
+set title title font "Ubuntu Bold,36"
 set output output_filename
 set key off
 set boxwidth 0.75 absolute

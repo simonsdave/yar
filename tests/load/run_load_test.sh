@@ -180,7 +180,7 @@ run_load_test() {
     convert \
         -background lightgray \
         -fill black \
-        -size 1280x720 \
+        -size 3200x1800 \
         label:"$REPORT_TEXT" \
         -gravity center \
         $RESULTS_FILE_BASE_NAME-00-section-title.png
@@ -473,7 +473,7 @@ REPORT_TEXT="$REPORT_TEXT\n\n$(remove_comments_and_format_json < $TEST_PROFILE)"
 convert \
     -background lightgray \
     -fill black \
-    -size 1280x720 \
+    -size 3200x1800 \
     label:"$REPORT_TEXT" \
     -gravity center \
     $RESULTS_DIR/0000-$NUMBER_OF_REQUESTS.png
@@ -481,7 +481,7 @@ convert \
 convert \
     -background lightgray \
     -fill black \
-    -size 1280x720 \
+    -size 3200x1800 \
     label:"End of Report:-)" \
     -gravity center \
     $RESULTS_DIR/9999-$NUMBER_OF_REQUESTS.png

@@ -3,50 +3,23 @@
 #   input_filename
 #   title
 #   output_filename
-#
-# references
-#
-#   http://www.bradlanders.com/2013/04/15/apache-bench-and-gnuplot-youre-probably-doing-it-wrong/
 
-# Let's output to a jpeg file
-set terminal pngcairo size 1280,720
-
-# sets the aspect ratio of the graph
+set terminal pngcairo size 3200,1800 font "Ubuntu,36"
 set size 1, 1
-# the file this gnuplot script creates
 set output output_filename
-# graph's title
-set title title
-# Where to place the legend/key
+set title title font "Ubuntu Bold,36"
 set key left top
-# Draw gridlines oriented on the y axis
 set grid y
 
-# Specify that the x-series data is time data
-set xdata time
-
-# Specify the *input* format of the time data
-# %s = seconds since the Unix epoch (1970-01-01 00:00 UTC)
 set timefmt "%s"
 
-# specify *output* format for x-axis time data
-# with the x-series data being time data and the
-# time format being seconds since Unix epoch,
-# using the default x-axis format of mm:ss is
-# actually what we want:-)
-# set format x "%S"
-
-# Label the x-axis
+set xdata time
 set xlabel 'Time in Test (minute:second)'
 
-# Label the y-axis
 set ylabel "Response Time (milliseconds)"
 
-# Tell gnuplot to use tabs as the delimiter instead of spaces (default)
 set datafile separator '\t'
 
-# Plot the data
 plot input_filename every ::2 using 2:5 title "" with points
 
-# done!
 exit

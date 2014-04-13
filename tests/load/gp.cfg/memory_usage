@@ -6,10 +6,10 @@
 #   output_filename
 #
 
-set terminal pngcairo size 1280,720
+set terminal pngcairo size 3200,1800 font "Ubuntu,36"
 set size 1, 1
 set output output_filename
-set title title
+set title title font "Ubuntu Bold,36"
 set key off
 
 set grid y
@@ -24,8 +24,8 @@ set yrange [0:*]
 
 set datafile separator ','
 
-set style line 1 lc rgb '#0000ff' lt 1 lw 2
-set style line 2 lc rgb '#ff0000' lt 1 lw 2
+set style line 1 lc rgb '#0000ff' lt 1 lw 10
+set style line 2 lc rgb '#ff0000' lt 1 lw 10
 
 plot input_filename using 1:2 with linespoints ls 1
 

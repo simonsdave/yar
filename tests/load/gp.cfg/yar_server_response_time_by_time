@@ -4,10 +4,10 @@
 #	input_filename
 #	output_filename
 
-set terminal pngcairo size 1280,720
+set terminal pngcairo size 3200,1800 font "Ubuntu,36"
 set size 1, 1
 set output output_filename
-set title title
+set title title font "Ubuntu Bold,36"
 set key left top
 set grid y
 set xdata time
