@@ -1,7 +1,7 @@
 {
     "concurrency": [1, 5, 10, 25],
     "number_of_requests": 1000,
-    "percentile": 99,
+    "percentile": 99.9,
     "key_store": {
         "number_of_creds": 50000,
         #
