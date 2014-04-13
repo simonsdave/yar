@@ -14,25 +14,19 @@ set key off
 
 set grid y
 
-set xdata time
 set timefmt "%s"
 
-# specify *output* format for x-axis time data
-# with the x-series data being time data and the
-# time format being seconds since Unix epoch,
-# using the default x-axis format of mm:ss is
-# actually what we want:-)
-# set format x "%S"
-
+set xdata time
 set xlabel 'Time in Test (minute:second)'
+
 set ylabel "Memory (MB)"
+set yrange [0:*]
+
 set datafile separator ','
 
-# set style line 1 lc rgb '#0000ff' lt 1 lw 2 pt 7 pi -1 ps 1.5
-# set style line 2 lc rgb '#ff0000' lt 1 lw 2 pt 7 pi -1 ps 1.5
 set style line 1 lc rgb '#0000ff' lt 1 lw 2
 set style line 2 lc rgb '#ff0000' lt 1 lw 2
 
-# plot input_filename using 1:2 title 'Auth Server #1' with linespoints ls 1
 plot input_filename using 1:2 with linespoints ls 1
+
 exit
