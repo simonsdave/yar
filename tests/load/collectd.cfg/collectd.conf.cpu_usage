@@ -1,6 +1,6 @@
 <Plugin table>
-  <Table "/sys/fs/cgroup/memory/lxc/%CONTAINER_ID%/memory.usage_in_bytes">
-    Instance "%CONTAINER_ID%-memory"
+  <Table "/sys/fs/cgroup/cpuacct/lxc/%CONTAINER_ID%/cpuacct.usage">
+    Instance "cpu-%CONTAINER_ID%"
     Separator " \\n"
     <Result>
       Type gauge
