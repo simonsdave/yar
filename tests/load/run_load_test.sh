@@ -338,42 +338,80 @@ run_load_test() {
     rm -f $TEMPFILE >& /dev/null
 
     #
-    # metrics graphing ...
+    # metrics graphing ... cpu ...
     #
-    gen_mem_used_graph \
+    gen_cpu_usage_graph \
+        "Auth Server Load Balancer CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "AUTH_SERVER_LB_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-20-auth-server-lb-cpu-usage.png"
+
+    gen_cpu_usage_graph \
+        "Auth Server CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "AUTH_SERVER_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-21-auth-server-cpu-usage.png"
+
+    gen_cpu_usage_graph \
+        "Key Server CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "KEY_SERVER_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-22-key-server-cpu-usage.png"
+
+    gen_cpu_usage_graph \
+        "Key Store CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "KEY_STORE_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-23-key-store-cpu-usage.png"
+
+    gen_cpu_usage_graph \
+        "Nonce Store CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "NONCE_STORE_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-24-nonce-store-cpu-usage.png"
+
+    gen_cpu_usage_graph \
+        "App Server Load Balancer CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "APP_SERVER_LB_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-25-app-server-lb-cpu-usage.png"
+
+    gen_cpu_usage_graph \
+        "App Server CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "APP_SERVER_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-26-app-server-cpu-usage.png"
+
+    #
+    # metrics graphing ... memory ...
+    #
+    gen_mem_usage_graph \
         "Auth Server Load Balancer Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
         "AUTH_SERVER_LB_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-20-auth-server-memory-usage.png"
+        "$RESULTS_FILE_BASE_NAME-30-auth-server-lb-memory-usage.png"
 
-    gen_mem_used_graph \
+    gen_mem_usage_graph \
         "Auth Server Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
         "AUTH_SERVER_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-21-auth-server-memory-usage.png"
+        "$RESULTS_FILE_BASE_NAME-31-auth-server-memory-usage.png"
 
-    gen_mem_used_graph \
+    gen_mem_usage_graph \
         "Key Server Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
         "KEY_SERVER_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-22-key-server-memory-usage.png"
+        "$RESULTS_FILE_BASE_NAME-32-key-server-memory-usage.png"
 
-    gen_mem_used_graph \
+    gen_mem_usage_graph \
         "Key Store Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
         "KEY_STORE_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-23-key-store-memory-usage.png"
+        "$RESULTS_FILE_BASE_NAME-33-key-store-memory-usage.png"
 
-    gen_mem_used_graph \
+    gen_mem_usage_graph \
         "Nonce Store Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
         "NONCE_STORE_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-24-nonce-store-memory-usage.png"
+        "$RESULTS_FILE_BASE_NAME-34-nonce-store-memory-usage.png"
 
-    gen_mem_used_graph \
+    gen_mem_usage_graph \
         "App Server Load Balancer Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
         "APP_SERVER_LB_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-25-app-server-lb-memory-usage.png"
+        "$RESULTS_FILE_BASE_NAME-35-app-server-lb-memory-usage.png"
 
-    gen_mem_used_graph \
+    gen_mem_usage_graph \
         "App Server Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
         "APP_SERVER_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-26-app-server-memory-usage.png"
+        "$RESULTS_FILE_BASE_NAME-36-app-server-memory-usage.png"
 
 }
 

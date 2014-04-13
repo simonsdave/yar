@@ -846,7 +846,7 @@ start_collecting_metrics() {
 # exit codes
 #   0   ok
 #
-gen_mem_used_graph() {
+gen_mem_usage_graph() {
 
     local GRAPH_TITLE=${1:-}
     local CONTAINER_ID_KEY=${2:-}
