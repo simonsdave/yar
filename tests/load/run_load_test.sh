@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
-
+#
 # after docker images have been built, this script spins up a yar
 # deployment and runs a load test against that deployment
+#
 
-# :TODO: add check that docker images have been built
-
+#
 # given an input file (geneated by apache benchmark), generate
 # an output file which represents the nth percentile of the
 # input file based on the 5th column (request time) in the
 # input file.
-take_percentile_and_add_sanity_to_time() {
+#
+# exit codes
+#   0   always
+#
+take_percentile_and_rebase_time() {
     local PERCENTILE=${1:-}
     local INPUT_FILENAME=${2:-}
     local OUTPUT_FILENAME=${3:-}
@@ -35,13 +39,20 @@ take_percentile_and_add_sanity_to_time() {
         --key=2 \
         -n \
         > $OUTPUT_FILENAME
+
+    return 0
 }
 
+#
 # given an input file (geneated by one of the yar servers), generate
 # an output file which represents the nth percentile of the input file
 # based on the 2nd column (request time) in the input file.
 #
 # the input file is assumed to have no header rows
+#
+# exit codes
+#   0   always
+#
 generate_yar_server_log_file_percentile() {
     local PERCENTILE=${1:-}
     local INPUT_FILENAME=${2:-}
@@ -62,10 +73,12 @@ generate_yar_server_log_file_percentile() {
         --key=1 \
         -n \
         > $OUTPUT_FILENAME
+
+    return 0
 }
 
 #
-# this function encapsulates the real meat of the test
+# this function encapsulates the real meat of the load test
 #
 # exit codes
 #   0   ok
@@ -78,9 +91,14 @@ run_load_test() {
     local NUMBER_OF_REQUESTS=`get_from_json '\["number_of_requests"\]' 5000 < $TEST_PROFILE`
     local PERCENTILE=`get_from_json '\["percentile"\]' 98 < $TEST_PROFILE`
 
-    local RESULTS_FILE_BASE_NAME=$RESULTS_DIR/$(left_zero_pad $CONCURRENCY 4)-$NUMBER_OF_REQUESTS
+    local ZPCONCURRENCY=$(left_zero_pad $CONCURRENCY 4)
 
-    local DOCKER_CONTAINER_DATA=$RESULTS_DIR/$(left_zero_pad $CONCURRENCY 4)-$NUMBER_OF_REQUESTS
+    local RESULTS_FILE_BASE_NAME=$RESULTS_DIR/$ZPCONCURRENCY-$NUMBER_OF_REQUESTS
+
+    #
+    # test is about to begin ... time to start collecting metrics
+    #
+    local DOCKER_CONTAINER_DATA=$RESULTS_DIR/$ZPCONCURRENCY-$NUMBER_OF_REQUESTS
     mkdir -p $DOCKER_CONTAINER_DATA
 
 	echo "$CONCURRENCY: Spinning up a deployment"
@@ -99,11 +117,12 @@ run_load_test() {
     #
     # all the setup is now complete ... load generation is next ...
     #
-	echo "$CONCURRENCY: Starting to drive load"
     local RESULTS_DATA=$RESULTS_FILE_BASE_NAME-raw-data.tsv
 	if [ -r ~/.yar.creds.random.set ]; then
 
 		echo "$CONCURRENCY: Using locust"
+
+        echo "$CONCURRENCY: Starting to drive load"
 
 		LOCUST_LOGFILE=$RESULTS_FILE_BASE_NAME-locust-logfile.tsv
 		LOCUST_STDOUT_AND_STDERR=$RESULTS_FILE_BASE_NAME-locust-stdout-and-stderr.tsv
@@ -129,6 +148,8 @@ run_load_test() {
 		echo "$CONCURRENCY: Getting creds"
 		local API_KEY=$(get_creds_config "API_KEY")
 		# :TODO: what if API_KEY doesn't exist?
+
+        echo "$CONCURRENCY: Starting to drive load"
 
 		ab \
 			-c $CONCURRENCY \
@@ -165,36 +186,31 @@ run_load_test() {
         $RESULTS_FILE_BASE_NAME-00-section-title.png
 
     #
-    # take ab's tsv output file and using gnuplot to create a
+    # take load driver's tsv output file and use gnuplot to create a
     # histogram of all response times
-    #
-	TITLE="Auth Server Response Time - $START_TIME"
-    TITLE="$TITLE: Concurrency = $CONCURRENCY"
-    gnuplot \
-        -e "input_filename='$RESULTS_DATA'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-01-response-time.png'" \
-        -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/gp.cfg/response_time
-
-    #
-    # take a percentile of ab's tsv output file and using gnupot
-    # generate a plot of response time by time in the test (look
-    # at one of the output plots & this description will make more
-    # sense)
     #
     local RESULTS_DATA_PERCENTILE=$(mktemp)
 
-    take_percentile_and_add_sanity_to_time \
+    take_percentile_and_rebase_time \
         $PERCENTILE \
         $RESULTS_DATA \
         $RESULTS_DATA_PERCENTILE
 
-	TITLE="Auth Server Response Time - $START_TIME"
+	TITLE="yar Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$RESULTS_DATA_PERCENTILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-02-response-time-by-time-in-test.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-01-yar-response-time.png'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/gp.cfg/response_time
+
+	TITLE="yar Response Time - $START_TIME"
+    TITLE="$TITLE: Concurrency = $CONCURRENCY"
+    TITLE="$TITLE; ${PERCENTILE}th Percentile"
+    gnuplot \
+        -e "input_filename='$RESULTS_DATA_PERCENTILE'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-02-yar-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/response_time_by_time
 
@@ -212,19 +228,20 @@ run_load_test() {
         sed -s "s/[[:space:]]ms$//g" \
         > $TEMPFILE
 
-	TITLE="Key Server Response Time - $START_TIME"
-    TITLE="$TITLE: Concurrency = $CONCURRENCY"
-    gnuplot \
-        -e "input_filename='$TEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-03-key-server-response-time.png'" \
-        -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
-
     PERCENTILETEMPFILE=$(mktemp)
     generate_yar_server_log_file_percentile \
         $PERCENTILE \
         $TEMPFILE \
         $PERCENTILETEMPFILE
+
+	TITLE="Key Server Response Time - $START_TIME"
+    TITLE="$TITLE: Concurrency = $CONCURRENCY"
+    TITLE="$TITLE; ${PERCENTILE}th Percentile"
+    gnuplot \
+        -e "input_filename='$PERCENTILETEMPFILE'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-03-key-server-response-time.png'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
 	TITLE="Key Server Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
@@ -252,19 +269,20 @@ run_load_test() {
         sed -s "s/[[:space:]]ms$//g" \
         > $TEMPFILE
 
-	TITLE="Key Store Response Time - $START_TIME"
-	TITLE="$TITLE: Concurrency = $CONCURRENCY"
-    gnuplot \
-        -e "input_filename='$TEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-05-key-store-response-time.png'" \
-        -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
-
     PERCENTILETEMPFILE=$(mktemp)
     generate_yar_server_log_file_percentile \
         $PERCENTILE \
         $TEMPFILE \
         $PERCENTILETEMPFILE
+
+	TITLE="Key Store Response Time - $START_TIME"
+	TITLE="$TITLE: Concurrency = $CONCURRENCY"
+    TITLE="$TITLE; ${PERCENTILE}th Percentile"
+    gnuplot \
+        -e "input_filename='$PERCENTILETEMPFILE'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-05-key-store-response-time.png'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
 	TITLE="Key Store Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
@@ -292,19 +310,20 @@ run_load_test() {
         sed -s "s/[[:space:]]ms$//g" \
         > $TEMPFILE
 
-	TITLE="App Server Response Time - $START_TIME"
-    TITLE="$TITLE: Concurrency = $CONCURRENCY"
-    gnuplot \
-        -e "input_filename='$TEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-07-app-server-response-time.png'" \
-        -e "title='$TITLE'" \
-        $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
-
     PERCENTILETEMPFILE=$(mktemp)
     generate_yar_server_log_file_percentile \
         $PERCENTILE \
         $TEMPFILE \
         $PERCENTILETEMPFILE
+
+	TITLE="App Server Response Time - $START_TIME"
+    TITLE="$TITLE: Concurrency = $CONCURRENCY"
+    TITLE="$TITLE; ${PERCENTILE}th Percentile"
+    gnuplot \
+        -e "input_filename='$PERCENTILETEMPFILE'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-07-app-server-response-time.png'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
 	TITLE="App Server Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
