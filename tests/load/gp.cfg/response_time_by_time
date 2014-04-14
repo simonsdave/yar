@@ -20,6 +20,6 @@ set ylabel "Response Time (milliseconds)"
 
 set datafile separator '\t'
 
-plot input_filename every ::2 using 2:5 title "" with points
+plot input_filename every ::2 using 2:5 title "" with points pt 7 ps 1
 
 exit

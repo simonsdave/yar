@@ -15,5 +15,5 @@ set timefmt "%s"
 set xlabel 'Time in Test (minute:second)'
 set ylabel "Response Time (milliseconds)"
 set datafile separator '\t'
-plot input_filename every ::1 using 1:2 title "" with points
+plot input_filename every ::1 using 1:2 title "" with points pt 7 ps 1
 exit
