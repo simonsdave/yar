@@ -804,27 +804,35 @@ start_collecting_metrics() {
 
     cat /vagrant/collectd.cfg/collectd.conf.prefix >> $TEMP_COLLECTD_CONF
 
-    for PUSEDO_FILE in /sys/fs/cgroup/memory/lxc/*/memory.usage_in_bytes
-    do
-        CONTAINER_ID=$(echo $PUSEDO_FILE | \
-            sed -e "s/^\/sys\/fs\/cgroup\/memory\/lxc\///" | \
-            sed -e "s/\/memory.usage_in_bytes$//")
+	# NOTE - the if below will typically only fail if Docker's not been
+	# instructed to use lxc
+	if [ -d /sys/fs/cgroup/memory/lxc ]; then
+		for PUSEDO_FILE in /sys/fs/cgroup/memory/lxc/*/memory.usage_in_bytes
+		do
+			CONTAINER_ID=$(echo $PUSEDO_FILE | \
+				sed -e "s/^\/sys\/fs\/cgroup\/memory\/lxc\///" | \
+				sed -e "s/\/memory.usage_in_bytes$//")
 
-        cat /vagrant/collectd.cfg/collectd.conf.memory_usage | \
-            sed -e "s/%CONTAINER_ID%/$CONTAINER_ID/g" \
-            >> $TEMP_COLLECTD_CONF
-    done
+			cat /vagrant/collectd.cfg/collectd.conf.memory_usage | \
+				sed -e "s/%CONTAINER_ID%/$CONTAINER_ID/g" \
+				>> $TEMP_COLLECTD_CONF
+		done
+	fi
 
-    for PUSEDO_FILE in /sys/fs/cgroup/cpuacct/lxc/*/cpuacct.usage
-    do
-        CONTAINER_ID=$(echo $PUSEDO_FILE | \
-            sed -e "s/^\/sys\/fs\/cgroup\/cpuacct\/lxc\///" | \
-            sed -e "s/\/cpuacct.usage$//")
+	# NOTE - the if below will typically only fail if Docker's not been
+	# instructed to use lxc
+	if [ -d /sys/fs/cgroup/cpuacct/lxc ]; then
+		for PUSEDO_FILE in /sys/fs/cgroup/cpuacct/lxc/*/cpuacct.usage
+		do
+			CONTAINER_ID=$(echo $PUSEDO_FILE | \
+				sed -e "s/^\/sys\/fs\/cgroup\/cpuacct\/lxc\///" | \
+				sed -e "s/\/cpuacct.usage$//")
 
-        cat /vagrant/collectd.cfg/collectd.conf.cpu_usage | \
-            sed -e "s/%CONTAINER_ID%/$CONTAINER_ID/g" \
-            >> $TEMP_COLLECTD_CONF
-    done
+			cat /vagrant/collectd.cfg/collectd.conf.cpu_usage | \
+				sed -e "s/%CONTAINER_ID%/$CONTAINER_ID/g" \
+				>> $TEMP_COLLECTD_CONF
+		done
+	fi
 
     cat /vagrant/collectd.cfg/collectd.conf.postfix >> $TEMP_COLLECTD_CONF
 
@@ -869,6 +877,10 @@ gen_mem_usage_graph() {
     # the directory.
     #
     METRICS_DIR=/var/lib/collectd/csv/precise64/table-memory-${CONTAINER_ID:0:16}*
+    if [ ! -d $METRICS_DIR ]; then
+        echo_to_stderr_if_not_silent "Could not find memory metrics directory for '$CONTAINER_ID'"
+        return 1
+    fi
 
     #
     # take all collectd output files (which are all files in $METRICS_DIR
@@ -954,6 +966,10 @@ gen_cpu_usage_graph() {
     # the directory.
     #
     METRICS_DIR=/var/lib/collectd/csv/precise64/table-cpu-${CONTAINER_ID:0:16}*
+    if [ ! -d $METRICS_DIR ]; then
+        echo_to_stderr_if_not_silent "Could not find cpu metrics directory for '$CONTAINER_ID'"
+        return 1
+    fi
 
     #
     # take all collectd output files (which are all files in $METRICS_DIR
