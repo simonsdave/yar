@@ -124,8 +124,8 @@ run_load_test() {
 
         echo "$CONCURRENCY: Starting to drive load"
 
-		LOCUST_LOGFILE=$RESULTS_FILE_BASE_NAME-locust-logfile.tsv
-		LOCUST_STDOUT_AND_STDERR=$RESULTS_FILE_BASE_NAME-locust-stdout-and-stderr.tsv
+		local LOCUST_LOGFILE=$RESULTS_FILE_BASE_NAME-locust-logfile.tsv
+		local LOCUST_STDOUT_AND_STDERR=$RESULTS_FILE_BASE_NAME-locust-stdout-and-stderr.tsv
 
 		locust \
 			-f $SCRIPT_DIR_NAME/locustfiles/locustfile_full_deployment.py \
@@ -186,6 +186,49 @@ run_load_test() {
         $RESULTS_FILE_BASE_NAME-00-section-title.png
 
     #
+    # if locust is the load driver it will output metrics every 2 seconds
+    # that can be parsed so we can graph the requests/second and # of errors
+    #
+    if [ "$LOCUST_STDOUT_AND_STDERR" != "" ]; then
+
+        AWK_PROG=$(platform_safe_mktemp)
+
+        echo 'BEGIN {
+                        FS=" ";
+                        OFS="\t";
+                        epoch=0;
+                    }' >> $AWK_PROG
+        #
+        # :TRICKY: the "+= 2" is the result of locust generating metrics
+        # every 2 seconds
+        #
+        echo '/GET/ {
+                        split($4, failures, "(")
+                        print epoch, $3, failures[1], $10;
+                        epoch += 2;
+                    }' >> $AWK_PROG
+
+        RPS_AND_ERRORS_DATA=$(platform_safe_mktemp)
+        awk \
+            -f $AWK_PROG \
+            < $LOCUST_STDOUT_AND_STDERR \
+            > $RPS_AND_ERRORS_DATA
+
+        TITLE="Requests / Second and Errors - $START_TIME"
+        TITLE="$TITLE: Concurrency = $CONCURRENCY"
+        gnuplot \
+            -e "input_filename='$RPS_AND_ERRORS_DATA'" \
+            -e "output_filename='$RESULTS_FILE_BASE_NAME-01-rps_and_errors.png'" \
+            -e "title='$TITLE'" \
+            $SCRIPT_DIR_NAME/gp.cfg/requests_per_second_and_errors \
+            >& /dev/null
+
+        rm $RPS_AND_ERRORS_DATA
+        rm $AWK_PROG
+
+    fi
+
+    #
     # take load driver's tsv output file and use gnuplot to create a
     # histogram of all response times
     #
@@ -201,7 +244,7 @@ run_load_test() {
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$RESULTS_DATA_PERCENTILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-01-yar-response-time.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-02-yar-response-time.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/response_time
 
@@ -210,7 +253,7 @@ run_load_test() {
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$RESULTS_DATA_PERCENTILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-02-yar-response-time-by-time-in-test.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-03-yar-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/response_time_by_time
 
@@ -239,7 +282,7 @@ run_load_test() {
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-03-key-server-response-time.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-04-key-server-response-time.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
@@ -248,7 +291,7 @@ run_load_test() {
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-04-key-server-response-time-by-time-in-test.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-05-key-server-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time_by_time
 
@@ -280,7 +323,7 @@ run_load_test() {
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-05-key-store-response-time.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-06-key-store-response-time.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
@@ -289,7 +332,7 @@ run_load_test() {
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-06-key-store-response-time-by-time-in-test.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-07-key-store-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time_by_time
 
@@ -321,7 +364,7 @@ run_load_test() {
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-07-app-server-response-time.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-08-app-server-response-time.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
@@ -330,7 +373,7 @@ run_load_test() {
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-08-app-server-response-time-by-time-in-test.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-09-app-server-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time_by_time
 

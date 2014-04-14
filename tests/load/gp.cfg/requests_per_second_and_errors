@@ -1,0 +1,35 @@
+#
+# input variables
+#
+#   input_filename
+#   title
+#   output_filename
+#
+
+set terminal pngcairo size 3200,1800 font "Ubuntu,36"
+set size 1, 1
+set output output_filename
+set title title font "Ubuntu Bold,36"
+# set key on outside at center bottom
+set key below
+set grid y
+
+set xdata time
+set timefmt "%s"
+set xlabel 'Time in Test (minute:second)'
+
+set ylabel "# Requests / Second"
+set yrange [0:*]
+
+set y2label "# Errors"
+set y2range [0:*]
+
+set datafile separator '\t
+
+set style line 1 lc rgb '#0000ff' lt 1 lw 10
+set style line 2 lc rgb '#ff0000' lt 1 lw 10
+
+plot input_filename using 1:4 with linespoints ls 1 title '# Request / Second', input_filename using 1:3 with linespoints ls 2 axes x1y2 title '# Errors'
+
+exit
+
