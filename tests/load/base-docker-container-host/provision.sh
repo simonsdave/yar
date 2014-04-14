@@ -19,7 +19,7 @@ apt-get install -y lxc
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
 sh -c "echo deb http://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
 apt-get update
-# as of 12 Mar this installs docker 0.9
+# as of 14 Apr this installs Docker 0.10.0, build dc9c28f
 # :TODO: how do versions get controlled with apt-get?
 apt-get install -y lxc-docker
 
@@ -51,7 +51,7 @@ apt-get install -y lxc-docker
 #
 #   ls -la /sys/fs/cgroup/memory/lxc/$CONTAINER_ID/memory.usage_in_bytes
 
-sed -i 's/#DOCKER_OPTS="-dns 8.8.8.8 -dns 8.8.4.4"/DOCKER_OPTS="-e lxc"/g' /etc/default/docker
+sed -i 's/#DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"/DOCKER_OPTS="-e lxc"/g' /etc/default/docker
 
 # based on http://docs.docker.io/en/latest/installation/ubuntulinux/
 # tell kernel to collect memory metrics - this is disabled by default
