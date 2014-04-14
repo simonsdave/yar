@@ -853,6 +853,10 @@ gen_mem_usage_graph() {
     local GRAPH_FILENAME=${3:-}
 
     CONTAINER_ID=$(get_deployment_config "$CONTAINER_ID_KEY")
+    if [ "$CONTAINER_ID" == "" ]; then
+        echo_to_stderr_if_not_silent "No container ID found for '$CONTAINER_ID_KEY'"
+        return 1
+    fi
 
     #
     # :TRICKY: there's a tricky bit of code in the line below related to
@@ -971,10 +975,15 @@ gen_cpu_usage_graph() {
 
     OBSERVATIONS_2=$(platform_safe_mktemp)
 
-    # total CPU time (in nanoseconds) consumed by all tasks in this cgroup
-    # nanosecond = 1,000,000,000
     #
-    # number of CPUs ... cat cpuacct.usage_percpu | wc -w
+    # to understand the awk script below you need to have a firm grasp
+    # of what /sys/fs/cgroup/cpuacct/lxc/*/cpuacct.usage is recording.
+    # here's what the manual says:
+    #
+    #   total CPU time (in nanoseconds) consumed by all tasks in this cgroup
+    #
+    # as a reminder - nanosecond = 1 / 1,000,000,000 second
+    #
     AWK_PROG=$(platform_safe_mktemp)
     echo 'BEGIN     {FS = ","; OFS = ","; prev_epoch = -1;}'   >> $AWK_PROG
     echo '/^[0-9]+/ {
@@ -998,8 +1007,10 @@ gen_cpu_usage_graph() {
 
     OBSERVATIONS_2=$(platform_safe_mktemp)
 
+    local NUMBER_CPUS=$(cat /sys/fs/cgroup/cpuacct/cpuacct.usage_percpu | wc -w)
+
     cat $OBSERVATIONS_1 | \
-        awk -v first_time=$FIRST_TIME -v number_cpus=2 -f $AWK_PROG \
+        awk -v first_time=$FIRST_TIME -v number_cpus=$NUMBER_CPUS -f $AWK_PROG \
         > $OBSERVATIONS_2
 
     rm $AWK_PROG
