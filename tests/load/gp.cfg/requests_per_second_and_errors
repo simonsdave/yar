@@ -20,9 +20,11 @@ set xlabel 'Time in Test (minute:second)'
 
 set ylabel "# Requests / Second"
 set yrange [0:*]
+set ytics nomirror
 
 set y2label "# Errors"
 set y2range [0:*]
+set y2tics
 
 set datafile separator '\t
 
