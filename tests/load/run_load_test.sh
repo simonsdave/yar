@@ -191,40 +191,13 @@ run_load_test() {
     #
     if [ "$LOCUST_STDOUT_AND_STDERR" != "" ]; then
 
-        AWK_PROG=$(platform_safe_mktemp)
+        local GRAPH_TITLE="Requests / Second and Errors - $START_TIME"
+        local GRAPH_TITLE="$GRAPH_TITLE: Concurrency = $CONCURRENCY"
 
-        echo 'BEGIN {
-                        FS=" ";
-                        OFS="\t";
-                        epoch=0;
-                    }' >> $AWK_PROG
-        #
-        # :TRICKY: the "+= 2" is the result of locust generating metrics
-        # every 2 seconds
-        #
-        echo '/GET/ {
-                        split($4, failures, "(")
-                        print epoch, $3, failures[1], $10;
-                        epoch += 2;
-                    }' >> $AWK_PROG
-
-        RPS_AND_ERRORS_DATA=$(platform_safe_mktemp)
-        awk \
-            -f $AWK_PROG \
-            < $LOCUST_STDOUT_AND_STDERR \
-            > $RPS_AND_ERRORS_DATA
-
-        TITLE="Requests / Second and Errors - $START_TIME"
-        TITLE="$TITLE: Concurrency = $CONCURRENCY"
-        gnuplot \
-            -e "input_filename='$RPS_AND_ERRORS_DATA'" \
-            -e "output_filename='$RESULTS_FILE_BASE_NAME-01-rps_and_errors.png'" \
-            -e "title='$TITLE'" \
-            $SCRIPT_DIR_NAME/gp.cfg/requests_per_second_and_errors \
-            >& /dev/null
-
-        rm $RPS_AND_ERRORS_DATA
-        rm $AWK_PROG
+        gen_rps_and_errors_graph \
+            "$GRAPH_TITLE" \
+            "$LOCUST_STDOUT_AND_STDERR" \
+            "$RESULTS_FILE_BASE_NAME-01-rps_and_errors.png"
 
     fi
 

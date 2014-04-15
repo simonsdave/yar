@@ -1049,3 +1049,59 @@ gen_cpu_usage_graph() {
 
     return 0
 }
+
+#
+# if locust is used as the load driver in a load tests it will output
+# metrics to stdout every 2 seconds. these metrics can be parsed so we
+# can graph the requests/second and # of errors. this function
+# encapsulates the logic of parsing locust's output and generating
+# a graph.
+#
+# arguments
+#   1   graph's title
+#   2   filename with locust's stdout
+#   3   filename into which the graph should be generated
+#
+# exit codes
+#   0   ok
+#
+gen_rps_and_errors_graph() {
+
+    local GRAPH_TITLE=${1:-}
+    local LOCUST_STDOUT=${2:-}
+    local GRAPH_FILENAME=${3:-}
+
+    local AWK_PROG=$(platform_safe_mktemp)
+
+    echo 'BEGIN {
+                    FS=" ";
+                    OFS="\t";
+                    epoch=0;
+                }' >> $AWK_PROG
+    #
+    # :TRICKY: the "+= 2" is the result of locust generating
+    # metrics every 2 seconds
+    #
+    echo '/GET/ {
+                    split($4, failures, "(")
+                    print epoch, $3, failures[1], $10;
+                    epoch += 2;
+                }' >> $AWK_PROG
+
+    local RPS_AND_ERRORS_DATA=$(platform_safe_mktemp)
+    awk \
+        -f $AWK_PROG \
+        < $LOCUST_STDOUT \
+        > $RPS_AND_ERRORS_DATA
+
+    local SCRIPT_DIR_NAME="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
+    gnuplot \
+        -e "input_filename='$RPS_AND_ERRORS_DATA'" \
+        -e "output_filename='$GRAPH_FILENAME'" \
+        -e "title='$GRAPH_TITLE'" \
+        $SCRIPT_DIR_NAME/gp.cfg/requests_per_second_and_errors \
+        >& /dev/null
+
+    rm $RPS_AND_ERRORS_DATA
+    rm $AWK_PROG
+}
