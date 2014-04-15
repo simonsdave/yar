@@ -1077,15 +1077,17 @@ gen_rps_and_errors_graph() {
                     FS=" ";
                     OFS="\t";
                     epoch=0;
+                    prev_failures=0;
                 }' >> $AWK_PROG
     #
     # :TRICKY: the "+= 2" is the result of locust generating
     # metrics every 2 seconds
     #
     echo '/GET/ {
-                    split($4, failures, "(")
-                    print epoch, $3, failures[1], $10;
+                    split($4, failures, "(");
+                    print epoch, $3, failures[1] - prev_failures, $10;
                     epoch += 2;
+                    prev_failures = failures[1];
                 }' >> $AWK_PROG
 
     local RPS_AND_ERRORS_DATA=$(platform_safe_mktemp)
