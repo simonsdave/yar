@@ -106,7 +106,7 @@ run_load_test() {
         echo "$CONCURRENCY: Error spinning up deployment"
         return 1
     fi
-    local AUTH_SERVER_LB=$(get_deployment_config "AUTH_SERVER_LB_END_POINT")
+    local AUTH_SERVER_LB=$(get_deployment_config "AUTH_SERVER_LB_END_POINT" "")
     echo "$CONCURRENCY: Deployment end point = $AUTH_SERVER_LB"
 
     #
@@ -376,10 +376,19 @@ run_load_test() {
         "KEY_STORE_CONTAINER_ID" \
         "$RESULTS_FILE_BASE_NAME-23-key-store-cpu-usage.png"
 
-    gen_cpu_usage_graph \
-        "Nonce Store CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
-        "NONCE_STORE_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-24-nonce-store-cpu-usage.png"
+    local NONCE_STORE_NUMBER=1
+    for NONCE_STORE_CONTAINER_ID in $(get_all_nonce_store_container_ids)
+    do
+        local GRAPH_TITLE="Nonce Store # $NONCE_STORE_NUMBER CPU Usage"
+        GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
+
+        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-24-nonce-store"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$NONCE_STORE_NUMBER-cpu-usage.png"
+
+        gen_cpu_usage_graph "$GRAPH_TITLE" "$NONCE_STORE_CONTAINER_ID" "$GRAPH_FILENAME"
+
+        let "NONCE_STORE_NUMBER = $NONCE_STORE_NUMBER + 1"
+    done
 
     gen_cpu_usage_graph \
         "App Server Load Balancer CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
@@ -414,10 +423,19 @@ run_load_test() {
         "KEY_STORE_CONTAINER_ID" \
         "$RESULTS_FILE_BASE_NAME-33-key-store-memory-usage.png"
 
-    gen_mem_usage_graph \
-        "Nonce Store Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
-        "NONCE_STORE_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-34-nonce-store-memory-usage.png"
+    local NONCE_STORE_NUMBER=1
+    for NONCE_STORE_CONTAINER_ID in $(get_all_nonce_store_container_ids)
+    do
+        local GRAPH_TITLE="Nonce Store # $NONCE_STORE_NUMBER Memory Usage"
+        GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
+
+        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-34-nonce-store"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$NONCE_STORE_NUMBER-memory-usage.png"
+
+        gen_mem_usage_graph "$GRAPH_TITLE" "$NONCE_STORE_CONTAINER_ID" "$GRAPH_FILENAME"
+
+        let "NONCE_STORE_NUMBER = $NONCE_STORE_NUMBER + 1"
+    done
 
     gen_mem_usage_graph \
         "App Server Load Balancer Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \

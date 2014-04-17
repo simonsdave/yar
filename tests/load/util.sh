@@ -222,6 +222,37 @@ get_deployment_config() {
 }
 
 #
+# get the number of keys in ~/.yar.deployment matching a
+# specified pattern
+#
+# for example, the following script gets the number of auth
+# servers described in ~/.yar.deployment
+#
+#   #!/usr/bin/env bash
+#   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
+#   source $SCRIPT_DIR_NAME/util.sh
+#   NUMBER_AUTH_SERVERS=$(get_number_deployment_config_keys "AUTH_SERVER_CONTAINER_ID_[[:digit:]]\+")
+#   echo $NUMBER_AUTH_SERVERS
+#
+# arguments
+#   1   pattern to search for
+#
+# exit codes
+#   0   always
+#
+get_number_deployment_config_keys() {
+    local PATTERN=${1:-}
+    # :TODO: deal with spaces before and after key?
+    local PATTERN="^$PATTERN\="
+    if [ -r ~/.yar.deployment ]; then
+        grep "$PATTERN" ~/.yar.deployment | wc -l
+    else
+        echo 0
+    fi
+    return 0
+}
+
+#
 # given a value of length V, add N - V zeros to left pad the
 # value so the resulting value is N digits long
 #
@@ -648,9 +679,14 @@ create_nonce_store() {
         $NONCE_STORE_CMD)
     local NONCE_STORE_IP=$(get_container_ip $NONCE_STORE)
 
-    echo "NONCE_STORE_CONTAINER_ID=$NONCE_STORE" >> ~/.yar.deployment
-    echo "NONCE_STORE_IP=$NONCE_STORE_IP" >> ~/.yar.deployment
-    echo "NONCE_STORE_END_POINT=$NONCE_STORE_IP:$PORT" >> ~/.yar.deployment
+    local NONCE_STORE_NUMBER=$(get_number_deployment_config_keys \
+        "NONCE_STORE_CONTAINER_ID_[[:digit:]]\+")
+
+    let "NONCE_STORE_NUMBER = $NONCE_STORE_NUMBER + 1"
+
+    echo "NONCE_STORE_CONTAINER_ID_$NONCE_STORE_NUMBER=$NONCE_STORE" >> ~/.yar.deployment
+    echo "NONCE_STORE_IP_$NONCE_STORE_NUMBER=$NONCE_STORE_IP" >> ~/.yar.deployment
+    echo "NONCE_STORE_END_POINT_$NONCE_STORE_NUMBER=$NONCE_STORE_IP:$PORT" >> ~/.yar.deployment
 
     for i in {1..10}
     do
@@ -662,6 +698,39 @@ create_nonce_store() {
     done
 
     echo_to_stderr_if_not_silent "Could not verify availability of Nonce Store on $NONCE_STORE_IP:$PORT"
+    return 1
+}
+
+#
+# echo to stdout each of the nonce store container ids
+# list in ~/.yar.deployment
+#
+# example expected usage
+#
+#   #!/usr/bin/env bash
+#   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
+#   source $SCRIPT_DIR_NAME/util.sh
+#   for NSCID in $(get_all_nonce_store_container_ids); do
+#       echo ">>>$NSCID<<<"
+#   done
+#
+# arguments
+#   none
+#
+# exit codes
+#   0   ok
+#   1   too many nonce stores in ~/.yar.deployment
+#
+get_all_nonce_store_container_ids() {
+    for NONCE_STORE_NUMBER in {1..100}
+    do
+        local KEY="NONCE_STORE_CONTAINER_ID_$NONCE_STORE_NUMBER"
+        local NONCE_STORE_CONTAINER_ID=$(get_deployment_config "$KEY" "")
+        if [ "$NONCE_STORE_CONTAINER_ID" == "" ]; then
+            return 0
+        fi
+        echo $KEY
+    done
     return 1
 }
 

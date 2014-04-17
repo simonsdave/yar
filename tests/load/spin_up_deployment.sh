@@ -136,15 +136,30 @@ fi
 echo_if_not_silent "$APP_SERVER_LB in $DATA_DIRECTORY"
 
 #
-# Nonce Store
+# Nonce Store(s)
 #
-echo_if_not_silent "Starting Nonce Store"
-DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Nonce-Store
-if ! NONCE_STORE=$(create_nonce_store $DATA_DIRECTORY); then 
-    echo_to_stderr_if_not_silent "Nonce Store failed to start"
-    exit 1
+echo_if_not_silent "Starting Nonce Store(s)"
+NUMBER_NONCE_STORES=1
+if [ "$DEPLOYMENT_PROFILE" != "" ]; then
+    NUMBER_NONCE_STORES=$(cat $DEPLOYMENT_PROFILE | \
+        get_from_json '\["nonce_store"\,"number_of_servers"\]' "")
 fi
-echo_if_not_silent "$NONCE_STORE in $DATA_DIRECTORY"
+NONCE_STORES=""
+for NONCE_STORE_NUMBER in $(seq 1 $NUMBER_NONCE_STORES)
+do
+    echo_if_not_silent "-- $NONCE_STORE_NUMBER: Starting Nonce Store"
+    DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Nonce-Store-$NONCE_STORE_NUMBER
+    if ! NONCE_STORE=$(create_nonce_store $DATA_DIRECTORY); then 
+        echo_to_stderr_if_not_silent "$NONCE_STORE_NUMBER: Nonce Store failed to start"
+        exit 1
+    fi
+    if [ "$NONCE_STORES" == "" ]; then
+        NONCE_STORES="$NONCE_STORE"
+    else
+        NONCE_STORES="$NONCE_STORES,$NONCE_STORE"
+    fi
+    echo_if_not_silent "-- $NONCE_STORE_NUMBER: $NONCE_STORE in $DATA_DIRECTORY"
+done
 
 #
 # Key Store
@@ -188,7 +203,7 @@ echo_if_not_silent "$KEY_SERVER in $DATA_DIRECTORY"
 #
 echo_if_not_silent "Starting Auth Server"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Auth-Server
-if ! AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVER $APP_SERVER_LB $NONCE_STORE); then
+if ! AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVER $APP_SERVER_LB $NONCE_STORES); then
     echo_to_stderr_if_not_silent "Auth Server failed to start"
     exit 1
 fi

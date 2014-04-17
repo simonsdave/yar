@@ -15,8 +15,15 @@
         #
         # percent_active_creds is used to specify the
         # percentage of a key store's credentials which
-        # are active and should be used during a load
-        # test.
+        # are active and will be used during a load test.
+        #
         "percent_active_creds": 2
+    },
+    "nonce_store": {
+        #
+        # "number_of_servers" defines the number of memcached
+        # servers in the deployment.
+        # 
+        "number_of_servers": 3
     }
 }
