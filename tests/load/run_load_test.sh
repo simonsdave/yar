@@ -387,7 +387,7 @@ run_load_test() {
 
         gen_cpu_usage_graph "$GRAPH_TITLE" "$NONCE_STORE_CONTAINER_ID" "$GRAPH_FILENAME"
 
-        let "NONCE_STORE_NUMBER = $NONCE_STORE_NUMBER + 1"
+        let "NONCE_STORE_NUMBER += 1"
     done
 
     gen_cpu_usage_graph \
@@ -434,7 +434,7 @@ run_load_test() {
 
         gen_mem_usage_graph "$GRAPH_TITLE" "$NONCE_STORE_CONTAINER_ID" "$GRAPH_FILENAME"
 
-        let "NONCE_STORE_NUMBER = $NONCE_STORE_NUMBER + 1"
+        let "NONCE_STORE_NUMBER += 1"
     done
 
     gen_mem_usage_graph \
