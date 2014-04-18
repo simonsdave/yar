@@ -94,6 +94,15 @@ else
 fi
 
 #
+# creating a temporary empty deployment profile just means we don't
+# have to constantly code for "is there a profile do X else do Y"
+#
+if [ "$DEPLOYMENT_PROFILE" == "" ]; then
+    DEPLOYMENT_PROFILE=$(platform_safe_mktemp)
+    echo "{}" >> $DEPLOYMENT_PROFILE
+fi
+
+#
 # some cleanup before we start the meat of this script
 #
 echo_if_not_silent "Removing all existing containers"
@@ -139,11 +148,10 @@ echo_if_not_silent "$APP_SERVER_LB in $DATA_DIRECTORY"
 # Nonce Store(s)
 #
 echo_if_not_silent "Starting Nonce Store(s)"
-NUMBER_NONCE_STORES=1
-if [ "$DEPLOYMENT_PROFILE" != "" ]; then
-    NUMBER_NONCE_STORES=$(cat $DEPLOYMENT_PROFILE | \
-        get_from_json '\["nonce_store"\,"number_of_servers"\]' "")
-fi
+
+NUMBER_NONCE_STORES_PATTERN='\["nonce_store"\,"number_of_servers"\]'
+NUMBER_NONCE_STORES=$(get_from_json "$NUMBER_NONCE_STORES_PATTERN" "1" < $DEPLOYMENT_PROFILE)
+
 NONCE_STORES=""
 for NONCE_STORE_NUMBER in $(seq 1 $NUMBER_NONCE_STORES)
 do
@@ -153,13 +161,10 @@ do
         echo_to_stderr_if_not_silent "$NONCE_STORE_NUMBER: Nonce Store failed to start"
         exit 1
     fi
-    if [ "$NONCE_STORES" == "" ]; then
-        NONCE_STORES="$NONCE_STORE"
-    else
-        NONCE_STORES="$NONCE_STORES,$NONCE_STORE"
-    fi
+    NONCE_STORES="$NONCE_STORES,$NONCE_STORE"
     echo_if_not_silent "-- $NONCE_STORE_NUMBER: $NONCE_STORE in $DATA_DIRECTORY"
 done
+NONCE_STORES=$(echo $NONCE_STORES | sed -e "s/^\,//g")
 
 #
 # Key Store

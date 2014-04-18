@@ -682,7 +682,7 @@ create_nonce_store() {
     local NONCE_STORE_NUMBER=$(get_number_deployment_config_keys \
         "NONCE_STORE_CONTAINER_ID_[[:digit:]]\+")
 
-    let "NONCE_STORE_NUMBER = $NONCE_STORE_NUMBER + 1"
+    let "NONCE_STORE_NUMBER += 1"
 
     echo "NONCE_STORE_CONTAINER_ID_$NONCE_STORE_NUMBER=$NONCE_STORE" >> ~/.yar.deployment
     echo "NONCE_STORE_IP_$NONCE_STORE_NUMBER=$NONCE_STORE_IP" >> ~/.yar.deployment
