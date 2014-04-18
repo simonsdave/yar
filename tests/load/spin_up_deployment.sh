@@ -125,24 +125,30 @@ echo_if_not_silent "Starting yar Services ..."
 #
 echo_if_not_silent "Starting App Server(s)"
 
-DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/App-Server
-if ! APP_SERVER=$(create_app_server $DATA_DIRECTORY); then
-    echo_to_stderr_if_not_silent "App Server failed to start"
-    exit 1
-fi
+NUMBER_APP_SERVERS_PATTERN='\["app_server"\,"number_of_servers"\]'
+NUMBER_APP_SERVERS=$(get_from_json "$NUMBER_APP_SERVERS_PATTERN" "1" < $DEPLOYMENT_PROFILE)
 
-echo_if_not_silent "$APP_SERVER in $DATA_DIRECTORY"
+for APP_SERVER_NUMBER in $(seq 1 $NUMBER_APP_SERVERS)
+do
+    echo_if_not_silent "-- $APP_SERVER_NUMBER: Starting App Server"
+	DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/App-Server-$APP_SERVER_NUMBER
+	if ! APP_SERVER=$(create_app_server $DATA_DIRECTORY); then
+		echo_to_stderr_if_not_silent "-- $APP_SERVER_NUMBER: App Server failed to start"
+		exit 1
+	fi
+	echo_if_not_silent "-- $APP_SERVER_NUMBER: $APP_SERVER in $DATA_DIRECTORY"
+done
 
 #
 # App Server LB
 #
 echo_if_not_silent "Starting App Server LB"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/App-Server-LB
-if ! APP_SERVER_LB=$(create_app_server_lb $DATA_DIRECTORY $APP_SERVER); then
-    echo_to_stderr_if_not_silent "App Server failed to start"
+if ! APP_SERVER_LB=$(create_app_server_lb $DATA_DIRECTORY); then
+    echo_to_stderr_if_not_silent "-- App Server LB failed to start"
     exit 1
 fi
-echo_if_not_silent "$APP_SERVER_LB in $DATA_DIRECTORY"
+echo_if_not_silent "-- $APP_SERVER_LB in $DATA_DIRECTORY"
 
 #
 # Nonce Store(s)

@@ -7,7 +7,8 @@
 #	source $SCRIPT_DIR_NAME/util.sh
 
 get_container_ip() {
-    sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${1:-}
+    CONTAINER_ID=${1:-}
+    sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $CONTAINER_ID
 }
 
 get_from_json() {
@@ -305,9 +306,13 @@ create_app_server() {
         $APP_SERVER_CMD)
     local APP_SERVER_IP=$(get_container_ip $APP_SERVER)
 
-    echo "APP_SERVER_CONTAINER_ID=$APP_SERVER" >> ~/.yar.deployment
-    echo "APP_SERVER_IP=$APP_SERVER_IP" >> ~/.yar.deployment
-    echo "APP_SERVER_END_POINT=$APP_SERVER_IP:$PORT" >> ~/.yar.deployment
+    local APP_SERVER_NUMBER=$(get_number_deployment_config_keys \
+        "APP_SERVER_CONTAINER_ID_[[:digit:]]\+")
+    let "APP_SERVER_NUMBER += 1"
+
+    echo "APP_SERVER_CONTAINER_ID_$APP_SERVER_NUMBER=$APP_SERVER" >> ~/.yar.deployment
+    echo "APP_SERVER_IP_$APP_SERVER_NUMBER=$APP_SERVER_IP" >> ~/.yar.deployment
+    echo "APP_SERVER_END_POINT_$APP_SERVER_NUMBER=$APP_SERVER_IP:$PORT" >> ~/.yar.deployment
 
     for i in {1..10}
     do
@@ -323,11 +328,43 @@ create_app_server() {
 }
 
 #
+# echo to stdout each of the app server container ids
+# list in ~/.yar.deployment
+#
+# example expected usage
+#
+#   #!/usr/bin/env bash
+#   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
+#   source $SCRIPT_DIR_NAME/util.sh
+#   for ASID in $(get_all_app_server_container_ids); do
+#       echo ">>>$ASID<<<"
+#   done
+#
+# arguments
+#   none
+#
+# exit codes
+#   0   ok
+#   1   too many app servers in ~/.yar.deployment
+#
+get_all_app_server_container_ids() {
+    for APP_SERVER_NUMBER in {1..100}
+    do
+        local KEY="APP_SERVER_CONTAINER_ID_$APP_SERVER_NUMBER"
+        local APP_SERVER_CONTAINER_ID=$(get_deployment_config "$KEY" "")
+        if [ "$APP_SERVER_CONTAINER_ID" == "" ]; then
+            return 0
+        fi
+        echo $KEY
+    done
+    return 1
+}
+
+#
 # create a docker container to run an app server load balancer
 #
 # arguments
 #   1   name of data directory - mkdir -p called on this name
-#   2   the app server
 #
 # exit codes
 #   0   ok
@@ -339,10 +376,6 @@ create_app_server_lb() {
     local DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
-    # :TODO: this whole thing with port numbers, app
-    # server & template isn't right - review and fix
-    local APP_SERVER=${2:-}
-
     local PORT=8080
 
     local IMAGE_NAME=haproxy_img
@@ -351,8 +384,16 @@ create_app_server_lb() {
         return 2
     fi
 
-    cp $SCRIPT_DIR_NAME/haproxy.cfg/app_server $DATA_DIRECTORY/haproxy.cfg
-    echo "    server appserver1 $APP_SERVER check" >> $DATA_DIRECTORY/haproxy.cfg
+	cp "$SCRIPT_DIR_NAME/haproxy.cfg/app_server" "$DATA_DIRECTORY/haproxy.cfg"
+
+	local APP_SERVER_NUMBER=1
+	for APP_SERVER_CONTAINER_ID_KEY in $(get_all_app_server_container_ids)
+	do
+		APP_SERVER_CONTAINER_ID=$(get_deployment_config "$APP_SERVER_CONTAINER_ID_KEY")
+		APP_SERVER_IP=$(get_container_ip "$APP_SERVER_CONTAINER_ID")
+		echo "    server appserver$APP_SERVER_NUMBER $APP_SERVER_IP check" >> $DATA_DIRECTORY/haproxy.cfg
+		let "APP_SERVER_NUMBER += 1"
+	done
 
     local APP_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
     local APP_SERVER_LB=$(sudo docker run \
@@ -681,7 +722,6 @@ create_nonce_store() {
 
     local NONCE_STORE_NUMBER=$(get_number_deployment_config_keys \
         "NONCE_STORE_CONTAINER_ID_[[:digit:]]\+")
-
     let "NONCE_STORE_NUMBER += 1"
 
     echo "NONCE_STORE_CONTAINER_ID_$NONCE_STORE_NUMBER=$NONCE_STORE" >> ~/.yar.deployment

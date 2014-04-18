@@ -395,10 +395,19 @@ run_load_test() {
         "APP_SERVER_LB_CONTAINER_ID" \
         "$RESULTS_FILE_BASE_NAME-25-app-server-lb-cpu-usage.png"
 
-    gen_cpu_usage_graph \
-        "App Server CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
-        "APP_SERVER_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-26-app-server-cpu-usage.png"
+    local APP_SERVER_NUMBER=1
+    for APP_SERVER_CONTAINER_ID in $(get_all_app_server_container_ids)
+    do
+		local GRAPH_TITLE="App Server # $APP_SERVER_NUMBER CPU Usage"
+		GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
+
+		local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-26-app-server"
+		GRAPH_FILENAME="$GRAPH_FILENAME-$APP_SERVER_NUMBER-cpu-usage.png"
+
+        gen_cpu_usage_graph "$GRAPH_TITLE" "$APP_SERVER_CONTAINER_ID" "$GRAPH_FILENAME"
+
+        let "APP_SERVER_NUMBER += 1"
+    done
 
     #
     # metrics graphing ... memory ...
@@ -442,10 +451,19 @@ run_load_test() {
         "APP_SERVER_LB_CONTAINER_ID" \
         "$RESULTS_FILE_BASE_NAME-35-app-server-lb-memory-usage.png"
 
-    gen_mem_usage_graph \
-        "App Server Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
-        "APP_SERVER_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-36-app-server-memory-usage.png"
+    local APP_SERVER_NUMBER=1
+    for APP_SERVER_CONTAINER_ID in $(get_all_app_server_container_ids)
+    do
+		local GRAPH_TITLE="App Server # $APP_SERVER_NUMBER Memory Usage"
+		GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
+
+		local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-36-app-server"
+		GRAPH_FILENAME="$GRAPH_FILENAME-$APP_SERVER_NUMBER-memory-usage.png"
+
+        gen_mem_usage_graph "$GRAPH_TITLE" "$APP_SERVER_CONTAINER_ID" "$GRAPH_FILENAME"
+
+        let "APP_SERVER_NUMBER += 1"
+    done
 
 }
 

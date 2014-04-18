@@ -25,5 +25,12 @@
         # servers in the deployment.
         # 
         "number_of_servers": 3
+    },
+    "app_server": {
+        #
+        # "number_of_servers" defines the number of app servers
+        # in the deployment.
+        # 
+        "number_of_servers": 3
     }
 }
