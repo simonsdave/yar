@@ -27,14 +27,8 @@ and [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
   * intended deployment environment is [Ubuntu 12.04](http://releases.ubuntu.com/12.04.4/) and
 development environment is [Mac OS X](http://www.apple.com/ca/osx/)
   
-Is the project complete? Nope! yar is still a work in progress. Below you'll find the
-list of big/important things that are on the short term to do list.
-
-  * automated load testing - currently working on [this](tests/load)
-  * securing credentials in [Key Store](yar/key_store)
-  * authorization
-  * tokenization
-  * bunch more documentation
+Is the project complete? Nope! yar is still a work in progress.
+You can find the list of open issues [here](https://github.com/simonsdave/yar/issues?state=open).
 
 Development Prerequisites 
 -------------------------
