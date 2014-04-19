@@ -328,16 +328,16 @@ create_app_server() {
 }
 
 #
-# echo to stdout each of the app server container ids
-# list in ~/.yar.deployment
+# echo to stdout each of the app server container id keys
+# listed in ~/.yar.deployment
 #
 # example expected usage
 #
 #   #!/usr/bin/env bash
 #   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 #   source $SCRIPT_DIR_NAME/util.sh
-#   for ASID in $(get_all_app_server_container_ids); do
-#       echo ">>>$ASID<<<"
+#   for ASIDK in $(get_all_app_server_container_id_keys); do
+#       echo ">>>$ASIDK<<<"
 #   done
 #
 # arguments
@@ -347,7 +347,7 @@ create_app_server() {
 #   0   ok
 #   1   too many app servers in ~/.yar.deployment
 #
-get_all_app_server_container_ids() {
+get_all_app_server_container_id_keys() {
     for APP_SERVER_NUMBER in {1..100}
     do
         local KEY="APP_SERVER_CONTAINER_ID_$APP_SERVER_NUMBER"
@@ -387,7 +387,7 @@ create_app_server_lb() {
 	cp "$SCRIPT_DIR_NAME/haproxy.cfg/app_server" "$DATA_DIRECTORY/haproxy.cfg"
 
 	local APP_SERVER_NUMBER=1
-	for APP_SERVER_CONTAINER_ID_KEY in $(get_all_app_server_container_ids)
+	for APP_SERVER_CONTAINER_ID_KEY in $(get_all_app_server_container_id_keys)
 	do
 		APP_SERVER_CONTAINER_ID=$(get_deployment_config "$APP_SERVER_CONTAINER_ID_KEY")
 		APP_SERVER_IP=$(get_container_ip "$APP_SERVER_CONTAINER_ID")
@@ -742,16 +742,16 @@ create_nonce_store() {
 }
 
 #
-# echo to stdout each of the nonce store container ids
-# list in ~/.yar.deployment
+# echo to stdout each of the nonce store container id keys
+# listed in ~/.yar.deployment
 #
 # example expected usage
 #
 #   #!/usr/bin/env bash
 #   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 #   source $SCRIPT_DIR_NAME/util.sh
-#   for NSCID in $(get_all_nonce_store_container_ids); do
-#       echo ">>>$NSCID<<<"
+#   for NSCIDK in $(get_all_nonce_store_container_id_keys); do
+#       echo ">>>$NSCIDK<<<"
 #   done
 #
 # arguments
@@ -761,7 +761,7 @@ create_nonce_store() {
 #   0   ok
 #   1   too many nonce stores in ~/.yar.deployment
 #
-get_all_nonce_store_container_ids() {
+get_all_nonce_store_container_id_keys() {
     for NONCE_STORE_NUMBER in {1..100}
     do
         local KEY="NONCE_STORE_CONTAINER_ID_$NONCE_STORE_NUMBER"

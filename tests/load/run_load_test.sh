@@ -377,7 +377,7 @@ run_load_test() {
         "$RESULTS_FILE_BASE_NAME-23-key-store-cpu-usage.png"
 
     local NONCE_STORE_NUMBER=1
-    for NONCE_STORE_CONTAINER_ID in $(get_all_nonce_store_container_ids)
+    for NONCE_STORE_CONTAINER_ID_KEY in $(get_all_nonce_store_container_id_keys)
     do
         local GRAPH_TITLE="Nonce Store # $NONCE_STORE_NUMBER CPU Usage"
         GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
@@ -385,7 +385,10 @@ run_load_test() {
         local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-24-nonce-store"
         GRAPH_FILENAME="$GRAPH_FILENAME-$NONCE_STORE_NUMBER-cpu-usage.png"
 
-        gen_cpu_usage_graph "$GRAPH_TITLE" "$NONCE_STORE_CONTAINER_ID" "$GRAPH_FILENAME"
+        gen_cpu_usage_graph \
+			"$GRAPH_TITLE" \
+			"$NONCE_STORE_CONTAINER_ID_KEY" \
+			"$GRAPH_FILENAME"
 
         let "NONCE_STORE_NUMBER += 1"
     done
@@ -396,7 +399,7 @@ run_load_test() {
         "$RESULTS_FILE_BASE_NAME-25-app-server-lb-cpu-usage.png"
 
     local APP_SERVER_NUMBER=1
-    for APP_SERVER_CONTAINER_ID in $(get_all_app_server_container_ids)
+    for APP_SERVER_CONTAINER_ID_KEY in $(get_all_app_server_container_id_keys)
     do
 		local GRAPH_TITLE="App Server # $APP_SERVER_NUMBER CPU Usage"
 		GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
@@ -404,7 +407,10 @@ run_load_test() {
 		local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-26-app-server"
 		GRAPH_FILENAME="$GRAPH_FILENAME-$APP_SERVER_NUMBER-cpu-usage.png"
 
-        gen_cpu_usage_graph "$GRAPH_TITLE" "$APP_SERVER_CONTAINER_ID" "$GRAPH_FILENAME"
+        gen_cpu_usage_graph \
+			"$GRAPH_TITLE" \
+			"$APP_SERVER_CONTAINER_ID_KEY" \
+			"$GRAPH_FILENAME"
 
         let "APP_SERVER_NUMBER += 1"
     done
@@ -433,7 +439,7 @@ run_load_test() {
         "$RESULTS_FILE_BASE_NAME-33-key-store-memory-usage.png"
 
     local NONCE_STORE_NUMBER=1
-    for NONCE_STORE_CONTAINER_ID in $(get_all_nonce_store_container_ids)
+    for NONCE_STORE_CONTAINER_ID_KEY in $(get_all_nonce_store_container_id_keys)
     do
         local GRAPH_TITLE="Nonce Store # $NONCE_STORE_NUMBER Memory Usage"
         GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
@@ -441,7 +447,10 @@ run_load_test() {
         local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-34-nonce-store"
         GRAPH_FILENAME="$GRAPH_FILENAME-$NONCE_STORE_NUMBER-memory-usage.png"
 
-        gen_mem_usage_graph "$GRAPH_TITLE" "$NONCE_STORE_CONTAINER_ID" "$GRAPH_FILENAME"
+        gen_mem_usage_graph \
+			"$GRAPH_TITLE" \
+			"$NONCE_STORE_CONTAINER_ID_KEY" \
+			"$GRAPH_FILENAME"
 
         let "NONCE_STORE_NUMBER += 1"
     done
@@ -452,7 +461,7 @@ run_load_test() {
         "$RESULTS_FILE_BASE_NAME-35-app-server-lb-memory-usage.png"
 
     local APP_SERVER_NUMBER=1
-    for APP_SERVER_CONTAINER_ID in $(get_all_app_server_container_ids)
+    for APP_SERVER_CONTAINER_ID_KEY in $(get_all_app_server_container_id_keys)
     do
 		local GRAPH_TITLE="App Server # $APP_SERVER_NUMBER Memory Usage"
 		GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
@@ -460,7 +469,10 @@ run_load_test() {
 		local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-36-app-server"
 		GRAPH_FILENAME="$GRAPH_FILENAME-$APP_SERVER_NUMBER-memory-usage.png"
 
-        gen_mem_usage_graph "$GRAPH_TITLE" "$APP_SERVER_CONTAINER_ID" "$GRAPH_FILENAME"
+        gen_mem_usage_graph \
+			"$GRAPH_TITLE" \
+			"$APP_SERVER_CONTAINER_ID_KEY" \
+			"$GRAPH_FILENAME"
 
         let "APP_SERVER_NUMBER += 1"
     done
