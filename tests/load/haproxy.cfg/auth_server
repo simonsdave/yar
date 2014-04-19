@@ -16,9 +16,11 @@ defaults
     timeout server  10000
 
 listen auth_server_lb 0.0.0.0:8000
+	# http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#mode
     mode http
+
 	#
-	# the following 3 stats statements make statistics reporting
+	# the following few statements make statistics reporting
 	# available @ http://127.0.0.1:8000/haproxy?stats (user name = yar
 	# and password = yar) from a browser running on the machine
 	# running the VirtualBox that runs the load tests
@@ -38,9 +40,17 @@ listen auth_server_lb 0.0.0.0:8000
 	# which forwards all traffic on port 8000 of the machine running
 	# VirtualBox to be directed to VirtualBox's port 8000
 	#
+
+	# http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#stats%20enable
     stats enable
-    stats uri /haproxy?stats
+	# http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#stats%20uri
+    stats uri /auth_server_lb?stats
+	# http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#stats%20realm
+	stats realm yar
+	# http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#stats%20auth
 	stats auth yar:yar
+
     balance roundrobin
+
     option httpclose
     option forwardfor
