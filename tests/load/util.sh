@@ -852,6 +852,7 @@ create_auth_server_lb() {
     local AUTH_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
     local AUTH_SERVER_LB=$(sudo docker run \
         -d \
+		-p $PORT:$PORT \
         -v /dev/log:/haproxy/log \
         -v $DATA_DIRECTORY:/haproxycfg \
         haproxy_img \

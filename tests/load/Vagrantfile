@@ -2,6 +2,10 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "base-docker-container-host"
+  #
+  # the auth server's load balancer listens on port 8000
+  #
+  config.vm.network "forwarded_port", guest: 8000, host: 8000
   config.vm.provision "shell", path: "provision_post_vagrant_up.sh"
   config.vm.provider :virtualbox do |vb|
     vb.customize ["modifyvm", :id, "--memory", "4096"]

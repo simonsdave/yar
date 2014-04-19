@@ -17,11 +17,30 @@ defaults
 
 listen auth_server_lb 0.0.0.0:8000
     mode http
+	#
+	# the following 3 stats statements make statistics reporting
+	# available @ http://127.0.0.1:8000/haproxy?stats (user name = yar
+	# and password = yar) from a browser running on the machine
+	# running the VirtualBox that runs the load tests
+	#
+	# how's the above possible? with a bit of config detail
+	#
+	# 1/ in util.sh:create_auth_server_lb tells the docker
+	# container in which haproxy is running to forward traffic
+	# on port 8000 from the VirtualBox hosting the container
+	# to the container
+	#
+	# 2/ the Vagrantfile used to spin up the VirtualBox contains
+	# the following line
+	#
+	#   config.vm.network "forwarded_port", guest: 8000, host: 8000
+	#
+	# which forwards all traffic on port 8000 of the machine running
+	# VirtualBox to be directed to VirtualBox's port 8000
+	#
     stats enable
     stats uri /haproxy?stats
-    stats realm Strictly\ Private
-    stats auth A_Username:YourPassword
-    stats auth Another_User:passwd
+	stats auth yar:yar
     balance roundrobin
     option httpclose
     option forwardfor
