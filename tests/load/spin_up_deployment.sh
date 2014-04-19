@@ -210,26 +210,36 @@ fi
 echo_if_not_silent "$KEY_SERVER in $DATA_DIRECTORY"
 
 #
-# Auth Server
+# Auth Server(s)
 #
-echo_if_not_silent "Starting Auth Server"
-DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Auth-Server
-if ! AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVER $APP_SERVER_LB $NONCE_STORES); then
-    echo_to_stderr_if_not_silent "Auth Server failed to start"
-    exit 1
-fi
-echo_if_not_silent "$AUTH_SERVER in $DATA_DIRECTORY"
+echo_if_not_silent "Starting Auth Server(s)"
+
+NUMBER_AUTH_SERVERS_PATTERN='\["auth_server"\,"number_of_servers"\]'
+NUMBER_AUTH_SERVERS=$(get_from_json "$NUMBER_AUTH_SERVERS_PATTERN" "1" < $DEPLOYMENT_PROFILE)
+
+for AUTH_SERVER_NUMBER in $(seq 1 $NUMBER_AUTH_SERVERS)
+do
+    echo_if_not_silent "-- $AUTH_SERVER_NUMBER: Starting Auth Server"
+
+	DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Auth-Server-$AUTH_SERVER_NUMBER
+	if ! AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVER $APP_SERVER_LB $NONCE_STORES); then
+		echo_to_stderr_if_not_silent "-- Auth Server failed to start"
+		exit 1
+	fi
+
+	echo_if_not_silent "-- $AUTH_SERVER in $DATA_DIRECTORY"
+done
 
 #
 # Auth Server LB
 #
 echo_if_not_silent "Starting Auth Server LB"
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Auth-Server-LB
-if ! AUTH_SERVER_LB=$(create_auth_server_lb $DATA_DIRECTORY $AUTH_SERVER); then
-    echo_to_stderr_if_not_silent "Auth Server LB failed to start"
+if ! AUTH_SERVER_LB=$(create_auth_server_lb $DATA_DIRECTORY); then
+    echo_to_stderr_if_not_silent "-- Auth Server LB failed to start"
     exit 1
 fi
-echo_if_not_silent "$AUTH_SERVER_LB in $DATA_DIRECTORY"
+echo_if_not_silent "-- $AUTH_SERVER_LB in $DATA_DIRECTORY"
 
 #
 # services now running ... let's provision some creds

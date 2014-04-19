@@ -33,4 +33,11 @@
         # 
         "number_of_servers": 3
     }
+    "auth_server": {
+        #
+        # "number_of_servers" defines the number of auth servers
+        # in the deployment.
+        # 
+        "number_of_servers": 3
+    }
 }

@@ -231,13 +231,13 @@ run_load_test() {
         $SCRIPT_DIR_NAME/gp.cfg/response_time_by_time
 
     #
-    # during the load test the auth server was making requests
-    # to the key server. the statements below extract timing
+    # during the load test, the auth servers were making requests
+    # to the key server LB. the statements below extract timing
     # information about the requests from the auth server's
     # log and then plots 2 different graphs of response times.
     #
     TEMPFILE=$(mktemp)
-    cat $DOCKER_CONTAINER_DATA/Auth-Server/auth_server_log | \
+    cat $DOCKER_CONTAINER_DATA/Auth-Server-*/auth_server_log | \
         grep "Key Server.*responded in [0-9]\+ ms$" | \
         awk 'BEGIN {FS = "\t"; OFS = "\t"}; { print int($1 / 1000), $5 }' | \
         sed -s "s/\tKey Server.*responded in /\t/g" |
@@ -319,7 +319,7 @@ run_load_test() {
     # log and then plots 2 different graphs of response times.
     #
     TEMPFILE=$(mktemp)
-    cat $DOCKER_CONTAINER_DATA/Auth-Server/auth_server_log | \
+    cat $DOCKER_CONTAINER_DATA/Auth-Server-*/auth_server_log | \
         grep "App Server.*responded in [0-9]\+ ms$" | \
         awk 'BEGIN {FS = "\t"; OFS = "\t"}; { print int($1 / 1000), $5 }' | \
         sed -s "s/\tApp Server.*responded in /\t/g" |
@@ -361,10 +361,22 @@ run_load_test() {
         "AUTH_SERVER_LB_CONTAINER_ID" \
         "$RESULTS_FILE_BASE_NAME-20-auth-server-lb-cpu-usage.png"
 
-    gen_cpu_usage_graph \
-        "Auth Server CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
-        "AUTH_SERVER_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-21-auth-server-cpu-usage.png"
+    local AUTH_SERVER_NUMBER=1
+    for AUTH_SERVER_CONTAINER_ID_KEY in $(get_all_auth_server_container_id_keys)
+    do
+        local GRAPH_TITLE="Auth Server # $AUTH_SERVER_NUMBER CPU Usage"
+        GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
+
+        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-21-auth-server"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$AUTH_SERVER_NUMBER-cpu-usage.png"
+
+        gen_cpu_usage_graph \
+			"$GRAPH_TITLE" \
+			"$AUTH_SERVER_CONTAINER_ID_KEY" \
+			"$GRAPH_FILENAME"
+
+        let "AUTH_SERVER_NUMBER += 1"
+    done
 
     gen_cpu_usage_graph \
         "Key Server CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
@@ -423,10 +435,22 @@ run_load_test() {
         "AUTH_SERVER_LB_CONTAINER_ID" \
         "$RESULTS_FILE_BASE_NAME-30-auth-server-lb-memory-usage.png"
 
-    gen_mem_usage_graph \
-        "Auth Server Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
-        "AUTH_SERVER_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-31-auth-server-memory-usage.png"
+    local AUTH_SERVER_NUMBER=1
+    for AUTH_SERVER_CONTAINER_ID_KEY in $(get_all_auth_server_container_id_keys)
+    do
+        local GRAPH_TITLE="Auth Server # $AUTH_SERVER_NUMBER Memory Usage"
+        GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
+
+        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-31-auth-server"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$AUTH_SERVER_NUMBER-memory-usage.png"
+
+        gen_mem_usage_graph \
+			"$GRAPH_TITLE" \
+			"$AUTH_SERVER_CONTAINER_ID_KEY" \
+			"$GRAPH_FILENAME"
+
+        let "AUTH_SERVER_NUMBER += 1"
+    done
 
     gen_mem_usage_graph \
         "Key Server Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \

@@ -819,9 +819,13 @@ create_auth_server() {
         $AUTH_SERVER_CMD)
     local AUTH_SERVER_IP=$(get_container_ip $AUTH_SERVER)
 
-    echo "AUTH_SERVER_CONTAINER_ID=$AUTH_SERVER" >> ~/.yar.deployment
-    echo "AUTH_SERVER_IP=$AUTH_SERVER_IP" >> ~/.yar.deployment
-    echo "AUTH_SERVER_END_POINT=$AUTH_SERVER_IP:$PORT" >> ~/.yar.deployment
+    local AUTH_SERVER_NUMBER=$(get_number_deployment_config_keys \
+        "AUTH_SERVER_CONTAINER_ID_[[:digit:]]\+")
+    let "AUTH_SERVER_NUMBER += 1"
+
+    echo "AUTH_SERVER_CONTAINER_ID_$AUTH_SERVER_NUMBER=$AUTH_SERVER" >> ~/.yar.deployment
+    echo "AUTH_SERVER_IP_$AUTH_SERVER_NUMBER=$AUTH_SERVER_IP" >> ~/.yar.deployment
+    echo "AUTH_SERVER_END_POINT_$AUTH_SERVER_NUMBER=$AUTH_SERVER_IP:$PORT" >> ~/.yar.deployment
 
     for i in {1..10}
     do
@@ -836,18 +840,73 @@ create_auth_server() {
     return 1
 }
 
+#
+# echo to stdout each of the auth server container id keys
+# listed in ~/.yar.deployment
+#
+# example expected usage
+#
+#   #!/usr/bin/env bash
+#   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
+#   source $SCRIPT_DIR_NAME/util.sh
+#   for ASIDK in $(get_all_auth_server_container_id_keys); do
+#       echo ">>>$ASIDK<<<"
+#   done
+#
+# arguments
+#   none
+#
+# exit codes
+#   0   ok
+#   1   too many auth servers in ~/.yar.deployment
+#
+get_all_auth_server_container_id_keys() {
+    for AUTH_SERVER_NUMBER in {1..100}
+    do
+        local KEY="AUTH_SERVER_CONTAINER_ID_$AUTH_SERVER_NUMBER"
+        local AUTH_SERVER_CONTAINER_ID=$(get_deployment_config "$KEY" "")
+        if [ "$AUTH_SERVER_CONTAINER_ID" == "" ]; then
+            return 0
+        fi
+        echo $KEY
+    done
+    return 1
+}
+
+#
 # create a docker container to run the auth server load balancer
+#
+# arguments
+#   1   name of data directory - mkdir -p called on this name
+#
+# exit codes
+#   0   ok
+#   1   general/non-specific failure - auth server container not started
+#   2   can't find haproxy_img
+#
 create_auth_server_lb() {
 
     local DATA_DIRECTORY=${1:-}
     mkdir -p $DATA_DIRECTORY
 
-    local AUTH_SERVER=${2:-}
-
     local PORT=8000
 
     cp $SCRIPT_DIR_NAME/haproxy.cfg/auth_server $DATA_DIRECTORY/haproxy.cfg
-    echo "    server authserver1 $AUTH_SERVER check" >> $DATA_DIRECTORY/haproxy.cfg
+
+    local AUTH_SERVER_NUMBER=1
+    for AUTH_SERVER_CONTAINER_ID_KEY in $(get_all_auth_server_container_id_keys)
+    do
+        AUTH_SERVER_CONTAINER_ID=$(get_deployment_config "$AUTH_SERVER_CONTAINER_ID_KEY")
+        AUTH_SERVER_IP=$(get_container_ip "$AUTH_SERVER_CONTAINER_ID")
+    	echo "    server auth_server_$AUTH_SERVER_NUMBER $AUTH_SERVER_IP check" >> $DATA_DIRECTORY/haproxy.cfg
+        let "AUTH_SERVER_NUMBER += 1"
+    done
+
+    local IMAGE_NAME=haproxy_img
+    if ! does_image_exist $IMAGE_NAME; then
+        echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
+        return 2
+    fi
 
     local AUTH_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
     local AUTH_SERVER_LB=$(sudo docker run \
@@ -855,7 +914,7 @@ create_auth_server_lb() {
 		-p $PORT:$PORT \
         -v /dev/log:/haproxy/log \
         -v $DATA_DIRECTORY:/haproxycfg \
-        haproxy_img \
+        $IMAGE_NAME \
         $AUTH_SERVER_LB_CMD)
     local AUTH_SERVER_LB_IP=$(get_container_ip $AUTH_SERVER_LB)
 
