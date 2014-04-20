@@ -391,7 +391,7 @@ create_app_server_lb() {
 	do
 		APP_SERVER_CONTAINER_ID=$(get_deployment_config "$APP_SERVER_CONTAINER_ID_KEY")
 		APP_SERVER_IP=$(get_container_ip "$APP_SERVER_CONTAINER_ID")
-		echo "    server appserver$APP_SERVER_NUMBER $APP_SERVER_IP check" >> $DATA_DIRECTORY/haproxy.cfg
+		echo "    server app_server_$APP_SERVER_NUMBER $APP_SERVER_IP check" >> $DATA_DIRECTORY/haproxy.cfg
 		let "APP_SERVER_NUMBER += 1"
 	done
 
