@@ -137,6 +137,21 @@ apt-get install -y imagemagick
 #
 apt-get install -y collectd
 
+#
+# https://github.com/hopsoft/docker-graphite-statsd provided
+# these instructions
+#
+# sudo docker run -i -t -p 3000:80 -p 2003:2003 -p 8125:8125/udp -v /var/log/graphite:/var/log -v /opt/graphite/storage -v /opt/graphite/conf hopsoft/graphite-statsd bash
+#
+# use Vagrant forward port 9000 to port 3000 and Graphite will
+# be available on http://127.0.0.1:9000
+#
+cd /tmp
+git clone https://github.com/hopsoft/docker-graphite-statsd.git
+cd docker-graphite-statsd
+sudo docker build -t hopsoft/graphite-statsd .
+sudo mkdir /var/log/graphite
+
 # at the start of this script several changes were made
 # to boot parameters. let's quickly restart the VM so
 # these changes take effect

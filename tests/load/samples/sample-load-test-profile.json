@@ -19,6 +19,13 @@
         #
         "percent_active_creds": 2
     },
+    "key_server": {
+        #
+        # "number_of_servers" defines the number of key servers
+		# in the deployment.
+        # 
+        "number_of_servers": 3
+    },
     "nonce_store": {
         #
         # "number_of_servers" defines the number of memcached

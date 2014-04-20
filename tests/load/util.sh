@@ -398,6 +398,7 @@ create_app_server_lb() {
     local APP_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
     local APP_SERVER_LB=$(sudo docker run \
         -d \
+		-p $PORT:$PORT \
         -v /dev/log:/haproxy/log \
         -v $DATA_DIRECTORY:/haproxycfg \
         $IMAGE_NAME \
@@ -664,9 +665,13 @@ create_key_server() {
         $KEY_SERVER_CMD)
     local KEY_SERVER_IP=$(get_container_ip $KEY_SERVER)
 
-    echo "KEY_SERVER_CONTAINER_ID=$KEY_SERVER" >> ~/.yar.deployment
-    echo "KEY_SERVER_IP=$KEY_SERVER_IP" >> ~/.yar.deployment
-    echo "KEY_SERVER_END_POINT=$KEY_SERVER_IP:$PORT" >> ~/.yar.deployment
+    local KEY_SERVER_NUMBER=$(get_number_deployment_config_keys \
+        "KEY_SERVER_CONTAINER_ID_[[:digit:]]\+")
+    let "KEY_SERVER_NUMBER += 1"
+
+    echo "KEY_SERVER_CONTAINER_ID_$KEY_SERVER_NUMBER=$KEY_SERVER" >> ~/.yar.deployment
+    echo "KEY_SERVER_IP_$KEY_SERVER_NUMBER=$KEY_SERVER_IP" >> ~/.yar.deployment
+    echo "KEY_SERVER_END_POINT_$KEY_SERVER_NUMBER=$KEY_SERVER_IP:$PORT" >> ~/.yar.deployment
 
     for i in {1..10}
     do
@@ -679,6 +684,100 @@ create_key_server() {
 
     echo_to_stderr_if_not_silent "Could not verify availability of Key Server on $KEY_SERVER_IP:$PORT"
     return 1
+}
+
+#
+# echo to stdout each of the key server container id keys
+# listed in ~/.yar.deployment
+#
+# example expected usage
+#
+#   #!/usr/bin/env bash
+#   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
+#   source $SCRIPT_DIR_NAME/util.sh
+#   for KSCK in $(get_all_key_server_container_id_keys); do
+#       echo ">>>$KSCK<<<"
+#   done
+#
+# arguments
+#   none
+#
+# exit codes
+#   0   ok
+#   1   too many key servers in ~/.yar.deployment
+#
+get_all_key_server_container_id_keys() {
+    for KEY_SERVER_NUMBER in {1..100}
+    do
+        local KEY="KEY_SERVER_CONTAINER_ID_$KEY_SERVER_NUMBER"
+        local KEY_SERVER_CONTAINER_ID=$(get_deployment_config "$KEY" "")
+        if [ "$KEY_SERVER_CONTAINER_ID" == "" ]; then
+            return 0
+        fi
+        echo $KEY
+    done
+    return 1
+}
+
+#
+# create a docker container to run the key server load balancer
+#
+# arguments
+#   1   name of data directory - mkdir -p called on this name
+#
+# exit codes
+#   0   ok
+#   1   general/non-specific failure - key server container not started
+#   2   can't find haproxy_img
+#
+create_key_server_lb() {
+
+    local DATA_DIRECTORY=${1:-}
+    mkdir -p $DATA_DIRECTORY
+
+    local PORT=8070
+
+    cp $SCRIPT_DIR_NAME/haproxy.cfg/key_server $DATA_DIRECTORY/haproxy.cfg
+
+    local KEY_SERVER_NUMBER=1
+    for KEY_SERVER_CONTAINER_ID_KEY in $(get_all_key_server_container_id_keys)
+    do
+        KEY_SERVER_CONTAINER_ID=$(get_deployment_config "$KEY_SERVER_CONTAINER_ID_KEY")
+        KEY_SERVER_IP=$(get_container_ip "$KEY_SERVER_CONTAINER_ID")
+    	echo "    server key_server_$KEY_SERVER_NUMBER $KEY_SERVER_IP check" >> $DATA_DIRECTORY/haproxy.cfg
+        let "KEY_SERVER_NUMBER += 1"
+    done
+
+    local IMAGE_NAME=haproxy_img
+    if ! does_image_exist $IMAGE_NAME; then
+        echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
+        return 2
+    fi
+
+    local KEY_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
+    local KEY_SERVER_LB=$(sudo docker run \
+        -d \
+		-p $PORT:$PORT \
+        -v /dev/log:/haproxy/log \
+        -v $DATA_DIRECTORY:/haproxycfg \
+        $IMAGE_NAME \
+        $KEY_SERVER_LB_CMD)
+    local KEY_SERVER_LB_IP=$(get_container_ip $KEY_SERVER_LB)
+
+    echo "KEY_SERVER_LB_CONTAINER_ID=$KEY_SERVER_LB" >> ~/.yar.deployment
+    echo "KEY_SERVER_LB_IP=$KEY_SERVER_LB_IP" >> ~/.yar.deployment
+    echo "KEY_SERVER_LB_END_POINT=$KEY_SERVER_LB_IP:$PORT" >> ~/.yar.deployment
+
+    for i in {1..10}
+    do
+        sleep 1
+        curl -s http://$KEY_SERVER_LB_IP:$PORT/dave.html >& /dev/null
+        if [ $? == 0 ]; then
+            break
+        fi
+    done
+
+    echo $KEY_SERVER_LB_IP:$PORT
 }
 
 #

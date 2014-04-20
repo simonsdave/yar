@@ -184,7 +184,7 @@ fi
 
 DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Store
 if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY $KEY_STORE_SIZE); then 
-    echo_to_stderr_if_not_silent "Key Store failed to start"
+    echo_to_stderr_if_not_silent "-- Key Store failed to start"
     exit 1
 fi
 
@@ -195,19 +195,39 @@ if [ "$DEPLOYMENT_PROFILE" != "" ]; then
     fi
 fi
 
-echo_if_not_silent "$KEY_STORE in $DATA_DIRECTORY"
+echo_if_not_silent "-- $KEY_STORE in $DATA_DIRECTORY"
 
 #
 # Key Server
 #
 echo_if_not_silent "Starting Key Server"
 
-DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Server
-if ! KEY_SERVER=$(create_key_server $DATA_DIRECTORY $KEY_STORE); then
-    echo_to_stderr_if_not_silent "Key Server failed to start"
+NUMBER_KEY_SERVERS_PATTERN='\["key_server"\,"number_of_servers"\]'
+NUMBER_KEY_SERVERS=$(get_from_json "$NUMBER_KEY_SERVERS_PATTERN" "1" < $DEPLOYMENT_PROFILE)
+
+for KEY_SERVER_NUMBER in $(seq 1 $NUMBER_KEY_SERVERS)
+do
+    echo_if_not_silent "-- $KEY_SERVER_NUMBER: Starting Key Server"
+
+	DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Server-$KEY_SERVER_NUMBER
+	if ! KEY_SERVER=$(create_key_server $DATA_DIRECTORY $KEY_STORE); then
+		echo_to_stderr_if_not_silent "-- $KEY_SERVER_NUMBER: Key Server failed to start"
+		exit 1
+	fi
+
+	echo_if_not_silent "-- $KEY_SERVER_NUMBER: $KEY_SERVER in $DATA_DIRECTORY"
+done
+
+#
+# Key Server LB
+#
+echo_if_not_silent "Starting Key Server LB"
+DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Server-LB
+if ! KEY_SERVER_LB=$(create_key_server_lb $DATA_DIRECTORY); then
+    echo_to_stderr_if_not_silent "-- Key Server LB failed to start"
     exit 1
 fi
-echo_if_not_silent "$KEY_SERVER in $DATA_DIRECTORY"
+echo_if_not_silent "-- $KEY_SERVER_LB in $DATA_DIRECTORY"
 
 #
 # Auth Server(s)
@@ -222,7 +242,7 @@ do
     echo_if_not_silent "-- $AUTH_SERVER_NUMBER: Starting Auth Server"
 
 	DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Auth-Server-$AUTH_SERVER_NUMBER
-	if ! AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVER $APP_SERVER_LB $NONCE_STORES); then
+	if ! AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVER_LB $APP_SERVER_LB $NONCE_STORES); then
 		echo_to_stderr_if_not_silent "-- Auth Server failed to start"
 		exit 1
 	fi

@@ -278,7 +278,7 @@ run_load_test() {
     # log and then plots 2 different graphs of response times.
     #
     TEMPFILE=$(mktemp)
-    cat $DOCKER_CONTAINER_DATA/Key-Server/key_server_log | \
+    cat $DOCKER_CONTAINER_DATA/Key-Server*/key_server_log | \
         grep "Key Store.*responded in [0-9]\+ ms$" | \
         awk 'BEGIN {FS = "\t"; OFS = "\t"}; { print int($1 / 1000), $5 }' | \
         sed -s "s/\tKey Store.*responded in /\t/g" |
@@ -379,9 +379,26 @@ run_load_test() {
     done
 
     gen_cpu_usage_graph \
-        "Key Server CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
-        "KEY_SERVER_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-22-key-server-cpu-usage.png"
+        "Key Server Load Balancer CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "KEY_SERVER_LB_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-21-key-server-lb-cpu-usage.png"
+
+    local KEY_SERVER_NUMBER=1
+    for KEY_SERVER_CONTAINER_ID_KEY in $(get_all_key_server_container_id_keys)
+    do
+        local GRAPH_TITLE="Key Server # $KEY_SERVER_NUMBER CPU Usage"
+        GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
+
+        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-22-key-server"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$KEY_SERVER_NUMBER-cpu-usage.png"
+
+        gen_cpu_usage_graph \
+			"$GRAPH_TITLE" \
+			"$KEY_SERVER_CONTAINER_ID_KEY" \
+			"$GRAPH_FILENAME"
+
+        let "KEY_SERVER_NUMBER += 1"
+    done
 
     gen_cpu_usage_graph \
         "Key Store CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
@@ -453,14 +470,31 @@ run_load_test() {
     done
 
     gen_mem_usage_graph \
-        "Key Server Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
-        "KEY_SERVER_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-32-key-server-memory-usage.png"
+        "Key Server Load Balancer Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "KEY_SERVER_LB_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-32-key-server-lb-memory-usage.png"
+
+    local KEY_SERVER_NUMBER=1
+    for KEY_SERVER_CONTAINER_ID_KEY in $(get_all_key_server_container_id_keys)
+    do
+        local GRAPH_TITLE="Key Server # $KEY_SERVER_NUMBER Memory Usage"
+        GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
+
+        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-33-auth-server"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$KEY_SERVER_NUMBER-memory-usage.png"
+
+        gen_mem_usage_graph \
+			"$GRAPH_TITLE" \
+			"$KEY_SERVER_CONTAINER_ID_KEY" \
+			"$GRAPH_FILENAME"
+
+        let "KEY_SERVER_NUMBER += 1"
+    done
 
     gen_mem_usage_graph \
         "Key Store Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
         "KEY_STORE_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-33-key-store-memory-usage.png"
+        "$RESULTS_FILE_BASE_NAME-34-key-store-memory-usage.png"
 
     local NONCE_STORE_NUMBER=1
     for NONCE_STORE_CONTAINER_ID_KEY in $(get_all_nonce_store_container_id_keys)
@@ -468,7 +502,7 @@ run_load_test() {
         local GRAPH_TITLE="Nonce Store # $NONCE_STORE_NUMBER Memory Usage"
         GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
 
-        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-34-nonce-store"
+        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-35-nonce-store"
         GRAPH_FILENAME="$GRAPH_FILENAME-$NONCE_STORE_NUMBER-memory-usage.png"
 
         gen_mem_usage_graph \
@@ -482,7 +516,7 @@ run_load_test() {
     gen_mem_usage_graph \
         "App Server Load Balancer Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
         "APP_SERVER_LB_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-35-app-server-lb-memory-usage.png"
+        "$RESULTS_FILE_BASE_NAME-36-app-server-lb-memory-usage.png"
 
     local APP_SERVER_NUMBER=1
     for APP_SERVER_CONTAINER_ID_KEY in $(get_all_app_server_container_id_keys)
@@ -490,7 +524,7 @@ run_load_test() {
 		local GRAPH_TITLE="App Server # $APP_SERVER_NUMBER Memory Usage"
 		GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
 
-		local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-36-app-server"
+		local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-37-app-server"
 		GRAPH_FILENAME="$GRAPH_FILENAME-$APP_SERVER_NUMBER-memory-usage.png"
 
         gen_mem_usage_graph \
