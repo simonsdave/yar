@@ -35,10 +35,23 @@ def _check_logging_level(option, opt, value):
 def _check_host_colon_port(option, opt, value):
     """Type checking function for command line parser's
     'hostcolonport' type."""
-    if not _parse_host_colon_port(value, must_have_host=True):
+    return __check_host_colon_port(value, opt, value, False)
+
+
+def _check_host_colon_port_parsed(option, opt, value):
+    """Type checking function for command line parser's
+    'hostcolonportparsed' type."""
+    return __check_host_colon_port(value, opt, value, True)
+
+
+def __check_host_colon_port(option, opt, value, return_parsed_value):
+    """Encapsulates 98% of the details for implementing the command line
+    parser's 'hostcolonport' and 'hostcolonportparsed' types."""
+    parsed_value = _parse_host_colon_port(value, must_have_host=True)
+    if not parsed_value:
         msg = "option %s: should be host:port format" % opt
         raise optparse.OptionValueError(msg)
-    return value
+    return parsed_value if return_parsed_value else value
 
 
 def _check_host_colon_ports(option, opt, value):
@@ -128,6 +141,7 @@ class Option(optparse.Option):
     types to the command line parser's list of available types."""
     new_types = (
         "hostcolonport",
+        "hostcolonportparsed",
         "hostcolonports",
         "hostcolonportsparsed",
         "logginglevel",
@@ -138,6 +152,7 @@ class Option(optparse.Option):
     TYPES = optparse.Option.TYPES + new_types
     TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
     TYPE_CHECKER["hostcolonport"] = _check_host_colon_port
+    TYPE_CHECKER["hostcolonportparsed"] = _check_host_colon_port_parsed
     TYPE_CHECKER["hostcolonports"] = _check_host_colon_ports
     TYPE_CHECKER["hostcolonportsparsed"] = _check_host_colon_ports_parsed
     TYPE_CHECKER["logginglevel"] = _check_logging_level

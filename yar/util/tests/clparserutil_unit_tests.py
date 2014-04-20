@@ -101,6 +101,35 @@ class TestCase(unittest.TestCase):
                 with self.assertRaises(optparse.OptionValueError):
                     type_checker(option, opt_string, value[0])
 
+    def test_check_host_colon_port_parsed(self):
+        option = clparserutil.Option(
+            "--create",
+            action="store",
+            dest="server",
+            default="bindle:8909",
+            type="hostcolonportparsed",
+            help="whatever")
+        values = [
+            ["bindle:8909", ("bindle", 8909)],
+            ["b:8", ("b", 8)],
+
+            ["dave", None],
+            ["89", None],
+            [":89", None],
+        ]
+        type_checker = clparserutil.Option.TYPE_CHECKER["hostcolonportparsed"]
+        self.assertIsNotNone(type_checker)
+        opt_string = option.get_opt_string()
+        for value in values:
+            msg = "Failed to parse '%s' correctly." % value[0]
+            if value[1] is not None:
+                result = type_checker(option, opt_string, value[0])
+                self.assertEqual(result, value[1], msg)
+            else:
+                print msg
+                with self.assertRaises(optparse.OptionValueError):
+                    type_checker(option, opt_string, value[0])
+
     def test_check_host_colon_ports(self):
         option = clparserutil.Option(
             "--memcached",
