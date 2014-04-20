@@ -146,11 +146,11 @@ apt-get install -y collectd
 # use Vagrant forward port 9000 to port 3000 and Graphite will
 # be available on http://127.0.0.1:9000
 #
-cd /tmp
-git clone https://github.com/hopsoft/docker-graphite-statsd.git
-cd docker-graphite-statsd
-sudo docker build -t hopsoft/graphite-statsd .
-sudo mkdir /var/log/graphite
+# cd /tmp
+# git clone https://github.com/hopsoft/docker-graphite-statsd.git
+# cd docker-graphite-statsd
+# sudo docker build -t hopsoft/graphite-statsd .
+# sudo mkdir /var/log/graphite
 
 # at the start of this script several changes were made
 # to boot parameters. let's quickly restart the VM so
