@@ -24,6 +24,10 @@ and [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
   * key generation for both the above authentication schemes
   * [Keyczar](http://www.keyczar.org/) used for both key generation and MAC verification
   * [Auth Server](yar/auth_server) and [Key Server](yar/key_server) are [Tornado](http://www.tornadoweb.org/en/stable/) servers leveraging Tornado's [asynchronous/high concurrency capabilites](http://www.tornadoweb.org/en/stable/networking.html) - yar's high concurrency capability is verified with an [extensive and automated load testing framework](tests/load) that leverages [Vagrant](http://www.vagrantup.com/), [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Docker](https://www.docker.io/)
+  * [HAProxy](http://haproxy.1wt.eu/) load balances requests across
+[Auth Server](yar/auth_server) and [Key Server](yar/key_server)
+tiers enabling these tiers to
+[scale horizontally](http://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling)
   * high quality code base - ~1,500 LOC and 200+ unit tests with 99% code coverage
   * small footprint - for example, the [Auth Server](yar/auth_server) and [Key Server](yar/key_server)
 require < 25 MB of memory @ concurrency levels of 100
