@@ -37,15 +37,18 @@ You can find the list of open issues [here](https://github.com/simonsdave/yar/is
 Development Prerequisites 
 -------------------------
 * code written and tested on Mac OS X using:
+  * [git](http://git-scm.com/)
   * [Python 2.7](http://www.python.org/)
+  * [pip](http://www.pip-installer.org/en/latest/)
   * [virtualenv](https://pypi.python.org/pypi/virtualenv)
   * [CouchDB](http://couchdb.apache.org/)
   * [memcached](http://memcached.org/)
   * [command line tools for Xcode](https://developer.apple.com/downloads/index.action)
-  * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
   * [Vagrant](http://www.vagrantup.com/)
-* see
-[requirements.txt](https://github.com/simonsdave/yar/blob/master/requirements.txt "requirements.txt")
+  * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+  * [Docker](https://www.docker.io/)
+  * see
+[requirements.txt](https://github.com/simonsdave/yar/blob/master/requirements.txt)
 for the complete list of Python packages on which yar depends
 
 Development Quick Start
