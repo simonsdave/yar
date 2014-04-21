@@ -153,7 +153,7 @@ class MACKeyIdentifier(str):
         across multiple data centers so needed an approach which
         saw a very high probability that generated mac key identifiers
         where unique."""
-        return cls(str(uuid.uuid4()).replace("-", ""))
+        return cls(uuid.uuid4().hex)
 
 
 class MACKey(str):
