@@ -35,17 +35,17 @@ create_mac_creds() {
         -s \
         -X POST \
         -H "Content-Type: application/json; charset=utf8" \
-        -d "{\"principal\":\"$PRINCIPAL\", \"auth_scheme\":\"hmac\"}" \
+        -d "{\"principal\":\"$PRINCIPAL\", \"auth_scheme\":\"mac\"}" \
         http://$KEY_SERVER/v1.0/creds > $CREDS_FILE_NAME
 
     local MAC_ALGORITHM=`cat $CREDS_FILE_NAME | get_from_json \
-        '\["hmac"\,"mac_algorithm"\]'`
+        '\["mac"\,"mac_algorithm"\]'`
 
     local MAC_KEY_IDENTIFIER=`cat $CREDS_FILE_NAME | get_from_json \
-        '\["hmac"\,"mac_key_identifier"\]'`
+        '\["mac"\,"mac_key_identifier"\]'`
 
     local MAC_KEY=`cat $CREDS_FILE_NAME | get_from_json \
-        '\["hmac"\,"mac_key"\]'`
+        '\["mac"\,"mac_key"\]'`
 
     echo "MAC_KEY_IDENTIFIER=$MAC_KEY_IDENTIFIER" >> ~/.yar.creds
     echo "MAC_KEY=$MAC_KEY" >> ~/.yar.creds

@@ -115,7 +115,7 @@ curl \
   -v \
   -X POST \
   -H "Content-Type: application/json; charset=utf8" \
-  -d "{\"principal\":\"simonsdave@gmail.com\", \"auth_scheme\":\"hmac\"}" \
+  -d "{\"principal\":\"simonsdave@gmail.com\", \"auth_scheme\":\"mac\"}" \
   http://127.0.0.1:8070/v1.0/creds
 ~~~~~
 

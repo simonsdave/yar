@@ -323,7 +323,7 @@ class TestAsyncMACAuth(yar_test_util.TestCase):
                         self.assertIsNotNone(auth_failure_detail)
                         self.assertEqual(
                             auth_failure_detail,
-                            async_mac_auth.AUTH_FAILURE_DETAIL_HMACS_DO_NOT_MATCH)
+                            async_mac_auth.AUTH_FAILURE_DETAIL_MACS_DO_NOT_MATCH)
 
                         self.assertIsNone(principal)
 

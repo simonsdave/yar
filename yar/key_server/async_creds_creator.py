@@ -23,8 +23,8 @@ class AsyncCredsCreator(AsyncAction):
         of that is done call ```callback``` with a single
         argument = the newly created credentials.
 
-        If ```auth_scheme``` equals 'hmac' credentials
-        for an HMAC authentication scheme are created otherwise
+        If ```auth_scheme``` equals 'mac' credentials
+        for an MAC authentication scheme are created otherwise
         credentials for basic authentication are created."""
 
         self._callback = callback
@@ -34,9 +34,9 @@ class AsyncCredsCreator(AsyncAction):
             "type": "creds_v1.0",
             "is_deleted": False,
         }
-        if auth_scheme == "hmac":        
+        if auth_scheme == "mac":        
             mac_key_identifier = mac.MACKeyIdentifier.generate()
-            self._creds["hmac"] = {
+            self._creds["mac"] = {
                 "mac_key_identifier": mac_key_identifier,
                 "mac_key": mac.MACKey.generate(),
                 "mac_algorithm": mac.MAC.algorithm,

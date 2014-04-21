@@ -49,20 +49,20 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
             self.assertIn("is_deleted", body)
             self.assertFalse(body["is_deleted"])
 
-            if the_auth_scheme == "hmac":
-                self.assertIn("hmac", body)
-                hmac_section_of_body = body["hmac"]
+            if the_auth_scheme == "mac":
+                self.assertIn("mac", body)
+                mac_section_of_body = body["mac"]
 
-                self.assertIn("mac_key_identifier", hmac_section_of_body)
+                self.assertIn("mac_key_identifier", mac_section_of_body)
                 self.assertEqual(
-                    hmac_section_of_body["mac_key_identifier"],
+                    mac_section_of_body["mac_key_identifier"],
                     path)
 
-                self.assertIn("mac_key", hmac_section_of_body)
+                self.assertIn("mac_key", mac_section_of_body)
 
-                self.assertIn("mac_algorithm", hmac_section_of_body)
+                self.assertIn("mac_algorithm", mac_section_of_body)
                 self.assertEqual(
-                    hmac_section_of_body["mac_algorithm"],
+                    mac_section_of_body["mac_algorithm"],
                     mac.MAC.algorithm)
             else:
                 self.assertIn("basic", body)
@@ -87,16 +87,16 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
                 the_auth_scheme,
                 on_async_create_done)
 
-    def test_hmac_bad_is_ok(self):
+    def test_mac_bad_is_ok(self):
         self._test_bad(
             the_is_ok=False,
-            the_auth_scheme="hmac",
+            the_auth_scheme="mac",
             the_http_status_code=httplib.CREATED)
 
-    def test_hmac_bad_http_status_code(self):
+    def test_mac_bad_http_status_code(self):
         self._test_bad(
             the_is_ok=True,
-            the_auth_scheme="hmac",
+            the_auth_scheme="mac",
             the_http_status_code=httplib.BAD_REQUEST)
 
     def test_basic_bad_is_ok(self):
@@ -142,20 +142,20 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
             self.assertIn("is_deleted", body)
             self.assertFalse(body["is_deleted"])
 
-            if the_auth_scheme == "hmac":
-                self.assertIn("hmac", body)
-                hmac_section_of_body = body["hmac"]
+            if the_auth_scheme == "mac":
+                self.assertIn("mac", body)
+                mac_section_of_body = body["mac"]
 
-                self.assertIn("mac_key_identifier", hmac_section_of_body)
+                self.assertIn("mac_key_identifier", mac_section_of_body)
                 self.assertEqual(
-                    hmac_section_of_body["mac_key_identifier"],
+                    mac_section_of_body["mac_key_identifier"],
                     path)
 
-                self.assertIn("mac_key", hmac_section_of_body)
+                self.assertIn("mac_key", mac_section_of_body)
 
-                self.assertIn("mac_algorithm", hmac_section_of_body)
+                self.assertIn("mac_algorithm", mac_section_of_body)
                 self.assertEqual(
-                    hmac_section_of_body["mac_algorithm"],
+                    mac_section_of_body["mac_algorithm"],
                     mac.MAC.algorithm)
             else:
                 self.assertIn("basic", body)
@@ -184,8 +184,8 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
                 the_auth_scheme,
                 on_async_create_done)
 
-    def test_hmac_ok(self):
-        self._test_ok("hmac")
+    def test_mac_ok(self):
+        self._test_ok("mac")
 
     def test_basic_ok(self):
         self._test_ok("basic")

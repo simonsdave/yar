@@ -23,7 +23,7 @@ def filter_out_non_model_creds_properties(creds):
     model_creds_properties = [
         "is_deleted",
         "basic",
-        "hmac",
+        "mac",
         "principal"
     ]
     return {k: v for k, v in creds.iteritems() if k in model_creds_properties}

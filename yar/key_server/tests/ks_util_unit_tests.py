@@ -25,7 +25,7 @@ class TestCaseFilterOutNonModelCredProperties(yar_test_util.TestCase):
         creds = {
             "is_deleted": str(uuid.uuid4()).replace("-", ""),
             "basic": str(uuid.uuid4()).replace("-", ""),
-            "hmac": str(uuid.uuid4()).replace("-", ""),
+            "mac": str(uuid.uuid4()).replace("-", ""),
             "principal": str(uuid.uuid4()).replace("-", ""),
         }
         filtered_creds = ks_util.filter_out_non_model_creds_properties(creds)
@@ -40,7 +40,7 @@ class TestCaseFilterOutNonModelCredProperties(yar_test_util.TestCase):
         creds = {
             "is_deleted": str(uuid.uuid4()).replace("-", ""),
             "basic": str(uuid.uuid4()).replace("-", ""),
-            "hmac": str(uuid.uuid4()).replace("-", ""),
+            "mac": str(uuid.uuid4()).replace("-", ""),
             "principal": str(uuid.uuid4()).replace("-", ""),
         }
         combined_creds = dict(non_cred_properties.items() + creds.items())

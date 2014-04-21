@@ -136,7 +136,7 @@ class RequestHandler(trhutil.RequestHandler):
         If the credentials are for the BASIC authentication scheme
         return the api key."""
 
-        if "hmac" in creds:
-            return creds["hmac"]["mac_key_identifier"]
+        if "mac" in creds:
+            return creds["mac"]["mac_key_identifier"]
 
         return creds["basic"]["api_key"]

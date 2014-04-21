@@ -1,5 +1,5 @@
 """This module contains the core logic for implemenation
-an async HMAC validation."""
+an async MAC validation."""
 
 import hashlib
 import logging
@@ -24,7 +24,7 @@ AUTH_FAILURE_DETAIL_NO_AUTH_HEADER = 0x0010 + 0x0003
 AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER = 0x0010 + 0x0004
 AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND = 0x0010 + 0x0005
 AUTH_FAILURE_DETAIL_NONCE_REUSED = 0x0010 + 0x0006
-AUTH_FAILURE_DETAIL_HMACS_DO_NOT_MATCH = 0x0010 + 0x0007
+AUTH_FAILURE_DETAIL_MACS_DO_NOT_MATCH = 0x0010 + 0x0007
 
 
 class AsyncMACAuth(object):
@@ -84,7 +84,7 @@ class AsyncMACAuth(object):
             # to figure out the root cause of the error. This method is called
             # on authentication failure and, if logging is set to at least
             # debug, a whole series of HTTP headers are set to return the
-            # core elements that are used to generate the HMAC.
+            # core elements that are used to generate the MAC.
             auth_failure_debug_details = {}
 
             if body:
@@ -111,7 +111,7 @@ class AsyncMACAuth(object):
             # end of pumping out debug headers - returning to regular headers
             self._on_auth_done(
                 False,
-                auth_failure_detail=AUTH_FAILURE_DETAIL_HMACS_DO_NOT_MATCH,
+                auth_failure_detail=AUTH_FAILURE_DETAIL_MACS_DO_NOT_MATCH,
                 auth_failure_debug_details=auth_failure_debug_details)
             return
 

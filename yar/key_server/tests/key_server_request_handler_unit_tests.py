@@ -71,13 +71,13 @@ class TestCase(yar_test_util.TestCase):
         return "http://127.0.0.1:%s/v1.0/creds" % self.__class__._key_server.port
 
     def _key_from_creds(self, creds):
-        if "hmac" in creds:
-            key = creds["hmac"].get("mac_key_identifier", None)
+        if "mac" in creds:
+            key = creds["mac"].get("mac_key_identifier", None)
         else:
             key = creds["basic"].get("api_key", None)
         return key
 
-    def _create_creds(self, the_principal, the_auth_scheme="hmac"):
+    def _create_creds(self, the_principal, the_auth_scheme="mac"):
         self.assertIsNotNone(the_principal)
         self.assertTrue(0 < len(the_principal))
 
@@ -91,8 +91,8 @@ class TestCase(yar_test_util.TestCase):
                 "principal": principal,
                 "is_deleted": False,
             }
-            if auth_scheme == "hmac":
-                creds["hmac"] = {
+            if auth_scheme == "mac":
+                creds["mac"] = {
                     "mac_key_identifier": mac.MACKeyIdentifier.generate(),
                     "mac_key": mac.MACKey.generate(),
                     "mac_algorithm": mac.MAC.algorithm,
@@ -502,8 +502,8 @@ class TestCase(yar_test_util.TestCase):
         self.assertIsNotNone(all_creds)
         self.assertEqual(0, len(all_creds))
 
-    def test_all_good_for_simple_create_and_delete_hmac(self):
-        self._test_all_good_for_simple_create_and_delete("hmac")
+    def test_all_good_for_simple_create_and_delete_mac(self):
+        self._test_all_good_for_simple_create_and_delete("mac")
 
     def test_all_good_for_simple_create_and_delete_basic(self):
         self._test_all_good_for_simple_create_and_delete("basic")

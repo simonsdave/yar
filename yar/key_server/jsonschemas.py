@@ -14,7 +14,7 @@ create_creds_request = {
         "auth_scheme": {
             "type": "string",
             "enum": [
-                "hmac",
+                "mac",
                 "basic",
             ],
         },
@@ -83,7 +83,7 @@ get_creds_response = {
         {
             "type": "object",
             "properties": {
-                "hmac": {
+                "mac": {
                     "type": "object",
                     "properties": {
                         "mac_algorithm": {
@@ -132,7 +132,7 @@ get_creds_response = {
                 },
             },
             "required": [
-                "hmac",
+                "mac",
                 "is_deleted",
                 "principal",
                 "links",

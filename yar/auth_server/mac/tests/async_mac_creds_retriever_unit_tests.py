@@ -209,7 +209,7 @@ class TestAsyncMACCredsRetriever(yar_test_util.TestCase):
             response.error = None
             response.code = httplib.OK
             response.body = json.dumps({
-                "hmac": {
+                "mac": {
                     "mac_algorithm": the_mac_algorithm,
                     "mac_key": the_mac_key,
                     "mac_key_identifier": the_mac_key_identifier,

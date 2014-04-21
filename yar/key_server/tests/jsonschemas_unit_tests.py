@@ -156,13 +156,13 @@ class KeyServerGetBasicCredsResponseTestCase(KeyServerGetCredsResponseTestCase):
             self._validate(response)
 
 
-class KeyServerGetHMACCredsResponseTestCase(KeyServerGetCredsResponseTestCase):
+class KeyServerGetMACCredsResponseTestCase(KeyServerGetCredsResponseTestCase):
 
     def _generate_good_response(self):
         mac_key = mac.MACKey.generate()
         mac_key_identifier = mac.MACKeyIdentifier.generate()
         return {
-            "hmac": {
+            "mac": {
                 "mac_algorithm": "hmac-sha-1",
                 "mac_key": str(mac_key),
                 "mac_key_identifier": str(mac_key_identifier),
@@ -179,35 +179,35 @@ class KeyServerGetHMACCredsResponseTestCase(KeyServerGetCredsResponseTestCase):
     def test_sha_256_algorithm(self):
         response = self._generate_good_response()
         self._validate(response)
-        response["hmac"]["mac_algorithm"] = "hmac-sha-256"
+        response["mac"]["mac_algorithm"] = "hmac-sha-256"
         self._validate(response)
 
     def test_invalid_algorithm(self):
         response = self._generate_good_response()
         self._validate(response)
-        response["hmac"]["mac_algorithm"] = self._uuid()
+        response["mac"]["mac_algorithm"] = self._uuid()
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(response)
-        response["hmac"]["mac_algorithm"] = ""
+        response["mac"]["mac_algorithm"] = ""
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(response)
 
     def test_invalid_mac_key(self):
         response = self._generate_good_response()
         self._validate(response)
-        response["hmac"]["mac_key"] = ""
+        response["mac"]["mac_key"] = ""
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(response)
-        del response["hmac"]["mac_key"]
+        del response["mac"]["mac_key"]
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(response)
 
     def test_invalid_mac_key_identifier(self):
         response = self._generate_good_response()
         self._validate(response)
-        response["hmac"]["mac_key_identifier"] = ""
+        response["mac"]["mac_key_identifier"] = ""
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(response)
-        del response["hmac"]["mac_key_identifier"]
+        del response["mac"]["mac_key_identifier"]
         with self.assertRaises(jsonschema.ValidationError):
             self._validate(response)
