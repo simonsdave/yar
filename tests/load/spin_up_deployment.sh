@@ -267,9 +267,6 @@ echo_if_not_silent "-- $AUTH_SERVER_LB in $DATA_DIRECTORY"
 PRINCIPAL="dave@example.com"
 create_basic_creds $KEY_SERVER $PRINCIPAL
 create_mac_creds $KEY_SERVER $PRINCIPAL
-if [ -r ~/.yar.creds ]; then
-    echo_if_not_silent "Creds in ~/.yar.creds"
-fi
 
 #
 # used to cat ~/.yar.deployment but that started to seem like overkill
