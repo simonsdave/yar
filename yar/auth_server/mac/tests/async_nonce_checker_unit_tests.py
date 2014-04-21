@@ -6,7 +6,7 @@ import sys
 
 import mock
 
-from yar.auth_server.hmac import async_nonce_checker
+from yar.auth_server.mac import async_nonce_checker
 from yar.util import mac
 from yar.tests import yar_test_util
 

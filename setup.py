@@ -32,7 +32,7 @@ setup(
         "yar.app_server",
         "yar.auth_server",
         "yar.auth_server.basic",
-        "yar.auth_server.hmac",
+        "yar.auth_server.mac",
         "yar.key_server",
         "yar.key_store",
         # see "data_files" comment on why the next shouldn't be here

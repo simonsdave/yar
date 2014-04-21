@@ -171,8 +171,8 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
                 auth_failure_debug_details=the_auth_failure_debug_details)
 
         name_of_method_to_patch = (
-            "yar.auth_server.hmac."
-            "async_hmac_auth.AsyncHMACAuth.authenticate"
+            "yar.auth_server.mac."
+            "async_mac_auth.AsyncMACAuth.authenticate"
         )
         with mock.patch(name_of_method_to_patch, authenticate_patch):
             # step #1 ...
@@ -206,8 +206,8 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
             callback(is_auth_ok=True, principal=the_principal)
 
         name_of_method_to_patch = (
-            "yar.auth_server.hmac."
-            "async_hmac_auth.AsyncHMACAuth.authenticate"
+            "yar.auth_server.mac."
+            "async_mac_auth.AsyncMACAuth.authenticate"
         )
         with mock.patch(name_of_method_to_patch, authenticate_patch):
 
@@ -240,13 +240,13 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
             "X-Ben": str(uuid.uuid4()).replace("-", ""),
         }
 
-        def authenticate_patch(ignore_this_async_hmac_auth, callback):
+        def authenticate_patch(ignore_this_async_mac_auth, callback):
             self.assertIsNotNone(callback)
             callback(is_auth_ok=True, principal=the_principal)
 
         name_of_method_to_patch = (
-            "yar.auth_server.hmac."
-            "async_hmac_auth.AsyncHMACAuth.authenticate"
+            "yar.auth_server.mac."
+            "async_mac_auth.AsyncMACAuth.authenticate"
         )
         with mock.patch(name_of_method_to_patch, authenticate_patch):
 

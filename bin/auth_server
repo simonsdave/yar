@@ -10,9 +10,9 @@ import tornado.web
 
 from yar.auth_server import async_app_server_forwarder
 from yar.auth_server.basic import async_creds_retriever
-from yar.auth_server.hmac import async_hmac_creds_retriever
-from yar.auth_server.hmac import async_hmac_auth
-from yar.auth_server.hmac import async_nonce_checker
+from yar.auth_server.mac import async_mac_creds_retriever
+from yar.auth_server.mac import async_mac_auth
+from yar.auth_server.mac import async_nonce_checker
 from yar.auth_server import auth_server_request_handler
 from yar.auth_server import clparser
 from yar.util import logging_config
@@ -41,8 +41,8 @@ if __name__ == "__main__":
     _logger.info(fmt.format(clo=clo))
 
     async_creds_retriever.key_server_address = clo.key_server
-    async_hmac_creds_retriever.key_server_address = clo.key_server
-    async_hmac_auth.maxage = clo.maxage
+    async_mac_creds_retriever.key_server_address = clo.key_server
+    async_mac_auth.maxage = clo.maxage
     async_nonce_checker.nonce_store = clo.nonce_store
     async_app_server_forwarder.app_server = clo.app_server
     async_app_server_forwarder.auth_method = clo.app_server_auth_method

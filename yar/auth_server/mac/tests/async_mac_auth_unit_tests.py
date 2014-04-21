@@ -1,5 +1,5 @@
 """This module implements the unit tests for the auth server's
-async_hmac_auth module."""
+async_mac_auth module."""
 
 import httplib
 import os
@@ -8,18 +8,18 @@ import sys
 import mock
 import tornado.httputil
 
-from yar.auth_server.hmac import async_hmac_auth
+from yar.auth_server.mac import async_mac_auth
 from yar.util import mac
 from yar.tests import yar_test_util
 
 
-class TestAsyncHMACAuth(yar_test_util.TestCase):
+class TestAsyncMACAuth(yar_test_util.TestCase):
 
     _maxage = 30
 
     @classmethod
     def setUpClass(cls):
-        async_hmac_auth.maxage = cls._maxage
+        async_mac_auth.maxage = cls._maxage
 
     @classmethod
     def tearDownClass(cls):
@@ -27,8 +27,8 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
 
     def test_no_authorization_header(self):
         """When a request contains no Authorization HTTP header, confirm that
-        ```async_hmac_auth.AsyncHMACAuth``` tags this as an authorization
-        failure with ```async_hmac_auth.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER```
+        ```async_mac_auth.AsyncMACAuth``` tags this as an authorization
+        failure with ```async_mac_auth.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER```
         detailed error code."""
 
         def on_auth_done(is_auth_ok, auth_failure_detail):
@@ -39,19 +39,19 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
             self.assertIsNotNone(auth_failure_detail)
             self.assertEqual(
                 auth_failure_detail,
-                async_hmac_auth.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
+                async_mac_auth.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
 
         request = mock.Mock()
         request.headers = tornado.httputil.HTTPHeaders()
 
-        aha = async_hmac_auth.AsyncHMACAuth(request)
+        aha = async_mac_auth.AsyncMACAuth(request)
         aha.authenticate(on_auth_done)
 
     def test_invalid_authorization_header(self):
         """When a request contains an invalid Authorization HTTP header,
-        confirm that ```async_hmac_auth.AsyncHMACAuth``` tags this as an
+        confirm that ```async_mac_auth.AsyncMACAuth``` tags this as an
         authorization failure with
-        ```async_hmac_auth.AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER```
+        ```async_mac_auth.AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER```
         detailed error code."""
 
         def on_auth_done(is_auth_ok, auth_failure_detail):
@@ -62,20 +62,20 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
             self.assertIsNotNone(auth_failure_detail)
             self.assertEqual(
                 auth_failure_detail,
-                async_hmac_auth.AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER)
+                async_mac_auth.AUTH_FAILURE_DETAIL_INVALID_AUTH_HEADER)
 
         request = mock.Mock()
         request.headers = tornado.httputil.HTTPHeaders({
             "Authorization": "DAVE WAS HERE",
         })
 
-        aha = async_hmac_auth.AsyncHMACAuth(request)
+        aha = async_mac_auth.AsyncMACAuth(request)
         aha.authenticate(on_auth_done)
 
     def _test_timestamp(self, ts_adjustment, expected_auth_failure_detail):
         """When a request contains Authorization HTTP header with a
         timestamp that's old or in the fture,
-        confirm that ```async_hmac_auth.AsyncHMACAuth``` tags this as an
+        confirm that ```async_mac_auth.AsyncMACAuth``` tags this as an
         authentication failure with ```expected_auth_failure_detail```
         detailed error code."""
 
@@ -99,37 +99,37 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
             "Authorization": str(auth_header_value),
         })
 
-        aha = async_hmac_auth.AsyncHMACAuth(request)
+        aha = async_mac_auth.AsyncMACAuth(request)
         aha.authenticate(on_auth_done)
 
     def test_timestamp_in_future(self):
         """When a request contains Authorization HTTP header with a
         timestamp that's in the future,
-        confirm that ```async_hmac_auth.AsyncHMACAuth``` tags this as an
+        confirm that ```async_mac_auth.AsyncMACAuth``` tags this as an
         authentication failure with
-        ```async_hmac_auth.AUTH_FAILURE_DETAIL_TS_IN_FUTURE```
+        ```async_mac_auth.AUTH_FAILURE_DETAIL_TS_IN_FUTURE```
         detailed error code."""
         self._test_timestamp(
             1000,
-            async_hmac_auth.AUTH_FAILURE_DETAIL_TS_IN_FUTURE)
+            async_mac_auth.AUTH_FAILURE_DETAIL_TS_IN_FUTURE)
 
     def test_timestamp_in_past(self):
         """When a request contains Authorization HTTP header with a
         timestamp that's in the past,
-        confirm that ```async_hmac_auth.AsyncHMACAuth``` tags this as an
+        confirm that ```async_mac_auth.AsyncMACAuth``` tags this as an
         authentication failure with
-        ```async_hmac_auth.AUTH_FAILURE_DETAIL_TS_OLD```
+        ```async_mac_auth.AUTH_FAILURE_DETAIL_TS_OLD```
         detailed error code."""
         self._test_timestamp(
             -1000,
-            async_hmac_auth.AUTH_FAILURE_DETAIL_TS_OLD)
+            async_mac_auth.AUTH_FAILURE_DETAIL_TS_OLD)
 
     def test_nonce_reused(self):
         """When a request contains Authorization HTTP header with a
         nonce that's been seen before,
-        confirm that ```async_hmac_auth.AsyncHMACAuth``` tags this as an
+        confirm that ```async_mac_auth.AsyncMACAuth``` tags this as an
         authentication failure with
-        ```async_hmac_auth.AUTH_FAILURE_DETAIL_NONCE_REUSED```
+        ```async_mac_auth.AUTH_FAILURE_DETAIL_NONCE_REUSED```
         detailed error code."""
 
         def on_auth_done(is_auth_ok, auth_failure_detail):
@@ -140,13 +140,13 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
             self.assertIsNotNone(auth_failure_detail)
             self.assertEqual(
                 auth_failure_detail,
-                async_hmac_auth.AUTH_FAILURE_DETAIL_NONCE_REUSED)
+                async_mac_auth.AUTH_FAILURE_DETAIL_NONCE_REUSED)
 
         def async_nonce_checker_fetch_patch(anc, callback):
             callback(False)
 
         name_of_method_to_patch = (
-            "yar.auth_server.hmac."
+            "yar.auth_server.mac."
             "async_nonce_checker.AsyncNonceChecker.fetch"
         )
         with mock.patch(name_of_method_to_patch, async_nonce_checker_fetch_patch):
@@ -162,15 +162,15 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                 "Authorization": str(auth_header_value),
             })
 
-            aha = async_hmac_auth.AsyncHMACAuth(request)
+            aha = async_mac_auth.AsyncMACAuth(request)
             aha.authenticate(on_auth_done)
 
     def test_creds_not_found(self):
         """When a request contains Authorization HTTP header with a
         mac key identifier that the key server doesn't know about,
-        confirm that ```async_hmac_auth.AsyncHMACAuth``` tags this as an
+        confirm that ```async_mac_auth.AsyncMACAuth``` tags this as an
         authentication failure with
-        ```async_hmac_auth.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND```
+        ```async_mac_auth.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND```
         detailed error code."""
 
         the_mac_key_identifier = mac.MACKeyIdentifier.generate()
@@ -183,13 +183,13 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
             self.assertIsNotNone(auth_failure_detail)
             self.assertEqual(
                 auth_failure_detail,
-                async_hmac_auth.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
+                async_mac_auth.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND)
 
         def async_nonce_checker_fetch_patch(anc, callback):
             callback(True)
 
         name_of_method_to_patch = (
-            "yar.auth_server.hmac."
+            "yar.auth_server.mac."
             "async_nonce_checker.AsyncNonceChecker.fetch"
         )
         with mock.patch(name_of_method_to_patch, async_nonce_checker_fetch_patch):
@@ -198,8 +198,8 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                 callback(False, the_mac_key_identifier)
 
             name_of_method_to_patch = (
-                "yar.auth_server.hmac."
-                "async_hmac_creds_retriever.AsyncHMACCredsRetriever.fetch"
+                "yar.auth_server.mac."
+                "async_mac_creds_retriever.AsyncMACCredsRetriever.fetch"
             )
             with mock.patch(name_of_method_to_patch, async_creds_retriever_fetch_patch):
 
@@ -215,7 +215,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                     "Authorization": str(auth_header_value),
                 })
 
-                aha = async_hmac_auth.AsyncHMACAuth(request)
+                aha = async_mac_auth.AsyncMACAuth(request)
                 aha.authenticate(on_auth_done)
 
     def _test_mac_good_or_bad(self, the_method, the_bad_mac):
@@ -258,7 +258,7 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
             callback(True)
 
         name_of_method_to_patch = (
-            "yar.auth_server.hmac."
+            "yar.auth_server.mac."
             "async_nonce_checker.AsyncNonceChecker.fetch"
         )
         with mock.patch(name_of_method_to_patch, async_nonce_checker_fetch_patch):
@@ -276,8 +276,8 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                     the_principal)
 
             name_of_method_to_patch = (
-                "yar.auth_server.hmac."
-                "async_hmac_creds_retriever.AsyncHMACCredsRetriever.fetch"
+                "yar.auth_server.mac."
+                "async_mac_creds_retriever.AsyncMACCredsRetriever.fetch"
             )
             with mock.patch(name_of_method_to_patch, async_creds_retriever_fetch_patch):
 
@@ -323,11 +323,11 @@ class TestAsyncHMACAuth(yar_test_util.TestCase):
                         self.assertIsNotNone(auth_failure_detail)
                         self.assertEqual(
                             auth_failure_detail,
-                            async_hmac_auth.AUTH_FAILURE_DETAIL_HMACS_DO_NOT_MATCH)
+                            async_mac_auth.AUTH_FAILURE_DETAIL_HMACS_DO_NOT_MATCH)
 
                         self.assertIsNone(principal)
 
-                aha = async_hmac_auth.AsyncHMACAuth(request)
+                aha = async_mac_auth.AsyncMACAuth(request)
                 aha.authenticate(on_auth_done)
 
     def test_mac_bad_on_get(self):

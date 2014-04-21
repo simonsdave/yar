@@ -16,7 +16,7 @@ _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 key_server_address = "127.0.0.1:8070"
 
 
-class AsyncHMACCredsRetriever(object):
+class AsyncMACCredsRetriever(object):
     """Wraps the gory details of async crednetials retrieval."""
 
     def __init__(self, mac_key_identifier):

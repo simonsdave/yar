@@ -8,7 +8,7 @@ from yar.util import mac
 from yar.util.trhutil import get_request_host_and_port
 from yar.util.trhutil import get_request_body_if_exists
 
-from async_hmac_creds_retriever import AsyncHMACCredsRetriever
+from async_mac_creds_retriever import AsyncMACCredsRetriever
 from async_nonce_checker import AsyncNonceChecker
 
 """To help prevent reply attacks the timestamp of all requests can
@@ -27,13 +27,13 @@ AUTH_FAILURE_DETAIL_NONCE_REUSED = 0x0010 + 0x0006
 AUTH_FAILURE_DETAIL_HMACS_DO_NOT_MATCH = 0x0010 + 0x0007
 
 
-class AsyncHMACAuth(object):
+class AsyncMACAuth(object):
 
     def __init__(self, request):
         object.__init__(self)
         self._request = request
 
-    def _on_async_hmac_creds_retriever_done(
+    def _on_async_mac_creds_retriever_done(
         self,
         is_ok,
         mac_key_identifier,
@@ -141,8 +141,8 @@ class AsyncHMACAuth(object):
         # next steps is to retrieve the credentials associated with
         # the request's mac key identifier and confirm the request's
         # MAC is valid ie. final step in confirming the sender's identity
-        acr = AsyncHMACCredsRetriever(self._auth_hdr_val.mac_key_identifier)
-        acr.fetch(self._on_async_hmac_creds_retriever_done)
+        acr = AsyncMACCredsRetriever(self._auth_hdr_val.mac_key_identifier)
+        acr.fetch(self._on_async_mac_creds_retriever_done)
 
     def authenticate(self, on_auth_done):
         self._on_auth_done = on_auth_done
