@@ -60,16 +60,24 @@ curl -X DELETE http://127.0.0.1:8070/v1.0/creds/<MAC key identifier>
 
 ### Key Generation
 
-[Keyczar](http://www.keyczar.org/) is used to generate MAC keys.
+[Keyczar](http://www.keyczar.org/) is used to generate MAC Keys.
 Specifically, *keyczar.keys.HmacKey.Generate()* is used to generate
 a 256 bit key.
 See [mac.MACKey.generate()](../util/mac.py#L159)
 for all the details.
 
-MAC key identifiers are generated using Python's
+MAC Key Identifiers are generated using Python's
 [uuid.uuid4()](http://docs.python.org/2/library/uuid.html).
 See [mac.MACKeyIdentifier.generate()](../util/mac.py#L137)
 for all the details.
+A question that's sometimes asked is "are UUID4 (globally) unique and/or secure".
+Short answer is "yes". Rather than providing the long answer here, we'll reference
+key materials to help you get to the same "yes" short answer that yar designers
+arrived at:
+* [this](http://stackoverflow.com/questions/703035/when-are-you-truly-forced-to-use-uuid-as-part-of-the-design/786541#786541) answer should convince the reader of the "yes" short answer but in case not continue on reading the 
+articles referenced below
+* [Python's UUID objects according to RFC 4122](https://docs.python.org/2.7/library/uuid.html)
+* [RFC 4122](http://tools.ietf.org/html/rfc4122.html)
 
 Nonces are generated using Python's
 [os.urandom()](http://docs.python.org/2/library/os.html#os-miscfunc).
