@@ -18,15 +18,16 @@ yar is a reverse proxy that sits in front of your RESTful API
 to realize an API Management solution with the following
 features/capabilities:
 
-  * authentication using
-[OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02)
-and [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
-  * key generation for both the above authentication schemes
-  * [Keyczar](http://www.keyczar.org/) used for both key generation and MAC verification
+  * authentication of API requestors using the standard HTTP approach to
+authentication (see [this](https://www.ietf.org/rfc/rfc2617.txt) for details) - more specifically,
+yar implements [MAC](http://en.wikipedia.org/wiki/Message_authentication_code)
+and [Basic](http://en.wikipedia.org/wiki/Basic_authentication) authentication schemes - MACs
+are calculated per the [OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02) specification
+  * key generation for the above authentication schemes using [Keyczar](http://www.keyczar.org/)
   * [Auth Server](yar/auth_server) and [Key Server](yar/key_server) are [Tornado](http://www.tornadoweb.org/en/stable/) servers leveraging Tornado's [asynchronous/high concurrency capabilites](http://www.tornadoweb.org/en/stable/networking.html) - yar's high concurrency capability is verified with an [extensive and automated load testing framework](tests/load) that leverages [Vagrant](http://www.vagrantup.com/), [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Docker](https://www.docker.io/)
-  * [HAProxy](http://haproxy.1wt.eu/) load balances requests across
-[Auth Server](yar/auth_server) and [Key Server](yar/key_server)
-tiers enabling these tiers to
+  * [HAProxy](http://haproxy.1wt.eu/) is used to load balance requests across tiers of
+[Auth Servers](yar/auth_server), [Key Servers](yar/key_server) and  [Key Stores](yar/key_store)
+enabling these tiers to independantly
 [scale horizontally](http://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling)
   * high quality code base - ~1,500 LOC and 200+ unit tests with 99% code coverage
   * small footprint - for example, the [Auth Server](yar/auth_server) and [Key Server](yar/key_server)
