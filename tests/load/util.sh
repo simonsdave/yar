@@ -409,7 +409,6 @@ create_app_server_lb() {
         -d \
         --name="App_Server_LB" \
 		-p $PORT:$PORT \
-        -v /dev/log:/haproxy/log \
         -v $DATA_DIRECTORY:/haproxycfg \
         $IMAGE_NAME \
         $APP_SERVER_LB_CMD 2> "$DOCKER_RUN_STDERR")
@@ -792,7 +791,6 @@ create_key_server_lb() {
         -d \
         --name="Key_Server_LB" \
 		-p $PORT:$PORT \
-        -v /dev/log:/haproxy/log \
         -v $DATA_DIRECTORY:/haproxycfg \
         $IMAGE_NAME \
         $KEY_SERVER_LB_CMD 2> $DOCKER_RUN_STDERR)
@@ -1069,7 +1067,6 @@ create_auth_server_lb() {
         -d \
         --name="Auth_Server_LB" \
 		-p $PORT:$PORT \
-        -v /dev/log:/haproxy/log \
         -v $DATA_DIRECTORY:/haproxycfg \
         $IMAGE_NAME \
         $AUTH_SERVER_LB_CMD 2> "$DOCKER_RUN_STDERR")
