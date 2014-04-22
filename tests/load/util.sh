@@ -289,6 +289,10 @@ create_app_server() {
 
     local PORT=${2:-8080}
 
+    local APP_SERVER_NUMBER=$(get_number_deployment_config_keys \
+        "APP_SERVER_CONTAINER_ID_[[:digit:]]\+")
+    let "APP_SERVER_NUMBER += 1"
+
     local IMAGE_NAME=yar_img
     if ! does_image_exist $IMAGE_NAME; then
         echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
@@ -299,16 +303,20 @@ create_app_server() {
         --log=info \
         --lon=$PORT \
         --logfile=/var/yar_app_server/app_server_log"
+    local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
     local APP_SERVER=$(sudo docker run \
         -d \
+        --name="App_Server_$APP_SERVER_NUMBER" \
         -v $DATA_DIRECTORY:/var/yar_app_server \
         $IMAGE_NAME \
-        $APP_SERVER_CMD)
+        $APP_SERVER_CMD 2> "$DOCKER_RUN_STDERR")
+    if [ "$APP_SERVER" == "" ]; then
+        local MSG="Error starting App Server container"
+        MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
+        echo_to_stderr_if_not_silent "$MSG"
+        return 2
+    fi
     local APP_SERVER_IP=$(get_container_ip $APP_SERVER)
-
-    local APP_SERVER_NUMBER=$(get_number_deployment_config_keys \
-        "APP_SERVER_CONTAINER_ID_[[:digit:]]\+")
-    let "APP_SERVER_NUMBER += 1"
 
     echo "APP_SERVER_CONTAINER_ID_$APP_SERVER_NUMBER=$APP_SERVER" >> ~/.yar.deployment
     echo "APP_SERVER_IP_$APP_SERVER_NUMBER=$APP_SERVER_IP" >> ~/.yar.deployment
@@ -396,13 +404,21 @@ create_app_server_lb() {
 	done
 
     local APP_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
+    local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
     local APP_SERVER_LB=$(sudo docker run \
         -d \
+        --name="App_Server_LB" \
 		-p $PORT:$PORT \
         -v /dev/log:/haproxy/log \
         -v $DATA_DIRECTORY:/haproxycfg \
         $IMAGE_NAME \
-        $APP_SERVER_LB_CMD)
+        $APP_SERVER_LB_CMD 2> "$DOCKER_RUN_STDERR")
+    if [ "$APP_SERVER_LB" == "" ]; then
+        local MSG="Error starting App Server LB container"
+        MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
+        echo_to_stderr_if_not_silent "$MSG"
+        return 2
+    fi
     local APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB)
 
     echo "APP_SERVER_LB_CONTAINER_ID=$APP_SERVER_LB" >> ~/.yar.deployment
@@ -467,12 +483,20 @@ create_key_store() {
         return 2
     fi
 
+    local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
     local KEY_STORE=$(sudo docker run \
         -d \
+        --name="Key_Store" \
         -v $DATA_DIRECTORY/data:/usr/local/var/lib/couchdb \
         -v $DATA_DIRECTORY/log:/usr/local/var/log/couchdb \
         -v $DATA_DIRECTORY/run:/usr/local/var/run/couchdb \
-        $IMAGE_NAME)
+        $IMAGE_NAME 2> "$DOCKER_RUN_STDERR")
+    if [ "$KEY_STORE" == "" ]; then
+        local MSG="Error starting Key Store container"
+        MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
+        echo_to_stderr_if_not_silent "$MSG"
+        return 2
+    fi
 
     local KEY_STORE_IP=$(get_container_ip $KEY_STORE)
 
@@ -647,6 +671,10 @@ create_key_server() {
 
     local PORT=8070
 
+    local KEY_SERVER_NUMBER=$(get_number_deployment_config_keys \
+        "KEY_SERVER_CONTAINER_ID_[[:digit:]]\+")
+    let "KEY_SERVER_NUMBER += 1"
+
     local IMAGE_NAME=yar_img
     if ! does_image_exist $IMAGE_NAME; then
         echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
@@ -658,16 +686,20 @@ create_key_server() {
         --lon=$PORT \
         --key_store=$KEY_STORE \
         --logfile=/var/yar_key_server/key_server_log"
+    local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
     local KEY_SERVER=$(sudo docker run \
         -d \
+        --name="Key_Server_$KEY_SERVER_NUMBER" \
         -v $DATA_DIRECTORY:/var/yar_key_server \
         $IMAGE_NAME \
-        $KEY_SERVER_CMD)
+        $KEY_SERVER_CMD 2> "$DOCKER_RUN_STDERR")
+    if [ "$KEY_SERVER" == "" ]; then
+        local MSG="Error starting Key Server container"
+        MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
+        echo_to_stderr_if_not_silent "$MSG"
+        return 2
+    fi
     local KEY_SERVER_IP=$(get_container_ip $KEY_SERVER)
-
-    local KEY_SERVER_NUMBER=$(get_number_deployment_config_keys \
-        "KEY_SERVER_CONTAINER_ID_[[:digit:]]\+")
-    let "KEY_SERVER_NUMBER += 1"
 
     echo "KEY_SERVER_CONTAINER_ID_$KEY_SERVER_NUMBER=$KEY_SERVER" >> ~/.yar.deployment
     echo "KEY_SERVER_IP_$KEY_SERVER_NUMBER=$KEY_SERVER_IP" >> ~/.yar.deployment
@@ -755,13 +787,21 @@ create_key_server_lb() {
     fi
 
     local KEY_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
+    local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
     local KEY_SERVER_LB=$(sudo docker run \
         -d \
+        --name="Key_Server_LB" \
 		-p $PORT:$PORT \
         -v /dev/log:/haproxy/log \
         -v $DATA_DIRECTORY:/haproxycfg \
         $IMAGE_NAME \
-        $KEY_SERVER_LB_CMD)
+        $KEY_SERVER_LB_CMD 2> $DOCKER_RUN_STDERR)
+    if [ "$KEY_SERVER_LB" == "" ]; then
+        local MSG="Error starting Key Server LB container"
+        MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
+        echo_to_stderr_if_not_silent "$MSG"
+        return 2
+    fi
     local KEY_SERVER_LB_IP=$(get_container_ip $KEY_SERVER_LB)
 
     echo "KEY_SERVER_LB_CONTAINER_ID=$KEY_SERVER_LB" >> ~/.yar.deployment
@@ -802,6 +842,10 @@ create_nonce_store() {
 
     local RAM=${3:-128}
 
+    local NONCE_STORE_NUMBER=$(get_number_deployment_config_keys \
+        "NONCE_STORE_CONTAINER_ID_[[:digit:]]\+")
+    let "NONCE_STORE_NUMBER += 1"
+
     local IMAGE_NAME=memcached_img
     if ! does_image_exist $IMAGE_NAME; then
         echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
@@ -812,16 +856,20 @@ create_nonce_store() {
         $PORT \
         $RAM \
         /var/nonce_store/nonce_store_log"
+    local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
     local NONCE_STORE=$(sudo docker run \
         -d \
+        --name="Nonce_Store_$NONCE_STORE_NUMBER" \
         -v $DATA_DIRECTORY:/var/nonce_store \
         $IMAGE_NAME \
-        $NONCE_STORE_CMD)
+        $NONCE_STORE_CMD 2> "$DOCKER_RUN_STDERR")
+    if [ "$NONCE_STORE" == "" ]; then
+        local MSG="Error starting Nonce Store container"
+        MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
+        echo_to_stderr_if_not_silent "$MSG"
+        return 2
+    fi
     local NONCE_STORE_IP=$(get_container_ip $NONCE_STORE)
-
-    local NONCE_STORE_NUMBER=$(get_number_deployment_config_keys \
-        "NONCE_STORE_CONTAINER_ID_[[:digit:]]\+")
-    let "NONCE_STORE_NUMBER += 1"
 
     echo "NONCE_STORE_CONTAINER_ID_$NONCE_STORE_NUMBER=$NONCE_STORE" >> ~/.yar.deployment
     echo "NONCE_STORE_IP_$NONCE_STORE_NUMBER=$NONCE_STORE_IP" >> ~/.yar.deployment
@@ -898,6 +946,10 @@ create_auth_server() {
 
     local PORT=8000
 
+    local AUTH_SERVER_NUMBER=$(get_number_deployment_config_keys \
+        "AUTH_SERVER_CONTAINER_ID_[[:digit:]]\+")
+    let "AUTH_SERVER_NUMBER += 1"
+
     local IMAGE_NAME=yar_img
     if ! does_image_exist $IMAGE_NAME; then
         echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
@@ -911,16 +963,20 @@ create_auth_server() {
         --appserver=$APP_SERVER \
         --noncestore=$NONCE_STORE \
         --logfile=/var/auth_server/auth_server_log"
+    local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
     local AUTH_SERVER=$(sudo docker run \
         -d \
+        --name="Auth_Server_$AUTH_SERVER_NUMBER" \
         -v $DATA_DIRECTORY:/var/auth_server \
         $IMAGE_NAME \
-        $AUTH_SERVER_CMD)
+        $AUTH_SERVER_CMD 2> "$DOCKER_RUN_STDERR")
+    if [ "$AUTH_SERVER" == "" ]; then
+        local MSG="Error starting Auth Server container"
+        MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
+        echo_to_stderr_if_not_silent "$MSG"
+        return 2
+    fi
     local AUTH_SERVER_IP=$(get_container_ip $AUTH_SERVER)
-
-    local AUTH_SERVER_NUMBER=$(get_number_deployment_config_keys \
-        "AUTH_SERVER_CONTAINER_ID_[[:digit:]]\+")
-    let "AUTH_SERVER_NUMBER += 1"
 
     echo "AUTH_SERVER_CONTAINER_ID_$AUTH_SERVER_NUMBER=$AUTH_SERVER" >> ~/.yar.deployment
     echo "AUTH_SERVER_IP_$AUTH_SERVER_NUMBER=$AUTH_SERVER_IP" >> ~/.yar.deployment
@@ -1008,13 +1064,21 @@ create_auth_server_lb() {
     fi
 
     local AUTH_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
+    local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
     local AUTH_SERVER_LB=$(sudo docker run \
         -d \
+        --name="Auth_Server_LB" \
 		-p $PORT:$PORT \
         -v /dev/log:/haproxy/log \
         -v $DATA_DIRECTORY:/haproxycfg \
         $IMAGE_NAME \
-        $AUTH_SERVER_LB_CMD)
+        $AUTH_SERVER_LB_CMD 2> "$DOCKER_RUN_STDERR")
+    if [ "$AUTH_SERVER_LB" == "" ]; then
+        local MSG="Error starting Auth Server LB container"
+        MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
+        echo_to_stderr_if_not_silent "$MSG"
+        return 2
+    fi
     local AUTH_SERVER_LB_IP=$(get_container_ip $AUTH_SERVER_LB)
 
     echo "AUTH_SERVER_LB_CONTAINER_ID=$AUTH_SERVER_LB" >> ~/.yar.deployment
