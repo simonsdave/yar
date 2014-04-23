@@ -5,7 +5,7 @@ global
     # ensure only 1 process is created when going daemon
     nbproc 1
 
-    log /haproxy/log local0
+    log 127.0.0.1 local0 info
     maxconn 2000
     # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#user
     user haproxy
