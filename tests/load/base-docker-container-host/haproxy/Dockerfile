@@ -18,3 +18,6 @@ RUN apt-get update
 
 # at time of writing this installed version 1.4.18 of haproxy
 RUN apt-get install -y haproxy
+
+ADD haproxy.sh /usr/local/bin/haproxy.sh
+RUN chown root.root /usr/local/bin/haproxy.sh

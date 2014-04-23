@@ -1,6 +1,10 @@
 global
+    # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#daemon
+    daemon
+
     log /haproxy/log local0
     maxconn 2000
+    # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#user
     user haproxy
     group haproxy
 

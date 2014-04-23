@@ -403,13 +403,13 @@ create_app_server_lb() {
 		let "APP_SERVER_NUMBER += 1"
 	done
 
-    local APP_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
+    local APP_SERVER_LB_CMD="haproxy.sh /haproxy/haproxy.cfg /haproxy/haproxy.pid"
     local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
     local APP_SERVER_LB=$(sudo docker run \
         -d \
         --name="App_Server_LB" \
 		-p $PORT:$PORT \
-        -v $DATA_DIRECTORY:/haproxycfg \
+        -v $DATA_DIRECTORY:/haproxy \
         $IMAGE_NAME \
         $APP_SERVER_LB_CMD 2> "$DOCKER_RUN_STDERR")
     if [ "$APP_SERVER_LB" == "" ]; then
@@ -785,13 +785,13 @@ create_key_server_lb() {
         return 2
     fi
 
-    local KEY_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
+    local KEY_SERVER_LB_CMD="haproxy.sh /haproxy/haproxy.cfg /haproxy/haproxy.pid"
     local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
     local KEY_SERVER_LB=$(sudo docker run \
         -d \
         --name="Key_Server_LB" \
 		-p $PORT:$PORT \
-        -v $DATA_DIRECTORY:/haproxycfg \
+        -v $DATA_DIRECTORY:/haproxy \
         $IMAGE_NAME \
         $KEY_SERVER_LB_CMD 2> $DOCKER_RUN_STDERR)
     if [ "$KEY_SERVER_LB" == "" ]; then
@@ -1061,13 +1061,13 @@ create_auth_server_lb() {
         return 2
     fi
 
-    local AUTH_SERVER_LB_CMD="haproxy -f /haproxycfg/haproxy.cfg"
+    local AUTH_SERVER_LB_CMD="haproxy.sh /haproxy/haproxy.cfg /haproxy/haproxy.pid"
     local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
     local AUTH_SERVER_LB=$(sudo docker run \
         -d \
         --name="Auth_Server_LB" \
 		-p $PORT:$PORT \
-        -v $DATA_DIRECTORY:/haproxycfg \
+        -v $DATA_DIRECTORY:/haproxy \
         $IMAGE_NAME \
         $AUTH_SERVER_LB_CMD 2> "$DOCKER_RUN_STDERR")
     if [ "$AUTH_SERVER_LB" == "" ]; then
