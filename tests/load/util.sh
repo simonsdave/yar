@@ -271,11 +271,46 @@ left_zero_pad() {
 }
 
 #
+# just like the function name says, initialize things in preperation
+# for spinning up a yar deployment
+#
+# arguments
+#   1   directory in which deployment will be spun up
+#
+# exit codes
+#   0   always
+#
+yar_init_deployment() {
+    local DEPLOYMENT_LOCATION=${1:-}
+
+    echo_if_not_silent "Initalizating Deployment"
+
+    echo_if_not_silent "-- Removing all existing containers"
+    if ! $SCRIPT_DIR_NAME/rm_all_containers.sh; then
+        echo_to_stderr_if_not_silent "-- Error removing all existing containers"
+        return 1
+    fi
+
+    echo_if_not_silent "-- Removing '~/.yar.deployment'"
+    rm -f ~/.yar.deployment >& /dev/null
+
+    echo_if_not_silent "-- Removing '~/.yar.creds'"
+    rm -f ~/.yar.creds >& /dev/null
+
+    echo_if_not_silent "-- Removing '~/.yar.creds.random'"
+    rm -f ~/.yar.creds.random.set >& /dev/null
+
+    echo_if_not_silent "-- Deployment Location '$DEPLOYMENT_LOCATION'"
+    echo "DEPLOYMENT_LOCATION=$DEPLOYMENT_LOCATION"  >> ~/.yar.deployment
+
+    return 0
+}
+
+#
 # create a docker container to run an app server
 #
 # arguments
-#   1   name of data directory - mkdir -p called on this name
-#   2   port on which to run the app server (optional, default = 8080)
+#   none
 #
 # exit codes
 #   0   ok
@@ -284,15 +319,23 @@ left_zero_pad() {
 #
 create_app_server() {
 
-    local DATA_DIRECTORY=${1:-}
-    mkdir -p $DATA_DIRECTORY
-
-    local PORT=${2:-8080}
+    #
+    # extract function arguments and setup function specific config
+    #
+    local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
 
     local APP_SERVER_NUMBER=$(get_number_deployment_config_keys \
         "APP_SERVER_CONTAINER_ID_[[:digit:]]\+")
     let "APP_SERVER_NUMBER += 1"
 
+    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/App-Server-$APP_SERVER_NUMBER
+    mkdir -p $DATA_DIRECTORY
+
+    local PORT=8080
+
+    #
+    # ...
+    #
     local IMAGE_NAME=yar_img
     if ! does_image_exist $IMAGE_NAME; then
         echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
@@ -322,6 +365,9 @@ create_app_server() {
     echo "APP_SERVER_IP_$APP_SERVER_NUMBER=$APP_SERVER_IP" >> ~/.yar.deployment
     echo "APP_SERVER_END_POINT_$APP_SERVER_NUMBER=$APP_SERVER_IP:$PORT" >> ~/.yar.deployment
 
+    #
+    # ...
+    #
     for i in {1..10}
     do
         sleep 1
@@ -372,7 +418,7 @@ get_all_app_server_container_id_keys() {
 # create a docker container to run an app server load balancer
 #
 # arguments
-#   1   name of data directory - mkdir -p called on this name
+#   none
 #
 # exit codes
 #   0   ok
@@ -381,48 +427,84 @@ get_all_app_server_container_id_keys() {
 #
 create_app_server_lb() {
 
-    local DATA_DIRECTORY=${1:-}
+    #
+    # extract function arguments and setup function specific config
+    #
+    local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
+
+    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/App-Server-LB
     mkdir -p $DATA_DIRECTORY
 
     local PORT=8080
 
-    local IMAGE_NAME=haproxy_img
-    if ! does_image_exist $IMAGE_NAME; then
-        echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
-        return 2
-    fi
+    #
+    # if we're spinning up a new haproxy or reconfiguring an existing
+    # haproxy we're going to need to generate an haproxy configuration
+    # file so let's get that over with
+    #
+    local HAPROXY_CFG_FILENAME="$DATA_DIRECTORY/haproxy.cfg"
 
-	cp "$SCRIPT_DIR_NAME/haproxy.cfg/app_server" "$DATA_DIRECTORY/haproxy.cfg"
+	cp "$SCRIPT_DIR_NAME/haproxy.cfg/app_server" "$HAPROXY_CFG_FILENAME"
 
 	local APP_SERVER_NUMBER=1
 	for APP_SERVER_CONTAINER_ID_KEY in $(get_all_app_server_container_id_keys)
 	do
 		APP_SERVER_CONTAINER_ID=$(get_deployment_config "$APP_SERVER_CONTAINER_ID_KEY")
 		APP_SERVER_IP=$(get_container_ip "$APP_SERVER_CONTAINER_ID")
-		echo "    server app_server_$APP_SERVER_NUMBER $APP_SERVER_IP check" >> $DATA_DIRECTORY/haproxy.cfg
+		echo "    server app_server_$APP_SERVER_NUMBER $APP_SERVER_IP check" >> "$HAPROXY_CFG_FILENAME"
 		let "APP_SERVER_NUMBER += 1"
 	done
 
-    local APP_SERVER_LB_CMD="haproxy.sh /haproxy/haproxy.cfg /haproxy/haproxy.pid"
-    local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
-    local APP_SERVER_LB=$(sudo docker run \
-        -d \
-        --name="App_Server_LB" \
-		-p $PORT:$PORT \
-        -v $DATA_DIRECTORY:/haproxy \
-        $IMAGE_NAME \
-        $APP_SERVER_LB_CMD 2> "$DOCKER_RUN_STDERR")
-    if [ "$APP_SERVER_LB" == "" ]; then
-        local MSG="Error starting App Server LB container"
-        MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
-        echo_to_stderr_if_not_silent "$MSG"
-        return 2
-    fi
-    local APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB)
+    #
+    # if no LB exists spin one up
+    # if a LB does exist reload the new configuration
+    #
+    APP_SERVER_LB_CONTAINER_ID=$(get_deployment_config "APP_SERVER_LB_CONTAINER_ID" "")
+    if [ "$APP_SERVER_LB_CONTAINER_ID" == "" ]; then
 
-    echo "APP_SERVER_LB_CONTAINER_ID=$APP_SERVER_LB" >> ~/.yar.deployment
-    echo "APP_SERVER_LB_IP=$APP_SERVER_LB_IP" >> ~/.yar.deployment
-    echo "APP_SERVER_LB_END_POINT=$APP_SERVER_LB_IP:$PORT" >> ~/.yar.deployment
+        local IMAGE_NAME=haproxy_img
+        if ! does_image_exist $IMAGE_NAME; then
+            echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
+            return 2
+        fi
+
+        local APP_SERVER_LB_CMD="haproxy.sh /haproxy/haproxy.cfg /haproxy/haproxy.pid"
+        local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
+        local APP_SERVER_LB_CONTAINER_ID=$(sudo docker run \
+            -d \
+            --name="App_Server_LB" \
+            -p $PORT:$PORT \
+            -v $DATA_DIRECTORY:/haproxy \
+            $IMAGE_NAME \
+            $APP_SERVER_LB_CMD 2> "$DOCKER_RUN_STDERR")
+        if [ "$APP_SERVER_LB_CONTAINER_ID" == "" ]; then
+            local MSG="Error starting App Server LB container"
+            MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
+            echo_to_stderr_if_not_silent "$MSG"
+            return 2
+        fi
+        local APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB_CONTAINER_ID)
+
+        echo "APP_SERVER_LB_CONTAINER_ID=$APP_SERVER_LB_CONTAINER_ID" >> ~/.yar.deployment
+        echo "APP_SERVER_LB_IP=$APP_SERVER_LB_IP" >> ~/.yar.deployment
+        echo "APP_SERVER_LB_END_POINT=$APP_SERVER_LB_IP:$PORT" >> ~/.yar.deployment
+
+    else
+
+        local HAPROXY_RESTART_CMD='haproxy'
+        HAPROXY_RESTART_CMD=$HAPROXY_RESTART_CMD' -f /haproxy/haproxy.cfg'
+        HAPROXY_RESTART_CMD=$HAPROXY_RESTART_CMD' -p /haproxy/haproxy.pid'
+        HAPROXY_RESTART_CMD=$HAPROXY_RESTART_CMD' -sf $(cat /haproxy/haproxy.pid)'
+
+        echo $HAPROXY_RESTART_CMD | sudo lxc-attach --name=$APP_SERVER_LB_CONTAINER_ID
+
+    fi
+
+    #
+    # the app server should now be able to respond to simple requests.
+    # we'll use such a request to confirm the LB is up and running.
+    #
+    local APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB_CONTAINER_ID)
 
     for i in {1..10}
     do

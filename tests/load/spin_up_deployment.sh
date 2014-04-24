@@ -105,20 +105,7 @@ fi
 #
 # some cleanup before we start the meat of this script
 #
-echo_if_not_silent "Removing all existing containers"
-if ! $SCRIPT_DIR_NAME/rm_all_containers.sh; then
-    echo_to_stderr_if_not_silent "Error removing all existing containers"
-    return 1
-fi
-
-rm -f ~/.yar.deployment >& /dev/null
-rm -f ~/.yar.creds.random.set >& /dev/null
-rm -f ~/.yar.creds >& /dev/null
-
-#
-# spin up services
-#
-echo_if_not_silent "Starting yar Services ..."
+yar_init_deployment "$DOCKER_CONTAINER_DATA"
 
 #
 # App Server
@@ -131,24 +118,22 @@ NUMBER_APP_SERVERS=$(get_from_json "$NUMBER_APP_SERVERS_PATTERN" "1" < $DEPLOYME
 for APP_SERVER_NUMBER in $(seq 1 $NUMBER_APP_SERVERS)
 do
     echo_if_not_silent "-- $APP_SERVER_NUMBER: Starting App Server"
-	DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/App-Server-$APP_SERVER_NUMBER
-	if ! APP_SERVER=$(create_app_server $DATA_DIRECTORY); then
+	if ! APP_SERVER=$(create_app_server); then
 		echo_to_stderr_if_not_silent "-- $APP_SERVER_NUMBER: App Server failed to start"
 		exit 1
 	fi
-	echo_if_not_silent "-- $APP_SERVER_NUMBER: $APP_SERVER in $DATA_DIRECTORY"
+	echo_if_not_silent "-- $APP_SERVER_NUMBER: App Server listening on $APP_SERVER"
 done
 
 #
 # App Server LB
 #
 echo_if_not_silent "Starting App Server LB"
-DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/App-Server-LB
-if ! APP_SERVER_LB=$(create_app_server_lb $DATA_DIRECTORY); then
+if ! APP_SERVER_LB=$(create_app_server_lb); then
     echo_to_stderr_if_not_silent "-- App Server LB failed to start"
     exit 1
 fi
-echo_if_not_silent "-- $APP_SERVER_LB in $DATA_DIRECTORY"
+echo_if_not_silent "-- App Server LB listening on $APP_SERVER_LB"
 
 #
 # Nonce Store(s)
