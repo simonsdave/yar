@@ -186,7 +186,7 @@ fi
 #
 # Key Server
 #
-echo_if_not_silent "Starting Key Server"
+echo_if_not_silent "Starting Key Server(s)"
 
 NUMBER_KEY_SERVERS_PATTERN='\["key_server"\,"number_of_servers"\]'
 NUMBER_KEY_SERVERS=$(get_from_json "$NUMBER_KEY_SERVERS_PATTERN" "1" < $DEPLOYMENT_PROFILE)
@@ -195,13 +195,12 @@ for KEY_SERVER_NUMBER in $(seq 1 $NUMBER_KEY_SERVERS)
 do
     echo_if_not_silent "-- $KEY_SERVER_NUMBER: Starting Key Server"
 
-	DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Server-$KEY_SERVER_NUMBER
-	if ! KEY_SERVER=$(create_key_server $DATA_DIRECTORY $KEY_STORE); then
+	if ! KEY_SERVER=$(create_key_server $KEY_STORE); then
 		echo_to_stderr_if_not_silent "-- $KEY_SERVER_NUMBER: Key Server failed to start"
 		exit 1
 	fi
 
-	echo_if_not_silent "-- $KEY_SERVER_NUMBER: $KEY_SERVER in $DATA_DIRECTORY"
+	echo_if_not_silent "-- $KEY_SERVER_NUMBER: Key Server listening on $KEY_SERVER"
 done
 
 #

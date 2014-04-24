@@ -746,8 +746,7 @@ extract_random_set_of_creds_from_key_store() {
 # create a docker container to run a key server
 #
 # arguments
-#   1   name of data directory - mkdir -p called on this name
-#   2   key store
+#   1   key store
 #
 # exit codes
 #   0   ok
@@ -756,17 +755,25 @@ extract_random_set_of_creds_from_key_store() {
 #
 create_key_server() {
 
-    local DATA_DIRECTORY=${1:-}
-    mkdir -p $DATA_DIRECTORY
-
-    local KEY_STORE=${2:-}
-
-    local PORT=8070
+    #
+    # extract function arguments and setup function specific config
+    #
+    local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
 
     local KEY_SERVER_NUMBER=$(get_number_deployment_config_keys \
         "KEY_SERVER_CONTAINER_ID_[[:digit:]]\+")
     let "KEY_SERVER_NUMBER += 1"
 
+    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Key-Server-$KEY_SERVER_NUMBER
+    mkdir -p $DATA_DIRECTORY
+
+    local KEY_STORE=${1:-}
+
+    local PORT=8070
+
+    #
+    # spin up the key sever ...
+    #
     local IMAGE_NAME=yar_img
     if ! does_image_exist $IMAGE_NAME; then
         echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
@@ -797,6 +804,10 @@ create_key_server() {
     echo "KEY_SERVER_IP_$KEY_SERVER_NUMBER=$KEY_SERVER_IP" >> ~/.yar.deployment
     echo "KEY_SERVER_END_POINT_$KEY_SERVER_NUMBER=$KEY_SERVER_IP:$PORT" >> ~/.yar.deployment
 
+    #
+    # key sever should now be running so let's verify that
+    # before we return control to the caller ...
+    #
     for i in {1..10}
     do
         sleep 1
