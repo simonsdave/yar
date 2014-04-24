@@ -147,13 +147,12 @@ NONCE_STORES=""
 for NONCE_STORE_NUMBER in $(seq 1 $NUMBER_NONCE_STORES)
 do
     echo_if_not_silent "-- $NONCE_STORE_NUMBER: Starting Nonce Store"
-    DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Nonce-Store-$NONCE_STORE_NUMBER
-    if ! NONCE_STORE=$(create_nonce_store $DATA_DIRECTORY); then 
-        echo_to_stderr_if_not_silent "$NONCE_STORE_NUMBER: Nonce Store failed to start"
+    if ! NONCE_STORE=$(create_nonce_store); then 
+        echo_to_stderr_if_not_silent "-- $NONCE_STORE_NUMBER: Nonce Store failed to start"
         exit 1
     fi
     NONCE_STORES="$NONCE_STORES,$NONCE_STORE"
-    echo_if_not_silent "-- $NONCE_STORE_NUMBER: $NONCE_STORE in $DATA_DIRECTORY"
+    echo_if_not_silent "-- $NONCE_STORE_NUMBER: Nonce Store listening on $NONCE_STORE"
 done
 NONCE_STORES=$(echo $NONCE_STORES | sed -e "s/^\,//g")
 

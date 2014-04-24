@@ -904,9 +904,8 @@ create_key_server_lb() {
 # create a docker container to run a nonce store
 #
 # arguments
-#   1   name of data directory - mkdir -p called on this name
-#   2   port on which to run the nonce store (optional, default = 11211)
-#   3   MB of RAM for nonce store to use to store nonces (optional, default = 128)
+#   1   port on which to run the nonce store (optional, default = 11211)
+#   2   MB of RAM for nonce store to use to store nonces (optional, default = 128)
 #
 # exit codes
 #   0   ok
@@ -915,17 +914,25 @@ create_key_server_lb() {
 #
 create_nonce_store() {
 
-    local DATA_DIRECTORY=${1:-}
-    mkdir -p $DATA_DIRECTORY
-
-    local PORT=${2:-11211}
-
-    local RAM=${3:-128}
+    #
+    # extract function arguments and setup function specific config
+    #
+    local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
 
     local NONCE_STORE_NUMBER=$(get_number_deployment_config_keys \
         "NONCE_STORE_CONTAINER_ID_[[:digit:]]\+")
     let "NONCE_STORE_NUMBER += 1"
 
+    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Nonce-Store-$NONCE_STORE_NUMBER
+    mkdir -p $DATA_DIRECTORY
+
+    local PORT=${1:-11211}
+
+    local RAM=${2:-128}
+
+    #
+    # ...
+    #
     local IMAGE_NAME=memcached_img
     if ! does_image_exist $IMAGE_NAME; then
         echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
@@ -955,6 +962,9 @@ create_nonce_store() {
     echo "NONCE_STORE_IP_$NONCE_STORE_NUMBER=$NONCE_STORE_IP" >> ~/.yar.deployment
     echo "NONCE_STORE_END_POINT_$NONCE_STORE_NUMBER=$NONCE_STORE_IP:$PORT" >> ~/.yar.deployment
 
+    #
+    # confirm the nonce store is up and running
+    #
     for i in {1..10}
     do
         sleep 1
