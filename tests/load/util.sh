@@ -524,9 +524,8 @@ create_app_server_lb() {
 # port 5984 with a database called creds
 #
 # arguments
-#   1   name of data directory - mkdir -p called on this name
-#   2   seed the key store with this number of credentials - optional
-#   3   'true' or 'false' indicating if design docs should be created
+#   1   seed the key store with this number of credentials - optional
+#   2   'true' or 'false' indicating if design docs should be created
 #
 # exit codes
 #   0   ok
@@ -536,16 +535,25 @@ create_app_server_lb() {
 #
 create_key_store() {
 
-    local DATA_DIRECTORY=${1:-}
+    #
+    # extract function arguments and setup function specific config
+    #
+    local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
+
+    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Key-Store
     mkdir -p $DATA_DIRECTORY
 
-    local KEY_STORE_SIZE=${2:-}
+    local KEY_STORE_SIZE=${1:-}
 
-    local CREATE_DESIGN_DOCS=${3:-true}
+    local CREATE_DESIGN_DOCS=${2:-true}
 
     local PORT=5984
     local DATABASE=creds
 
+    #
+    # if requested to do so, seed the key store with a (large
+    # number of credentials)
+    #
     mkdir -p $DATA_DIRECTORY/data
     if [ "$KEY_STORE_SIZE" != "" ]; then
         local SCRIPT_DIR_NAME="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
@@ -558,6 +566,9 @@ create_key_store() {
     mkdir -p $DATA_DIRECTORY/log
     mkdir -p $DATA_DIRECTORY/run
 
+    #
+    # spin up a docker container running couchdb
+    #
     local IMAGE_NAME=couchdb_img
     if ! does_image_exist $IMAGE_NAME; then
         echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"

@@ -163,23 +163,25 @@ echo_if_not_silent "Starting Key Store"
 
 KEY_STORE_SIZE=""
 if [ "$DEPLOYMENT_PROFILE" != "" ]; then
-    KEY_STORE_SIZE=`cat $DEPLOYMENT_PROFILE | get_from_json '\["key_store"\,"number_of_creds"\]' ""`
+    KEY_STORE_SIZE=$(cat $DEPLOYMENT_PROFILE | \
+        get_from_json '\["key_store"\,"number_of_creds"\]' "")
 fi
 
-DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Store
-if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY $KEY_STORE_SIZE); then 
+if ! KEY_STORE=$(create_key_store $KEY_STORE_SIZE); then 
     echo_to_stderr_if_not_silent "-- Key Store failed to start"
     exit 1
 fi
 
+echo_if_not_silent "-- Key Store listening on $KEY_STORE"
+
 if [ "$DEPLOYMENT_PROFILE" != "" ]; then
-    PERCENT_ACTIVE_CREDS=`cat $DEPLOYMENT_PROFILE | get_from_json '\["key_store"\,"percent_active_creds"\]' ""`
+    PERCENT_ACTIVE_CREDS=$(cat $DEPLOYMENT_PROFILE | \
+        get_from_json '\["key_store"\,"percent_active_creds"\]' "")
     if [ "$PERCENT_ACTIVE_CREDS" != "" ]; then 
+        echo_if_not_silent "-- Extracting random $PERCENT_ACTIVE_CREDS% of Key Store's creds"
         extract_random_set_of_creds_from_key_store $KEY_STORE $PERCENT_ACTIVE_CREDS
     fi
 fi
-
-echo_if_not_silent "-- $KEY_STORE in $DATA_DIRECTORY"
 
 #
 # Key Server
