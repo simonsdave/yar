@@ -225,13 +225,12 @@ for AUTH_SERVER_NUMBER in $(seq 1 $NUMBER_AUTH_SERVERS)
 do
     echo_if_not_silent "-- $AUTH_SERVER_NUMBER: Starting Auth Server"
 
-	DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Auth-Server-$AUTH_SERVER_NUMBER
 	if ! AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVER_LB $APP_SERVER_LB $NONCE_STORES); then
 		echo_to_stderr_if_not_silent "-- Auth Server failed to start"
 		exit 1
 	fi
 
-	echo_if_not_silent "-- $AUTH_SERVER in $DATA_DIRECTORY"
+	echo_if_not_silent "-- Auth Server listening on $AUTH_SERVER"
 done
 
 #

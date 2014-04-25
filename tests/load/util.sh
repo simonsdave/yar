@@ -965,7 +965,7 @@ create_nonce_store() {
     local RAM=${2:-128}
 
     #
-    # ...
+    # spin up the nonce store
     #
     local IMAGE_NAME=memcached_img
     if ! does_image_exist $IMAGE_NAME; then
@@ -1049,10 +1049,9 @@ get_all_nonce_store_container_id_keys() {
 # create a docker container to run an auth_server
 #
 # arguments
-#   1   name of data directory - mkdir -p called on this name
-#   2   key server
-#   3   app server
-#   4   nonce store
+#   1   key server
+#   2   app server
+#   3   nonce store
 #
 # exit codes
 #   0   ok
@@ -1061,19 +1060,27 @@ get_all_nonce_store_container_id_keys() {
 #
 create_auth_server() {
 
-    local DATA_DIRECTORY=${1:-}
-    mkdir -p $DATA_DIRECTORY
-
-    local KEY_SERVER=${2:-}
-    local APP_SERVER=${3:-}
-    local NONCE_STORE=${4:-}
-
-    local PORT=8000
+    #
+    # extract function arguments and setup function specific config
+    #
+    local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
 
     local AUTH_SERVER_NUMBER=$(get_number_deployment_config_keys \
         "AUTH_SERVER_CONTAINER_ID_[[:digit:]]\+")
     let "AUTH_SERVER_NUMBER += 1"
 
+    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Auth-Server-$AUTH_SERVER_NUMBER
+    mkdir -p $DATA_DIRECTORY
+
+    local KEY_SERVER=${1:-}
+    local APP_SERVER=${2:-}
+    local NONCE_STORE=${3:-}
+
+    local PORT=8000
+
+    #
+    # spin up the auth server
+    #
     local IMAGE_NAME=yar_img
     if ! does_image_exist $IMAGE_NAME; then
         echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
@@ -1106,6 +1113,10 @@ create_auth_server() {
     echo "AUTH_SERVER_IP_$AUTH_SERVER_NUMBER=$AUTH_SERVER_IP" >> ~/.yar.deployment
     echo "AUTH_SERVER_END_POINT_$AUTH_SERVER_NUMBER=$AUTH_SERVER_IP:$PORT" >> ~/.yar.deployment
 
+    #
+    # auth server should now be running so let's verify that
+    # before we return control to the caller ...
+    #
     for i in {1..10}
     do
         sleep 1
