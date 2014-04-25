@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
-# ...
+# yar.sh is a cli for manage a yar test deployment
+# the cli lets you perform operations such as add
+# and remove a server from a tier in a test deployment.
 #
 # exit codes
 #   0           ok
@@ -57,7 +59,7 @@ app_server() {
 COMMAND=`echo ${1:-} | awk '{print toupper($0)}'`
 shift
 case "$COMMAND" in
-    AS)
+    AS|APP_SERVER|APP_SERVER|APPS)
         app_server $@
         ;;
     "")
