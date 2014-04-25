@@ -1,30 +1,92 @@
+#
+# base HAProxy configuration used to realize the App Server LB
+#
+#
+# references
+# -- http://stackoverflow.com/questions/8750518/difference-between-global-maxconn-and-server-maxconn-haproxy
+
+#
+# the "global" section, which sets process-wide parameters
+#
 global
     # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#daemon
+    # haproxy should run in the background
     daemon
+
     # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#nbproc
     # ensure only 1 process is created when going daemon
     nbproc 1
 
+    # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#3.1-log
+    # ...
     log 127.0.0.1 local0 info
+
+    # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#3.2-maxconn
+    # max # of per process connections
     maxconn 2000
+
     # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#user
+    # change haproxy process' user to haproxy
     user haproxy
+
+    # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#3.1-group
+    # change haproxy process' group to haproxy
     group haproxy
 
+#
+# common defaults that all the "listen" sections will 
+# use if not designated in their block
+#
 defaults
     log     global
-    mode    http
+
+    #
+    # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#mode
+    #
+    # all we're proxying is http traffic so ok to add this
+    # in defaults section
+    #
+    mode http
+
     option  httplog
+
+    #
+    # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#4-option%20dontlognull
+    #
+    # ok to use this because all of yar should sit behind IDS, Firewall (at
+    # least one), SSL termination
+    #
     option  dontlognull
+
+    #
+    # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#retries
+    #
+    # from the manual ... It is important to understand that this value
+    # applies to the number of connection attempts, not full requests.
+    # When a connection has effectively been established to a server, there
+    # will be no more retry.
+    #
     retries 3
-    option redispatch
+
+    #
+    # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#4.2-timeout%20connect
+    #
+    # from the manual ... Set the maximum time to wait for a connection
+    # attempt to a server to succeed.
+    # 
     timeout connect  5000
+
+    #
+    # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#4.2-timeout%20client
+    # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#4.2-timeout%20server
+    #
+    # from the manual ... it is highly recommended that the client timeout
+    # remains equal to the server timeout in order to avoid complex situations
+    # to debug
     timeout client  10000
     timeout server  10000
 
 listen app_server_lb 0.0.0.0:8080
-    # http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#mode
-    mode http
 
     #
     # the following few statements make statistics reporting
