@@ -1176,11 +1176,19 @@ get_all_auth_server_container_id_keys() {
 #
 create_auth_server_lb() {
 
-    local DATA_DIRECTORY=${1:-}
+    #
+    # extract function arguments and setup function specific config
+    #
+    local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
+
+    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Auth-Server-LB
     mkdir -p $DATA_DIRECTORY
 
     local PORT=8000
 
+    #
+    # generate the haproxy config file
+    #
     cp $SCRIPT_DIR_NAME/haproxy.cfg/auth_server $DATA_DIRECTORY/haproxy.cfg
 
     local AUTH_SERVER_NUMBER=1
@@ -1192,6 +1200,9 @@ create_auth_server_lb() {
         let "AUTH_SERVER_NUMBER += 1"
     done
 
+    #
+    # spin up haproxy
+    #
     local IMAGE_NAME=haproxy_img
     if ! does_image_exist $IMAGE_NAME; then
         echo_to_stderr_if_not_silent "docker image '$IMAGE_NAME' does not exist"
@@ -1219,6 +1230,10 @@ create_auth_server_lb() {
     echo "AUTH_SERVER_LB_IP=$AUTH_SERVER_LB_IP" >> ~/.yar.deployment
     echo "AUTH_SERVER_LB_END_POINT=$AUTH_SERVER_LB_IP:$PORT" >> ~/.yar.deployment
 
+    #
+    # auth server LB should now be running so let's verify that
+    # before we return control to the caller ...
+    #
     for i in {1..10}
     do
         sleep 1

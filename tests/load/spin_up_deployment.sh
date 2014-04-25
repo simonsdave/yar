@@ -237,12 +237,11 @@ done
 # Auth Server LB
 #
 echo_if_not_silent "Starting Auth Server LB"
-DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Auth-Server-LB
-if ! AUTH_SERVER_LB=$(create_auth_server_lb $DATA_DIRECTORY); then
+if ! AUTH_SERVER_LB=$(create_auth_server_lb); then
     echo_to_stderr_if_not_silent "-- Auth Server LB failed to start"
     exit 1
 fi
-echo_if_not_silent "-- $AUTH_SERVER_LB in $DATA_DIRECTORY"
+echo_if_not_silent "-- Auth Server LB listening on $AUTH_SERVER_LB"
 
 #
 # services now running ... let's provision some creds
