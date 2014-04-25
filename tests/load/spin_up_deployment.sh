@@ -207,12 +207,11 @@ done
 # Key Server LB
 #
 echo_if_not_silent "Starting Key Server LB"
-DATA_DIRECTORY=$DOCKER_CONTAINER_DATA/Key-Server-LB
-if ! KEY_SERVER_LB=$(create_key_server_lb $DATA_DIRECTORY); then
+if ! KEY_SERVER_LB=$(create_key_server_lb); then
     echo_to_stderr_if_not_silent "-- Key Server LB failed to start"
     exit 1
 fi
-echo_if_not_silent "-- $KEY_SERVER_LB in $DATA_DIRECTORY"
+echo_if_not_silent "-- Key Server LB listening on $KEY_SERVER_LB"
 
 #
 # Auth Server(s)

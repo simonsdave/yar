@@ -858,7 +858,7 @@ get_all_key_server_container_id_keys() {
 # create a docker container to run the key server load balancer
 #
 # arguments
-#   1   name of data directory - mkdir -p called on this name
+#   none
 #
 # exit codes
 #   0   ok
@@ -867,11 +867,19 @@ get_all_key_server_container_id_keys() {
 #
 create_key_server_lb() {
 
-    local DATA_DIRECTORY=${1:-}
+    #
+    # extract function arguments and setup function specific config
+    #
+    local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
+
+    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Key-Server-LB
     mkdir -p $DATA_DIRECTORY
 
     local PORT=8070
 
+    #
+    # spin up the server
+    #
     cp $SCRIPT_DIR_NAME/haproxy.cfg/key_server $DATA_DIRECTORY/haproxy.cfg
 
     local KEY_SERVER_NUMBER=1
@@ -910,6 +918,10 @@ create_key_server_lb() {
     echo "KEY_SERVER_LB_IP=$KEY_SERVER_LB_IP" >> ~/.yar.deployment
     echo "KEY_SERVER_LB_END_POINT=$KEY_SERVER_LB_IP:$PORT" >> ~/.yar.deployment
 
+    #
+    # key sever lb should now be running so let's verify that
+    # before we return control to the caller ...
+    #
     for i in {1..10}
     do
         sleep 1
