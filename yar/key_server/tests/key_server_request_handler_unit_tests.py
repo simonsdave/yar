@@ -204,7 +204,7 @@ class TestCase(yar_test_util.TestCase):
             if not expected_to_be_found:
                 self.assertTrue(httplib.NOT_FOUND == response.status)
                 return None
-            self.assertTrue(httplib.OK == response.status)
+            self.assertEqual(httplib.OK, response.status)
 
             self.assertTrue("content-type" in response)
             content_type = response["content-type"]
@@ -235,7 +235,10 @@ class TestCase(yar_test_util.TestCase):
 
             return creds
 
-    def _get_all_creds(self, the_principal=None):
+    def _get_all_creds(self, the_principal):
+
+        self.assertIsNotNone(the_principal)
+        self.assertTrue(0 < len(the_principal))
 
         def fetch_patch(
             acr,
@@ -271,14 +274,11 @@ class TestCase(yar_test_util.TestCase):
             "AsyncCredsRetriever.fetch"
         )
         with mock.patch(name_of_method_to_patch, fetch_patch):
+            url = "%s?principal=%s" % (self.url(), the_principal)
             http_client = httplib2.Http()
-            url = self.url()
-            if the_principal is not None:
-                self.assertTrue(0 < len(the_principal))
-                url = "%s?principal=%s" % (url, the_principal)
             response, content = http_client.request(url, "GET")
             self.assertIsNotNone(response)
-            self.assertTrue(httplib.OK == response.status)
+            self.assertEqual(httplib.OK, response.status)
             self.assertTrue("content-type" in response)
             content_type = response["content-type"]
             self.assertIsJsonUtf8ContentType(content_type)
@@ -344,6 +344,12 @@ class TestCase(yar_test_util.TestCase):
             response, content = http_client.request(url, "GET")
             self.assertIsNotNone(response)
             self.assertTrue(httplib.NOT_FOUND == response.status)
+
+    def test_get_with_no_principal_and_no_key(self):
+        http_client = httplib2.Http()
+        response, content = http_client.request(self.url(), "GET")
+        self.assertIsNotNone(response)
+        self.assertTrue(httplib.BAD_REQUEST == response.status)
 
     def test_post_with_no_content_type_header(self):
         http_client = httplib2.Http()
@@ -483,10 +489,6 @@ class TestCase(yar_test_util.TestCase):
         # :TODO: validate all_principal_creds is same as principal_creds
 
     def _test_all_good_for_simple_create_and_delete(self, auth_scheme):
-        all_creds = self._get_all_creds()
-        self.assertIsNotNone(all_creds)
-        self.assertEqual(0, len(all_creds))
-
         principal = str(uuid.uuid4()).replace("-", "")
         (creds, location) = self._create_creds(principal, auth_scheme)
         self.assertIsNotNone(creds)
@@ -496,9 +498,9 @@ class TestCase(yar_test_util.TestCase):
         self.assertTrue(0 < len(key))
 
         self._delete_creds(key)
-        # self._delete_creds(key)
+        # :TODO:self._delete_creds(key)
 
-        all_creds = self._get_all_creds()
+        all_creds = self._get_all_creds(principal)
         self.assertIsNotNone(all_creds)
         self.assertEqual(0, len(all_creds))
 

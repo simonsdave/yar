@@ -29,15 +29,28 @@ class RequestHandler(trhutil.RequestHandler):
 
     @tornado.web.asynchronous
     def get(self, key=None):
-        is_filter_out_deleted = False \
+        principal = self.get_argument("principal", None)
+
+        #
+        # it's only valid to ask for a specific set of credentials
+        # (ie key != None) **or** all the credentials associated with
+        # a specific principal.
+        #
+        if (not key and not principal) or (key and principal):
+            self.set_status(httplib.BAD_REQUEST)
+            self.finish()
+            return
+
+        get_deleted_creds = True \
             if self.get_argument("deleted", None) \
-            else True
+            else False
+
         acr = AsyncCredsRetriever(_key_store)
         acr.fetch(
             self._on_async_creds_retrieve_done,
             key=key,
-            principal=self.get_argument("principal", None),
-            is_filter_out_deleted=is_filter_out_deleted,
+            principal=principal,
+            is_filter_out_deleted=(not get_deleted_creds),
             is_filter_out_non_model_properties=True)
 
     def _on_async_creds_retrieve_done(self, creds, is_creds_collection):

@@ -15,47 +15,44 @@ key_server --help
 The Key Server is configured using command line options.
 No configuration file is used for configuration.
 
-All credentials are "owned" by someone.
-An owner's identity is represented below as an opaque string at least one character long.
-To create a set of credentials:
+All credentials are associated with a principal.
+Principals are represented below as an opaque string at least one character long.
+To create a set of credentials for the principal dave@example.com
+and for use with
+[MAC](http://en.wikipedia.org/wiki/Message_authentication_code):
+Autentication:
 
 ~~~~~~
 curl \
+  -s \
   -X POST \
   -H "Content-Type: application/json; charset=utf8" \
-  -d "{\"principal\":\"dave@example.com\"}" \
+  -d "{\"principal\":\"dave@example.com\", \"auth_scheme\":\"mac\"}" \
   http://127.0.0.1:8070/v1.0/creds
 ~~~~~~
 
 To get an existing set of credentials:
 
 ~~~~~
-curl -s http://127.0.0.1:6969/v1.0/creds/<MAC key identifier>
+curl -s http://127.0.0.1:8070/v1.0/creds/<MAC key identifier>
 ~~~~~
 
-To get all credentials currently saved in the
-[Key Store](../key_store):
-
-~~~~~~
-curl -s http://127.0.0.1:8070/v1.0/creds
-~~~~~~
-
-To get all credentials associated with an principal:
+To get all credentials associated with a principal:
 
 ~~~~~
-curl http://127.0.0.1:8070/v1.0/creds?principal=dave@example.com
-~~~~~
-
-To get all credentials including those that have been deleted:
-
-~~~~~
-curl http://127.0.0.1:8070/v1.0/creds?deleted=true
+curl http://127.0.0.1:8070/v1.0/creds/?principal=dave@example.com
 ~~~~~
 
 To delete a set of existing credentials:
 
 ~~~~~
 curl -X DELETE http://127.0.0.1:8070/v1.0/creds/<MAC key identifier>
+~~~~~
+
+To get all credentials including those that have been deleted:
+
+~~~~~
+curl http://127.0.0.1:8070/v1.0/creds/?deleted=true
 ~~~~~
 
 ### Key Generation

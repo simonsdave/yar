@@ -29,14 +29,7 @@ class AsyncCredsRetriever(AsyncAction):
         if key:
             path = key
         else:
-            if principal:
-                fmt = (
-                    '_design/creds/_view/by_principal?'
-                    'key="%s"'
-                )
-                path = fmt % principal
-            else:
-                path = "_design/creds/_view/all"
+            path = '_design/creds/_view/by_principal?key="%s"' % principal
 
         self.async_req_to_key_store(
             path,
