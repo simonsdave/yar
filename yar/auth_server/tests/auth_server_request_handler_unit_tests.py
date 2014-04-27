@@ -279,6 +279,18 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
             None,
             str(uuid.uuid4()).replace("-", ""))
 
+    def test_forward_all_good_options(self):
+        self._test_forward_all_good(
+            "OPTIONS",
+            None,
+            None)
+
+    def test_forward_all_good_head(self):
+        self._test_forward_all_good(
+            "HEAD",
+            None,
+            None)
+
     def test_forward_all_good_post(self):
         self._test_forward_all_good(
             "POST",
@@ -288,6 +300,20 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
     def test_forward_all_good_put(self):
         self._test_forward_all_good(
             "PUT",
+            "",
+            None)
+
+    def test_forward_all_good_patch(self):
+        # :TRICKY: an odd thing happened with initial writing this
+        # test. didn't include "" for the body which resulted in
+        # an assertion failure in _test_forward_all_good() when
+        # the status code in the response to the HTTP request
+        # created by _test_forward_all_good() wasn't 200 but was
+        # instead 599. think this has something to do with PATCH
+        # requests requiring a request body because the same
+        # thing happens on PUT and PATCH requests
+        self._test_forward_all_good(
+            "PATCH",
             "",
             None)
 

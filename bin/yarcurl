@@ -13,7 +13,7 @@
 #-------------------------------------------------------------------------------
 
 usage() {
-    echo "usage: `basename $0` [-v] [GET|POST|PUT|DELETE] <uri>"
+    echo "usage: `basename $0` [-v] [GET|POST|PUT|DELETE|OPTIONS|HEAD|PATCH] <uri>"
 }
 
 VERBOSE=0
@@ -42,11 +42,11 @@ SCRIPTDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 HTTP_METHOD=`echo $1 | awk '{print toupper($0)}'`
 case "$HTTP_METHOD" in
-        GET|DELETE)
+        GET|OPTIONS|HEAD|DELETE)
             CONTENT_TYPE=""
             COPY_OF_STDIN=/dev/null
             ;;
-        PUT|POST)
+        PUT|POST|PATCH)
             CONTENT_TYPE="application/json; charset=utf-8"
             COPY_OF_STDIN=`mktemp 2> /dev/null || mktemp -t DAS`
             cat /dev/stdin > $COPY_OF_STDIN
@@ -159,7 +159,9 @@ else
        $URL"
 fi
 
+echo "dave"
 eval $CURL_CMD
+echo "here"
 
 exit 0
 

@@ -22,16 +22,34 @@ _logger = logging.getLogger("APPSERVER.%s" % __name__)
 
 
 class RequestHandler(tornado.web.RequestHandler):
-    def get(self):
+
+    def _gen_body(self):
         auth_hdr_value = self.request.headers.get(
             "Authorization",
             "<no auth header>")
-        dict = {
+        rv = {
             "status": "ok",
             "when": str(datetime.datetime.now()),
             "auth": auth_hdr_value,
         }
-        self.write(dict)
+        return rv
+
+    def get(self):
+        self.write(self._gen_body())
+        self.set_status(httplib.OK)
+
+    def head(self):
+        self.write("")
+        self.set_status(httplib.OK)
+
+    def delete(self):
+        self.write("")
+        self.set_status(httplib.OK)
+
+    def options(self):
+        self.set_header("Allow", "GET,POST,PUT,HEAD,DELETE,OPTIONS")
+        self.write("")
+        self.set_status(httplib.OK)
 
     def post(self):
         location_url = "%s/%s" % (
@@ -39,19 +57,12 @@ class RequestHandler(tornado.web.RequestHandler):
             str(uuid.uuid4()).replace("-", ""))
         self.set_header("Location", location_url)
         self.set_status(httplib.CREATED)
-        self.get()
 
     def put(self):
-        self.post()
+        self.set_status(httplib.OK)
 
-    def delete(self):
-        self.get()
-
-    def head(self):
-        self._get(False)
-
-    def options(self):
-        self.get()
+    def patch(self):
+        self.set_status(httplib.OK)
 
 
 if __name__ == "__main__":

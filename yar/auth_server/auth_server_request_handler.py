@@ -60,6 +60,11 @@ url_spec = r".*"
 
 class RequestHandler(trhutil.RequestHandler):
 
+    #
+    # :TODO: what happens to "custom" HTTP methods outside of the 
+    # 7 method listed below?
+    #
+
     @tornado.web.asynchronous
     def get(self):
         self._handle_request()
@@ -74,6 +79,18 @@ class RequestHandler(trhutil.RequestHandler):
 
     @tornado.web.asynchronous
     def delete(self):
+        self._handle_request()
+
+    @tornado.web.asynchronous
+    def options(self):
+        self._handle_request()
+
+    @tornado.web.asynchronous
+    def head(self):
+        self._handle_request()
+
+    @tornado.web.asynchronous
+    def patch(self):
         self._handle_request()
 
     def _handle_request(self):
@@ -93,6 +110,8 @@ class RequestHandler(trhutil.RequestHandler):
 
         auth_scheme = match.group("auth_scheme")
         auth_class = _auth_scheme_to_auth_class.get(auth_scheme.upper(), None)
+        # :TRICKY: assert works because _auth_scheme_reg_ex above
+        # weeds out unsupported authentication types
         assert auth_class is not None
 
         aha = auth_class(self.request)
@@ -107,6 +126,7 @@ class RequestHandler(trhutil.RequestHandler):
 
         # :TODO: how to differentiate between an authentication failure
         # and a failure with the authentication infrastructure
+
         if not is_auth_ok:
 
             self.set_status(httplib.UNAUTHORIZED)
