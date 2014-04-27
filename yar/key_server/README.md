@@ -16,10 +16,12 @@ The Key Server is configured using command line options.
 No configuration file is used for configuration.
 
 All credentials are associated with a principal.
-Principals are represented below as an opaque string at least one character long.
+Principals are represented as a string at least one character long.
+The Key Server doesn't care what's the string as long as it's one character long.
+
 To create a set of credentials for the principal dave@example.com
-and for use with
-[MAC](http://en.wikipedia.org/wiki/Message_authentication_code):
+that will be used
+[MAC](http://en.wikipedia.org/wiki/Message_authentication_code)
 Autentication:
 
 ~~~~~~
@@ -31,28 +33,52 @@ curl \
   http://127.0.0.1:8070/v1.0/creds
 ~~~~~~
 
-To get an existing set of credentials:
+To get an existing set of
+[MAC](http://en.wikipedia.org/wiki/Message_authentication_code)
+credentials:
 
 ~~~~~
 curl -s http://127.0.0.1:8070/v1.0/creds/<MAC key identifier>
 ~~~~~
 
+To create a set of credentials for the principal dave@example.com
+that will be used for
+[Basic Autentication](http://en.wikipedia.org/wiki/Basic_authentication):
+
+~~~~~~
+curl \
+  -s \
+  -X POST \
+  -H "Content-Type: application/json; charset=utf8" \
+  -d "{\"principal\":\"dave@example.com\", \"auth_scheme\":\"basic\"}" \
+  http://127.0.0.1:8070/v1.0/creds
+~~~~~~
+
+To get an existing set of
+[Basic Autentication](http://en.wikipedia.org/wiki/Basic_authentication)
+credentials:
+
+~~~~~
+curl -s http://127.0.0.1:8070/v1.0/creds/<API key>
+~~~~~
+
 To get all credentials associated with a principal:
 
 ~~~~~
-curl http://127.0.0.1:8070/v1.0/creds/?principal=dave@example.com
+curl http://127.0.0.1:8070/v1.0/creds?principal=dave@example.com
 ~~~~~
 
 To delete a set of existing credentials:
 
 ~~~~~
-curl -X DELETE http://127.0.0.1:8070/v1.0/creds/<MAC key identifier>
+curl -X DELETE http://127.0.0.1:8070/v1.0/creds/<MAC key identifier or API key>
 ~~~~~
 
-To get all credentials including those that have been deleted:
+To get all credentials for a principal
+including those that have been deleted:
 
 ~~~~~
-curl http://127.0.0.1:8070/v1.0/creds/?deleted=true
+curl http://127.0.0.1:8070/v1.0/creds?principal=dave@example.com&deleted=true
 ~~~~~
 
 ### Key Generation
