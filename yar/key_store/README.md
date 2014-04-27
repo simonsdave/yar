@@ -29,12 +29,6 @@ Options:
   --create=CREATE      create key store - default = True
 ~~~~~
 
-To get all MAC credentials currently saved in the Key Store (really shouldn't do this)
-
-~~~~~~
-curl -s -X GET http://localhost:5984/creds/_design/creds/_view/all
-~~~~~~
-
 To create a new set of credentials for
 [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
 and save them to th Key Store
