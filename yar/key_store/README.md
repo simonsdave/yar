@@ -32,7 +32,7 @@ Options:
   --create=CREATE      create key store - default = True
 ~~~~~
 
-To get all MAC credentials currently saved in the Key Store
+To get all MAC credentials currently saved in the Key Store (really shouldn't do this)
 
 ~~~~~~
 curl -s -X GET http://localhost:5984/creds/_design/creds/_view/all
@@ -57,16 +57,10 @@ curl -s http://localhost:5984/creds/<api key>
 ~~~~~
 
 To get an existing set of credentials used for
-[OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02)
+[MAC Authentication](http://en.wikipedia.org/wiki/Message_authentication_code)
 
 ~~~~~
 curl -s http://localhost:5984/creds/<mac key identifier>
-~~~~~
-
-To get all credentials for all principals (really shouldn't do this):
-
-~~~~~
-curl -s http://localhost:5984/creds/_design/creds/_view/all
 ~~~~~
 
 To get all credentials for a principal
