@@ -47,6 +47,19 @@ To get an existing set of credentials used for
 curl -s http://localhost:5984/creds/<api key>
 ~~~~~
 
+To create a new set of credentials for
+[MAC Authentication](http://en.wikipedia.org/wiki/Message_authentication_code)
+and save them to th Key Store
+
+~~~~~
+MAC_KEY_IDENTIFIER=$(python -c "from yar.util.mac import MACKeyIdentifier; print MACKeyIdentifier.generate()")
+MAC_KEY=$(python -c "from yar.util.mac import MACKey; print MACKey.generate()")
+MAC_ALGORITHM=$(python -c "from yar.util.mac import MAC; print MAC.algorithm")
+CREDS="{\"principal\": \"dave@example.com\", \"type\": \"creds_v1.0\", \"is_deleted\": false, \"mac\": {\"mac_key\": \"$MAC_KEY\", \"mac_key_identifier\": \"$MAC_KEY_IDENTIFIER\", \"mac_algorithm\": \"$MAC_ALGORITHM\"}}"
+CONTENT_TYPE="Content-Type: application/json; charset=utf8"
+curl -v -X PUT -H "$CONTENT_TYPE" -d "$CREDS" http://localhost:5984/creds/$MAC_KEY_IDENTIFIER
+~~~~~
+
 To get an existing set of credentials used for
 [MAC Authentication](http://en.wikipedia.org/wiki/Message_authentication_code)
 
