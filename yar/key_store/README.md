@@ -1,9 +1,6 @@
 The Key Store is implemented as a [CouchDB](http://couchdb.apache.org/) database.
 In the examples below, [CouchDB](http://couchdb.apache.org/) is assumed to be running
 on localhost and listening on port 5984 and yar has been setup with the usual
-~~~~~
-cd; cd yar; source bin/cfg4dev; https://github.com/simonsdave/yar.git
-~~~~~
 
 To create a Key Store on a [CouchDB](http://couchdb.apache.org/) server
 use [key_store_installer](../../bin/key_store_installer).
