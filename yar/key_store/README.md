@@ -78,7 +78,7 @@ To delete an existing set of credentials used for
 
 ~~~~~
 API_KEY=<api key>
-CREDS=$(curl -s http://localhost:5984/creds/$API_KEY | sed -s 's/"is_deleted":false/"is_deleted":true/g')
+CREDS=$(curl -s http://localhost:5984/creds/$API_KEY | sed -e 's/"is_deleted":false/"is_deleted":true/g')
 CONTENT_TYPE="Content-Type: application/json; charset=utf8"
 curl -v -X PUT -H "$CONTENT_TYPE" -d "$CREDS" http://localhost:5984/creds/$API_KEY
 ~~~~~
