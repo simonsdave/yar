@@ -36,7 +36,7 @@ global
     # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#3.1-stats%20socket
     # 
     # :TRICKY: don't change /haproxy/admin.sock without reviewing util.sh
-    stats socket /haproxy/admin.sock level admin
+    stats socket /haproxy_admin/admin.sock level admin
 
 #
 # common defaults that all the "listen" sections will 

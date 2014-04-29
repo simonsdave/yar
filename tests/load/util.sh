@@ -496,11 +496,15 @@ create_app_server_lb() {
 
         local APP_SERVER_LB_CMD="haproxy.sh /haproxy/haproxy.cfg /haproxy/haproxy.pid"
         local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
+        # haproxy's stats socket had to be created in a directory
+        # that was guarenteed to be somewhere other than /vagrant
+        local HAPROXY_ADMIN_DIR=$(mktemp -d)
         local APP_SERVER_LB_CONTAINER_ID=$(sudo docker run \
             -d \
             --name="App_Server_LB" \
             -p $PORT:$PORT \
             -v $DATA_DIRECTORY:/haproxy \
+            -v $HAPROXY_ADMIN_DIR:/haproxy_admin \
             $IMAGE_NAME \
             $APP_SERVER_LB_CMD 2> "$DOCKER_RUN_STDERR")
         if [ "$APP_SERVER_LB_CONTAINER_ID" == "" ]; then
@@ -513,9 +517,9 @@ create_app_server_lb() {
 
         echo "APP_SERVER_LB_DEPLOYMENT_LOCATION=$DATA_DIRECTORY" >> ~/.yar.deployment
         # line below works because -v on /haproxy in above docker run
-        # command and "stats socket /haproxy/admin.sock level admin" in
+        # command and "stats socket /haproxy_admin/admin.sock level admin" in
         # the haproxy config file
-        echo "APP_SERVER_LB_ADMIN_SOCKET=$DATA_DIRECTORY/admin.sock" >> ~/.yar.deployment
+        echo "APP_SERVER_LB_ADMIN_SOCKET=$HAPROXY_ADMIN_DIR/admin.sock" >> ~/.yar.deployment
         echo "APP_SERVER_LB_CONTAINER_ID=$APP_SERVER_LB_CONTAINER_ID" >> ~/.yar.deployment
         echo "APP_SERVER_LB_IP=$APP_SERVER_LB_IP" >> ~/.yar.deployment
         echo "APP_SERVER_LB_END_POINT=$APP_SERVER_LB_IP:$PORT" >> ~/.yar.deployment
