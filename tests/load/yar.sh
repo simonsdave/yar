@@ -20,7 +20,7 @@ usage_detail() {
     usage_summary
     echo ""
     echo "The most commonly used `basename $0` commands are:"
-    echo "  as  create an app server"
+    echo "  as  manage and query app servers"
 }
 
 app_server_add() {
@@ -32,8 +32,16 @@ app_server_add() {
     return 0
 }
 
+app_server_stats() {
+    if [ $# != 0 ]; then
+        echo "usage: `basename $0` as stats"
+    fi
+    get_app_server_stats
+    return 0
+}
+
 app_server_usage() {
-    echo "usage: `basename $0` as [add]"
+    echo "usage: `basename $0` as [add|stats]"
 }
 
 app_server() {
@@ -42,6 +50,9 @@ app_server() {
     case "$COMMAND" in
         ADD)
             app_server_add $@
+            ;;
+        STATS)
+            app_server_stats $@
             ;;
         "")
             app_server_usage

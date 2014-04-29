@@ -415,6 +415,31 @@ get_all_app_server_container_id_keys() {
 }
 
 #
+# write stats about each app server to stdout. these stats are
+# extracted from the app server load balancer
+#
+# arguments
+#   none
+#
+# exit codes
+#   0   ok
+#   1   couldn't find app server LB container ID
+#
+get_app_server_stats() {
+
+    APP_SERVER_LB_DEPLOYMENT_LOCATION=$(get_deployment_config "APP_SERVER_LB_DEPLOYMENT_LOCATION" "")
+    if [ "$APP_SERVER_LB_DEPLOYMENT_LOCATION" == "" ]; then
+        echo_to_stderr_if_not_silent "Could not find App Server LB deployment location"
+        exit 1
+    fi
+
+    echo "show stat" | \
+        sudo socat "$APP_SERVER_LB_DEPLOYMENT_LOCATION/admin.sock" stdio | \
+        grep "^\(#\|app_server_lb,app_server_\)"
+    exit 0
+}
+
+#
 # create a docker container to run an app server load balancer
 #
 # arguments
@@ -485,6 +510,7 @@ create_app_server_lb() {
         fi
         local APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB_CONTAINER_ID)
 
+        echo "APP_SERVER_LB_DEPLOYMENT_LOCATION=$DATA_DIRECTORY" >> ~/.yar.deployment
         echo "APP_SERVER_LB_CONTAINER_ID=$APP_SERVER_LB_CONTAINER_ID" >> ~/.yar.deployment
         echo "APP_SERVER_LB_IP=$APP_SERVER_LB_IP" >> ~/.yar.deployment
         echo "APP_SERVER_LB_END_POINT=$APP_SERVER_LB_IP:$PORT" >> ~/.yar.deployment

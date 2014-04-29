@@ -138,6 +138,16 @@ apt-get install -y imagemagick
 apt-get install -y collectd
 
 #
+# socat (https://launchpad.net/ubuntu/precise/+package/socat) is a
+# key command line tool for communicating with haproxy via a
+# stats socket
+#
+# reference
+# -- http://serverfault.com/questions/249316/how-can-i-remove-balanced-node-from-haproxy-via-command-line
+#
+apt-get install -y socat
+
+#
 # https://github.com/hopsoft/docker-graphite-statsd provided
 # these instructions
 #
