@@ -1,7 +1,8 @@
 # this file includes a collection of bash shell functions that
 # felt generally reusable across a variety of bash shell scripts.
 # the functions are introduced to the shell scripts with the
-# following lines @ the top of the script
+# following lines @ the top of the script assuming this file
+# is in the same directory as the script.
 #
 #	SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 #	source $SCRIPT_DIR_NAME/util.sh
@@ -427,14 +428,14 @@ get_all_app_server_container_id_keys() {
 #
 get_app_server_stats() {
 
-    APP_SERVER_LB_DEPLOYMENT_LOCATION=$(get_deployment_config "APP_SERVER_LB_DEPLOYMENT_LOCATION" "")
-    if [ "$APP_SERVER_LB_DEPLOYMENT_LOCATION" == "" ]; then
-        echo_to_stderr_if_not_silent "Could not find App Server LB deployment location"
+    APP_SERVER_LB_ADMIN_SOCKET=$(get_deployment_config "APP_SERVER_LB_ADMIN_SOCKET" "")
+    if [ "$APP_SERVER_LB_ADMIN_SOCKET" == "" ]; then
+        echo_to_stderr_if_not_silent "Could not find App Server LB admin socket"
         exit 1
     fi
 
     echo "show stat" | \
-        sudo socat "$APP_SERVER_LB_DEPLOYMENT_LOCATION/admin.sock" stdio | \
+        sudo socat "$APP_SERVER_LB_ADMIN_SOCKET" stdio | \
         grep "^\(#\|app_server_lb,app_server_\)"
     exit 0
 }
@@ -511,6 +512,10 @@ create_app_server_lb() {
         local APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB_CONTAINER_ID)
 
         echo "APP_SERVER_LB_DEPLOYMENT_LOCATION=$DATA_DIRECTORY" >> ~/.yar.deployment
+        # line below works because -v on /haproxy in above docker run
+        # command and "stats socket /haproxy/admin.sock level admin" in
+        # the haproxy config file
+        echo "APP_SERVER_LB_ADMIN_SOCKET=$DATA_DIRECTORY/admin.sock" >> ~/.yar.deployment
         echo "APP_SERVER_LB_CONTAINER_ID=$APP_SERVER_LB_CONTAINER_ID" >> ~/.yar.deployment
         echo "APP_SERVER_LB_IP=$APP_SERVER_LB_IP" >> ~/.yar.deployment
         echo "APP_SERVER_LB_END_POINT=$APP_SERVER_LB_IP:$PORT" >> ~/.yar.deployment
