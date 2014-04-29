@@ -159,9 +159,7 @@ else
        $URL"
 fi
 
-echo "dave"
 eval $CURL_CMD
-echo "here"
 
 exit 0
 
