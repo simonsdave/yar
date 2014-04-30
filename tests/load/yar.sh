@@ -51,7 +51,7 @@ app_server() {
         ADD)
             app_server_add $@
             ;;
-        STATS)
+        STATS|STAT)
             app_server_stats $@
             ;;
         "")
