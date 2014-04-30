@@ -38,18 +38,25 @@ do
             ;;
     esac
 done
+
 if [ $# != 0 ]; then
     echo "usage: `basename $0`"
     exit 1
 fi
 
 #
+# some initialization before we start the meat of this script
+#
+DATA_DIRECTORY=$SCRIPT_DIR_NAME/temp_couchdb
+rm -rf $DATA_DIRECTORY >& /dev/null
+
+yar_init_deployment "$DATA_DIRECTORY"
+
+#
 # create a key store in an isolated container
 #
 echo "Creating Key Store"
-DATA_DIRECTORY=$SCRIPT_DIR_NAME/temp_couchdb
-rm -rf $DATA_DIRECTORY >& /dev/null
-if ! KEY_STORE=$(create_key_store $DATA_DIRECTORY "" false); then
+if ! KEY_STORE=$(create_key_store "" false); then
     echo "Failed to create key store"
     exit 1
 fi
@@ -114,7 +121,7 @@ do
 
         DEST=$SCRIPT_DIR_NAME/$TOTAL_NUMBER_OF_CREDS.creds.couch
         echo "Creating '$DEST'"
-        cp $DATA_DIRECTORY/data/creds.couch $DEST
+        cp $DATA_DIRECTORY/Key-Store/data/creds.couch $DEST
     fi
 
 done
