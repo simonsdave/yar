@@ -287,6 +287,7 @@ yar_init_deployment() {
     echo_if_not_silent "Initalizating Deployment"
 
     echo_if_not_silent "-- Removing all existing containers"
+    local SCRIPT_DIR_NAME="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
     if ! $SCRIPT_DIR_NAME/rm_all_containers.sh; then
         echo_to_stderr_if_not_silent "-- Error removing all existing containers"
         return 1
@@ -567,6 +568,7 @@ create_app_server_lb() {
 #   1   general/non-specific failure - app server container not started
 #   2   can't find couchdb_img
 #   3   can't find yar_img
+#   4   DEPLOYMENT_LOCATION not found
 #
 create_key_store() {
 
@@ -574,6 +576,10 @@ create_key_store() {
     # extract function arguments and setup function specific config
     #
     local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
+    if [ "$DEPLOYMENT_LOCATION" == "" ]; then
+        echo_to_stderr_if_not_silent "Couldn not find DEPLOYMENT_LOCATION to start Key Store"
+        return 4
+    fi
 
     local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Key-Store
     mkdir -p $DATA_DIRECTORY
