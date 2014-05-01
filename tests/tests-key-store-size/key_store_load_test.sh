@@ -10,7 +10,7 @@
 # generated.
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
-source $SCRIPT_DIR_NAME/util.sh
+source $SCRIPT_DIR_NAME/../util.sh
 
 #
 # this script accepts a single optional command line argument
@@ -30,13 +30,23 @@ fi
 
 START_TIME=$(date +%Y-%m-%d-%H-%M)
 
-RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/key-store-load-test/$START_TIME
-mkdir -p $RESULTS_DIR
+RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/$START_TIME
+mkdir -p "$RESULTS_DIR"
 
 #
-# create a key store in an isolated container
+# some initialization before we start the meat of this script
 #
-KEY_STORE=$(create_key_store $RESULTS_DIR/couchdb)
+DATA_DIRECTORY=$(mktemp -d)
+
+yar_init_deployment "$DATA_DIRECTORY"
+
+echo "Creating Key Store"
+if ! KEY_STORE=$(create_key_store); then
+    echo "Failed to create Key Store"
+    exit 1
+fi
+echo "-- Key Store available @ '$KEY_STORE'"
+echo "-- Key Store data saved in '$DATA_DIRECTORY'"
 
 #
 # load up the newly created key store with a bunch
@@ -45,10 +55,11 @@ KEY_STORE=$(create_key_store $RESULTS_DIR/couchdb)
 #
 DATABASE_METRICS=$RESULTS_DIR/key-store-size.tsv
 
+echo "Starting test ..."
 TOTAL_NUMBER_OF_CREDS=0
-for CREDS in $SCRIPT_DIR_NAME/lots-of-creds/*.json
+for CREDS in $SCRIPT_DIR_NAME/../lots-of-creds/*.json
 do
-    echo "Uploading $CREDS"
+    echo "-- Uploading $CREDS"
 
     curl \
         -s \
@@ -88,6 +99,8 @@ done
 # charts so we can figure out some results!
 #
 
+echo "Generating result graphs ..."
+
 #
 # generate a title page for the summary report
 #
@@ -120,7 +133,7 @@ gnuplot \
     -e "output_filename='$RESULTS_DIR/02-Key-Store-Size.png'" \
     -e "xaxis_label='Number of Credentials (000s)'" \
     -e "yaxis_label='Size (MB)'" \
-    $SCRIPT_DIR_NAME/gp.cfg/key_store_size
+    $SCRIPT_DIR_NAME/key_store_size.gpcfg
 
 rm $SUMMARY_DATABASE_METRICS
 
@@ -144,7 +157,7 @@ convert $RESULTS_DIR/*.png $SUMMARY_REPORT_FILENAME
 #
 # all done now ... just let folks know where to find the results
 #
-echo "Complete results in '$RESULTS_DIR'"
-echo "Summary report '$SUMMARY_REPORT_FILENAME'"
+echo "-- Complete results in '$RESULTS_DIR'"
+echo "-- Summary report '$SUMMARY_REPORT_FILENAME'"
 
 exit 0
