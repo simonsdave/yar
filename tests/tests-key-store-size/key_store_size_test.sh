@@ -40,7 +40,7 @@ DATA_DIRECTORY=$(mktemp -d)
 
 yar_init_deployment "$DATA_DIRECTORY"
 
-echo "Creating Key Store"
+echo "$(tput setaf 3)Creating Key Store$(tput sgr0)"
 if ! KEY_STORE=$(create_key_store); then
     echo "Failed to create Key Store"
     exit 1
@@ -55,7 +55,7 @@ echo "-- Key Store data saved in '$DATA_DIRECTORY'"
 #
 DATABASE_METRICS=$RESULTS_DIR/key-store-size.tsv
 
-echo "Starting test ..."
+echo "$(tput setaf 3)Starting Test$(tput sgr0)"
 TOTAL_NUMBER_OF_CREDS=0
 for CREDS in $SCRIPT_DIR_NAME/../lots-of-creds/*.json
 do
@@ -99,7 +99,7 @@ done
 # charts so we can figure out some results!
 #
 
-echo "Generating result graphs ..."
+echo "$(tput setaf 3)Generating result graphs$(tput sgr0)"
 
 #
 # generate a title page for the summary report

@@ -284,7 +284,7 @@ left_zero_pad() {
 yar_init_deployment() {
     local DEPLOYMENT_LOCATION=${1:-}
 
-    echo_if_not_silent "Initalizating Deployment"
+    echo_if_not_silent "$(tput setaf 3)Initalizating Deployment$(tput sgr0)"
 
     echo_if_not_silent "-- Removing all existing containers"
     local SCRIPT_DIR_NAME="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
