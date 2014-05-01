@@ -469,6 +469,10 @@ create_app_server_lb() {
     # haproxy we're going to need to generate an haproxy configuration
     # file so let's get that over with
     #
+    # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#server
+    # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#5-weight
+    # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#5-check
+    #
     local HAPROXY_CFG_FILENAME="$DATA_DIRECTORY/haproxy.cfg"
 
 	cp "$SCRIPT_DIR_NAME/haproxy.cfg/app_server" "$HAPROXY_CFG_FILENAME"
@@ -478,7 +482,7 @@ create_app_server_lb() {
 	do
 		APP_SERVER_CONTAINER_ID=$(get_deployment_config "$APP_SERVER_CONTAINER_ID_KEY")
 		APP_SERVER_IP=$(get_container_ip "$APP_SERVER_CONTAINER_ID")
-		echo "    server app_server_$APP_SERVER_NUMBER $APP_SERVER_IP check" >> "$HAPROXY_CFG_FILENAME"
+		echo "    server app_server_$APP_SERVER_NUMBER $APP_SERVER_IP check weight 100" >> "$HAPROXY_CFG_FILENAME"
 		let "APP_SERVER_NUMBER += 1"
 	done
 
