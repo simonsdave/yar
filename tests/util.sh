@@ -473,9 +473,9 @@ create_app_server_lb() {
     # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#5-weight
     # http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#5-check
     #
-    local HAPROXY_CFG_FILENAME="$DATA_DIRECTORY/haproxy.cfg"
+    local HAPROXY_CFG_FILENAME="$DATA_DIRECTORY/cfg-haproxy"
 
-	cp "$SCRIPT_DIR_NAME/haproxy.cfg/app_server" "$HAPROXY_CFG_FILENAME"
+	cp "$SCRIPT_DIR_NAME/cfg-haproxy/app_server" "$HAPROXY_CFG_FILENAME"
 
 	local APP_SERVER_NUMBER=1
 	for APP_SERVER_CONTAINER_ID_KEY in $(get_all_app_server_container_id_keys)
@@ -499,7 +499,7 @@ create_app_server_lb() {
             return 2
         fi
 
-        local APP_SERVER_LB_CMD="haproxy.sh /haproxy/haproxy.cfg /haproxy/haproxy.pid"
+        local APP_SERVER_LB_CMD="haproxy.sh /haproxy/cfg-haproxy /haproxy/haproxy.pid"
         local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
         # haproxy's stats socket had to be created in a directory
         # that was guarenteed to be somewhere other than /vagrant
@@ -532,7 +532,7 @@ create_app_server_lb() {
     else
 
         local HAPROXY_RESTART_CMD='haproxy'
-        HAPROXY_RESTART_CMD=$HAPROXY_RESTART_CMD' -f /haproxy/haproxy.cfg'
+        HAPROXY_RESTART_CMD=$HAPROXY_RESTART_CMD' -f /haproxy/cfg-haproxy'
         HAPROXY_RESTART_CMD=$HAPROXY_RESTART_CMD' -p /haproxy/haproxy.pid'
         HAPROXY_RESTART_CMD=$HAPROXY_RESTART_CMD' -sf $(cat /haproxy/haproxy.pid)'
 
@@ -925,14 +925,14 @@ create_key_server_lb() {
     #
     # spin up the server
     #
-    cp $SCRIPT_DIR_NAME/haproxy.cfg/key_server $DATA_DIRECTORY/haproxy.cfg
+    cp $SCRIPT_DIR_NAME/cfg-haproxy/key_server $DATA_DIRECTORY/cfg-haproxy
 
     local KEY_SERVER_NUMBER=1
     for KEY_SERVER_CONTAINER_ID_KEY in $(get_all_key_server_container_id_keys)
     do
         KEY_SERVER_CONTAINER_ID=$(get_deployment_config "$KEY_SERVER_CONTAINER_ID_KEY")
         KEY_SERVER_IP=$(get_container_ip "$KEY_SERVER_CONTAINER_ID")
-    	echo "    server key_server_$KEY_SERVER_NUMBER $KEY_SERVER_IP check" >> $DATA_DIRECTORY/haproxy.cfg
+    	echo "    server key_server_$KEY_SERVER_NUMBER $KEY_SERVER_IP check" >> $DATA_DIRECTORY/cfg-haproxy
         let "KEY_SERVER_NUMBER += 1"
     done
 
@@ -942,7 +942,7 @@ create_key_server_lb() {
         return 2
     fi
 
-    local KEY_SERVER_LB_CMD="haproxy.sh /haproxy/haproxy.cfg /haproxy/haproxy.pid"
+    local KEY_SERVER_LB_CMD="haproxy.sh /haproxy/cfg-haproxy /haproxy/haproxy.pid"
     local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
     local KEY_SERVER_LB=$(sudo docker run \
         -d \
@@ -1234,14 +1234,14 @@ create_auth_server_lb() {
     #
     # generate the haproxy config file
     #
-    cp $SCRIPT_DIR_NAME/haproxy.cfg/auth_server $DATA_DIRECTORY/haproxy.cfg
+    cp $SCRIPT_DIR_NAME/cfg-haproxy/auth_server $DATA_DIRECTORY/cfg-haproxy
 
     local AUTH_SERVER_NUMBER=1
     for AUTH_SERVER_CONTAINER_ID_KEY in $(get_all_auth_server_container_id_keys)
     do
         AUTH_SERVER_CONTAINER_ID=$(get_deployment_config "$AUTH_SERVER_CONTAINER_ID_KEY")
         AUTH_SERVER_IP=$(get_container_ip "$AUTH_SERVER_CONTAINER_ID")
-    	echo "    server auth_server_$AUTH_SERVER_NUMBER $AUTH_SERVER_IP check" >> $DATA_DIRECTORY/haproxy.cfg
+    	echo "    server auth_server_$AUTH_SERVER_NUMBER $AUTH_SERVER_IP check" >> $DATA_DIRECTORY/cfg-haproxy
         let "AUTH_SERVER_NUMBER += 1"
     done
 
@@ -1254,7 +1254,7 @@ create_auth_server_lb() {
         return 2
     fi
 
-    local AUTH_SERVER_LB_CMD="haproxy.sh /haproxy/haproxy.cfg /haproxy/haproxy.pid"
+    local AUTH_SERVER_LB_CMD="haproxy.sh /haproxy/cfg-haproxy /haproxy/haproxy.pid"
     local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
     local AUTH_SERVER_LB=$(sudo docker run \
         -d \
@@ -1320,15 +1320,15 @@ start_collecting_metrics() {
     sudo service collectd stop >& /dev/null
 
     # :TODO: /var/lib/collectd is embedded in 
-    # /vagrant/collectd.cfg/collectd.conf.postfix
-    # so a change in /vagrant/collectd.cfg/collectd.conf.postfix
+    # /vagrant/cfg-collectd/collectd.conf.postfix
+    # so a change in /vagrant/cfg-collectd/collectd.conf.postfix
     # won't be reflected in this code - should
     # only be defining this directory in one location
     sudo rm -rf /var/lib/collectd >& /dev/null
 
     TEMP_COLLECTD_CONF=$(platform_safe_mktemp)
 
-    cat /vagrant/collectd.cfg/collectd.conf.prefix >> $TEMP_COLLECTD_CONF
+    cat /vagrant/cfg-collectd/collectd.conf.prefix >> $TEMP_COLLECTD_CONF
 
 	# NOTE - the if below will typically only fail if Docker's not been
 	# instructed to use lxc
@@ -1339,7 +1339,7 @@ start_collecting_metrics() {
 				sed -e "s/^\/sys\/fs\/cgroup\/memory\/lxc\///" | \
 				sed -e "s/\/memory.usage_in_bytes$//")
 
-			cat /vagrant/collectd.cfg/collectd.conf.memory_usage | \
+			cat /vagrant/cfg-collectd/collectd.conf.memory_usage | \
 				sed -e "s/%CONTAINER_ID%/$CONTAINER_ID/g" \
 				>> $TEMP_COLLECTD_CONF
 		done
@@ -1354,13 +1354,13 @@ start_collecting_metrics() {
 				sed -e "s/^\/sys\/fs\/cgroup\/cpuacct\/lxc\///" | \
 				sed -e "s/\/cpuacct.usage$//")
 
-			cat /vagrant/collectd.cfg/collectd.conf.cpu_usage | \
+			cat /vagrant/cfg-collectd/collectd.conf.cpu_usage | \
 				sed -e "s/%CONTAINER_ID%/$CONTAINER_ID/g" \
 				>> $TEMP_COLLECTD_CONF
 		done
 	fi
 
-    cat /vagrant/collectd.cfg/collectd.conf.postfix >> $TEMP_COLLECTD_CONF
+    cat /vagrant/cfg-collectd/collectd.conf.postfix >> $TEMP_COLLECTD_CONF
 
     sudo mv $TEMP_COLLECTD_CONF /etc/collectd/collectd.conf
 
