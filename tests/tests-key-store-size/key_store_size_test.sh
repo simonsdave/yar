@@ -109,7 +109,7 @@ REPORT_TEXT="yar key store load test ($START_TIME)\n"
 convert \
     -background lightgray \
     -fill black \
-    -size 1280x720 \
+    -size 3200x1800 \
     label:"$REPORT_TEXT" \
     -gravity center \
     $RESULTS_DIR/01-Title.png
@@ -143,7 +143,7 @@ rm $SUMMARY_DATABASE_METRICS
 convert \
     -background lightgray \
     -fill black \
-    -size 1280x720 \
+    -size 3200x1800 \
     label:"End of Report:-)" \
     -gravity center \
     $RESULTS_DIR/99-Last.png
