@@ -128,7 +128,7 @@ run_load_test() {
 		local LOCUST_STDOUT_AND_STDERR=$RESULTS_FILE_BASE_NAME-locust-stdout-and-stderr.tsv
 
 		locust \
-			-f $SCRIPT_DIR_NAME/locustfiles/locustfile_full_deployment.py \
+			-f "$SCRIPT_DIR_NAME/locustfile.py" \
 			-H http://$AUTH_SERVER_LB \
 			--no-web \
 			-n $NUMBER_OF_REQUESTS \
