@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 cleanup_yar_dist() {
-    pushd ../..
+    pushd ..
     rm -rf build >& /dev/null
     rm -rf yar.egg-info >& /dev/null
     rm -rf dist >& /dev/null
@@ -9,7 +9,7 @@ cleanup_yar_dist() {
 }
 
 build_yar_dist() {
-    pushd ../..
+    pushd ..
     python setup.py sdist
     popd
 }
@@ -27,12 +27,12 @@ cleanup_yar_dist
 rm -rf yar/artifacts >& /dev/null
 mkdir -p yar/artifacts
 build_yar_dist
-cp ../../dist/yar-*.*.tar.gz yar/artifacts/.
+cp ../dist/yar-*.*.tar.gz yar/artifacts/.
 cleanup_yar_dist
 
 rm -rf artifacts >& /dev/null
 mkdir -p artifacts
-cp ../../bin/jpp artifacts/.
-cp ../../bin/yarcurl artifacts/.
+cp ../bin/jpp artifacts/.
+cp ../bin/yarcurl artifacts/.
 
 vagrant up

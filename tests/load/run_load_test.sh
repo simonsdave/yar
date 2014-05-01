@@ -541,7 +541,7 @@ run_load_test() {
 # this is where the test's mainline really begins
 #
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
-source $SCRIPT_DIR_NAME/util.sh
+source $SCRIPT_DIR_NAME/../util.sh
 
 #
 # parse command line arguments
@@ -593,8 +593,8 @@ fi
 # poking around to see if there's anything that might be an indication
 # of why a load test might fail
 # 
-if ! ls $SCRIPT_DIR_NAME/lots-of-creds/*.couch >& /dev/null; then
-	echo_if_verbose "Couldn't find any .couch files in '$SCRIPT_DIR_NAME/lots-of-creds'"
+if ! ls $SCRIPT_DIR_NAME/../lots-of-creds/*.couch >& /dev/null; then
+	echo_if_verbose "Couldn't find any .couch files in '$SCRIPT_DIR_NAME/../lots-of-creds'"
 	echo_if_verbose "-- Might have trouble starting Key Store"
 	echo_if_verbose "-- or Key Store might take long time to start"
 	echo_if_verbose "-- if .couch files are downloaded."
@@ -605,7 +605,7 @@ fi
 #
 START_TIME=$(date +%Y-%m-%d-%H-%M)
 
-RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/full-deployment-load-test/$START_TIME
+RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/$START_TIME
 mkdir -p $RESULTS_DIR
 
 #
