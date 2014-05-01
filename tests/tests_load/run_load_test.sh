@@ -102,7 +102,7 @@ run_load_test() {
     mkdir -p $DOCKER_CONTAINER_DATA
 
 	echo "$CONCURRENCY: Spinning up a deployment"
-    if ! $SCRIPT_DIR_NAME/spin_up_deployment.sh -s -d $DOCKER_CONTAINER_DATA -p $TEST_PROFILE; then
+    if ! $SCRIPT_DIR_NAME/../spin_up_deployment.sh -s -d $DOCKER_CONTAINER_DATA -p $TEST_PROFILE; then
         echo "$CONCURRENCY: Error spinning up deployment"
         return 1
     fi
@@ -542,6 +542,7 @@ run_load_test() {
 #
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source $SCRIPT_DIR_NAME/../util.sh
+source $SCRIPT_DIR_NAME/util.sh
 
 #
 # parse command line arguments
