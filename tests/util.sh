@@ -40,8 +40,7 @@ echo_to_stderr() {
 	return 0
 }
 
-#
-# a few BASH script should be able to run on both Ubuntu
+# # a few BASH script should be able to run on both Ubuntu
 # and OS X - mktemp operates slightly differently on these
 # two platforms - this function insulates scripts from
 # the differences
@@ -51,6 +50,20 @@ echo_to_stderr() {
 #
 platform_safe_mktemp() {
 	mktemp 2> /dev/null || mktemp -t DAS
+	return 0
+}
+
+#
+# a few BASH script should be able to run on both Ubuntu
+# and OS X - mktemp operates slightly differently on these
+# two platforms - this function insulates scripts from
+# the differences
+#
+# exit codes
+#   0   always
+#
+platform_safe_mktemp_directory() {
+	mktemp -d 2> /dev/null || mktemp -d -t DAS
 	return 0
 }
 

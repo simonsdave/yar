@@ -36,7 +36,7 @@ mkdir -p "$RESULTS_DIR"
 #
 # some initialization before we start the meat of this script
 #
-DATA_DIRECTORY=$(mktemp -d)
+DATA_DIRECTORY=$(platform_safe_mktemp_directory)
 
 yar_init_deployment "$DATA_DIRECTORY"
 
