@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+usage() {
+    echo "usage: `basename $0` [--mnc <desired # of creds>]"
+}
+
 # this script explores how the key store performs as the number
 # of credentials increases
 #
@@ -13,23 +17,37 @@ SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source $SCRIPT_DIR_NAME/../util.sh
 
 #
-# this script accepts a single optional command line argument
-# which defines the rough number of credentials to load into
-# the key store
+# this script accepts one optional (--mnc) command line argument
+# which defines (roughly) the max number of credentials to load
+# into the key store
 #
-if [ $# = 0 ]; then
-    DESIRED_NUMBER_OF_CREDS=20000000
-else
-    if [ $# != 1 ]; then
-        echo "usage: `basename $0` [<desired # of creds>]"
-        exit 1
-    else
-        DESIRED_NUMBER_OF_CREDS=$1
-    fi
+MAX_NUMBER_OF_CREDS=20000000
+
+while [[ 0 -ne $# ]]
+do
+    KEY="$1"
+    shift
+    case $KEY in
+        --mnc)
+            MAX_NUMBER_OF_CREDS=${1:-}
+            shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+if [ $# != 0 ]; then
+    usage
+    exit 1
 fi
 
+#
+# where will the tests' results be saved?
+#
 START_TIME=$(date +%Y-%m-%d-%H-%M)
-
 RESULTS_DIR=$SCRIPT_DIR_NAME/test-results/$START_TIME
 mkdir -p "$RESULTS_DIR"
 
@@ -112,7 +130,7 @@ do
 
     NUMBER_OF_CREDS=$(echo $CREDS | sed s/\\/.*\\/[[:digit:]]*-0*// | sed s/.json$//)
     TOTAL_NUMBER_OF_CREDS=$(python -c "print $TOTAL_NUMBER_OF_CREDS + int($NUMBER_OF_CREDS)")
-    if [ $DESIRED_NUMBER_OF_CREDS -le $TOTAL_NUMBER_OF_CREDS ]; then
+    if [ $MAX_NUMBER_OF_CREDS -le $TOTAL_NUMBER_OF_CREDS ]; then
         break
     fi
 
