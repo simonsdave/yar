@@ -105,7 +105,7 @@ do
         # delayed_commits = false
         #
         # but in case not, we'll issue the request below to force
-        # to 'manually' force a flush to disk
+        # a flush to disk
         #
         STATUS_CODE=$(curl \
             -s \
