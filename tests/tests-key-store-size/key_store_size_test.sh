@@ -61,13 +61,39 @@ for CREDS in $SCRIPT_DIR_NAME/../lots-of-creds/*.json
 do
     echo "-- Uploading $CREDS"
 
-    curl \
+    STATUS_CODE=$(curl \
         -s \
+        -o /dev/null \
+        --write-out '%{http_code}' \
         -X POST \
         -H "Content-Type: application/json; charset=utf8" \
         -d @$CREDS \
-        http://$KEY_STORE/_bulk_docs \
-        >& /dev/null
+        http://$KEY_STORE/_bulk_docs)
+    if [ $? -ne 0 ] || [ "$STATUS_CODE" != "201" ]; then
+        echo "Upload failed"
+        exit 1
+    fi
+
+    #
+    # local.ini for CouchDB should have been configured with
+    #
+    # [couchdb]
+    # delayed_commits = false
+    #
+    # but in case not, we'll issue the request below to force
+    # a flush to disk
+    #
+    STATUS_CODE=$(curl \
+        -s \
+        -o /dev/null \
+        --write-out '%{http_code}' \
+        -X POST \
+        -H "Content-Type: application/json; charset=utf8" \
+        http://$KEY_STORE/_ensure_full_commit)
+    if [ $? -ne 0 ] || [ "$STATUS_CODE" != "201" ]; then
+        echo "Flush to disk failed on key store '$KEY_STORE'"
+        exit 1
+    fi
 
     TEMP_DATABASE_METRICS=$(platform_safe_mktemp)
 
