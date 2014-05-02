@@ -20,10 +20,10 @@ take_percentile_and_rebase_time() {
 
     local FIRST_EPOCH_TIME=$(tail -n +2 $INPUT_FILENAME | awk 'BEGIN {min = 9999999999; FS = "\t"} ; { if($2 < min) {min = $2} } END { print min }')
 
-	NUM_LINES_IN_FILE=$(tail -n +2 $INPUT_FILENAME | wc -l)
-	NUM_LINES_IN_PERCENTILE=$(python -c "print int($NUM_LINES_IN_FILE * float($PERCENTILE)/100)")
+    NUM_LINES_IN_FILE=$(tail -n +2 $INPUT_FILENAME | wc -l)
+    NUM_LINES_IN_PERCENTILE=$(python -c "print int($NUM_LINES_IN_FILE * float($PERCENTILE)/100)")
 
-	sort \
+    sort \
         --field-separator=$'\t' \
         --key=5 \
         -n \
@@ -58,10 +58,10 @@ generate_yar_server_log_file_percentile() {
     local INPUT_FILENAME=${2:-}
     local OUTPUT_FILENAME=${3:-}
 
-	NUM_LINES_IN_FILE=$(cat $INPUT_FILENAME | wc -l)
-	NUM_LINES_IN_PERCENTILE=$(python -c "print int($NUM_LINES_IN_FILE * float($PERCENTILE)/100)")
+    NUM_LINES_IN_FILE=$(cat $INPUT_FILENAME | wc -l)
+    NUM_LINES_IN_PERCENTILE=$(python -c "print int($NUM_LINES_IN_FILE * float($PERCENTILE)/100)")
 
-	sort \
+    sort \
         --field-separator=$'\t' \
         --key=2 \
         -n \
@@ -101,7 +101,7 @@ run_load_test() {
     local DOCKER_CONTAINER_DATA=$RESULTS_DIR/$ZPCONCURRENCY-$NUMBER_OF_REQUESTS
     mkdir -p $DOCKER_CONTAINER_DATA
 
-	echo "$CONCURRENCY: Spinning up a deployment"
+    echo "$CONCURRENCY: Spinning up a deployment"
     if ! $SCRIPT_DIR_NAME/../spin_up_deployment.sh -s -d $DOCKER_CONTAINER_DATA -p $TEST_PROFILE; then
         echo "$CONCURRENCY: Error spinning up deployment"
         return 1
@@ -118,48 +118,48 @@ run_load_test() {
     # all the setup is now complete ... load generation is next ...
     #
     local RESULTS_DATA=$RESULTS_FILE_BASE_NAME-raw-data.tsv
-	if [ -r ~/.yar.creds.random.set ]; then
+    if [ -r ~/.yar.creds.random.set ]; then
 
-		echo "$CONCURRENCY: Using locust"
-
-        echo "$CONCURRENCY: Starting to drive load"
-
-		local LOCUST_LOGFILE=$RESULTS_FILE_BASE_NAME-locust-logfile.tsv
-		local LOCUST_STDOUT_AND_STDERR=$RESULTS_FILE_BASE_NAME-locust-stdout-and-stderr.tsv
-
-		locust \
-			-f "$SCRIPT_DIR_NAME/locustfile.py" \
-			-H http://$AUTH_SERVER_LB \
-			--no-web \
-			-n $NUMBER_OF_REQUESTS \
-			-c $CONCURRENCY \
-			-r $CONCURRENCY \
-			--logfile=$LOCUST_LOGFILE \
-			>& $LOCUST_STDOUT_AND_STDERR
-
-		grep TO_GET_TAB_TO_WORK $LOCUST_LOGFILE > $RESULTS_DATA
-
-		rm -f $TEMP_RESULTS_DATA >& /dev/null
-
-	else
-
-		echo "$CONCURRENCY: Using Apache Bench"
-
-		echo "$CONCURRENCY: Getting creds"
-		local API_KEY=$(get_creds_config "API_KEY")
-		# :TODO: what if API_KEY doesn't exist?
+        echo "$CONCURRENCY: Using locust"
 
         echo "$CONCURRENCY: Starting to drive load"
 
-		ab \
-			-c $CONCURRENCY \
-			-n $NUMBER_OF_REQUESTS \
-			-A $API_KEY: \
-			-g $RESULTS_DATA \
-			http://$AUTH_SERVER_LB/dave.html \
-			>& /dev/null
+        local LOCUST_LOGFILE=$RESULTS_FILE_BASE_NAME-locust-logfile.tsv
+        local LOCUST_STDOUT_AND_STDERR=$RESULTS_FILE_BASE_NAME-locust-stdout-and-stderr.tsv
 
-	fi
+        locust \
+            -f "$SCRIPT_DIR_NAME/locustfile.py" \
+            -H http://$AUTH_SERVER_LB \
+            --no-web \
+            -n $NUMBER_OF_REQUESTS \
+            -c $CONCURRENCY \
+            -r $CONCURRENCY \
+            --logfile=$LOCUST_LOGFILE \
+            >& $LOCUST_STDOUT_AND_STDERR
+
+        grep TO_GET_TAB_TO_WORK $LOCUST_LOGFILE > $RESULTS_DATA
+
+        rm -f $TEMP_RESULTS_DATA >& /dev/null
+
+    else
+
+        echo "$CONCURRENCY: Using Apache Bench"
+
+        echo "$CONCURRENCY: Getting creds"
+        local API_KEY=$(get_creds_config "API_KEY")
+        # :TODO: what if API_KEY doesn't exist?
+
+        echo "$CONCURRENCY: Starting to drive load"
+
+        ab \
+            -c $CONCURRENCY \
+            -n $NUMBER_OF_REQUESTS \
+            -A $API_KEY: \
+            -g $RESULTS_DATA \
+            http://$AUTH_SERVER_LB/dave.html \
+            >& /dev/null
+
+    fi
 
     #
     # test is over ... we can stop collecting metrics
@@ -170,7 +170,7 @@ run_load_test() {
     # all that's left to do now is generate some graphs for inclusion
     # in the summary report
     #
-	echo "$CONCURRENCY: Generating graphs"
+    echo "$CONCURRENCY: Generating graphs"
 
     #
     # generate a section title page for summary report
@@ -212,7 +212,7 @@ run_load_test() {
         $RESULTS_DATA \
         $RESULTS_DATA_PERCENTILE
 
-	TITLE="yar Response Time - $START_TIME"
+    TITLE="yar Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
@@ -221,7 +221,7 @@ run_load_test() {
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/response_time
 
-	TITLE="yar Response Time - $START_TIME"
+    TITLE="yar Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
@@ -250,7 +250,7 @@ run_load_test() {
         $TEMPFILE \
         $PERCENTILETEMPFILE
 
-	TITLE="Key Server Response Time - $START_TIME"
+    TITLE="Key Server Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
@@ -259,7 +259,7 @@ run_load_test() {
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
-	TITLE="Key Server Response Time - $START_TIME"
+    TITLE="Key Server Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
@@ -291,8 +291,8 @@ run_load_test() {
         $TEMPFILE \
         $PERCENTILETEMPFILE
 
-	TITLE="Key Store Response Time - $START_TIME"
-	TITLE="$TITLE: Concurrency = $CONCURRENCY"
+    TITLE="Key Store Response Time - $START_TIME"
+    TITLE="$TITLE: Concurrency = $CONCURRENCY"
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
@@ -300,7 +300,7 @@ run_load_test() {
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
-	TITLE="Key Store Response Time - $START_TIME"
+    TITLE="Key Store Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
@@ -332,7 +332,7 @@ run_load_test() {
         $TEMPFILE \
         $PERCENTILETEMPFILE
 
-	TITLE="App Server Response Time - $START_TIME"
+    TITLE="App Server Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
@@ -341,7 +341,7 @@ run_load_test() {
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
-	TITLE="App Server Response Time - $START_TIME"
+    TITLE="App Server Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
@@ -371,9 +371,9 @@ run_load_test() {
         GRAPH_FILENAME="$GRAPH_FILENAME-$AUTH_SERVER_NUMBER-cpu-usage.png"
 
         gen_cpu_usage_graph \
-			"$GRAPH_TITLE" \
-			"$AUTH_SERVER_CONTAINER_ID_KEY" \
-			"$GRAPH_FILENAME"
+            "$GRAPH_TITLE" \
+            "$AUTH_SERVER_CONTAINER_ID_KEY" \
+            "$GRAPH_FILENAME"
 
         let "AUTH_SERVER_NUMBER += 1"
     done
@@ -393,9 +393,9 @@ run_load_test() {
         GRAPH_FILENAME="$GRAPH_FILENAME-$KEY_SERVER_NUMBER-cpu-usage.png"
 
         gen_cpu_usage_graph \
-			"$GRAPH_TITLE" \
-			"$KEY_SERVER_CONTAINER_ID_KEY" \
-			"$GRAPH_FILENAME"
+            "$GRAPH_TITLE" \
+            "$KEY_SERVER_CONTAINER_ID_KEY" \
+            "$GRAPH_FILENAME"
 
         let "KEY_SERVER_NUMBER += 1"
     done
@@ -415,9 +415,9 @@ run_load_test() {
         GRAPH_FILENAME="$GRAPH_FILENAME-$NONCE_STORE_NUMBER-cpu-usage.png"
 
         gen_cpu_usage_graph \
-			"$GRAPH_TITLE" \
-			"$NONCE_STORE_CONTAINER_ID_KEY" \
-			"$GRAPH_FILENAME"
+            "$GRAPH_TITLE" \
+            "$NONCE_STORE_CONTAINER_ID_KEY" \
+            "$GRAPH_FILENAME"
 
         let "NONCE_STORE_NUMBER += 1"
     done
@@ -430,16 +430,16 @@ run_load_test() {
     local APP_SERVER_NUMBER=1
     for APP_SERVER_CONTAINER_ID_KEY in $(get_all_app_server_container_id_keys)
     do
-		local GRAPH_TITLE="App Server # $APP_SERVER_NUMBER CPU Usage"
-		GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
+        local GRAPH_TITLE="App Server # $APP_SERVER_NUMBER CPU Usage"
+        GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
 
-		local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-26-app-server"
-		GRAPH_FILENAME="$GRAPH_FILENAME-$APP_SERVER_NUMBER-cpu-usage.png"
+        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-26-app-server"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$APP_SERVER_NUMBER-cpu-usage.png"
 
         gen_cpu_usage_graph \
-			"$GRAPH_TITLE" \
-			"$APP_SERVER_CONTAINER_ID_KEY" \
-			"$GRAPH_FILENAME"
+            "$GRAPH_TITLE" \
+            "$APP_SERVER_CONTAINER_ID_KEY" \
+            "$GRAPH_FILENAME"
 
         let "APP_SERVER_NUMBER += 1"
     done
@@ -462,9 +462,9 @@ run_load_test() {
         GRAPH_FILENAME="$GRAPH_FILENAME-$AUTH_SERVER_NUMBER-memory-usage.png"
 
         gen_mem_usage_graph \
-			"$GRAPH_TITLE" \
-			"$AUTH_SERVER_CONTAINER_ID_KEY" \
-			"$GRAPH_FILENAME"
+            "$GRAPH_TITLE" \
+            "$AUTH_SERVER_CONTAINER_ID_KEY" \
+            "$GRAPH_FILENAME"
 
         let "AUTH_SERVER_NUMBER += 1"
     done
@@ -484,9 +484,9 @@ run_load_test() {
         GRAPH_FILENAME="$GRAPH_FILENAME-$KEY_SERVER_NUMBER-memory-usage.png"
 
         gen_mem_usage_graph \
-			"$GRAPH_TITLE" \
-			"$KEY_SERVER_CONTAINER_ID_KEY" \
-			"$GRAPH_FILENAME"
+            "$GRAPH_TITLE" \
+            "$KEY_SERVER_CONTAINER_ID_KEY" \
+            "$GRAPH_FILENAME"
 
         let "KEY_SERVER_NUMBER += 1"
     done
@@ -506,9 +506,9 @@ run_load_test() {
         GRAPH_FILENAME="$GRAPH_FILENAME-$NONCE_STORE_NUMBER-memory-usage.png"
 
         gen_mem_usage_graph \
-			"$GRAPH_TITLE" \
-			"$NONCE_STORE_CONTAINER_ID_KEY" \
-			"$GRAPH_FILENAME"
+            "$GRAPH_TITLE" \
+            "$NONCE_STORE_CONTAINER_ID_KEY" \
+            "$GRAPH_FILENAME"
 
         let "NONCE_STORE_NUMBER += 1"
     done
@@ -521,16 +521,16 @@ run_load_test() {
     local APP_SERVER_NUMBER=1
     for APP_SERVER_CONTAINER_ID_KEY in $(get_all_app_server_container_id_keys)
     do
-		local GRAPH_TITLE="App Server # $APP_SERVER_NUMBER Memory Usage"
-		GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
+        local GRAPH_TITLE="App Server # $APP_SERVER_NUMBER Memory Usage"
+        GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
 
-		local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-37-app-server"
-		GRAPH_FILENAME="$GRAPH_FILENAME-$APP_SERVER_NUMBER-memory-usage.png"
+        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-37-app-server"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$APP_SERVER_NUMBER-memory-usage.png"
 
         gen_mem_usage_graph \
-			"$GRAPH_TITLE" \
-			"$APP_SERVER_CONTAINER_ID_KEY" \
-			"$GRAPH_FILENAME"
+            "$GRAPH_TITLE" \
+            "$APP_SERVER_CONTAINER_ID_KEY" \
+            "$GRAPH_FILENAME"
 
         let "APP_SERVER_NUMBER += 1"
     done
@@ -574,19 +574,19 @@ done
 # argument then create a reasonable default test profile
 #
 if [ "$TEST_PROFILE" == "" ]; then
-	TEST_PROFILE=$(platform_safe_mktemp)
-	echo '{'								>> $TEST_PROFILE
-    echo '    "concurrency": [1, 5, 10],'	>> $TEST_PROFILE
-    echo '    "number_of_requests": 1000,'	>> $TEST_PROFILE
-    echo '    "percentile": 99.9'			>> $TEST_PROFILE
-	echo '}'								>> $TEST_PROFILE
+    TEST_PROFILE=$(platform_safe_mktemp)
+    echo '{'                                >> $TEST_PROFILE
+    echo '    "concurrency": [5],'            >> $TEST_PROFILE
+    echo '    "number_of_requests": 1000,'    >> $TEST_PROFILE
+    echo '    "percentile": 99.9'            >> $TEST_PROFILE
+    echo '}'                                >> $TEST_PROFILE
 
-	echo_if_verbose "No test profile specified - using default - see test report for details"
+    echo_if_verbose "No test profile specified - using default - see test report for details"
 else
-	if [ ! -r $TEST_PROFILE ]; then
-		echo_to_stderr "Could not read test profile '$TEST_PROFILE'"
-		exit 1
-	fi
+    if [ ! -r $TEST_PROFILE ]; then
+        echo_to_stderr "Could not read test profile '$TEST_PROFILE'"
+        exit 1
+    fi
 fi
 
 #
@@ -595,10 +595,10 @@ fi
 # of why a load test might fail
 # 
 if ! ls $SCRIPT_DIR_NAME/../lots-of-creds/*.couch >& /dev/null; then
-	echo_if_verbose "Couldn't find any .couch files in '$SCRIPT_DIR_NAME/../lots-of-creds'"
-	echo_if_verbose "-- Might have trouble starting Key Store"
-	echo_if_verbose "-- or Key Store might take long time to start"
-	echo_if_verbose "-- if .couch files are downloaded."
+    echo_if_verbose "Couldn't find any .couch files in '$SCRIPT_DIR_NAME/../lots-of-creds'"
+    echo_if_verbose "-- Might have trouble starting Key Store"
+    echo_if_verbose "-- or Key Store might take long time to start"
+    echo_if_verbose "-- if .couch files are downloaded."
 fi
 
 #
