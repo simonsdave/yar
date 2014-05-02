@@ -26,22 +26,45 @@ usage_detail() {
 app_server_add() {
     if [ $# != 0 ]; then
         echo "usage: `basename $0` as add"
+        return 1
     fi
     create_app_server
     create_app_server_lb
     return 0
 }
 
+app_server_remove() {
+    if [ $# != 1 ]; then
+        echo "usage: `basename $0` as rm <app server>"
+        return 1
+    fi
+    # from http://www.serverphorums.com/read.php?10,588090,590171#msg-590171
+    # gracefully stop accepting requests & remove server
+    # to 
+    # set weight $SERVER 0%
+    # => no new visitor is sent, wait a few minutes
+    # disable server $SERVER
+    # => no new connection is sent, wait a few seconds for established ones
+    # to complete
+    # shutdown sessions $SERVER
+    # => kill all possibly remaining connections to that server
+    # to bring server back online
+    # set weight $SERVER 100%
+    # enable server $SERVER
+    return 0
+}
+
 app_server_stats() {
     if [ $# != 0 ]; then
         echo "usage: `basename $0` as stats"
+        return 1
     fi
     get_app_server_stats
     return 0
 }
 
 app_server_usage() {
-    echo "usage: `basename $0` as [add|stats]"
+    echo "usage: `basename $0` as [add|rm|stats]"
 }
 
 app_server() {
@@ -50,6 +73,9 @@ app_server() {
     case "$COMMAND" in
         ADD)
             app_server_add $@
+            ;;
+        REMOVE|RM)
+            app_server_remove $@
             ;;
         STATS|STAT)
             app_server_stats $@
