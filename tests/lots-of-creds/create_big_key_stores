@@ -1,27 +1,38 @@
 #!/usr/bin/env bash
-
+#
 # when running load tests the key store should be loaded with
 # a bunch of credentials so its data shape is representive of
 # a real production scenario
 #
 # it takes a long time to load lots of creds into a CouchDB database
 # so generating creds and loading them into CouchDB while running
-# a load tests isn't desirable. instead, this script can be run
+# load tests isn't desirable. instead, this script can be run
 # outside of the load test to generate .couch files for CouchDB
 # databases containing various numbers of credentails. armed
-# with the .couch files it's quick to start a key store aginst
+# with the .couch files it's quick to start a key store against
 # the .couch file in effect almost instantly creating a key
 # store with lots of credentials.
+#
+# Why 25,000 credentials as the default # of credentials to generate?
+# Found that really large JSON files took a very long
+# time to upload and smaller files were much faster.
+# After some adhoc testing 25,000 seemed to be the a
+# good balance between file size and time to upload. No
+# real magic here just fiddled with it a bit.
+# 
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source $SCRIPT_DIR_NAME/../util.sh
 
 #
-# this script accepts one optional argument (--cfs) which
-# is used to specify the number of sets of credentials which
-# should be saved in each couch file
+# parse command line arguments
 #
+usage() {
+    echo "usage: `basename $0` [--cfs <couch file size>] [--cbs <creds batch size>]"
+}
+
 COUCH_FILE_SIZE=1000000
+CREDS_BATCH_SIZE=25000
 
 while [[ 0 -ne $# ]]
 do
@@ -32,15 +43,19 @@ do
             COUCH_FILE_SIZE=${1:-}
             shift
             ;;
+        --cbs)
+            CREDS_BATCH_SIZE=${1:-}
+            shift
+            ;;
         *)
-            echo "usage: `basename $0` [--cfs <couch file size>]"
+            usage
             exit 1
             ;;
     esac
 done
 
 if [ $# != 0 ]; then
-    echo "usage: `basename $0`"
+    usage
     exit 1
 fi
 
@@ -76,11 +91,14 @@ rm -f $SCRIPT_DIR_NAME/*.creds.couch >& /dev/null
 # directory as this script
 #
 TOTAL_NUMBER_OF_CREDS=0
-# for CREDS in $SCRIPT_DIR_NAME/*.json
-# for CREDS in $SCRIPT_DIR_NAME/00[0-5][0-9]-*.json
-for CREDS in $SCRIPT_DIR_NAME/000[0-9]-*.json
+while true
 do
     echo "Uploading '$CREDS'"
+
+    CREDS=$(platform_safe_mktemp $CREDS_BATCH_SIZE)
+    echo $CREDS
+
+    sudo docker run yar_img gen_basic_creds $CREDS_BATCH_SIZE > "$CREDS"
 
     STATUS_CODE=$(curl \
         -s \
@@ -95,8 +113,7 @@ do
         exit 2
     fi
 
-    NUMBER_OF_CREDS=$(echo $CREDS | sed s/\\/.*\\/[[:digit:]]*-0*// | sed s/.json$//)
-    TOTAL_NUMBER_OF_CREDS=$(python -c "print $TOTAL_NUMBER_OF_CREDS + int($NUMBER_OF_CREDS)")
+    TOTAL_NUMBER_OF_CREDS=$(python -c "print $TOTAL_NUMBER_OF_CREDS + int($CREDS_BATCH_SIZE)")
     if [ $(($TOTAL_NUMBER_OF_CREDS % $COUCH_FILE_SIZE)) == 0 ];then
         #
         # local.ini for CouchDB should have been configured with

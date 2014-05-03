@@ -45,6 +45,7 @@ setup(
         "bin/key_store_installer",
         "bin/yarcurl",
         "bin/jpp",
+        "bin/gen_basic_creds",
     ],
     install_requires=[
         "httplib2==0.8",
