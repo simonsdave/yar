@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-usage() {
-    echo "usage: `basename $0` [--mnc <desired # of creds>]"
-}
-
 # this script explores how the key store performs as the number
 # of credentials increases
 #
@@ -21,6 +17,10 @@ source $SCRIPT_DIR_NAME/../util.sh
 # which defines (roughly) the max number of credentials to load
 # into the key store
 #
+usage() {
+    echo "usage: `basename $0` [--mnc <max # creds>]"
+}
+
 MAX_NUMBER_OF_CREDS=20000000
 
 while [[ 0 -ne $# ]]
