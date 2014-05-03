@@ -19,3 +19,6 @@
 * [Def'n - Wikipedia: Tokenization (data security)](http://en.wikipedia.org/wiki/Tokenization_(data_security))
 * [Video: "60 Seconds Smarter on Tokenization" from Intel](https://www.youtube.com/watch?feature=player_embedded&v=-DqCtdc30LY)
 * [Def'n - http://searchsecurity.techtarget.com/: tokenization](http://searchsecurity.techtarget.com/definition/tokenization)
+
+### Possible Related References
+* [Cloud Security Alliance (CSA) Software Defined Perimeter (SDP)](https://cloudsecurityalliance.org/research/sdp/)
