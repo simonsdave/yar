@@ -609,8 +609,8 @@ create_key_store() {
     local DATABASE=creds
 
     #
-    # if requested to do so, seed the key store with a (large
-    # number of credentials)
+    # if requested to do so, seed the key store with (a large
+    # number of) credentials
     #
     mkdir -p $DATA_DIRECTORY/data
     if [ "$KEY_STORE_SIZE" != "" ]; then
