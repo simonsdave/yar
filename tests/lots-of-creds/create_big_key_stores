@@ -28,10 +28,10 @@ source $SCRIPT_DIR_NAME/../util.sh
 # parse command line arguments
 #
 usage() {
-    echo "usage: `basename $0` [--cfs <couch file size>] [--cbs <creds batch size>]"
+    echo "usage: `basename $0` [--couch <couch file size>] [--creds <creds batch size>]"
 }
 
-COUCH_FILE_SIZE=1000000
+COUCH_BATCH_SIZE=50000
 CREDS_BATCH_SIZE=25000
 
 while [[ 0 -ne $# ]]
@@ -39,11 +39,11 @@ do
     KEY="$1"
     shift
     case $KEY in
-        --cfs)
-            COUCH_FILE_SIZE=${1:-}
+        --couch)
+            COUCH_BATCH_SIZE=${1:-}
             shift
             ;;
-        --cbs)
+        --creds)
             CREDS_BATCH_SIZE=${1:-}
             shift
             ;;
@@ -60,29 +60,31 @@ if [ $# != 0 ]; then
 fi
 
 #
+# Useful for debugging
+#
+echo_in_yellow "Key Parameters"
+echo "-- CREDS_BATCH_SIZE = $CREDS_BATCH_SIZE"
+echo "-- COUCH_BATCH_SIZE = $COUCH_BATCH_SIZE"
+
+#
 # some initialization before we start the meat of this script
 #
 DATA_DIRECTORY=$SCRIPT_DIR_NAME/temp_couchdb
 rm -rf $DATA_DIRECTORY >& /dev/null
+rm -f $SCRIPT_DIR_NAME/*.creds.couch
 
 yar_init_deployment "$DATA_DIRECTORY"
 
 #
 # create a key store in an isolated container
 #
-echo "Creating Key Store"
+echo_in_yellow "Creating Key Store"
 if ! KEY_STORE=$(create_key_store "" false); then
     echo "Failed to create key store"
     exit 1
 fi
-echo "Key Store available @ '$KEY_STORE'"
-echo "Key Store data saved in '$DATA_DIRECTORY'"
-
-#
-# remove all old databases
-#
-echo "Removing all old databases from '$SCRIPT_DIR_NAME'"
-rm -f $SCRIPT_DIR_NAME/*.creds.couch >& /dev/null
+echo "-- Key Store available @ '$KEY_STORE'"
+echo "-- Key Store data saved in '$DATA_DIRECTORY'"
 
 #
 # iterate over each of the json files containing previously
@@ -90,13 +92,13 @@ rm -f $SCRIPT_DIR_NAME/*.creds.couch >& /dev/null
 # each millionth upload and save the copy to the same
 # directory as this script
 #
+echo_in_yellow "Creating Couch Files"
 TOTAL_NUMBER_OF_CREDS=0
 while true
 do
-    echo "Uploading '$CREDS'"
+    echo "-- Creating & Uploading $CREDS_BATCH_SIZE creds"
 
     CREDS=$(platform_safe_mktemp $CREDS_BATCH_SIZE)
-    echo $CREDS
 
     sudo docker run yar_img gen_basic_creds $CREDS_BATCH_SIZE > "$CREDS"
 
@@ -109,12 +111,12 @@ do
         -d @$CREDS \
         http://$KEY_STORE/_bulk_docs)
     if [ $? -ne 0 ] || [ "$STATUS_CODE" != "201" ]; then
-        echo "Failed to upload '$CREDS' to key store @ '$KEY_STORE'"
+        echo "-- Failed to upload '$CREDS' to key store @ '$KEY_STORE'"
         exit 2
     fi
 
-    TOTAL_NUMBER_OF_CREDS=$(python -c "print $TOTAL_NUMBER_OF_CREDS + int($CREDS_BATCH_SIZE)")
-    if [ $(($TOTAL_NUMBER_OF_CREDS % $COUCH_FILE_SIZE)) == 0 ];then
+    let "TOTAL_NUMBER_OF_CREDS += $CREDS_BATCH_SIZE"
+    if [ $(($TOTAL_NUMBER_OF_CREDS % $COUCH_BATCH_SIZE)) == 0 ];then
         #
         # local.ini for CouchDB should have been configured with
         #
@@ -132,12 +134,12 @@ do
             -H "Content-Type: application/json; charset=utf8" \
             http://$KEY_STORE/_ensure_full_commit)
         if [ $? -ne 0 ] || [ "$STATUS_CODE" != "201" ]; then
-            echo "Flush to disk failed on key store '$KEY_STORE'"
+            echo "-- Flush to disk failed on key store '$KEY_STORE'"
             exit 2
         fi
 
         DEST=$SCRIPT_DIR_NAME/$TOTAL_NUMBER_OF_CREDS.creds.couch
-        echo "Creating '$DEST'"
+        echo_in_red "-- Creating '$DEST'"
         cp $DATA_DIRECTORY/Key-Store/data/creds.couch $DEST
     fi
 
