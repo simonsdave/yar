@@ -1,9 +1,17 @@
-Testing and experimenting with a full yar deployment
+Testing against and experimenting with a full yar deployment
 is done by creating a series of
-[Docker](https://www.docker.io/) containers to run
+[Docker](https://www.docker.io/) containers which run
 instances of the various yar services. The number, type
-and size of these containers can be varied to validate
-yar's operation in various deployment configurations.
+and size of these containers can be varied when the deployment
+is spun up to validate yar's operation in a variety of
+deployment configurations. Also, after initial deployment
+is up and running, it is also possible to add and remove
+services to understand and verify a broad set of
+operational scenarios.
+
+* spin up a [VirtualBox](https://www.virtualbox.org/)
+VM running [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
+and version 3.8 of the Linux kernel
 
 Creating a Box with Correct Linux Kernel
 ----------------------------------------
