@@ -58,7 +58,7 @@ DATA_DIRECTORY=$(platform_safe_mktemp_directory)
 
 yar_init_deployment "$DATA_DIRECTORY"
 
-echo "$(tput setaf 3)Creating Key Store$(tput sgr0)"
+echo_in_yellow "Creating Key Store"
 if ! KEY_STORE=$(create_key_store); then
     echo "Failed to create Key Store"
     exit 1
@@ -67,17 +67,30 @@ echo "-- Key Store available @ '$KEY_STORE'"
 echo "-- Key Store data saved in '$DATA_DIRECTORY'"
 
 #
-# load up the newly created key store with a bunch
-# of previously generated credentials keeping
-# track of various metrics during the loading process
+# bulk load the newly created key store with a bunch
+# credentials keeping track of various metrics during
+# the loading process
 #
 DATABASE_METRICS=$RESULTS_DIR/key-store-size.tsv
 
-echo "$(tput setaf 3)Starting Test$(tput sgr0)"
+creds_batch_sizes() {
+    echo 1000
+    echo 5000
+    echo 14000
+    for i in $(seq 100)
+    do
+        echo 25000
+    done
+}
+
+echo_in_yellow "Starting Test"
 TOTAL_NUMBER_OF_CREDS=0
-for CREDS in $SCRIPT_DIR_NAME/../lots-of-creds/*.json
+for CREDS_BATCH_SIZE in $(creds_batch_sizes)
 do
-    echo "-- Uploading $CREDS"
+    echo "-- Generating & uploading $CREDS_BATCH_SIZE creds"
+
+    CREDS=$(platform_safe_mktemp $CREDS_BATCH_SIZE)
+    sudo docker run yar_img gen_basic_creds $CREDS_BATCH_SIZE > "$CREDS"
 
     STATUS_CODE=$(curl \
         -s \
@@ -128,8 +141,7 @@ do
 
     rm $TEMP_DATABASE_METRICS
 
-    NUMBER_OF_CREDS=$(echo $CREDS | sed s/\\/.*\\/[[:digit:]]*-0*// | sed s/.json$//)
-    TOTAL_NUMBER_OF_CREDS=$(python -c "print $TOTAL_NUMBER_OF_CREDS + int($NUMBER_OF_CREDS)")
+    let "TOTAL_NUMBER_OF_CREDS = $TOTAL_NUMBER_OF_CREDS + $CREDS_BATCH_SIZE"
     if [ $MAX_NUMBER_OF_CREDS -le $TOTAL_NUMBER_OF_CREDS ]; then
         break
     fi
@@ -143,7 +155,7 @@ done
 # charts so we can figure out some results!
 #
 
-echo "$(tput setaf 3)Generating result graphs$(tput sgr0)"
+echo_in_yellow "Generating result graphs"
 
 #
 # generate a title page for the summary report
