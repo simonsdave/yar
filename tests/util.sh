@@ -30,6 +30,42 @@ get_from_json() {
 
 #
 # write the first argument to this function (which is assumed
+# to be a string) to stdout in yellow
+#
+# exit codes
+#   0   always
+#
+echo_in_yellow() {
+	echo "$(tput setaf 3)${1:-}$(tput sgr0)" 
+	return 0
+}
+
+#
+# write the first argument to this function (which is assumed
+# to be a string) to stdout in red
+#
+# exit codes
+#   0   always
+#
+echo_in_red() {
+	echo "$(tput setaf 1)${1:-}$(tput sgr0)" 
+	return 0
+}
+
+#
+# write the first argument to this function (which is assumed
+# to be a string) to stdout in blue
+#
+# exit codes
+#   0   always
+#
+echo_in_blue() {
+	echo "$(tput setaf 4)${1:-}$(tput sgr0)" 
+	return 0
+}
+
+#
+# write the first argument to this function (which is assumed
 # to be a string) to stderr
 #
 # exit codes
