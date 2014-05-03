@@ -11,23 +11,8 @@ the number of sets of credentials
 
 The problem was that generating credentials and loading up
 databases with lots of credentials takes a while. So the
-solution was to pre-generate a whole bunch of credentials
-and save them in files that could be uploaded to CouchDB
-using CouchDB's bulk document upload capability.
-
-Why 25,000 credentials in most of the JSON files? Why
-not just put all credentials in a single JSON file?
-Found that really large JSON files took a very long
-time to upload and smaller files were much faster.
-After some adhoc testing 25,000 seemed to be the a
-good balance between file size and time to upload. No
-real magic here just fiddled with it a bit.
-
-Why 1K, 10K and then a bunch with 25K? Wanted to graph
-the growth of the database as a function of the number
-of sets of credentials.
-
-Files are generated in in same directory as this script."""
+solution was to pre-generate CouchDB databases with
+preloaded credentials."""
 
 import os
 import sys
@@ -35,42 +20,31 @@ import uuid
 
 import yar.util.basic
 
-def _create_file(number_of_creds, filename):
-
-    # :TODO: what about MAC creds?
-
-    with open(filename, "w") as f:
-        f.write('{"docs": [\n')
-        fmt = (
-            '{"_id": "%s", '
-            '"principal": "%s@example.com", '
-            '"type": "creds_v1.0", '
-            '"is_deleted": false, '
-            '"basic": {'
-            '"api_key": "%s"'
-            '}'
-            '}%s\n'
-        )
-        for i in range(0, number_of_creds):
-            api_key = yar.util.basic.APIKey.generate()
-            principal = str(uuid.uuid4()).replace("-", "")
-            comma_or_nothing = "" if i == (number_of_creds - 1) else ","
-            f.write(fmt % (api_key, principal, api_key, comma_or_nothing))
-        f.write(']}\n')
-
-
 if __name__ == "__main__":
 
-    abs_base_path = os.path.abspath(os.path.split(sys.argv[0])[0])
+    if 2 != len(sys.argv):
+        fmt = "usage: %s <number of creds>"
+        print fmt % os.path.split(sys.argv[0])[1]
+        sys.exit(1)
 
-    number_of_creds = [1000, 10000, 14000]
-    number_of_creds.extend([25000] * 199)
-    assert 5000000 == sum(number_of_creds)
-    for i in range(0, len(number_of_creds)):
-        filename = "%s-%s.json" % (
-            str(i).zfill(4),
-            str(number_of_creds[i]).zfill(8),
-        )
-        filename = os.path.join(abs_base_path, filename)
-        print "Creating '%s'" % filename
-        _create_file(number_of_creds[i], filename)
+    number_of_creds = int(sys.argv[1])
+
+    print '{"docs": ['
+
+    fmt = (
+        '{"_id": "%s", '
+        '"principal": "%s@example.com", '
+        '"type": "creds_v1.0", '
+        '"is_deleted": false, '
+        '"basic": {'
+        '"api_key": "%s"'
+        '}'
+        '}%s'
+    )
+    for i in range(0, number_of_creds):
+        api_key = yar.util.basic.APIKey.generate()
+        principal = str(uuid.uuid4()).replace("-", "")
+        comma_or_nothing = "" if i == (number_of_creds - 1) else ","
+        print fmt % (api_key, principal, api_key, comma_or_nothing)
+
+    print ']}'
