@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 
+#   
 # this script explores how the key store performs as the number
 # of credentials increases
 #
-# JSON documents with a large number of previously generated
-# credentials are bulk loaded into a key store with measurements
-# being taken at intervals during the upload process. the
-# metrics are plotted on graphs and a pdf summary report is
-# generated.
+# exit status
+#   0   ok
+#   
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source $SCRIPT_DIR_NAME/../util.sh
