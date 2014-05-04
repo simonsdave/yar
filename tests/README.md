@@ -282,16 +282,19 @@ to start driving load into a deployment
 it can be useful to look at the
 [stats reporting](http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#stats%20enable) - after a bunch of Vagrant and Docker detailed fussing
 this was made possible - in a browser on the same machine running
-your testing VM, go to:
+your testing VM, go to the links below (in all cases
+the user name is yar and password is yar):
 
-  * [http://localhost:8000/auth_server_lb?stats](http://localhost:8000/auth_server_lb?stats) for auth server LB stats - user name = yar, password = yar
-  * [http://localhost:8070/key_server_lb?stats](http://localhost:8070/key_server_lb?stats) for key server LB stats - user name = yar, password = yar
-  * [http://localhost:8080/app_server_lb?stats](http://localhost:8080/app_server_lb?stats) for app server LB stats - user name = yar, password = yar
+  * [http://localhost:8000/auth_server_lb?stats](http://localhost:8000/auth_server_lb?stats) for auth server LB stats
+  * [http://localhost:8070/key_server_lb?stats](http://localhost:8070/key_server_lb?stats) for key server LB stats
+  * [http://localhost:8080/app_server_lb?stats](http://localhost:8080/app_server_lb?stats) for app server LB stats
 
-* this entire testing infrastructure was built initial to enable
-load testing - to explore load testing look at:
+* this entire testing infrastructure was initally built to enable
+load testing - to explore load testing capabilities look at:
+
   * [full deployment load testing](tests-load)
   * [key store load testing](tests-key-store)
+
 * if at any point you need to remove all
 containers so you can start from scratch just run
 [rm_all_containers.sh](rm_all_containers.sh)
