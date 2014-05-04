@@ -251,18 +251,22 @@ create_basic_creds $KEY_SERVER $PRINCIPAL
 create_mac_creds $KEY_SERVER $PRINCIPAL
 
 #
-# used to cat ~/.yar.deployment but that started to seem like overkill
+# Summarize the key items in the deployment
 #
-if [ -r ~/.yar.deployment ]; then
-    echo_if_not_silent "Deployment Description in ~/.yar.deployment"
-fi
+echo_if_not_silent "Deployment Highlights"
+
+echo_if_not_silent "-- entry point @ $AUTH_SERVER_LB"
 
 if [ -r ~/.yar.creds ]; then
-    echo_if_not_silent "Creds in ~/.yar.deployment"
+    echo_if_not_silent "-- creds in ~/.yar.creds"
+fi
+
+if [ -r ~/.yar.deployment ]; then
+    echo_if_not_silent "-- description in ~/.yar.deployment"
 fi
 
 if [ -r ~/.yar.creds.random.set ]; then
-    echo_if_not_silent "Random set of creds in ~/.yar.creds.random.set"
+    echo_if_not_silent "-- random set of creds in ~/.yar.creds.random.set"
 fi
 
 exit 0
