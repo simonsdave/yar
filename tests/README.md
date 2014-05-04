@@ -277,6 +277,17 @@ requests with
 [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication) 
 to use [Apache's ab](http://httpd.apache.org/docs/2.4/programs/ab.html)
 to start driving load into a deployment
+* while you're driving load thru the
+[HAProxy load balancers](http://haproxy.1wt.eu/)
+it can be useful to look at the
+[stats reporting](http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#stats%20enable) - after a bunch of Vagrant and Docker detailed fussing
+this was made possible - in a browser on the same machine running
+your testing VM, go to:
+
+  * [http://localhost:8000/app_server_lb?stats]([http://localhost:8000/app_server_lb?stats]) for auth server LB stats - user name = yar, password = yar
+  * [http://localhost:8070/app_server_lb?stats]([http://localhost:8070/app_server_lb?stats]) for key server LB stats - user name = yar, password = yar
+  * [http://localhost:8080/app_server_lb?stats]([http://localhost:8080/app_server_lb?stats]) for app server LB stats - user name = yar, password = yar
+
 * this entire testing infrastructure was built initial to enable
 load testing - to explore load testing look at:
   * [full deployment load testing](tests-load)
