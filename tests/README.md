@@ -4,93 +4,54 @@ is done by creating a series of
 instances of the various yar services. The number, type
 and size of these containers can be varied when the deployment
 is spun up to validate yar's operation in a variety of
-deployment configurations. Also, after initial deployment
+deployment configurations. Also, after an initial deployment
 is up and running, it is also possible to add and remove
-services to understand and verify a broad set of
+service instances to explore, understand and verify key
 operational scenarios.
 
-* spin up a [VirtualBox](https://www.virtualbox.org/)
-VM running [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
-and version 3.8 of the Linux kernel
-
-Creating a Box with Correct Linux Kernel
-----------------------------------------
-
 The primary development environment for yar is
-[Mac OS X](http://www.apple.com/ca/osx/).
+[Mac OS X](http://www.apple.com/ca/osx/)
+and the intended deployment environment is 
+[Ubuntu 12.04](http://releases.ubuntu.com/12.04/).
 [Docker](https://www.docker.io/) doesn't support
 [Mac OS X](http://www.apple.com/ca/osx/)
 so a [Vagrant](http://www.vagrantup.com/) provisioned
 [VirtualBox](https://www.virtualbox.org/)
 VM running [Ubuntu 12.04](http://releases.ubuntu.com/12.04/) is
 used as the [Docker](https://www.docker.io/) container host. 
-There's one little gotcha to address = the default
-[Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
-[box](http://docs.vagrantup.com/v2/boxes.html)
-runs the 3.2 Linux kernel but 
-[Docker requires](http://docs.docker.io/en/latest/installation/ubuntulinux/)
-version 3.8 of the Linux kernel. So, we need create a local
-[Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
-[box](http://docs.vagrantup.com/v2/boxes.html)
-with the 3.8 Linux kernel.
 
-* [these instructions](precise64-3.8-kernel/README.md) describe how to create
-a [box](http://docs.vagrantup.com/v2/boxes.html) called *precise64-3.8-kernel*
-and make the [box](http://docs.vagrantup.com/v2/boxes.html)
-available in the local [box](http://docs.vagrantup.com/v2/boxes.html) repo
-
-> NOTE - creating the [box](http://docs.vagrantup.com/v2/boxes.html)
-with the right kernel version is a one time operation - you don't have
-to do this before running each load test - create the
-[box](http://docs.vagrantup.com/v2/boxes.html)
-once and reuse it again and again
-
-Creating a Base Docker Container Host
--------------------------------------
-
-We now have a [box](http://docs.vagrantup.com/v2/boxes.html) with the right
-version of the kernel on which we can build a Base Docker Container Host.
-
-* [these instructions](base-docker-container-host/README.md) describe how to create
-a [box](http://docs.vagrantup.com/v2/boxes.html) called *docker-container-host*
-and make the [box](http://docs.vagrantup.com/v2/boxes.html)
-available in the local [box](http://docs.vagrantup.com/v2/boxes.html) repo
-
-> NOTE - creating the Base Docker Container Host
-[box](http://docs.vagrantup.com/v2/boxes.html)
-is a one time operation - you don't have
-to do this before running each load test - create the
-[box](http://docs.vagrantup.com/v2/boxes.html)
-once and reuse it again and again
-
-Creating a Docker Container Host
---------------------------------
-
-Using the above instructions you created a Base Docker Container Host
-as a [Vagrant](http://www.vagrantup.com/)
+* use [Vagrant](http://www.vagrantup.com/) to create
+a [VirtualBox](https://www.virtualbox.org/)
 [box](http://docs.vagrantup.com/v2/boxes.html)
 running [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
-and called it base-docker-container-host.
-This [box](http://docs.vagrantup.com/v2/boxes.html) has
-90% of what we need to run a load test.
-The steps below finish creation of the Docker Container Host.
-In the steps below we'll assume you've got the yar source
-installed at ~/yar.
-
-* first let's get to the right directory
-
-~~~~~
-cd; cd yar; source bin/cfg4dev; cd tests/load
-~~~~~
-
-* spin up the [box](http://docs.vagrantup.com/v2/boxes.html)
-
-> NOTE - to spin up the the [box](http://docs.vagrantup.com/v2/boxes.html),
-> [provision.sh](provision.sh) is used rather than
-> [vagrant up](https://docs.vagrantup.com/v2/cli/up.html)
+and version 3.8 of the Linux kernel - see
+[these instructions](precise64-3.8-kernel/README.md) for all the details - note
+this is a one time operation and is only required because the updated
+kernel version is required by [Docker](https://www.docker.io/)
+* again using [Vagrant](http://www.vagrantup.com/),
+build on the [box](http://docs.vagrantup.com/v2/boxes.html)
+just created and create a second [box](http://docs.vagrantup.com/v2/boxes.html)
+provisioned with all the base [Docker](https://www.docker.io/)
+images, infrastructure and test tools that are needed to spin
+up and test a yar deployment - see [these instructions](base-docker-container-host/README.md)
+for all the details - note, like creating the previous
+[box](http://docs.vagrantup.com/v2/boxes.html), creating this [box](http://docs.vagrantup.com/v2/boxes.html)
+is a one time operation
+* once you have created the above [boxes](http://docs.vagrantup.com/v2/boxes.html)
+you should see something like the following
 
 ~~~~~
-(env)>./provision.sh
+(env)>vagrant box list
+base-docker-container-host (virtualbox, 0)
+precise64                  (virtualbox, 0)
+precise64-3.8-kernel       (virtualbox, 0)
+~~~~~
+
+* now it's time to use [Vagrant](http://www.vagrantup.com/)
+to spin up a [VirtualBox](https://www.virtualbox.org/) VM
+
+~~~~~
+cd; cd yar; source bin/cfg4dev; cd tests; ./provision.sh
 <<<cut lots of messages>>>
 Cleaning up...
  ---> 296a0d185246
@@ -106,7 +67,7 @@ Removing intermediate container d984d433d10b
 (env)>
 ~~~~~
 
-* once the VM is running, ssh into the VM
+* once the VM is running, ssh into it
 
 ~~~~~
 (env)>vagrant ssh
@@ -118,24 +79,160 @@ Last login: Fri Sep 14 06:23:18 2012 from 10.0.2.2
 vagrant@precise64:~$
 ~~~~~
 
-* now you'll be able to see the [Docker](https://www.docker.io/)
-images that will be used to create [Docker](https://www.docker.io/)
-containers that will be used for load testing yar
-* to see the [Docker](https://www.docker.io/) images use
-the docker images command
+* now let's get to the directory in the VM with all of the testing
+tools and utilities
 
 ~~~~~
-vagrant@precise64:~$ sudo docker images
-REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
-yar_img             latest              e9fe52ca3e07        59 seconds ago      445.3 MB
-couchdb_img         latest              3c98699e421f        30 minutes ago      563.4 MB
-haproxy_img         latest              6b12916c8aa7        33 minutes ago      226.4 MB
-memcached_img       latest              e527fd882aab        33 minutes ago      265.9 MB
-ubuntu              12.04               9cd978db300e        8 weeks ago         204.4 MB
+vagrant@precise64:~$ cd /vagrant
+vagrant@precise64:~$ ls -l
+vagrant@precise64:/vagrant$ ls -l
+total 84
+drwxr-xr-x 1 vagrant vagrant   136 May  4 14:26 artifacts
+drwxr-xr-x 1 vagrant vagrant   306 May  3 13:08 box-base-docker-container-host
+drwxr-xr-x 1 vagrant vagrant   170 May  3 12:32 box-precise64-3.8-kernel
+drwxr-xr-x 1 vagrant vagrant   204 May  3 12:32 cfg-collectd
+drwxr-xr-x 1 vagrant vagrant   170 May  3 12:32 cfg-haproxy
+drwxr-xr-x 1 vagrant vagrant   238 May  4 12:34 lots-of-creds
+-rw-r--r-- 1 vagrant vagrant   282 May  3 12:32 provision_post_vagrant_up.sh
+-rwxr-xr-x 1 vagrant vagrant   642 May  3 12:32 provision.sh
+-rw-r--r-- 1 vagrant vagrant 14140 May  3 12:32 README.md
+-rwxr-xr-x 1 vagrant vagrant   536 May  3 12:32 rm_all_containers.sh
+-rwxr-xr-x 1 vagrant vagrant  7291 May  3 12:32 spin_up_deployment.sh
+drwxr-xr-x 1 vagrant vagrant   238 May  3 21:32 tests-key-store-size
+drwxr-xr-x 1 vagrant vagrant   306 May  3 12:32 tests-load
+-rw-r--r-- 1 vagrant vagrant 40705 May  3 15:11 util.sh
+-rw-r--r-- 1 vagrant vagrant   493 May  3 12:32 Vagrantfile
+drwxr-xr-x 1 vagrant vagrant   136 May  4 14:26 yar
+-rwxr-xr-x 1 vagrant vagrant  2364 May  3 12:32 yar.sh
+vagrant@precise64:~$
 ~~~~~
 
-Congratulations! You now have everything that's necessary to 
-run some load tests:-)
+* let's spin up a really simple yar deployment
+
+~~~~~
+vagrant@precise64:/vagrant$ ./spin_up_deployment.sh
+Initalizating Deployment
+-- Removing all existing containers
+-- Removing '~/.yar.deployment'
+-- Removing '~/.yar.creds'
+-- Removing '~/.yar.creds.random'
+-- Deployment Location '/tmp/tmp.igS9ZsfsSK'
+Starting App Server(s)
+-- 1: Starting App Server
+-- 1: App Server listening on 172.17.0.2:8080
+Starting App Server LB
+-- App Server LB listening on 172.17.0.3:8080
+Starting Nonce Store(s)
+-- 1: Starting Nonce Store
+-- 1: Nonce Store listening on 172.17.0.4:11211
+Starting Key Store
+-- Key Store listening on 172.17.0.5:5984/creds
+Starting Key Server(s)
+-- 1: Starting Key Server
+-- 1: Key Server listening on 172.17.0.6:8070
+Starting Key Server LB
+-- Key Server LB listening on 172.17.0.7:8070
+Starting Auth Server(s)
+-- 1: Starting Auth Server
+-- Auth Server listening on 172.17.0.8:8000
+Starting Auth Server LB
+-- Auth Server LB listening on 172.17.0.9:8000
+Deployment Highlights
+-- entry point @ 172.17.0.9:8000
+-- creds in ~/.yar.creds
+-- description in ~/.yar.deployment
+vagrant@precise64:/vagrant$
+~~~~~
+
+* spin_up_deployment.sh just did a **ton** of work for us
+* in the output above you'll notice the highlights
+described in the "Deployment Highlights" section
+* let's walk thru each of items in "Deployment Highlights" section
+* entry point describes the IP + port pair of the HAProxy
+instances that balances load across all auth servers in
+the deployment
+* let' issue a cURL command to the entry point and see what happens
+
+~~~~~
+vagrant@precise64:/vagrant$ curl http://172.17.0.9:8000
+vagrant@precise64:/vagrant$ curl -v http://172.17.0.9:8000
+* About to connect() to 172.17.0.9 port 8000 (#0)
+*   Trying 172.17.0.9... connected
+> GET / HTTP/1.1
+> User-Agent: curl/7.22.0 (x86_64-pc-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.1 zlib/1.2.3.4 libidn/1.23 librtmp/2.3
+> Host: 172.17.0.9:8000
+> Accept: */*
+>
+< HTTP/1.1 401 Unauthorized
+< Date: Sun, 04 May 2014 14:57:24 GMT
+< Content-Length: 0
+< Content-Type: text/html; charset=UTF-8
+< Connection: close
+<
+* Closing connection #0
+vagrant@precise64:/vagrant$
+~~~~~
+
+* the first cURL request failed so we issued a section cURL
+request, this time with the -v command so we could get a better
+sense of what was happening
+* the HTTP response code was 401 Unauthorized
+* why? the cURL requests are getting rejected by the auth
+servers because the auth servers can't authenticate the request
+which brings us to the second item the "Deployment Highlights" section
+* as part of spinning up the deployment, spin_up_deployment.sh
+provisioned some credentials and saved them in ~/.yar.creds
+* let's take a look at ~/.yar.creds
+
+~~~~~
+vagrant@precise64:/vagrant$ cat ~/.yar.creds
+API_KEY=5f4149f8057a4903af1805e74c2e1d20
+MAC_KEY_IDENTIFIER=b76066b21815448081645b9355a7dd93
+MAC_KEY=EM92Jdqi6zTuakxr6D3GLi2hO37lCitYs69ZGghJE7g
+MAC_ALGORITHM=hmac-sha-1
+vagrant@precise64:/vagrant$
+~~~~~
+
+* armed with the credentials let's issue a new cURL request
+
+~~~~~
+vagrant@precise64:/vagrant$ curl -v -u 5f4149f8057a4903af1805e74c2e1d20: http://172.17.0.9:8000
+* About to connect() to 172.17.0.9 port 8000 (#0)
+*   Trying 172.17.0.9... connected
+* Server auth using Basic with user '5f4149f8057a4903af1805e74c2e1d20'
+> GET / HTTP/1.1
+> Authorization: Basic NWY0MTQ5ZjgwNTdhNDkwM2FmMTgwNWU3NGMyZTFkMjA6
+> User-Agent: curl/7.22.0 (x86_64-pc-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.1 zlib/1.2.3.4 libidn/1.23 librtmp/2.3
+> Host: 172.17.0.9:8000
+> Accept: */*
+>
+< HTTP/1.1 200 OK
+< Content-Length: 86
+< Connection: close
+< Etag: "0d6eb733c05b376dafdbba2b426c1ea167ef37a6"
+< Date: Sun, 04 May 2014 15:04:33 GMT
+< Content-Type: application/json; charset=UTF-8
+<
+* Closing connection #0
+{"status": "ok", "when": "2014-05-04 15:04:33.412551", "auth": "YAR dave@example.com"}
+vagrant@precise64:/vagrant$
+~~~~~
+
+* 200 OK = success! nice:-)
+
+
+~~~~~
+vagrant@precise64:/vagrant$ sudo docker ps
+CONTAINER ID        IMAGE                  COMMAND                CREATED              STATUS              PORTS                    NAMES
+d11a5720bb35        haproxy_img:latest     haproxy.sh /haproxy/   About a minute ago   Up About a minute   0.0.0.0:8000->8000/tcp   Auth_Server_LB
+f2bf69b25b59        yar_img:latest         auth_server --log=in   About a minute ago   Up About a minute                            Auth_Server_1
+310b12f3c4c3        haproxy_img:latest     haproxy.sh /haproxy/   About a minute ago   Up About a minute   0.0.0.0:8070->8070/tcp   Key_Server_LB
+f4caf2eec173        yar_img:latest         key_server --log=inf   About a minute ago   Up About a minute                            Key_Server_1
+73f231179e1a        couchdb_img:latest     /bin/sh -c couchdb     About a minute ago   Up About a minute   5984/tcp                 Key_Store
+13b630bc3a77        memcached_img:latest   memcached.sh 11211 1   About a minute ago   Up About a minute                            Nonce_Store_1
+6de3b8af3185        haproxy_img:latest     haproxy.sh /haproxy/   About a minute ago   Up About a minute   0.0.0.0:8080->8080/tcp   App_Server_LB
+a39916a7f1a7        yar_img:latest         app_server --log=inf   About a minute ago   Up About a minute                            App_Server_1
+~~~~~
 
 Running Load Tests
 ------------------
