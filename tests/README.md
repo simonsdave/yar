@@ -151,7 +151,8 @@ described in the "Deployment Highlights" section
 * entry point describes the IP + port pair of the HAProxy
 instances that balances load across all auth servers in
 the deployment
-* let' issue a cURL command to the entry point and see what happens
+* let' issue a [cURL](http://en.wikipedia.org/wiki/CURL) command
+to the entry point and see what happens
 
 ~~~~~
 vagrant@precise64:/vagrant$ curl http://172.17.0.9:8000
@@ -173,11 +174,13 @@ vagrant@precise64:/vagrant$ curl -v http://172.17.0.9:8000
 vagrant@precise64:/vagrant$
 ~~~~~
 
-* the first cURL request failed so we issued a section cURL
+* the first [cURL](http://en.wikipedia.org/wiki/CURL)
+request failed so we issued a section cURL
 request, this time with the -v command so we could get a better
 sense of what was happening
 * the HTTP response code was 401 Unauthorized
-* why? the cURL requests are getting rejected by the auth
+* why? the [cURL](http://en.wikipedia.org/wiki/CURL)
+requests are getting rejected by the auth
 servers because the auth servers can't authenticate the request
 which brings us to the second item the "Deployment Highlights" section
 * as part of spinning up the deployment, spin_up_deployment.sh
@@ -193,7 +196,10 @@ MAC_ALGORITHM=hmac-sha-1
 vagrant@precise64:/vagrant$
 ~~~~~
 
-* armed with the credentials let's issue a new cURL request
+* armed with the credentials let's issue a
+new [cURL](http://en.wikipedia.org/wiki/CURL)
+request that the auth servers should be able to
+successfully authenticate
 
 ~~~~~
 vagrant@precise64:/vagrant$ curl -v -u 5f4149f8057a4903af1805e74c2e1d20: http://172.17.0.9:8000
@@ -219,220 +225,72 @@ vagrant@precise64:/vagrant$
 ~~~~~
 
 * 200 OK = success! nice:-)
-
-
-~~~~~
-vagrant@precise64:/vagrant$ sudo docker ps
-CONTAINER ID        IMAGE                  COMMAND                CREATED              STATUS              PORTS                    NAMES
-d11a5720bb35        haproxy_img:latest     haproxy.sh /haproxy/   About a minute ago   Up About a minute   0.0.0.0:8000->8000/tcp   Auth_Server_LB
-f2bf69b25b59        yar_img:latest         auth_server --log=in   About a minute ago   Up About a minute                            Auth_Server_1
-310b12f3c4c3        haproxy_img:latest     haproxy.sh /haproxy/   About a minute ago   Up About a minute   0.0.0.0:8070->8070/tcp   Key_Server_LB
-f4caf2eec173        yar_img:latest         key_server --log=inf   About a minute ago   Up About a minute                            Key_Server_1
-73f231179e1a        couchdb_img:latest     /bin/sh -c couchdb     About a minute ago   Up About a minute   5984/tcp                 Key_Store
-13b630bc3a77        memcached_img:latest   memcached.sh 11211 1   About a minute ago   Up About a minute                            Nonce_Store_1
-6de3b8af3185        haproxy_img:latest     haproxy.sh /haproxy/   About a minute ago   Up About a minute   0.0.0.0:8080->8080/tcp   App_Server_LB
-a39916a7f1a7        yar_img:latest         app_server --log=inf   About a minute ago   Up About a minute                            App_Server_1
-~~~~~
-
-Running Load Tests
-------------------
-
-:TODO: these instructions need updating ...
-
-~~~~~
-vagrant@precise64:/vagrant$ ./spin_up_deployment.sh
-Starting Services ...
-
-Starting App Server(s)
-172.17.0.2:8080 in /tmp/tmp.qsomtrJz1H/App-Server
-Starting App Server LB
-172.17.0.3:8080 in /tmp/tmp.qsomtrJz1H/App-Server-LB
-Starting Nonce Store
-172.17.0.4:11211
-Starting Key Store
-172.17.0.5:5984/creds in /tmp/tmp.qsomtrJz1H/Key-Store
-Starting Key Server
-172.17.0.6:8070 in /tmp/tmp.qsomtrJz1H/Key-Server
-Starting Auth Server
-172.17.0.7:8000 in /tmp/tmp.qsomtrJz1H/Auth-Server
-Starting Auth Server LB
-172.17.0.8:8000 in /tmp/tmp.qsomtrJz1H/Auth-Server-LB
-
-Creating Credentials ...
-
-Credentials in ~/.yar.creds
-API_KEY=bd95fc48d57a4034939f04ef56fac46d
-MAC_KEY_IDENTIFIER=4b480f4f9a2343089b9f8cbe534cb522
-MAC_KEY=iPBKxnbbylBFUOK4qS-gS8ak7bQRyA4aVyey_e944XE
-MAC_ALGORITHM=hmac-sha-1
-vagrant@precise64:/vagrant$
-~~~~~
-
-* so what did ./spin_up_deployment.sh just do? it spun up a
-highly simplified but complete deployment of yar
-* you can see all the running services using docker's ps command
-
-~~~~~
-vagrant@precise64:/vagrant$ sudo docker ps
-CONTAINER ID        IMAGE                  COMMAND                CREATED              STATUS              PORTS               NAMES
-5c1514791174        haproxy_img:latest     haproxy -f /haproxyc   About a minute ago   Up About a minute                       dreamy_wright
-886ffd903d05        yar_img:latest         auth_server --log=in   About a minute ago   Up About a minute                       furious_fermat
-e160d943acc3        yar_img:latest         key_server --log=inf   About a minute ago   Up About a minute                       grave_lovelace
-de58bfa2ce11        couchdb_img:latest     /bin/sh -c couchdb     About a minute ago   Up About a minute   5984/tcp            focused_wozniak
-494464ec2278        memcached_img:latest   /bin/sh -c memcached   About a minute ago   Up About a minute   11211/tcp           high_bohr
-2ea0d8cd56ea        haproxy_img:latest     haproxy -f /haproxyc   About a minute ago   Up About a minute                       sleepy_brattain
-bb9ac51a422c        yar_img:latest         app_server --log=inf   About a minute ago   Up About a minute                       mad_hawking
-vagrant@precise64:/vagrant$
-~~~~~
-
-* spin_up_deployment.sh also 
-provisioned keys for [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
-and [OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02)
+* how that we've seen
+[Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
+working how about some
+[MAC](http://en.wikipedia.org/wiki/Message_authentication_code)
 authentication
-* you can issue requests to using
-[cURL](http://en.wikipedia.org/wiki/CURL) and
-[yarcurl](../bin/yarcurl) - go ahead, try it
+* this time we'll use yarcurl to issue the request - yarcurl
+will automagically pick up the required credentials from ~/.yar.creds,
+calculate the required Authorization header and issue a
+[cURL](http://en.wikipedia.org/wiki/CURL) request
 
 ~~~~~
-vagrant@precise64:/vagrant$ curl -s -u bd95fc48d57a4034939f04ef56fac46d: http://172.17.0.8:8000 | jpp
-{
-    "auth": "YAR dave@example.com",
-    "status": "ok",
-    "when": "2014-03-15 13:22:04.410721"
-}
-vagrant@precise64:/vagrant$ yarcurl GET http://172.17.0.8:8000 | jpp
-{
-    "auth": "YAR dave@example.com",
-    "status": "ok",
-    "when": "2014-03-15 13:25:10.753733"
-}
+rant@precise64:/vagrant$ yarcurl -v GET http://172.17.0.9:8000
+* About to connect() to 172.17.0.9 port 8000 (#0)
+*   Trying 172.17.0.9... connected
+> GET / HTTP/1.1
+> User-Agent: curl/7.22.0 (x86_64-pc-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.1 zlib/1.2.3.4 libidn/1.23 librtmp/2.3
+> Host: 172.17.0.9:8000
+> Accept: */*
+> Authorization: MAC id="b76066b21815448081645b9355a7dd93", ts="1399216364", nonce="21545e760586dfa7448181d465cf84ad", ext="", mac="fd6662158141f596919d63e63b51ea68b7f52695"
+>
+< HTTP/1.1 200 OK
+< Content-Length: 86
+< Connection: close
+< Etag: "6079df79c941ff7afe0eec855e23d2eaea59f32f"
+< Date: Sun, 04 May 2014 15:12:44 GMT
+< Content-Type: application/json; charset=UTF-8
+<
+* Closing connection #0
+{"status": "ok", "when": "2014-05-04 15:12:44.586694", "auth": "YAR dave@example.com"}vagrant@precise64:/vagrant$
 ~~~~~
 
-* above we issued request to the deployment using
-[cURL](http://en.wikipedia.org/wiki/CURL) and
-[yarcurl](../bin/yarcurl) but if
-you want to get a sense of how yar performs under load you'll
-want to issue repeated requests at various concurrency levels - a simple
-way to get going down that path is to use
-[Apache's ab](http://httpd.apache.org/docs/2.4/programs/ab.html) utility which
-you'll find has already been installed for you - below
-is an example of using ab to issue 10,000 requests to the deployment's
-auth server 10 requests at a time
+* again, 200 OK = success! nice:-)
 
-~~~~~
-vagrant@precise64:/vagrant$ ab -c 10 -n 10000 -A bd95fc48d57a4034939f04ef56fac46d: http://172.17.0.8:8000/dave.html
-This is ApacheBench, Version 2.3 <$Revision: 655654 $>
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-Licensed to The Apache Software Foundation, http://www.apache.org/
+Next Steps
+----------
 
-Benchmarking 172.17.0.8 (be patient)
-Completed 1000 requests
-Completed 2000 requests
-Completed 3000 requests
-Completed 4000 requests
-Completed 5000 requests
-Completed 6000 requests
-Completed 7000 requests
-Completed 8000 requests
-Completed 9000 requests
-Completed 10000 requests
-Finished 10000 requests
+The above barely scratched the surface on the features
+of this testing infrastructure. Below are some suggestions
+for next steps.
 
-
-Server Software:        TornadoServer/3.0.1
-Server Hostname:        172.17.0.8
-Server Port:            8000
-
-Document Path:          /dave.html
-Document Length:        86 bytes
-
-Concurrency Level:      10
-Time taken for tests:   128.914 seconds
-Complete requests:      10000
-Failed requests:        0
-Write errors:           0
-Total transferred:      2880000 bytes
-HTML transferred:       860000 bytes
-Requests per second:    77.57 [#/sec] (mean)
-Time per request:       128.914 [ms] (mean)
-Time per request:       12.891 [ms] (mean, across all concurrent requests)
-Transfer rate:          21.82 [Kbytes/sec] received
-
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        0    0   0.1      0       2
-Processing:    30  129  24.4    125     255
-Waiting:       30  128  24.4    125     255
-Total:         30  129  24.4    125     255
-
-Percentage of the requests served within a certain time (ms)
-  50%    125
-  66%    134
-  75%    141
-  80%    145
-  90%    160
-  95%    173
-  98%    190
-  99%    201
- 100%    255 (longest request)
-~~~~~
-
-* running a single [Apache ab](http://httpd.apache.org/docs/2.4/programs/ab.html)
-is fine for getting a quick sense of how the yar deployment is performing - a far
-better understanding is possible with some
-creative bash scripting and gnuplot
-* [run_load_test.sh](run_load_test.sh) is a pretty sweet bash script that
-automates the entire yar load testing process
-* [run_load_test.sh](run_load_test.sh) spins up a new yar deployment (using
-[spin_up_deployment.sh](spin_up_deployment.sh), issues 5,000 requests to the
-deployment using [ab](http://httpd.apache.org/docs/2.4/programs/ab.html) and
-produces some graphs using [gnuplot](http://www.gnuplot.info/) that describe how
-the deployment performed when [ab](http://httpd.apache.org/docs/2.4/programs/ab.html)
-was running
-* [run_load_test.sh](run_load_test.sh) repeats the above at concurrency levels of 1, 5,
-10, 25, 50, 75 & 100 and then puts all of the graphs in a single pdf summary report
-
-~~~~~
-vagrant@precise64:/vagrant$ ./run_load_test.sh
-
-<<<cut a bunch of output that is really not that interesting>>>
-
-Complete results in '/vagrant/test-results/2014-03-01-13-46'
-Summary report '/vagrant/test-results/2014-03-01-13-46/test-results-summary.pdf'
-~~~~~
-
-* below is a example of the kind of graphs you'll find in the summary report
-![](samples/sample-load-test-result-graph.png)
-* [here's](samples/sample-load-test-summary-report.pdf) a sample of the summary report
-
-Key Store Load Test
--------------------
-* [key_store_load_test.sh](key_store_load_test.sh) is used to explore
-  * how the size of the key store increases as the number of credentials increases
-  * how the time to retrieve credentials is affected by the number of credentials
-* just like the deployment load tests described above,
-the load test is run in the docker container
-host - [key_store_load_test.sh](key_store_load_test.sh)
-runs directly on the [VirtualBox](https://www.virtualbox.org/)
-and the key store runs in a [Docker](https://www.docker.io/) container
-* :TODO: add details on how to run the key store load test
-
-![](samples/sample-key-store-size-graph.png)
-
-* [here's](samples/sample-key-store-summary-report.pdf) a sample of the summary report
-
-Other Stuff
------------
+* rather than spinning up a single instance of each yar service,
+take a look spin_up_deployment.sh's -p option to see how
+to supply a deployment profile which describes the shape
+of the deployment - also take a look at
+[this](samples/sample-load-deployment-profile.json)
+sample deployment profile 
+* building on the knowledge you've gain about
+issuing [cURL](http://en.wikipedia.org/wiki/CURL)
+requests with
+[Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication) 
+to use [Apache's ab](http://httpd.apache.org/docs/2.4/programs/ab.html)
+to start driving load into a deployment
+* this entire testing infrastructure was built initial to enable
+load testing - to explore load testing look at:
+  * [full deployment load testing](tests-load)
+  * [key store load testing](tests-key-store)
 * if at any point you need to remove all
-containers so you can start from scratch just run [rm_all_containers.sh](rm_all_containers.sh) - just
-be warned, [rm_all_containers.sh](rm_all_containers.sh) kills **all** running containers and
-removes **all** file systems for all containers - note the emphasis on **all** -> 
-if you're running yar containers right beside non-yar containers
-[rm_all_containers.sh](rm_all_containers.sh) will remove the non-year containers
-and file systems just as quickly and forcefully as it removes yar containers and file systems
+containers so you can start from scratch just run
+[rm_all_containers.sh](rm_all_containers.sh)
+
+FAQ
+---
 * why are bash scripts used for lots of this testing? why not use Python
 and [docker-py](https://github.com/dotcloud/docker-py)?
-tried [docker-py](https://github.com/dotcloud/docker-py) but found the API to be poorly documented
+tried [docker-py](https://github.com/dotcloud/docker-py) but found
+the API to be poorly documented
 and not used extensively (so Googling for answers yielded few hits).
 The [Docker cli](http://docs.docker.io/en/latest/reference/commandline/cli/)
 on the other hand is very well documented and lots of folks
