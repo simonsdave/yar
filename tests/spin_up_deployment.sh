@@ -258,7 +258,7 @@ if [ -r ~/.yar.deployment ]; then
 fi
 
 if [ -r ~/.yar.creds ]; then
-    echo_if_not_silent "Creds in ~/.yar.deployment"
+    echo_if_not_silent "Creds in ~/.yar.creds"
 fi
 
 if [ -r ~/.yar.creds.random.set ]; then
