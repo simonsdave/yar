@@ -284,8 +284,8 @@ it can be useful to look at the
 this was made possible - in a browser on the same machine running
 your testing VM, go to:
 
-  * [http://localhost:8000/app_server_lb?stats](http://localhost:8000/app_server_lb?stats) for auth server LB stats - user name = yar, password = yar
-  * [http://localhost:8070/app_server_lb?stats](http://localhost:8070/app_server_lb?stats) for key server LB stats - user name = yar, password = yar
+  * [http://localhost:8000/auth_server_lb?stats](http://localhost:8000/auth_server_lb?stats) for auth server LB stats - user name = yar, password = yar
+  * [http://localhost:8070/key_server_lb?stats](http://localhost:8070/key_server_lb?stats) for key server LB stats - user name = yar, password = yar
   * [http://localhost:8080/app_server_lb?stats](http://localhost:8080/app_server_lb?stats) for app server LB stats - user name = yar, password = yar
 
 * this entire testing infrastructure was built initial to enable
