@@ -575,11 +575,11 @@ done
 #
 if [ "$TEST_PROFILE" == "" ]; then
     TEST_PROFILE=$(platform_safe_mktemp)
-    echo '{'                                >> $TEST_PROFILE
-    echo '    "concurrency": [5],'            >> $TEST_PROFILE
-    echo '    "number_of_requests": 1000,'    >> $TEST_PROFILE
-    echo '    "percentile": 99.9'            >> $TEST_PROFILE
-    echo '}'                                >> $TEST_PROFILE
+    echo '{'                               >> $TEST_PROFILE
+    echo '    "concurrency": [5],'         >> $TEST_PROFILE
+    echo '    "number_of_requests": 1000,' >> $TEST_PROFILE
+    echo '    "percentile": 99.9'          >> $TEST_PROFILE
+    echo '}'                               >> $TEST_PROFILE
 
     echo_if_verbose "No test profile specified - using default - see test report for details"
 else
