@@ -25,7 +25,7 @@ a [VirtualBox](https://www.virtualbox.org/)
 [box](http://docs.vagrantup.com/v2/boxes.html)
 running [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
 and version 3.8 of the Linux kernel - see
-[these instructions](precise64-3.8-kernel/README.md) for all the details - note
+[these instructions](box-precise64-3.8-kernel/README.md) for all the details - note
 this is a one time operation and is only required because the updated
 kernel version is required by [Docker](https://www.docker.io/)
 * again using [Vagrant](http://www.vagrantup.com/),
@@ -33,7 +33,7 @@ build on the [box](http://docs.vagrantup.com/v2/boxes.html)
 just created and create a second [box](http://docs.vagrantup.com/v2/boxes.html)
 provisioned with all the base [Docker](https://www.docker.io/)
 images, infrastructure and test tools that are needed to spin
-up and test a yar deployment - see [these instructions](base-docker-container-host/README.md)
+up and test a yar deployment - see [these instructions](box-base-docker-container-host/README.md)
 for all the details - note, like creating the previous
 [box](http://docs.vagrantup.com/v2/boxes.html), creating this [box](http://docs.vagrantup.com/v2/boxes.html)
 is a one time operation
