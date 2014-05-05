@@ -41,9 +41,10 @@ vagrant@precise64:/vagrant/tests-load$
 ~~~~~
 
 * below is a example of the kind of graphs you'll find in the summary report
+and [here's](samples/sample-load-test-summary-report.pdf) a sample
+of the full summary report
 ![](samples/sample-load-test-result-graph.png)
-* [here's](samples/sample-load-test-summary-report.pdf) a sample of the summary report
 
-Digging into Details
---------------------
+Next Steps
+----------
 * ...

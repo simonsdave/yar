@@ -266,7 +266,8 @@ of this testing infrastructure. Below are some suggestions
 for next steps.
 
 * rather than spinning up a single instance of each yar service,
-take a look spin_up_deployment.sh's -p option to see how
+take a look at [spin_up_deployment.sh's](spin_up_deployment.sh)
+-p option to see how
 to supply a deployment profile which describes the shape
 of the deployment - also take a look at
 [this](samples/sample-load-deployment-profile.json)
