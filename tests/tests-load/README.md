@@ -1,15 +1,14 @@
-The simplest way to run a load test against a functionally
-complete yar deployment is to 
-spin up a [VirtualBox](https://www.virtualbox.org/) VM running
-[Ubuntu 12.04 + version 3.8 of the Linux kernel](http://releases.ubuntu.com/12.04/)
-and containing all of the necessary
-[Docker](https://www.docker.io/) images for each of the various
-yar services and supporting infrastructure.
-See [these](..) instrutions for a complete description of how to spin up this VM.
-The remainder of these instructions assume such a VM is up and running.
+[These instructions](..) describe how to spin up a functionally
+complete deployment of yar in a single VM. The remainder of this
+page builds on those instructions and describes how to run a
+load test on the VM.
 
 Massively Quick Intro to Running A Load Test
 --------------------------------------------
+A ton of effort has gone into automating the load testing process
+so the instructions for running a load test are actually really
+simple. Instead of writing a long description of these
+instructions just follow the commands in the terminal window below.
 
 ~~~~~
 >cd; cd yar; source bin/cfg4dev; cd tests
@@ -40,11 +39,18 @@ Summary report '/vagrant/tests-load/test-results/2014-05-02-00-52/test-results-s
 vagrant@precise64:/vagrant/tests-load$
 ~~~~~
 
-* below is a example of the kind of graphs you'll find in the summary report
-and [here's](samples/sample-load-test-summary-report.pdf) a sample
+* below is a example of the kind of graphs you'll find in the
+load test's summary report and
+[here's](samples/sample-load-test-summary-report.pdf) a sample
 of the full summary report
 ![](samples/sample-load-test-result-graph.png)
 
 Next Steps
 ----------
-* ...
+* take a look at [run_load_test.sh's](run_load_test.sh)
+-p option to see how to supply a test profile which
+describes the shape of the deployment to load test
+along with various load testing parameters - also take
+a look at [this](samples/sample-load-test-profile.json)
+sample test profile which explains the various test
+parameters
