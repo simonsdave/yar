@@ -75,7 +75,7 @@ DATABASE_METRICS=$RESULTS_DIR/key-store-size.tsv
 creds_batch_sizes() {
     echo 1000
     echo 5000
-    echo 14000
+    echo 19000
     for i in $(seq 100)
     do
         echo 25000
