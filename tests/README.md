@@ -293,7 +293,7 @@ the user name is yar and password is yar):
 load testing - to explore load testing capabilities look at:
 
   * [full deployment load testing](tests-load)
-  * [key store load testing](tests-key-store)
+  * [key store load testing](tests-key-store-size)
 
 * if at any point you need to remove all
 containers so you can start from scratch just run
