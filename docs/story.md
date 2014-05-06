@@ -22,3 +22,4 @@
 
 ### Possible Related References
 * [Cloud Security Alliance (CSA) Software Defined Perimeter (SDP)](https://cloudsecurityalliance.org/research/sdp/)
+* [Security Operations: Moving to a Narrative-Driven Model](http://www.securityweek.com/security-operations-moving-narrative-driven-model)
