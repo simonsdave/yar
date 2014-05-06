@@ -107,7 +107,7 @@ drwxr-xr-x 1 vagrant vagrant   136 May  4 14:26 yar
 vagrant@precise64:~$
 ~~~~~
 
-* let's spin up a really simple yar deployment
+* let's spin up a minimal yar deployment
 
 ~~~~~
 vagrant@precise64:/vagrant$ ./spin_up_deployment.sh
@@ -144,13 +144,12 @@ Deployment Highlights
 vagrant@precise64:/vagrant$
 ~~~~~
 
-* spin_up_deployment.sh just did a **ton** of work for us
-* in the output above you'll notice the highlights
-described in the "Deployment Highlights" section
-* let's walk thru each of items in "Deployment Highlights" section
-* entry point describes the IP + port pair of the HAProxy
-instances that balances load across all auth servers in
-the deployment
+* [spin_up_deployment.sh](spin_up_deployment.sh) just did a ton of work for us
+* in the output above, take note of the "Deployment Highlights" section
+which describes elements of the deployment
+* let's walk thru each of items in the "Deployment Highlights" section
+* "entry point" describes the IP + port pair of the HAProxy
+instance that balances load across all auth servers in the deployment
 * let' issue a [cURL](http://en.wikipedia.org/wiki/CURL) command
 to the entry point and see what happens
 
@@ -175,15 +174,15 @@ vagrant@precise64:/vagrant$
 ~~~~~
 
 * the first [cURL](http://en.wikipedia.org/wiki/CURL)
-request failed so we issued a section cURL
-request, this time with the -v command so we could get a better
+request failed so we issued a section [cURL](http://en.wikipedia.org/wiki/CURL)
+request with the -v option so we could get a better
 sense of what was happening
 * the HTTP response code was 401 Unauthorized
 * why? the [cURL](http://en.wikipedia.org/wiki/CURL)
 requests are getting rejected by the auth
 servers because the auth servers can't authenticate the request
 which brings us to the second item the "Deployment Highlights" section
-* as part of spinning up the deployment, spin_up_deployment.sh
+* as part of spinning up the deployment, [spin_up_deployment.sh](spin_up_deployment.sh)
 provisioned some credentials and saved them in ~/.yar.creds
 * let's take a look at ~/.yar.creds
 
@@ -198,7 +197,7 @@ vagrant@precise64:/vagrant$
 
 * armed with the credentials let's issue a
 new [cURL](http://en.wikipedia.org/wiki/CURL)
-request that the auth servers should be able to
+request that the auth servers will be able to
 successfully authenticate
 
 ~~~~~
@@ -236,7 +235,7 @@ calculate the required Authorization header and issue a
 [cURL](http://en.wikipedia.org/wiki/CURL) request
 
 ~~~~~
-rant@precise64:/vagrant$ yarcurl -v GET http://172.17.0.9:8000
+vagrant@precise64:/vagrant$ yarcurl -v GET http://172.17.0.9:8000
 * About to connect() to 172.17.0.9 port 8000 (#0)
 *   Trying 172.17.0.9... connected
 > GET / HTTP/1.1
