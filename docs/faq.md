@@ -98,3 +98,8 @@ and my kids could not pronounce Seraph.
 ### What other API Management solutions exist?
 * [API Umbrella](https://github.com/NREL/api-umbrella/)
 * [19 Oct '11 - ProgrammableWeb - 11 API Management Services](http://blog.programmableweb.com/2011/10/19/api-service-provider-roundup/)
+
+### How do I add a new authentication mechanism to yar?
+Short answer is "add/change a bunch of code to a few different spots"
+with those spots enumerated below:
+* yar/tests/tests-load/locustfile.py
