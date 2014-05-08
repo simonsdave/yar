@@ -99,7 +99,10 @@ and my kids could not pronounce Seraph.
 * [API Umbrella](https://github.com/NREL/api-umbrella/)
 * [19 Oct '11 - ProgrammableWeb - 11 API Management Services](http://blog.programmableweb.com/2011/10/19/api-service-provider-roundup/)
 
-### How do I add a new authentication mechanism to yar?
+### How do I add a new authentication scheme to yar?
 Short answer is "add/change a bunch of code to a few different spots"
-with those spots enumerated below:
-* yar/tests/tests-load/locustfile.py
+with those spots being (assume new authentication scheme is called new_auth):
+* add new_auth.py to [yar/yar/util](../yar/util)
+just like [basic.py](../yar/util/basic.py)
+and [mac.py](../yar/util/mac.py)
+* update [yar/tests/tests-load/locustfile.py](../tests/tests-load/locustfile.py)
