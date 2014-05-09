@@ -348,7 +348,7 @@ yar_init_deployment() {
     echo_if_not_silent "-- Removing '~/.yar.creds'"
     rm -f ~/.yar.creds >& /dev/null
 
-    echo_if_not_silent "-- Removing '~/.yar.creds.random'"
+    echo_if_not_silent "-- Removing '~/.yar.creds.random.set'"
     rm -f ~/.yar.creds.random.set >& /dev/null
 
     echo_if_not_silent "-- Deployment Location '$DEPLOYMENT_LOCATION'"
@@ -612,9 +612,10 @@ create_app_server_lb() {
 # create a docker container with a key store running on
 # port 5984 with a database called creds
 #
-# arguments
-#   1   seed the key store with this number of credentials - optional
-#   2   'true' or 'false' indicating if design docs should be created
+# arguments (all optional)
+#   1   seed the key store with this number of credentials
+#   2   percent of credentials for basic authentication
+#   3   'true' or 'false' indicating if design docs should be created
 #
 # exit codes
 #   0   ok
@@ -639,7 +640,9 @@ create_key_store() {
 
     local KEY_STORE_SIZE=${1:-}
 
-    local CREATE_DESIGN_DOCS=${2:-true}
+    local PERCENT_BASIC_CREDS=${2:-}
+
+    local CREATE_DESIGN_DOCS=${3:-true}
 
     local PORT=5984
     local DATABASE=creds
@@ -651,9 +654,9 @@ create_key_store() {
     mkdir -p $DATA_DIRECTORY/data
     if [ "$KEY_STORE_SIZE" != "" ]; then
         local SCRIPT_DIR_NAME="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
-        local COUCH_FILE=$SCRIPT_DIR_NAME/lots-of-creds/$KEY_STORE_SIZE.creds.couch
+        local COUCH_FILE=$SCRIPT_DIR_NAME/lots-of-creds/$KEY_STORE_SIZE.$PERCENT_BASIC_CREDS.creds.couch
         if ! cp $COUCH_FILE $DATA_DIRECTORY/data/$DATABASE.couch >& /dev/null; then
-            echo_to_stderr_if_not_silent "Couldn't use existing couch file '$COUCH_FILE'"
+            echo_to_stderr_if_not_silent "Couldn't find couch file '$COUCH_FILE'"
             return 4
         fi
     fi
@@ -794,13 +797,19 @@ extract_random_set_of_creds_from_key_store() {
 
     local SCRIPT_DIR_NAME="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
 
-    curl \
+    local DESIGN_DOC_FILENAME="$SCRIPT_DIR_NAME/lots-of-creds/random_set_of_creds.js"
+    STATUS_CODE=$(curl \
+        -s \
+        -o /dev/null \
+        --write-out '%{http_code}' \
         -X PUT \
         -H "Content-Type: application/json; charset=utf8" \
-        -d @$SCRIPT_DIR_NAME/lots-of-creds/random_set_of_creds.js \
-        http://$KEY_STORE/_design/random_set_of_creds \
-        >& /dev/null
-    # :TODO: what if curl fails?
+        -d @"$DESIGN_DOC_FILENAME" \
+        http://$KEY_STORE/_design/random_set_of_creds)
+    if [ $? -ne 0 ] || [ "$STATUS_CODE" != "201" ]; then
+        echo "-- Failed to upload design doc '$DESIGN_DOC_FILENAME' to key store @ '$KEY_STORE'"
+        exit 2
+    fi
 
     let "END = 100 - $PERCENT_OF_CREDS + 1"
     START=$(shuf -i 1-$END -n 1)
@@ -808,14 +817,17 @@ extract_random_set_of_creds_from_key_store() {
     for i in $(seq $START $END)
     do
         CREDS=$(platform_safe_mktemp)
-        curl -s http://$KEY_STORE/_design/random_set_of_creds/_view/all?key=$i >& $CREDS
-        # :TODO: what if curl fails?
+
+        curl -s http://$KEY_STORE/_design/random_set_of_creds/_view/all?key=$i > $CREDS
+
         cat $CREDS | \
             grep '^{"id"' | \
-            sed -e 's/^{"id":"//' | \
-            sed -e 's/".*$//' \
+            sed -e 's/^.\+"value"://' | \
+            sed -e 's/}}.\?/}/' \
             >> $CREDS_OUTPUT_FILE
+
         rm -f $CREDS >& /dev/null
+
     done
 
     # 

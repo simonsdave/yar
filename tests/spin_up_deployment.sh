@@ -167,7 +167,13 @@ if [ "$DEPLOYMENT_PROFILE" != "" ]; then
         get_from_json '\["key_store"\,"number_of_creds"\]' "")
 fi
 
-if ! KEY_STORE=$(create_key_store $KEY_STORE_SIZE); then 
+PERCENT_BASIC_CREDS=90
+if [ "$DEPLOYMENT_PROFILE" != "" ]; then
+    PERCENT_BASIC_CREDS=$(cat $DEPLOYMENT_PROFILE | \
+        get_from_json '\["key_store"\,"percent_basic_creds"\]' "")
+fi
+
+if ! KEY_STORE=$(create_key_store $KEY_STORE_SIZE $PERCENT_BASIC_CREDS); then 
     echo_to_stderr_if_not_silent "-- Key Store failed to start"
     exit 1
 fi

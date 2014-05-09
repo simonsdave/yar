@@ -90,6 +90,7 @@ run_load_test() {
 
     local NUMBER_OF_REQUESTS=`get_from_json '\["number_of_requests"\]' 5000 < $TEST_PROFILE`
     local PERCENTILE=`get_from_json '\["percentile"\]' 98 < $TEST_PROFILE`
+    local PERCENT_BASIC_CREDS=`get_from_json '\["percent_basic_creds"\]' 90 < $TEST_PROFILE`
 
     local ZPCONCURRENCY=$(left_zero_pad $CONCURRENCY 4)
 

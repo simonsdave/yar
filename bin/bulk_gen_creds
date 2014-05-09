@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+"""This script generates a JSON document suitable for
+uploading to CouchDB's _bulk_docs end-point."""
+
+import os
+import sys
+import uuid
+
+import yar.util.basic
+import yar.util.mac
+
+if __name__ == "__main__":
+
+    if 3 != len(sys.argv):
+        fmt = "usage: %s <number of creds> <%% basic creds>"
+        print fmt % os.path.split(sys.argv[0])[1]
+        sys.exit(1)
+
+    number_of_creds = int(sys.argv[1])
+    number_of_basic_creds = int(number_of_creds * float(sys.argv[2]) / 100.00)
+    number_of_mac_creds = number_of_creds - number_of_basic_creds
+
+    print '{"docs": ['
+
+    mac_fmt = (
+        '{"_id": "%s", '
+        '"principal": "%s@example.com", '
+        '"type": "creds_v1.0", '
+        '"is_deleted": false, '
+        '"mac": {'
+        '"mac_key_identifier": "%s",'
+        '"mac_key": "%s",'
+        '"mac_algorithm": "%s"'
+        '}'
+        '},'
+    )
+    
+    for i in range(0, number_of_mac_creds):
+        mac_key_identifier = yar.util.mac.MACKeyIdentifier.generate()
+        mac_key = yar.util.mac.MACKey.generate()
+        mac_algorithm = yar.util.mac.MAC.algorithm
+        principal = str(uuid.uuid4()).replace("-", "")
+        print mac_fmt % (
+            mac_key_identifier,
+            principal,
+            mac_key_identifier,
+            mac_key,
+            mac_algorithm)
+
+    basic_fmt = (
+        '{"_id": "%s", '
+        '"principal": "%s@example.com", '
+        '"type": "creds_v1.0", '
+        '"is_deleted": false, '
+        '"basic": {'
+        '"api_key": "%s"'
+        '}'
+        '}%s'
+    )
+    
+    for i in range(0, number_of_basic_creds):
+        api_key = yar.util.basic.APIKey.generate()
+        principal = str(uuid.uuid4()).replace("-", "")
+        comma_or_nothing = "" if i == (number_of_basic_creds - 1) else ","
+        print basic_fmt % (api_key, principal, api_key, comma_or_nothing)
+
+    print ']}'

@@ -10,7 +10,9 @@ import hmac
 import logging
 import os
 import re
+import requests
 import string
+import urllib2
 import uuid
 
 from keyczar import keyczar
@@ -310,3 +312,57 @@ class AuthHeaderValue(object):
         mac = MAC(mac)
 
         return cls(mac_key_identifier, ts, nonce, ext, mac)
+
+
+class RequestsAuth(requests.auth.AuthBase):
+    """RequestsAuth allows mac authentication to be used with the
+    popular Requests module. For more details on Requests
+    see http://docs.python-requests.org/en/latest/user/authentication/."""
+
+    def __init__(self, mac_key_identifier, mac_key, mac_algorithm):
+        self._mac_key_identifier = mac_key_identifier
+        self._mac_key = mac_key
+        self._mac_algorithm = mac_algorithm
+
+    def __call__(self, r):
+        ts = Timestamp.generate()
+        nonce = Nonce.generate()
+        ext = Ext.generate(
+            r.headers.get("content_type", None),
+            r.body)
+        nrs = NormalizedRequestString.generate(
+            ts,
+            nonce,
+            r.method,
+            self._path(r),
+            self._host(r),
+            self._port(r),
+            ext)
+        my_mac = MAC.generate(
+            self._mac_key,
+            self._mac_algorithm,
+            nrs)
+        ahv = AuthHeaderValue(
+            self._mac_key_identifier,
+            ts,
+            nonce,
+            ext,
+            my_mac)
+        return r
+
+    def _path(self, r):
+        return self._parsed_url(r).path
+
+    def _host(self, r):
+        return self._parsed_url(r).netloc.split(":")[0]
+
+    def _port(self, r):
+        parsed_url = self._parsed_url(r)
+        parsed_netloc = parsed_url.netloc.split(":")
+        if 2 == len(parsed_netloc):
+            return parsed_netloc[1]
+        assert False
+        return ""
+
+    def _parsed_url(self, r):
+        return urllib2.urlparse.urlparse(r.url)

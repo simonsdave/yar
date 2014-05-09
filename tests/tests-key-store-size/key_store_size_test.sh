@@ -17,10 +17,11 @@ source $SCRIPT_DIR_NAME/../util.sh
 # into the key store
 #
 usage() {
-    echo "usage: `basename $0` [--mnc <max # creds>]"
+    echo "usage: `basename $0` [--mnc <max # creds>] [--pbc <% basic creds>]"
 }
 
 MAX_NUMBER_OF_CREDS=20000000
+PERCENT_BASIC_CREDS=90
 
 while [[ 0 -ne $# ]]
 do
@@ -29,6 +30,10 @@ do
     case $KEY in
         --mnc)
             MAX_NUMBER_OF_CREDS=${1:-}
+            shift
+            ;;
+        --pbc)
+            PERCENT_BASIC_CREDS=${1:-}
             shift
             ;;
         *)
@@ -42,6 +47,13 @@ if [ $# != 0 ]; then
     usage
     exit 1
 fi
+
+#
+# Useful for debugging
+#
+echo_in_yellow "Key Parameters"
+echo "-- Number of Creds = $MAX_NUMBER_OF_CREDS"
+echo "-- Percent Basic Creds = $PERCENT_BASIC_CREDS%"
 
 #
 # where will the tests' results be saved?
@@ -89,7 +101,7 @@ do
     echo "-- Generating & uploading $CREDS_BATCH_SIZE creds"
 
     CREDS=$(platform_safe_mktemp $CREDS_BATCH_SIZE)
-    sudo docker run yar_img gen_basic_creds $CREDS_BATCH_SIZE > "$CREDS"
+    sudo docker run yar_img bulk_gen_creds $CREDS_BATCH_SIZE $PERCENT_BASIC_CREDS > "$CREDS"
 
     STATUS_CODE=$(curl \
         -s \
@@ -160,6 +172,9 @@ echo_in_yellow "Generating result graphs"
 # generate a title page for the summary report
 #
 REPORT_TEXT="yar key store load test ($START_TIME)\n"
+REPORT_TEXT=$REPORT_TEXT"\n"
+REPORT_TEXT=$REPORT_TEXT"Number of Creds = $TOTAL_NUMBER_OF_CREDS\n"
+REPORT_TEXT=$REPORT_TEXT"Percent Basic Creds = $PERCENT_BASIC_CREDS%"
 
 convert \
     -background lightgray \

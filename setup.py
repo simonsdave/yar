@@ -45,13 +45,14 @@ setup(
         "bin/key_store_installer",
         "bin/yarcurl",
         "bin/jpp",
-        "bin/gen_basic_creds",
+        "bin/bulk_gen_creds",
     ],
     install_requires=[
         "httplib2==0.8",
         "jsonschema==1.3.0",
         "tornado==3.0.1",
         "python-keyczar==0.71c",
+        "requests==2.2.1",
         "tornado-memcache==0.1",
     ],
     dependency_links=[

@@ -28,11 +28,12 @@ source $SCRIPT_DIR_NAME/../util.sh
 # parse command line arguments
 #
 usage() {
-    echo "usage: `basename $0` [--couch <couch file size>] [--creds <creds batch size>]"
+    echo "usage: `basename $0` [--couch <couch file size>] [--creds <creds batch size>] [--pbc <% basic creds>]"
 }
 
 COUCH_BATCH_SIZE=50000
 CREDS_BATCH_SIZE=25000
+PERCENT_BASIC_CREDS=90
 
 while [[ 0 -ne $# ]]
 do
@@ -45,6 +46,10 @@ do
             ;;
         --creds)
             CREDS_BATCH_SIZE=${1:-}
+            shift
+            ;;
+        --pbc)
+            PERCENT_BASIC_CREDS=${1:-}
             shift
             ;;
         *)
@@ -65,6 +70,7 @@ fi
 echo_in_yellow "Key Parameters"
 echo "-- CREDS_BATCH_SIZE = $CREDS_BATCH_SIZE"
 echo "-- COUCH_BATCH_SIZE = $COUCH_BATCH_SIZE"
+echo "-- PERCENT_BASIC_CREDS = $PERCENT_BASIC_CREDS%"
 
 #
 # some initialization before we start the meat of this script
@@ -79,7 +85,7 @@ yar_init_deployment "$DATA_DIRECTORY"
 # create a key store in an isolated container
 #
 echo_in_yellow "Creating Key Store"
-if ! KEY_STORE=$(create_key_store "" false); then
+if ! KEY_STORE=$(create_key_store "" "" false); then
     echo "Failed to create key store"
     exit 1
 fi
@@ -100,7 +106,7 @@ do
 
     CREDS=$(platform_safe_mktemp $CREDS_BATCH_SIZE)
 
-    sudo docker run yar_img gen_basic_creds $CREDS_BATCH_SIZE > "$CREDS"
+    sudo docker run yar_img bulk_gen_creds $CREDS_BATCH_SIZE $PERCENT_BASIC_CREDS > "$CREDS"
 
     STATUS_CODE=$(curl \
         -s \
@@ -138,7 +144,7 @@ do
             exit 2
         fi
 
-        DEST=$SCRIPT_DIR_NAME/$TOTAL_NUMBER_OF_CREDS.creds.couch
+        DEST=$SCRIPT_DIR_NAME/$TOTAL_NUMBER_OF_CREDS.$PERCENT_BASIC_CREDS.creds.couch
         echo_in_red "-- Creating '$DEST'"
         cp $DATA_DIRECTORY/Key-Store/data/creds.couch $DEST
     fi

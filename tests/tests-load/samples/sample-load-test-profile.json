@@ -3,7 +3,17 @@
     "number_of_requests": 1000,
     "percentile": 99.9,
     "key_store": {
+        #
+        # number of credentials to pre-load into the key store
+        #
         "number_of_creds": 50000,
+        #
+        # if pre-loading the key store with credentials, defines
+        # the percentage of those credentials which should be for
+        # basic authentication. the remaining credentials will
+        # be for mac authentication
+        #
+        "percent_basic_creds": 90,
         #
         # after loading up the key store with a large number
         # of creds, it's useful to think about a percent of
