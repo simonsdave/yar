@@ -68,6 +68,7 @@ sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="cgroup_enable=memory"/g' /et
 sudo docker build -t memcached_img /vagrant/memcached
 sudo docker build -t haproxy_img /vagrant/haproxy
 sudo docker build -t couchdb_img /vagrant/couchdb
+sudo docker build -t yarbase_img /vagrant/yarbase
 
 # curl's a generally useful utility across SO many platforms ...
 apt-get install -y curl
