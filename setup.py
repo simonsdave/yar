@@ -1,6 +1,6 @@
 # Execute the command line
 #
-#   python setup.py sdist
+#   python setup.py sdist --formats=gztar
 #
 # from the same directory as setup.py which will generate
 # the file yar/yar-V.N.tar.gz where V.N is the version number

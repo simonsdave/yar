@@ -37,9 +37,9 @@ import time
 from locust import HttpLocust
 from locust import task
 from locust import TaskSet
-from requests.auth import AuthBase
+from requests.auth import HTTPBasicAuth
 
-import mac
+from yar.util import mac
 
 with open(os.path.expanduser("~/.yar.creds.random.set"), "r") as f:
     _creds = [json.loads(line.strip()) for line in f]
@@ -62,7 +62,7 @@ class Behavior(TaskSet):
                 response.status_code,
                 1000 * response.elapsed.total_seconds())
 
-    def _get_auth(creds):
+    def _get_auth(self, creds):
         if "api_key" in creds:
             auth = HTTPBasicAuth(creds["api_key"], "")
             return auth
