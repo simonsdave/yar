@@ -137,6 +137,10 @@ run_load_test() {
             -r $CONCURRENCY \
             --logfile=$LOCUST_LOGFILE \
             >& $LOCUST_STDOUT_AND_STDERR
+        if [ $? != 0 ]; then
+            echo "$CONCURRENCY: Error driving load"
+            return 1
+        fi
 
         grep TO_GET_TAB_TO_WORK $LOCUST_LOGFILE > $RESULTS_DATA
 
