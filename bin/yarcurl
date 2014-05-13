@@ -80,19 +80,20 @@ if [ "$MAC_ALGORITHM" == "" ]; then
     exit 1
 fi
 
-URL=$(echo $2 | sed -e "s/^\\s*//")
-
-SCHEME=$(echo $URL | sed -e "s/:.*//")
-
-HOST=$(echo $URL | sed -e "s/^$SCHEME\:\/\///")
-HOST=$(echo $HOST | sed -e "s/:.*$//")
-
-PORT=$(echo $URL | sed -e "s/^$SCHEME\:\/\/$HOST\://")
-PORT=$(echo $PORT | sed -e "s/\/.*//")
-
-URI=$(echo $URL | sed -e "s/^$SCHEME\:\/\/$HOST\:$PORT//")
-if [ "$URI" == "" ]; then
-	URI="/"
+URL_PATTERN='^\s*(http|https):\/\/(.*):([0-9]+)(/.*)?\s*$'
+if [[ $2 =~ $URL_PATTERN ]]; then
+    URL=${BASH_REMATCH[0]}
+    SCHEME=${BASH_REMATCH[1]}
+    HOST=${BASH_REMATCH[2]}
+    PORT=${BASH_REMATCH[3]}
+    URI=${BASH_REMATCH[4]}
+    # :TODO: why are next 3 statements req'd?
+    if [ "$URI" == "" ]; then
+        URI="/"
+    fi
+else
+    echo "`basename $0` invalid URL"
+    exit 1
 fi
 
 TIMESTAMP=$(date +%s)
