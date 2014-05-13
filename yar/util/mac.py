@@ -316,7 +316,7 @@ class AuthHeaderValue(object):
 
 class RequestsAuth(requests.auth.AuthBase):
     """RequestsAuth allows mac authentication to be used with the
-    popular Requests module. For more details on Requests
+    popular Requests module. For more details on Requests authentiation
     see http://docs.python-requests.org/en/latest/user/authentication/."""
 
     def __init__(self, mac_key_identifier, mac_key, mac_algorithm):
@@ -348,6 +348,7 @@ class RequestsAuth(requests.auth.AuthBase):
             nonce,
             ext,
             my_mac)
+        r.headers["Authorization"] = str(ahv)
         return r
 
     def _path(self, r):
