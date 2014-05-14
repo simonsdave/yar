@@ -316,7 +316,7 @@ class AuthHeaderValue(object):
 
 class RequestsAuth(requests.auth.AuthBase):
     """RequestsAuth allows mac authentication to be used with the
-    popular Requests module. For more details on Requests authentiation
+    popular Requests package. For more details on Requests authentiation
     see http://docs.python-requests.org/en/latest/user/authentication/."""
 
     def __init__(self, mac_key_identifier, mac_key, mac_algorithm):
@@ -325,18 +325,25 @@ class RequestsAuth(requests.auth.AuthBase):
         self._mac_algorithm = mac_algorithm
 
     def __call__(self, r):
+
         ts = Timestamp.generate()
         nonce = Nonce.generate()
-        ext = Ext.generate(
-            r.headers.get("content_type", None),
-            r.body)
+
+        content_type = r.headers.get("content_type", None)
+        ext = Ext.generate(content_type, r.body)
+
+        parsed_url = urllib2.urlparse.urlparse(r.url)
+        path = parsed_url.path
+        host = parsed_url.netloc.split(":")[0]
+        port = self._port(parsed_url)
+
         nrs = NormalizedRequestString.generate(
             ts,
             nonce,
             r.method,
-            self._path(r),
-            self._host(r),
-            self._port(r),
+            path,
+            host,
+            port,
             ext)
         my_mac = MAC.generate(
             self._mac_key,
@@ -351,19 +358,12 @@ class RequestsAuth(requests.auth.AuthBase):
         r.headers["Authorization"] = str(ahv)
         return r
 
-    def _path(self, r):
-        return self._parsed_url(r).path
-
-    def _host(self, r):
-        return self._parsed_url(r).netloc.split(":")[0]
-
-    def _port(self, r):
-        parsed_url = self._parsed_url(r)
+    def _port(self, parsed_url):
         parsed_netloc = parsed_url.netloc.split(":")
         if 2 == len(parsed_netloc):
             return parsed_netloc[1]
-        assert False
-        return ""
-
-    def _parsed_url(self, r):
-        return urllib2.urlparse.urlparse(r.url)
+        scheme_to_port = {
+            "http": 80,
+            "https": 443,
+        }
+        return scheme_to_port.get(parsed_url.scheme, 80)
