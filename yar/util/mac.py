@@ -320,16 +320,16 @@ class RequestsAuth(requests.auth.AuthBase):
     see http://docs.python-requests.org/en/latest/user/authentication/."""
 
     def __init__(self, mac_key_identifier, mac_key, mac_algorithm):
-        self._mac_key_identifier = mac_key_identifier
-        self._mac_key = mac_key
-        self._mac_algorithm = mac_algorithm
+        self.mac_key_identifier = mac_key_identifier
+        self.mac_key = mac_key
+        self.mac_algorithm = mac_algorithm
 
     def __call__(self, r):
 
         ts = Timestamp.generate()
         nonce = Nonce.generate()
 
-        content_type = r.headers.get("content_type", None)
+        content_type = r.headers.get("content-type", None)
         ext = Ext.generate(content_type, r.body)
 
         parsed_url = urllib2.urlparse.urlparse(r.url)
@@ -346,11 +346,11 @@ class RequestsAuth(requests.auth.AuthBase):
             port,
             ext)
         my_mac = MAC.generate(
-            self._mac_key,
-            self._mac_algorithm,
+            self.mac_key,
+            self.mac_algorithm,
             nrs)
         ahv = AuthHeaderValue(
-            self._mac_key_identifier,
+            self.mac_key_identifier,
             ts,
             nonce,
             ext,
