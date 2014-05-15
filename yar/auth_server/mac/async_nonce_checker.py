@@ -42,20 +42,13 @@ class AsyncNonceChecker(object):
         and otherwise False."""
         self._callback = callback
 
-        if self.__class__._ccs is None:
-            _logger.info(
-                "Creating 'tornadoasyncmemcache.ClientPool()' for cluster '%s'",
-                nonce_store)
-            self.__class__._ccs = tornadoasyncmemcache.ClientPool(
-                nonce_store,
-                maxclients=100)
-
         self._key = "%s-%s" % (self._mac_key_identifier, self._nonce)
 
         _logger.info("Asking for nonce key '%s'", self._key)
 
         self._start_timestamp = datetime.datetime.now()
-        self.__class__._ccs.get(
+
+        type(self).ccs().get(
             self._key,
             callback=self._on_async_get_done)
 
@@ -72,7 +65,7 @@ class AsyncNonceChecker(object):
             self._callback(False)
         else:
             self._start_timestamp = datetime.datetime.now()
-            self.__class__._ccs.set(
+            type(self).ccs().set(
                 self._key,
                 1,
                 callback=self._on_async_set_done)
@@ -91,3 +84,14 @@ class AsyncNonceChecker(object):
             operation,
             self._key,
             duration.microseconds)
+
+    @classmethod
+    def ccs(cls):
+        if cls._ccs is None:
+            _logger.info(
+                "Creating 'tornadoasyncmemcache.ClientPool()' for cluster '%s'",
+                nonce_store)
+            cls._ccs = tornadoasyncmemcache.ClientPool(
+                nonce_store,
+                maxclients=100)
+        return cls._ccs
