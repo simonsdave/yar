@@ -1,13 +1,13 @@
 ### Key Concepts
 * a **policy** is a (written) statement of intent
-* policies are implemented by **procedures**
+* a policy are implemented by a **procedure**
 * (application) **controls** ensure procedures are executed
 as per the related policy
 * **authentication** verifies **identity**
 * **access control** refers to the control of access to resources
 * an **access control model** describes the operations
 a principal can perform on an object
-* different types of access control model exist
+* different types of access control models exist
   * [discretionary access control (DAC)](http://en.wikipedia.org/wiki/Discretionary_access_control)
   * [mandatory access control (MAC)](http://en.wikipedia.org/wiki/Mandatory_access_control)
   * [role based access control (RBAC)](http://en.wikipedia.org/wiki/Role_based_access_control)
@@ -16,7 +16,7 @@ a principal can perform on an object
 * **access approval** uses the access control model to determine
 if a principal is permitted to access a resource
 * **[separation of duties (SoD) ](http://en.wikipedia.org/wiki/Separation_of_duties)**
-describes the concept of multiple individuals being required to complete a task
+describes the concept of multiple individuals being required to complete a single task
 * separation of duties is aka segregation of duties
 * **accounting** records all authentication, authorization
 and access approval activity
@@ -30,7 +30,7 @@ ie tokenization reduces scope
 ### Patterns yar Enables
 * something about, someone configures it, someone approves it and someone
 else launches it - how does yar? SoD
-* policy =
+* policy = 
 * procedure =
 ~~~~~
 /
