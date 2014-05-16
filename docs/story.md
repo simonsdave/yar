@@ -1,33 +1,40 @@
 ### Key Concepts
-* a policy is a (written) statement of intent
-* policies are implemented by procedures
-* (application) controls ensure procedures are executed
+* a **policy** is a (written) statement of intent
+* policies are implemented by **procedures**
+* (application) **controls** ensure procedures are executed
 as per the related policy
-* authentication verifies identity
-* access control refers to the control of access to resources
-* an access control model describes the operations
+* **authentication** verifies **identity**
+* **access control** refers to the control of access to resources
+* an **access control model** describes the operations
 a principal can perform on an object
-* different types of access control model exist - for example
-[discretionary access control (DAC)](http://en.wikipedia.org/wiki/Discretionary_access_control),
-[mandatory access control (MAC)](http://en.wikipedia.org/wiki/Mandatory_access_control)
-and
-[role based access control (RBAC)](http://en.wikipedia.org/wiki/Role_based_access_control)
-* it should be possible to explicitly grant and revoke access
-to an object in an access control model
-* authorization updates an access control model
-* access approval uses the access control model to determine
-if a principal is permitted to access an object
-* accounting records all authentication, authorization and access activity
-* accounting enables billing, trending analysis and capacity planning
-* tokenization substitutes sensitive data in a request with non-sensitive token
-* tokens and thier corresponding sensitive data are stored
-in a (highly) secure token vault
-* the purpose of tokenization is to mimimize the number
-of systems/services that touch sensitive data (aka tokenization reduces scope)
+* different types of access control model exist
+  * [discretionary access control (DAC)](http://en.wikipedia.org/wiki/Discretionary_access_control)
+  * [mandatory access control (MAC)](http://en.wikipedia.org/wiki/Mandatory_access_control)
+  * [role based access control (RBAC)](http://en.wikipedia.org/wiki/Role_based_access_control)
+* it should be possible to explicitly revoke access to a resource
+* **authorization** updates an access control model
+* **access approval** uses the access control model to determine
+if a principal is permitted to access a resource
+* **[separation of duties (SoD) ](http://en.wikipedia.org/wiki/Separation_of_duties)**
+describes the concept of multiple individuals being required to complete a task
+* separation of duties is aka segregation of duties
+* **accounting** records all authentication, authorization
+and access approval activity
+* **tokenization** substitutes sensitive data in a request with non-sensitive token
+* tokens and their corresponding sensitive data are stored
+in a (highly) secure **token vault**
+* the purpose of tokenization is to minimize the number
+of systems/services that touch sensitive data
+ie tokenization reduces scope
 
 ### Patterns yar Enables
 * something about, someone configures it, someone approves it and someone
-else launches it - how does yar?
+else launches it - how does yar? SoD
+* policy =
+* procedure =
+~~~~~
+/
+~~~~~
 
 ### Open Questions
 * does yar support the notion of resource ownership? can't use DAC
