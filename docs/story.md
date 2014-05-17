@@ -7,7 +7,7 @@ as per the related policy
 * **access control** refers to the control of access to resources
 * an **access control model** describes the operations
 a principal can perform on an object
-* different types of access control models exist
+* there are different types of access control models:
   * [discretionary access control (DAC)](http://en.wikipedia.org/wiki/Discretionary_access_control)
   * [mandatory access control (MAC)](http://en.wikipedia.org/wiki/Mandatory_access_control)
   * [role based access control (RBAC)](http://en.wikipedia.org/wiki/Role_based_access_control)
