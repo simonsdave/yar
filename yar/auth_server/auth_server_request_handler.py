@@ -136,7 +136,7 @@ class RequestHandler(trhutil.RequestHandler):
                 if auth_failure_detail:
                     self.set_header(
                         auth_failure_detail_header_name,
-                        auth_failure_detail)
+                        "0x{:04x}".format(auth_failure_detail))
 
                 if auth_failure_debug_details:
                     for (name, value) in auth_failure_debug_details.items():

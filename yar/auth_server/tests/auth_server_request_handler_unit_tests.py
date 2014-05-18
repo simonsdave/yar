@@ -67,7 +67,8 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
         (key, value) = self._get_auth_failure_detail(response)
         self.assertIsNotNone(key)
         self.assertIsNotNone(value)
-        self.assertEqual(int(value), auth_failure_detail)
+        self.assertTrue(value.startswith("0x"))
+        self.assertEqual(int(value, 16), auth_failure_detail)
 
     def assertNoAuthFailureDetail(self, response):
         """Assert *no* authorization failure detail HTTP header
