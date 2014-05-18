@@ -20,7 +20,7 @@ to a debug level responses will contain a series of HTTP headers
 that provide additional detail on why the authentication failed.
 All of theses header names are prefixed by the value of
 ```debug_header_prefix```."""
-debug_header_prefix = "X-Auth-Server-"
+debug_header_prefix = "X-Yar-Auth-Server-"
 
 auth_failure_detail_header_name = "%sAuth-Failure-Detail" % debug_header_prefix
 
