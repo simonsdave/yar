@@ -32,8 +32,8 @@
 FQDNLookup true
 Interval 1
 
+# cat /var/log/syslog | grep collectd
 LoadPlugin syslog
-
 <Plugin syslog>
 	LogLevel info
 </Plugin>
@@ -49,6 +49,9 @@ LoadPlugin entropy
 LoadPlugin interface
 LoadPlugin irq
 LoadPlugin load
+# https://collectd.org/wiki/index.php/Plugin:memcached
+# http://collectd.org/documentation/manpages/collectd.conf.5.shtml#plugin_memcached
+LoadPlugin memcached
 LoadPlugin memory
 LoadPlugin processes
 LoadPlugin swap
