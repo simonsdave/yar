@@ -107,6 +107,8 @@ class AsyncMACAuth(object):
                 mac_key,
                 mac_algorithm,
                 normalized_request_string)
+            sha1_of_nrs = hashlib.sha1(normalized_request_string).hexdigest()
+            auth_failure_debug_details["NRS-SHA1"] = sha1_of_nrs
 
             # end of pumping out debug headers - returning to regular headers
             self._on_auth_done(
