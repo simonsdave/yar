@@ -42,7 +42,7 @@ gen_mem_usage_graph() {
     # statement & the fact that 16 characters is more than enough to identity
     # the directory.
     #
-    METRICS_DIR=/var/lib/collectd/csv/precise64/table-memory-${CONTAINER_ID:0:16}*
+    METRICS_DIR=/var/lib/collectd/csv/vagrant-ubuntu-trusty-64/table-memory-${CONTAINER_ID:0:16}*
     if [ ! -d $METRICS_DIR ]; then
         echo_to_stderr_if_not_silent "Could not find memory metrics directory for '$CONTAINER_ID'"
         return 1
@@ -131,7 +131,7 @@ gen_cpu_usage_graph() {
     # statement & the fact that 16 characters is more than enough to identity
     # the directory.
     #
-    METRICS_DIR=/var/lib/collectd/csv/precise64/table-cpu-${CONTAINER_ID:0:16}*
+    METRICS_DIR=/var/lib/collectd/csv/vagrant-ubuntu-trusty-64/table-cpu-${CONTAINER_ID:0:16}*
     if [ ! -d $METRICS_DIR ]; then
         echo_to_stderr_if_not_silent "Could not find cpu metrics directory for '$CONTAINER_ID'"
         return 1

@@ -12,16 +12,13 @@ apt-get update
 # manually installing it before Docker is installed
 apt-get install -y lxc
 
-# http://docs.docker.io/en/latest/installation/ubuntulinux/#ubuntu-precise-12-04-lts-64-bit
+# http://docs.docker.io/installation/ubuntulinux/
 #
-# probably useful to know that Docker's logs are in /var/log/upstart/docker.log
+# Docker's logs are in /var/log/upstart/docker.log
 
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
-sh -c "echo deb http://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
 apt-get update
-# as of 14 Apr this installs Docker 0.10.0, build dc9c28f
-# :TODO: how do versions get controlled with apt-get?
-apt-get install -y lxc-docker
+apt-get install -y docker.io
+ln -sf /usr/bin/docker.io /usr/local/bin/docker
 
 # force Docker to use the lxc execution engine because (as per
 # http://blog.docker.io/2013/10/gathering-lxc-docker-containers-metrics/)
@@ -51,7 +48,7 @@ apt-get install -y lxc-docker
 #
 #   ls -la /sys/fs/cgroup/memory/lxc/$CONTAINER_ID/memory.usage_in_bytes
 
-sed -i 's/#DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"/DOCKER_OPTS="-e lxc"/g' /etc/default/docker
+sed -i 's/#DOCKER_OPTS="-dns 8.8.8.8 -dns 8.8.4.4"/DOCKER_OPTS="-e lxc"/g' /etc/default/docker.io
 
 # based on http://docs.docker.io/en/latest/installation/ubuntulinux/
 # tell kernel to collect memory metrics - this is disabled by default
@@ -70,12 +67,6 @@ sudo docker build -t haproxy_img /vagrant/haproxy
 sudo docker build -t couchdb_img /vagrant/couchdb
 sudo docker build -t yarbase_img /vagrant/yarbase
 
-# curl's a generally useful utility across SO many platforms ...
-apt-get install -y curl
-
-# we're going to need git to grab some projects from github
-apt-get install -y git
-
 # JSON.sh is a json parser written in bash
 cd /tmp
 git clone https://github.com/dominictarr/JSON.sh.git
@@ -88,25 +79,39 @@ cd
 apt-get install -y apache2-utils
 
 # python scripts setup and drive tests so we'll need pip
-apt-get install -y python-pip
+# :TRICKY: "apt-get install -y python-pip" is the way I think
+# we should be installing pip but on trusty apt-get installs
+# pip 1.5.4 with which I couldn't figure out how to get rid
+# of an error related to installing "tornado-memcache".
+# Seemed like pip's i--allow-external option should have
+# solved it but I couldn't get it to work. Long story to
+# explain why easy_install is used to install pip
+sudo easy_install pip==1.4.1
 
-# why do we need make?
-apt-get install -y make
+# install locust (https://github.com/locustio/locust)
+#
+# after upgrading to Ubuntu 14.04 from 12.04 and using
+# "pip install locustio" to install locust started getting
+# ImportError errors on 
+# from requests.packages.urllib3.response import HTTPResponse
+#
+# as of the time of writing there were a few articles on
+# the cause but limited info on a sol'n and hence the
+# rather hacky approach used below
 
-# Locust is built on gevent and gevent requires python-dev
+# locust built on gevent and gevent requires python-dev
 # to be installed
-apt-get install -y python-dev
 
-# pyzmq requires Cython
-# pip install Cython
+apt-get install -y python-dev
 # locustio requires pyzmq
 apt-get install -y python-zmq
-# pip install pyzmq
 
-# Locust is a modern Python based load generator.
-# Either Apache Benchmark or Locust are used to
-# load/stress a yar deployment.
-pip install locustio
+cd /tmp
+git clone https://github.com/locustio/locust.git
+cd locust
+python setup.py sdist --formats=gztar
+cd dist
+pip install locustio-0.7.1.tar.gz
 
 # these utilities are used to assemble graphs of load testing results
 # can't just "apt-get install -y gnuplot" to install gnuplot because
@@ -115,30 +120,15 @@ pip install locustio
 # and built from source. found the link below a very helpful guide:
 #
 #   http://priyansmurarka.wordpress.com/2013/07/02/gnuplot-on-ubuntu-12-04/
-apt-get install -y libwxgtk2.8-dev libpango1.0-dev libx11-dev libxt-dev texinfo
-cd /tmp
-curl -O ftp://ftp.dante.de/pub/tex/graphics/gnuplot/4.6.5/gnuplot-4.6.5.tar.gz
-tar xvf gnuplot-4.6.5.tar.gz
-cd gnuplot-4.6.5
-./configure
-make
-make check
-make install
-
-# this is needed for getting the convert utility that allows multiple
-# images to be combined into a single pdf at the end of the load test
-# as well as a bunch of other image manipulation magic
-apt-get install -y imagemagick
-
 #
-# install collectd 4.10 @ /usr/sbin/collectd
+apt-get install -y gnuplot
+
+# install collectd 5.4 @ /usr/sbin/collectd
 # config owned by root.root & @ /etc/collectd/collectd.conf
 # to start collectd = sudo service collectd restart
-# output @ /var/lib/collectd/precise64
-#
+# output @ /var/lib/collectd/csv/vagrant-ubuntu-trusty-64
 apt-get install -y collectd
 
-#
 # socat (https://launchpad.net/ubuntu/precise/+package/socat) is a
 # key command line tool for communicating with haproxy via a
 # stats socket
@@ -148,7 +138,6 @@ apt-get install -y collectd
 #
 apt-get install -y socat
 
-#
 # https://github.com/hopsoft/docker-graphite-statsd provided
 # these instructions
 #
