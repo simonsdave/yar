@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# this script creates the base docker container host box
+# and loads the box into the local repo. WARNING this script
+# is destructive in that it will remove/replace an existing box
+# if it exists and destroy a running box if it exists
+
 if [ $# != 0 ]; then
     echo "usage: `basename $0`"
     exit 1
