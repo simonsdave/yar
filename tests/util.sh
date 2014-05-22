@@ -1153,6 +1153,41 @@ get_all_nonce_store_container_id_keys() {
 }
 
 #
+# echo to stdout each of the nonce store end points
+# listed in ~/.yar.deployment
+#
+# example expected usage
+#
+#   #!/usr/bin/env bash
+#   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
+#   source $SCRIPT_DIR_NAME/util.sh
+#	for NSEP in $(get_all_nonce_store_end_points); do
+#	    IP=$(echo $NSEP | sed -e "s/:.*$//")
+#	    PORT=$(echo $NSEP | sed -e "s/^.*://")
+#	    echo "---$IP---$PORT---"
+#	done
+#
+# arguments
+#   none
+#
+# exit codes
+#   0   ok
+#   1   too many nonce stores in ~/.yar.deployment
+#
+get_all_nonce_store_end_points() {
+    for NONCE_STORE_NUMBER in {1..100}
+    do
+        local KEY="NONCE_STORE_END_POINT_$NONCE_STORE_NUMBER"
+        local NONCE_STORE_END_POINT=$(get_deployment_config "$KEY" "")
+        if [ "$NONCE_STORE_END_POINT" == "" ]; then
+            return 0
+        fi
+        echo $NONCE_STORE_END_POINT
+    done
+    return 1
+}
+
+#
 # create a docker container to run an auth_server
 #
 # arguments
@@ -1421,8 +1456,6 @@ start_collecting_metrics() {
 				>> $TEMP_COLLECTD_CONF
 		done
 	fi
-
-    cat /vagrant/cfg-collectd/collectd.conf.postfix >> $TEMP_COLLECTD_CONF
 
     sudo mv $TEMP_COLLECTD_CONF /etc/collectd/collectd.conf
 
