@@ -10,41 +10,24 @@ service instances to explore, understand and verify key
 operational scenarios.
 
 The primary development environment for yar is
-[Mac OS X](http://www.apple.com/ca/osx/)
-and the intended deployment environment is 
-[Ubuntu 12.04](http://releases.ubuntu.com/12.04/).
+[Mac OS X](http://www.apple.com/ca/osx/).
 [Docker](https://www.docker.io/) doesn't support
 [Mac OS X](http://www.apple.com/ca/osx/)
 so a [Vagrant](http://www.vagrantup.com/) provisioned
 [VirtualBox](https://www.virtualbox.org/)
-VM running [Ubuntu 12.04](http://releases.ubuntu.com/12.04/) is
-used as the [Docker](https://www.docker.io/) container host. 
-
-* use [Vagrant](http://www.vagrantup.com/) to create
-a [VirtualBox](https://www.virtualbox.org/)
+VM running [Ubuntu 14.04](http://releases.ubuntu.com/14.04/) is
+used as the [Docker](https://www.docker.io/) container host.
+See [these instructions](box-base-docker-container-host/README.md)
+for all the details of the one time process to create
+the docker container host. Once you have created the
 [box](http://docs.vagrantup.com/v2/boxes.html)
-running [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
-and version 3.8 of the Linux kernel - see
-[these instructions](box-precise64-3.8-kernel/README.md) for all the details - note
-this is a one time operation and is only required because the updated
-kernel version is required by [Docker](https://www.docker.io/)
-* again using [Vagrant](http://www.vagrantup.com/),
-build on the [box](http://docs.vagrantup.com/v2/boxes.html)
-just created and create a second [box](http://docs.vagrantup.com/v2/boxes.html)
-provisioned with all the base [Docker](https://www.docker.io/)
-images, infrastructure and test tools that are needed to spin
-up and test a yar deployment - see [these instructions](box-base-docker-container-host/README.md)
-for all the details - note, like creating the previous
-[box](http://docs.vagrantup.com/v2/boxes.html), creating this [box](http://docs.vagrantup.com/v2/boxes.html)
-is a one time operation
-* once you have created the above [boxes](http://docs.vagrantup.com/v2/boxes.html)
 you should see something like the following
 
 ~~~~~
 (env)>vagrant box list
-base-docker-container-host (virtualbox, 0)
-precise64                  (virtualbox, 0)
-precise64-3.8-kernel       (virtualbox, 0)
+base-docker-container-host (virtualbox)
+trusty                     (virtualbox)
+(env)>
 ~~~~~
 
 * now it's time to use [Vagrant](http://www.vagrantup.com/)
@@ -270,11 +253,11 @@ take a look at [spin_up_deployment.sh's](spin_up_deployment.sh)
 to supply a deployment profile which describes the shape
 of the deployment - also take a look at
 [this](samples/sample-load-deployment-profile.json)
-sample deployment profile 
+sample deployment profile
 * building on the knowledge you've gain about
 issuing [cURL](http://en.wikipedia.org/wiki/CURL)
 requests with
-[Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication) 
+[Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
 to use [Apache's ab](http://httpd.apache.org/docs/2.4/programs/ab.html)
 to start driving load into a deployment
 * while you're driving load thru the
