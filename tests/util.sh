@@ -1461,7 +1461,35 @@ start_collecting_metrics() {
 		done
 	fi
 
+	#
+	# collect memcached metrics where memcached is used to
+	# implement the nonce stre
+	#
+    cat /vagrant/cfg-collectd/collectd.conf.memcached_usage.prefix >> $TEMP_COLLECTD_CONF
+    for NSEP in $(get_all_nonce_store_end_points); do
+        IP=$(echo $NSEP | sed -e "s/:.*$//")
+        PORT=$(echo $NSEP | sed -e "s/^.*://")
+
+        cat /vagrant/cfg-collectd/collectd.conf.memcached_usage | \
+            sed -e "s/%IP%/$IP/g" | \
+            sed -e "s/%PORT%/$PORT/g" \
+            >> $TEMP_COLLECTD_CONF
+    done
+    cat /vagrant/cfg-collectd/collectd.conf.memcached_usage.postfix >> $TEMP_COLLECTD_CONF
+
+	#
+	# add the final little bit of config
+	#
+    cat /vagrant/cfg-collectd/collectd.conf.postfix >> $TEMP_COLLECTD_CONF
+
+	#
+	# collectd config file is now good to so let's move the
+	# temp file to a spot where collectd will know to use it
+	#
     sudo mv $TEMP_COLLECTD_CONF /etc/collectd/collectd.conf
 
+	#
+	# start collecting metrics:-)
+	#
     sudo service collectd restart >& /dev/null
 }

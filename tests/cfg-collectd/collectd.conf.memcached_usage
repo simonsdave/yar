@@ -1,0 +1,5 @@
+   # instance name need to be unique and hence put IP in there
+   <Instance "nonce_store_%IP%">
+     Host "%IP%"
+     Port %PORT%
+   </Instance>

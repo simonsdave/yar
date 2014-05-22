@@ -10,7 +10,7 @@
 #	https://www.iweb-hosting.co.uk/blog/collecting-lxc-container-resource-usage-using-ansible-collectd.html
 #	http://blog.docker.io/2013/07/effortless-monitoring-with-collectd-graphite-and-docker/
 #
-# on Ubuntu 12.04, the line below installs version 4.10.1 of collectd
+# on Ubuntu 14.04, the line below installs version 5.4.0. of collectd
 #
 #   sudo apt-get install -y collectd
 #
@@ -26,7 +26,7 @@
 #
 # output
 #
-#   /var/lib/collectd/csv/precise64
+#   /var/lib/collectd/csv/vagrant-ubuntu-trusty-64
 #
 
 FQDNLookup true
