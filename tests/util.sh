@@ -1100,6 +1100,7 @@ create_nonce_store() {
 
     echo "NONCE_STORE_CONTAINER_ID_$NONCE_STORE_NUMBER=$NONCE_STORE" >> ~/.yar.deployment
     echo "NONCE_STORE_IP_$NONCE_STORE_NUMBER=$NONCE_STORE_IP" >> ~/.yar.deployment
+    echo "NONCE_STORE_PORT_$NONCE_STORE_NUMBER=$PORT" >> ~/.yar.deployment
     echo "NONCE_STORE_END_POINT_$NONCE_STORE_NUMBER=$NONCE_STORE_IP:$PORT" >> ~/.yar.deployment
 
     #
