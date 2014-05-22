@@ -262,6 +262,10 @@ get_creds_config() {
 #
 get_deployment_config() {
     local KEY=${1:-}
+    if [ ! -r ~/.yar.deployment ]; then
+        echo $VALUE_IF_NOT_FOUND
+        return 0
+    fi
     local VALUE_IF_NOT_FOUND=${2:-}
     local VALUE=`grep "^\\s*$KEY\\s*=" ~/.yar.deployment | \
         sed -e "s/^[[:space:]]*$KEY[[:space:]]*=[[:space:]]*//"`
