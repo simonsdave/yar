@@ -43,6 +43,10 @@ LoadPlugin cpu
 # https://collectd.org/wiki/index.php/Plugin:CSV
 # http://collectd.org/documentation/manpages/collectd.conf.5.shtml#plugin_csv
 LoadPlugin csv
+<Plugin csv>
+  DataDir "/var/lib/collectd/csv"
+  StoreRates false
+</Plugin>
 LoadPlugin df
 LoadPlugin disk
 LoadPlugin entropy
