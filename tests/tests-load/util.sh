@@ -273,3 +273,128 @@ gen_rps_and_errors_graph() {
     rm $RPS_AND_ERRORS_DATA
     rm $AWK_PROG
 }
+
+#
+# assuming start_collecting_metrics() and stop_collecting_metrics()
+# have been used to collect metrics, calling this function is used
+# to generate a graph of key nonce store metrics.
+#
+# arguments
+#   1   graph's title
+#   2   nonce store's IP address
+#   3   filename into which the graph should be generated
+#
+# exit codes
+#   0   ok
+#
+gen_nonce_store_graph() {
+
+    local GRAPH_TITLE=${1:-}
+    local IP_ADDRESS=${2:-}
+    local GRAPH_FILENAME=${3:-}
+
+	#
+	# where are the memcached metrics stored?
+	#
+	local METRICS_DIR=/var/lib/collectd/csv/$IP_ADDRESS/memcached-nonce_store_$IP_ADDRESS
+    if [ ! -d $METRICS_DIR ]; then
+        echo_to_stderr_if_not_silent "Could not find memcached metrics directory for '$IP_ADDRESS'"
+        return 1
+    fi
+
+    #
+    # take all collectd output files, cat them into a single
+	# file and strip out the "epoch,value" headers
+    #
+    local CACHE_HITS_1=$(platform_safe_mktemp)
+
+    cat $METRICS_DIR/memcached_ops-hits-* | \
+        grep "^[0-9]" | \
+        sort --field-separator=$',' --key=1 -n \
+        > $CACHE_HITS_1
+
+    #
+    # so we've now got all the metrics in a single file order by time.
+    # next step is to massage the metrics in preperation for graphing.
+    #
+    local FIRST_TIME=$(head -1 $CACHE_HITS_1 | sed -e "s/\,.\+$//g")
+
+    local AWK_PROG=$(platform_safe_mktemp)
+    echo 'BEGIN       {FS = ","; OFS = ","}'       >> $AWK_PROG
+    echo '/^[0-9]+/   {print $1 - first_time, $2}' >> $AWK_PROG
+
+    local CACHE_HITS=$(platform_safe_mktemp)
+
+    cat $CACHE_HITS_1 | awk -v first_time=$FIRST_TIME -f $AWK_PROG > $CACHE_HITS
+
+    rm $AWK_PROG
+    rm $CACHE_HITS_1
+
+    #
+    # take all collectd output files, cat them into a single
+	# file and strip out the "epoch,value" headers
+    #
+    local SETS_1=$(platform_safe_mktemp)
+
+    cat $METRICS_DIR/memcached_command-set-* | \
+        grep "^[0-9]" | \
+        sort --field-separator=$',' --key=1 -n \
+        > $SETS_1
+
+    #
+    # so we've now got all the metrics in a single file order by time.
+    # next step is to massage the metrics in preperation for graphing.
+    #
+    local AWK_PROG=$(platform_safe_mktemp)
+    echo 'BEGIN     {
+						FS = ",";
+						OFS = ",";
+						first_epoch = -1;
+					}'   >> $AWK_PROG
+    echo '/^[0-9]+/ {
+                        if (first_epoch < 0)
+                        {
+                            first_epoch = $1
+                            prev_sets = $2
+                        }
+                        else
+                        {
+                            sets = $2 - prev_sets
+                            print $1 - first_epoch, sets
+                            prev_sets = $2
+                        }
+                    }' >> $AWK_PROG
+
+    local SETS=$(platform_safe_mktemp)
+
+    cat $SETS_1 | awk -f $AWK_PROG > $SETS
+
+    rm $AWK_PROG
+    rm $SETS_1
+
+    #
+    # finally! let's generate a graph:-)
+    #
+    gnuplot \
+        -e "cache_hits_input_filename='$CACHE_HITS'" \
+        -e "sets_input_filename='$SETS'" \
+        -e "output_filename='$GRAPH_FILENAME'" \
+        -e "title='$GRAPH_TITLE'" \
+        $SCRIPT_DIR_NAME/gp.cfg/nonce_store_key_metrics \
+        >& /dev/null
+    if [ $? -ne 0 ]; then
+        echo_to_stderr_if_not_silent "Error generating graph '$GRAPH_TITLE'"
+    fi
+
+	#
+	# cleanup after ourselves before returning
+	#
+	rm $SETS
+	rm $CACHE_HITS
+
+	#
+	# done and all good:-)
+	#
+	return 0
+
+}

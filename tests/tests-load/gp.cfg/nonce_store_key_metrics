@@ -1,0 +1,37 @@
+#
+# input variables
+#
+#   cache_hits_input_filename
+#   sets_input_filename
+#   title
+#   output_filename
+#
+
+set terminal pngcairo size 3200,1800 font "Ubuntu,36"
+set size 1, 1
+set output output_filename
+set title title font "Ubuntu Bold,36"
+# set key on outside at center bottom
+set key below
+set grid y
+
+set xdata time
+set timefmt "%s"
+set xlabel 'Time in Test (minute:second)'
+
+set ylabel "# Hits (aka # Nonce Reuses)"
+set yrange [0:*]
+set ytics nomirror
+
+set y2label "# Sets (aka # Nonce Saves)"
+set y2range [0:*]
+set y2tics
+
+set datafile separator ','
+
+set style line 1 lc rgb '#0000ff' lt 1 lw 10
+set style line 2 lc rgb '#ff0000' lt 1 lw 10
+
+plot cache_hits_input_filename using 1:2 with linespoints ls 1 title '# Hits (aka # Nonce Reuses)', sets_input_filename using 1:2 with linespoints ls 2 title '# Sets (aka # Nonce Saves)'
+
+exit

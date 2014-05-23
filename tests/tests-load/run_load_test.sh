@@ -540,6 +540,23 @@ run_load_test() {
         let "APP_SERVER_NUMBER += 1"
     done
 
+	local NONCE_STORE_NUMBER=1
+	for NSEP in $(get_all_nonce_store_end_points); do
+		IP=$(echo $NSEP | sed -e "s/:.*$//")
+
+        local GRAPH_TITLE="Nonce Store # $NONCE_STORE_NUMBER Key Metrics"
+        GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
+
+        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-40-nonce-store"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$NONCE_STORE_NUMBER-key-metrics.png"
+
+		gen_nonce_store_graph \
+			"$GRAPH_TITLE" \
+			"$IP" \
+			"$GRAPH_FILENAME"
+
+        let "NONCE_STORE_NUMBER += 1"
+	done
 }
 
 #
