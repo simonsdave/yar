@@ -1,5 +1,7 @@
 So you've spent time writing an awesome RESTful API and now you want to "secure it".
-You'll soon find there are a number of commerical API management solutions available.
+You'll soon find there are
+[a number of commerical API management solutions](faq.md#what-other-api-management-solutions-exist)
+available.
 You'll also find there are lots of open source components that make it feel like
 it should be pretty easy to stitch together your own API Management solution.
 It's that last point that really motivated this project.
