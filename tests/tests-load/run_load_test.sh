@@ -118,7 +118,7 @@ run_load_test() {
     #
     # all the setup is now complete ... load generation is next ...
     #
-    local RESULTS_DATA=$RESULTS_FILE_BASE_NAME-raw-data.tsv
+    local RESULTS_DATA=$RESULTS_FILE_BASE_NAME/raw-data.tsv
     if [ -r ~/.yar.creds.random.set ]; then
 
         echo "$CONCURRENCY: Using locust"
