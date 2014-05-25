@@ -125,8 +125,8 @@ run_load_test() {
 
         echo "$CONCURRENCY: Starting to drive load"
 
-        local LOCUST_LOGFILE=$RESULTS_FILE_BASE_NAME-locust-logfile.tsv
-        local LOCUST_STDOUT_AND_STDERR=$RESULTS_FILE_BASE_NAME-locust-stdout-and-stderr.tsv
+        local LOCUST_LOGFILE=$RESULTS_FILE_BASE_NAME/locust-logfile.tsv
+        local LOCUST_STDOUT_AND_STDERR=$RESULTS_FILE_BASE_NAME/locust-stdout-and-stderr.tsv
 
         locust \
             -f "$SCRIPT_DIR_NAME/locustfile.py" \
