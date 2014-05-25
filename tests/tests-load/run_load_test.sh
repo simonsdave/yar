@@ -646,31 +646,53 @@ done
 #
 # generate the title page and last page of the summary report
 #
-NUMBER_OF_REQUESTS=`get_from_json '\["number_of_requests"\]' 5000 < $TEST_PROFILE`
-
-REPORT_TEXT="yar load test ($START_TIME)"
-REPORT_TEXT="$REPORT_TEXT\n\n$(remove_comments_and_format_json < $TEST_PROFILE)"
 convert \
     -background lightgray \
     -fill black \
     -size 3200x1800 \
-    label:"$REPORT_TEXT" \
+    label:"yar load test ($START_TIME)" \
     -gravity center \
-    $RESULTS_DIR/0000-$NUMBER_OF_REQUESTS.png
+    $RESULTS_DIR/0000.png
 
 convert \
     -background lightgray \
     -fill black \
     -size 3200x1800 \
-    label:"End of Report:-)" \
+    label:"End of Report" \
     -gravity center \
-    $RESULTS_DIR/9999-$NUMBER_OF_REQUESTS.png
+    $RESULTS_DIR/9999.png
 
 #
 # generate the summary report
 #
-SUMMARY_REPORT_FILENAME=$RESULTS_DIR/test-results-summary.pdf
-convert $RESULTS_DIR/*.png $SUMMARY_REPORT_FILENAME
+# used to just do a
+#
+#   convert $RESULTS_DIR/*.png $SUMMARY_REPORT_FILENAME
+#
+# but convert started to fail (think when the number/size
+# of pngs pushed past some limit).
+#
+rm -f $RESULTS_DIR/*.pdf
+
+for PNG in $RESULTS_DIR//*.png
+do
+    PNG_AS_PDF=$(echo "$PNG" | sed -e "s/png$/pdf/")
+    convert $PNG $PNG_AS_PDF
+    # gs -q -o /dev/null -sDEVICE=nullpage $PNG_AS_PDF
+done
+
+SUMMARY_REPORT_FILENAME=$RESULTS_DIR/test-results-summary
+gs \
+    -dBATCH \
+    -dNOPAUSE \
+    -q \
+    -sDEVICE=pdfwrite \
+    -sOutputFile="$SUMMARY_REPORT_FILENAME" \
+    $RESULTS_DIR/*.pdf
+
+rm -f $RESULTS_DIR/*.pdf
+
+mv "$SUMMARY_REPORT_FILENAME" "$SUMMARY_REPORT_FILENAME.pdf"
 
 #
 # all done, just let folks know where to find the results
