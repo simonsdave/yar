@@ -28,13 +28,27 @@ of systems/services that touch sensitive data
 ie tokenization reduces scope
 
 ### Patterns yar Enables
-* something about, someone configures it, someone approves it and someone
-else launches it - how does yar? SoD
-* policy = 
-* procedure =
-~~~~~
-/
-~~~~~
+#### [Separation of Duties (SoD) ](http://en.wikipedia.org/wiki/Separation_of_duties)
+yar makes it easy to build systems with fine grained application controls
+that enforce SoD policies. For example, assume we're building a system
+to support the release of builds into a production environment.
+Assume a policy states
+that after a QA engineer has recommended a build for release, a product
+manager must agree and once the product manager agrees a systems administrator
+deploys the build.
+The build system has 3 RESTful end-points `/builds/`,
+`/buildapprovals/` and `/buildlauches/`.
+yar is deployed in front of the build system to authenticate and authorize
+requests to the 3 end-points.
+
+* **:TODO:** describe the API requests required to use the build system
+* **:TODO:** what access control model does yar use? (DAS assuming RBC)
+* **:TODO:** describe the API requests that the build system makes to yar to configure the
+  access control model for the newly created resources - the API calls will
+  be made to what we currently call the key server where the key server, like
+  the build system, is deployed in the application tier vs the auth server
+  which is deployed in the DMZ
+  (remember the build system is deployed as a service behind yar's auth server)
 
 ### Open Questions
 * does yar support the notion of resource ownership? can't use DAC
