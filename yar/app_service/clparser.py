@@ -1,5 +1,5 @@
 """This module contains all the logic required to parse the app
-server's command line."""
+service's command line."""
 
 import logging
 import optparse

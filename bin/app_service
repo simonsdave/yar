@@ -14,11 +14,11 @@ import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 
-from yar.app_server.clparser import CommandLineParser
+from yar.app_service.clparser import CommandLineParser
 from yar.util import tsh
 from yar.util import logging_config
 
-_logger = logging.getLogger("APPSERVER.%s" % __name__)
+_logger = logging.getLogger("APPSERVICE.%s" % __name__)
 
 
 class RequestHandler(tornado.web.RequestHandler):
