@@ -21,7 +21,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.ERROR)
-        self.assertEqual(clo.listen_on, [("127.0.0.1", 8000)])
+        self.assertEqual(clo.listen_on, ("127.0.0.1", 8000))
         self.assertEqual(clo.app_server_auth_method, "YAR")
         self.assertEqual(clo.key_server, "127.0.0.1:8070")
         self.assertEqual(clo.app_server, "127.0.0.1:8080")
@@ -41,7 +41,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.INFO)
-        self.assertEqual(clo.listen_on, [("127.0.0.1", 8000)])
+        self.assertEqual(clo.listen_on, ("127.0.0.1", 8000))
         self.assertEqual(clo.app_server_auth_method, "YAR")
         self.assertEqual(clo.key_server, "127.0.0.1:8070")
         self.assertEqual(clo.app_server, "127.0.0.1:8080")
@@ -61,7 +61,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.ERROR)
-        self.assertEqual(clo.listen_on, [("1.1.1.1", 7878)])
+        self.assertEqual(clo.listen_on, ("1.1.1.1", 7878))
         self.assertEqual(clo.app_server_auth_method, "YAR")
         self.assertEqual(clo.key_server, "127.0.0.1:8070")
         self.assertEqual(clo.app_server, "127.0.0.1:8080")
@@ -81,7 +81,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.ERROR)
-        self.assertEqual(clo.listen_on, [("127.0.0.1", 8000)])
+        self.assertEqual(clo.listen_on, ("127.0.0.1", 8000))
         self.assertEqual(clo.app_server_auth_method, "DAS")
         self.assertEqual(clo.key_server, "127.0.0.1:8070")
         self.assertEqual(clo.app_server, "127.0.0.1:8080")
@@ -101,7 +101,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.ERROR)
-        self.assertEqual(clo.listen_on, [("127.0.0.1", 8000)])
+        self.assertEqual(clo.listen_on, ("127.0.0.1", 8000))
         self.assertEqual(clo.app_server_auth_method, "YAR")
         self.assertEqual(clo.app_server, "1.1.1.1:6666")
         self.assertEqual(clo.key_server, "127.0.0.1:8070")
@@ -121,7 +121,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.ERROR)
-        self.assertEqual(clo.listen_on, [("127.0.0.1", 8000)])
+        self.assertEqual(clo.listen_on, ("127.0.0.1", 8000))
         self.assertEqual(clo.app_server_auth_method, "YAR")
         self.assertEqual(clo.app_server, "127.0.0.1:8080")
         self.assertEqual(clo.maxage, int(args[-1]))
@@ -141,7 +141,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.ERROR)
-        self.assertEqual(clo.listen_on, [("127.0.0.1", 8000)])
+        self.assertEqual(clo.listen_on, ("127.0.0.1", 8000))
         self.assertEqual(clo.app_server_auth_method, "YAR")
         self.assertEqual(clo.app_server, "127.0.0.1:8080")
         self.assertEqual(clo.maxage, 30)
@@ -161,7 +161,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.ERROR)
-        self.assertEqual(clo.listen_on, [("127.0.0.1", 8000)])
+        self.assertEqual(clo.listen_on, ("127.0.0.1", 8000))
         self.assertEqual(clo.app_server_auth_method, "YAR")
         self.assertEqual(clo.app_server, "127.0.0.1:8080")
         self.assertEqual(clo.maxage, 30)
@@ -181,7 +181,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.ERROR)
-        self.assertEqual(clo.listen_on, [("127.0.0.1", 8000)])
+        self.assertEqual(clo.listen_on, ("127.0.0.1", 8000))
         self.assertEqual(clo.app_server_auth_method, "YAR")
         self.assertEqual(clo.app_server, "127.0.0.1:8080")
         self.assertEqual(clo.maxage, 30)
@@ -201,7 +201,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.ERROR)
-        self.assertEqual(clo.listen_on, [("127.0.0.1", 8000)])
+        self.assertEqual(clo.listen_on, ("127.0.0.1", 8000))
         self.assertEqual(clo.app_server_auth_method, "YAR")
         self.assertEqual(clo.app_server, "127.0.0.1:8080")
         self.assertEqual(clo.maxage, 30)

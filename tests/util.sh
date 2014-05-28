@@ -892,7 +892,7 @@ create_key_server() {
 
     local KEY_SERVER_CMD="key_server \
         --log=info \
-        --lon=$PORT \
+        --lon=0.0.0.0:$PORT \
         --key_store=$KEY_STORE \
         --logfile=/var/yar_key_server/key_server_log"
     local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
@@ -1235,7 +1235,7 @@ create_auth_server() {
 
     local AUTH_SERVER_CMD="auth_server \
         --log=info \
-        --lon=$PORT \
+        --lon=0.0.0.0:$PORT \
         --keyserver=$KEY_SERVER \
         --appserver=$APP_SERVER \
         --noncestore=$NONCE_STORE \
