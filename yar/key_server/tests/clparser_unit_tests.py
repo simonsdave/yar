@@ -21,7 +21,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.ERROR)
-        self.assertEqual(clo.listen_on, [("127.0.0.1", 8070)])
+        self.assertEqual(clo.listen_on, ("127.0.0.1", 8070))
         self.assertEqual(clo.key_store, "127.0.0.1:5984/creds")
         self.assertIsNone(clo.logging_file)
         self.assertIsNone(clo.syslog)
@@ -37,7 +37,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.INFO)
-        self.assertEqual(clo.listen_on, [("127.0.0.1", 8070)])
+        self.assertEqual(clo.listen_on, ("127.0.0.1", 8070))
         self.assertEqual(clo.key_store, "127.0.0.1:5984/creds")
         self.assertIsNone(clo.logging_file)
         self.assertIsNone(clo.syslog)
@@ -53,7 +53,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.ERROR)
-        self.assertEqual(clo.listen_on, [("1.1.1.1", 7878)])
+        self.assertEqual(clo.listen_on, ("1.1.1.1", 7878))
         self.assertEqual(clo.key_store, "127.0.0.1:5984/creds")
         self.assertIsNone(clo.logging_file)
         self.assertIsNone(clo.syslog)
@@ -69,7 +69,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.ERROR)
-        self.assertEqual(clo.listen_on, [("127.0.0.1", 8070)])
+        self.assertEqual(clo.listen_on, ("127.0.0.1", 8070))
         self.assertEqual(clo.key_store, args[-1])
         self.assertIsNone(clo.logging_file)
         self.assertIsNone(clo.syslog)
@@ -85,7 +85,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.ERROR)
-        self.assertEqual(clo.listen_on, [("127.0.0.1", 8070)])
+        self.assertEqual(clo.listen_on, ("127.0.0.1", 8070))
         self.assertEqual(clo.key_store, "127.0.0.1:5984/creds")
         self.assertIsNone(clo.logging_file)
         self.assertEqual(clo.syslog, args[-1])
@@ -101,7 +101,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         (clo, cla) = clp.parse_args(args)
 
         self.assertEqual(clo.logging_level, logging.ERROR)
-        self.assertEqual(clo.listen_on, [("127.0.0.1", 8070)])
+        self.assertEqual(clo.listen_on, ("127.0.0.1", 8070))
         self.assertEqual(clo.key_store, "127.0.0.1:5984/creds")
         self.assertEqual(clo.logging_file, args[-1])
         self.assertIsNone(clo.syslog)
