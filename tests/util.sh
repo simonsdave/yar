@@ -362,28 +362,28 @@ yar_init_deployment() {
 }
 
 #
-# create a docker container to run an app server
+# create a docker container to run an app service
 #
 # arguments
 #   none
 #
 # exit codes
 #   0   ok
-#   1   general/non-specific failure - app server container not started
+#   1   general/non-specific failure - app service container not started
 #   2   can't find yar_img
 #
-create_app_server() {
+create_app_service() {
 
     #
     # extract function arguments and setup function specific config
     #
     local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
 
-    local APP_SERVER_NUMBER=$(get_number_deployment_config_keys \
-        "APP_SERVER_CONTAINER_ID_[[:digit:]]\+")
-    let "APP_SERVER_NUMBER += 1"
+    local APP_SERVICE_NUMBER=$(get_number_deployment_config_keys \
+        "APP_SERVICE_CONTAINER_ID_[[:digit:]]\+")
+    let "APP_SERVICE_NUMBER += 1"
 
-    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/App-Server-$APP_SERVER_NUMBER
+    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/App-Service-$APP_SERVICE_NUMBER
     mkdir -p $DATA_DIRECTORY
 
     local PORT=8080
@@ -397,28 +397,28 @@ create_app_server() {
         return 2
     fi
 
-    local APP_SERVER_CMD="app_server \
+    local APP_SERVICE_CMD="app_service \
         --log=info \
-        --lon=$PORT \
-        --logfile=/var/yar_app_server/app_server_log"
+        --lon=0.0.0.0:$PORT \
+        --logfile=/var/yar_app_service/app_service_log"
     local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
-    local APP_SERVER=$(sudo docker run \
+    local APP_SERVICE=$(sudo docker run \
         -d \
-        --name="App_Server_$APP_SERVER_NUMBER" \
-        -v $DATA_DIRECTORY:/var/yar_app_server \
+        --name="App_Service_$APP_SERVICE_NUMBER" \
+        -v $DATA_DIRECTORY:/var/yar_app_service \
         $IMAGE_NAME \
-        $APP_SERVER_CMD 2> "$DOCKER_RUN_STDERR")
-    if [ "$APP_SERVER" == "" ]; then
-        local MSG="Error starting App Server container"
+        $APP_SERVICE_CMD 2> "$DOCKER_RUN_STDERR")
+    if [ "$APP_SERVICE" == "" ]; then
+        local MSG="Error starting App Service container"
         MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
         echo_to_stderr_if_not_silent "$MSG"
         return 2
     fi
-    local APP_SERVER_IP=$(get_container_ip $APP_SERVER)
+    local APP_SERVICE_IP=$(get_container_ip $APP_SERVICE)
 
-    echo "APP_SERVER_CONTAINER_ID_$APP_SERVER_NUMBER=$APP_SERVER" >> ~/.yar.deployment
-    echo "APP_SERVER_IP_$APP_SERVER_NUMBER=$APP_SERVER_IP" >> ~/.yar.deployment
-    echo "APP_SERVER_END_POINT_$APP_SERVER_NUMBER=$APP_SERVER_IP:$PORT" >> ~/.yar.deployment
+    echo "APP_SERVICE_CONTAINER_ID_$APP_SERVICE_NUMBER=$APP_SERVICE" >> ~/.yar.deployment
+    echo "APP_SERVICE_IP_$APP_SERVICE_NUMBER=$APP_SERVICE_IP" >> ~/.yar.deployment
+    echo "APP_SERVICE_END_POINT_$APP_SERVICE_NUMBER=$APP_SERVICE_IP:$PORT" >> ~/.yar.deployment
 
     #
     # ...
@@ -426,18 +426,18 @@ create_app_server() {
     for i in {1..10}
     do
         sleep 1
-        if curl http://$APP_SERVER_IP:$PORT/dave.html >& /dev/null; then
-            echo $APP_SERVER_IP:$PORT
+        if curl http://$APP_SERVICE_IP:$PORT/dave.html >& /dev/null; then
+            echo $APP_SERVICE_IP:$PORT
             return 0
         fi
     done
 
-    echo_to_stderr_if_not_silent "Could not verify availability of App Server on $APP_SERVER_IP:$PORT"
+    echo_to_stderr_if_not_silent "Could not verify availability of App Service on $APP_SERVICE_IP:$PORT"
     return 1
 }
 
 #
-# echo to stdout each of the app server container id keys
+# echo to stdout each of the app service container id keys
 # listed in ~/.yar.deployment
 #
 # example expected usage
@@ -445,7 +445,7 @@ create_app_server() {
 #   #!/usr/bin/env bash
 #   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 #   source $SCRIPT_DIR_NAME/util.sh
-#   for ASIDK in $(get_all_app_server_container_id_keys); do
+#   for ASIDK in $(get_all_app_service_container_id_keys); do
 #       echo ">>>$ASIDK<<<"
 #   done
 #
@@ -454,14 +454,14 @@ create_app_server() {
 #
 # exit codes
 #   0   ok
-#   1   too many app servers in ~/.yar.deployment
+#   1   too many app services in ~/.yar.deployment
 #
-get_all_app_server_container_id_keys() {
-    for APP_SERVER_NUMBER in {1..100}
+get_all_app_service_container_id_keys() {
+    for APP_SERVICE_NUMBER in {1..100}
     do
-        local KEY="APP_SERVER_CONTAINER_ID_$APP_SERVER_NUMBER"
-        local APP_SERVER_CONTAINER_ID=$(get_deployment_config "$KEY" "")
-        if [ "$APP_SERVER_CONTAINER_ID" == "" ]; then
+        local KEY="APP_SERVICE_CONTAINER_ID_$APP_SERVICE_NUMBER"
+        local APP_SERVICE_CONTAINER_ID=$(get_deployment_config "$KEY" "")
+        if [ "$APP_SERVICE_CONTAINER_ID" == "" ]; then
             return 0
         fi
         echo $KEY
@@ -470,49 +470,49 @@ get_all_app_server_container_id_keys() {
 }
 
 #
-# write stats about each app server to stdout. these stats are
-# extracted from the app server load balancer
+# write stats about each app service to stdout. these stats are
+# extracted from the app service load balancer
 #
 # arguments
 #   none
 #
 # exit codes
 #   0   ok
-#   1   couldn't find app server LB container ID
+#   1   couldn't find app service LB container ID
 #
-get_app_server_stats() {
+get_app_service_stats() {
 
-    APP_SERVER_LB_ADMIN_SOCKET=$(get_deployment_config "APP_SERVER_LB_ADMIN_SOCKET" "")
-    if [ "$APP_SERVER_LB_ADMIN_SOCKET" == "" ]; then
-        echo_to_stderr_if_not_silent "Could not find App Server LB admin socket"
+    APP_SERVICE_LB_ADMIN_SOCKET=$(get_deployment_config "APP_SERVICE_LB_ADMIN_SOCKET" "")
+    if [ "$APP_SERVICE_LB_ADMIN_SOCKET" == "" ]; then
+        echo_to_stderr_if_not_silent "Could not find App Service LB admin socket"
         exit 1
     fi
 
     echo "show stat" | \
-        sudo socat "$APP_SERVER_LB_ADMIN_SOCKET" stdio | \
-        grep "^\(#\|app_server_lb,app_server_\)"
+        sudo socat "$APP_SERVICE_LB_ADMIN_SOCKET" stdio | \
+        grep "^\(#\|app_service_lb,app_service_\)"
     exit 0
 }
 
 #
-# create a docker container to run an app server load balancer
+# create a docker container to run an app service load balancer
 #
 # arguments
 #   none
 #
 # exit codes
 #   0   ok
-#   1   general/non-specific failure - app server container not started
+#   1   general/non-specific failure - app service container not started
 #   2   can't find yar_img
 #
-create_app_server_lb() {
+create_app_service_lb() {
 
     #
     # extract function arguments and setup function specific config
     #
     local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
 
-    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/App-Server-LB
+    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/App-Service-LB
     mkdir -p $DATA_DIRECTORY
 
     local PORT=8080
@@ -528,23 +528,23 @@ create_app_server_lb() {
     #
     local HAPROXY_CFG_FILENAME="$DATA_DIRECTORY/cfg-haproxy"
 
-	cp "$SCRIPT_DIR_NAME/cfg-haproxy/app_server" "$HAPROXY_CFG_FILENAME"
+	cp "$SCRIPT_DIR_NAME/cfg-haproxy/app_service" "$HAPROXY_CFG_FILENAME"
 
-	local APP_SERVER_NUMBER=1
-	for APP_SERVER_CONTAINER_ID_KEY in $(get_all_app_server_container_id_keys)
+	local APP_SERVICE_NUMBER=1
+	for APP_SERVICE_CONTAINER_ID_KEY in $(get_all_app_service_container_id_keys)
 	do
-		APP_SERVER_CONTAINER_ID=$(get_deployment_config "$APP_SERVER_CONTAINER_ID_KEY")
-		APP_SERVER_IP=$(get_container_ip "$APP_SERVER_CONTAINER_ID")
-		echo "    server app_server_$APP_SERVER_NUMBER $APP_SERVER_IP check weight 100" >> "$HAPROXY_CFG_FILENAME"
-		let "APP_SERVER_NUMBER += 1"
+		APP_SERVICE_CONTAINER_ID=$(get_deployment_config "$APP_SERVICE_CONTAINER_ID_KEY")
+		APP_SERVICE_IP=$(get_container_ip "$APP_SERVICE_CONTAINER_ID")
+		echo "    server app_service_$APP_SERVICE_NUMBER $APP_SERVICE_IP check weight 100" >> "$HAPROXY_CFG_FILENAME"
+		let "APP_SERVICE_NUMBER += 1"
 	done
 
     #
     # if no LB exists spin one up
     # if a LB does exist reload the new configuration
     #
-    APP_SERVER_LB_CONTAINER_ID=$(get_deployment_config "APP_SERVER_LB_CONTAINER_ID" "")
-    if [ "$APP_SERVER_LB_CONTAINER_ID" == "" ]; then
+    APP_SERVICE_LB_CONTAINER_ID=$(get_deployment_config "APP_SERVICE_LB_CONTAINER_ID" "")
+    if [ "$APP_SERVICE_LB_CONTAINER_ID" == "" ]; then
 
         local IMAGE_NAME=haproxy_img
         if ! does_image_exist $IMAGE_NAME; then
@@ -552,35 +552,35 @@ create_app_server_lb() {
             return 2
         fi
 
-        local APP_SERVER_LB_CMD="haproxy.sh /haproxy/cfg-haproxy /haproxy/haproxy.pid"
+        local APP_SERVICE_LB_CMD="haproxy.sh /haproxy/cfg-haproxy /haproxy/haproxy.pid"
         local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
         # haproxy's stats socket had to be created in a directory
         # that was guarenteed to be somewhere other than /vagrant
         local HAPROXY_ADMIN_DIR=$(mktemp -d)
-        local APP_SERVER_LB_CONTAINER_ID=$(sudo docker run \
+        local APP_SERVICE_LB_CONTAINER_ID=$(sudo docker run \
             -d \
-            --name="App_Server_LB" \
+            --name="App_Service_LB" \
             -p $PORT:$PORT \
             -v $DATA_DIRECTORY:/haproxy \
             -v $HAPROXY_ADMIN_DIR:/haproxy_admin \
             $IMAGE_NAME \
-            $APP_SERVER_LB_CMD 2> "$DOCKER_RUN_STDERR")
-        if [ "$APP_SERVER_LB_CONTAINER_ID" == "" ]; then
-            local MSG="Error starting App Server LB container"
+            $APP_SERVICE_LB_CMD 2> "$DOCKER_RUN_STDERR")
+        if [ "$APP_SERVICE_LB_CONTAINER_ID" == "" ]; then
+            local MSG="Error starting App Service LB container"
             MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
             echo_to_stderr_if_not_silent "$MSG"
             return 2
         fi
-        local APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB_CONTAINER_ID)
+        local APP_SERVICE_LB_IP=$(get_container_ip $APP_SERVICE_LB_CONTAINER_ID)
 
-        echo "APP_SERVER_LB_DEPLOYMENT_LOCATION=$DATA_DIRECTORY" >> ~/.yar.deployment
+        echo "APP_SERVICE_LB_DEPLOYMENT_LOCATION=$DATA_DIRECTORY" >> ~/.yar.deployment
         # line below works because -v on /haproxy in above docker run
         # command and "stats socket /haproxy_admin/admin.sock level admin" in
         # the haproxy config file
-        echo "APP_SERVER_LB_ADMIN_SOCKET=$HAPROXY_ADMIN_DIR/admin.sock" >> ~/.yar.deployment
-        echo "APP_SERVER_LB_CONTAINER_ID=$APP_SERVER_LB_CONTAINER_ID" >> ~/.yar.deployment
-        echo "APP_SERVER_LB_IP=$APP_SERVER_LB_IP" >> ~/.yar.deployment
-        echo "APP_SERVER_LB_END_POINT=$APP_SERVER_LB_IP:$PORT" >> ~/.yar.deployment
+        echo "APP_SERVICE_LB_ADMIN_SOCKET=$HAPROXY_ADMIN_DIR/admin.sock" >> ~/.yar.deployment
+        echo "APP_SERVICE_LB_CONTAINER_ID=$APP_SERVICE_LB_CONTAINER_ID" >> ~/.yar.deployment
+        echo "APP_SERVICE_LB_IP=$APP_SERVICE_LB_IP" >> ~/.yar.deployment
+        echo "APP_SERVICE_LB_END_POINT=$APP_SERVICE_LB_IP:$PORT" >> ~/.yar.deployment
 
     else
 
@@ -589,26 +589,26 @@ create_app_server_lb() {
         HAPROXY_RESTART_CMD=$HAPROXY_RESTART_CMD' -p /haproxy/haproxy.pid'
         HAPROXY_RESTART_CMD=$HAPROXY_RESTART_CMD' -sf $(cat /haproxy/haproxy.pid)'
 
-        echo $HAPROXY_RESTART_CMD | sudo lxc-attach --name=$APP_SERVER_LB_CONTAINER_ID
+        echo $HAPROXY_RESTART_CMD | sudo lxc-attach --name=$APP_SERVICE_LB_CONTAINER_ID
 
     fi
 
     #
-    # the app server should now be able to respond to simple requests.
+    # the app service should now be able to respond to simple requests.
     # we'll use such a request to confirm the LB is up and running.
     #
-    local APP_SERVER_LB_IP=$(get_container_ip $APP_SERVER_LB_CONTAINER_ID)
+    local APP_SERVICE_LB_IP=$(get_container_ip $APP_SERVICE_LB_CONTAINER_ID)
 
     for i in {1..10}
     do
         sleep 1
-        if curl http://$APP_SERVER_LB_IP:$PORT/dave.html >& /dev/null; then
-            echo $APP_SERVER_LB_IP:$PORT
+        if curl http://$APP_SERVICE_LB_IP:$PORT/dave.html >& /dev/null; then
+            echo $APP_SERVICE_LB_IP:$PORT
             return 0
         fi
     done
 
-    echo_to_stderr_if_not_silent "Could not verify availability of App Server LB on $APP_SERVER_LB_IP:$PORT"
+    echo_to_stderr_if_not_silent "Could not verify availability of App Service LB on $APP_SERVICE_LB_IP:$PORT"
     return 1
 }
 
@@ -623,7 +623,7 @@ create_app_server_lb() {
 #
 # exit codes
 #   0   ok
-#   1   general/non-specific failure - app server container not started
+#   1   general/non-specific failure - key store container not started
 #   2   can't find couchdb_img
 #   3   can't find yar_img
 #   4   DEPLOYMENT_LOCATION not found
@@ -860,7 +860,7 @@ extract_random_set_of_creds_from_key_store() {
 #
 # exit codes
 #   0   ok
-#   1   general/non-specific failure - app server container not started
+#   1   general/non-specific failure - key server container not started
 #   2   can't find yar_img
 #
 create_key_server() {
@@ -1196,7 +1196,7 @@ get_all_nonce_store_end_points() {
 #
 # arguments
 #   1   key server
-#   2   app server
+#   2   app service
 #   3   nonce store
 #
 # exit codes

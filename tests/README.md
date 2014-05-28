@@ -93,18 +93,18 @@ vagrant@precise64:~$
 * let's spin up a minimal yar deployment
 
 ~~~~~
-vagrant@precise64:/vagrant$ ./spin_up_deployment.sh
+vagrant@vagrant-ubuntu-trusty-64:/vagrant$ ./spin_up_deployment.sh
 Initalizating Deployment
 -- Removing all existing containers
 -- Removing '~/.yar.deployment'
 -- Removing '~/.yar.creds'
--- Removing '~/.yar.creds.random'
--- Deployment Location '/tmp/tmp.igS9ZsfsSK'
-Starting App Server(s)
--- 1: Starting App Server
--- 1: App Server listening on 172.17.0.2:8080
-Starting App Server LB
--- App Server LB listening on 172.17.0.3:8080
+-- Removing '~/.yar.creds.random.set'
+-- Deployment Location '/tmp/tmp.O7sNLYQVOQ'
+Starting App Service(s)
+-- 1: Starting App Service
+-- 1: App Service listening on 172.17.0.2:8080
+Starting App Service LB
+-- App Service LB listening on 172.17.0.3:8080
 Starting Nonce Store(s)
 -- 1: Starting Nonce Store
 -- 1: Nonce Store listening on 172.17.0.4:11211
@@ -124,7 +124,7 @@ Deployment Highlights
 -- entry point @ 172.17.0.9:8000
 -- creds in ~/.yar.creds
 -- description in ~/.yar.deployment
-vagrant@precise64:/vagrant$
+vagrant@vagrant-ubuntu-trusty-64:/vagrant$
 ~~~~~
 
 * [spin_up_deployment.sh](spin_up_deployment.sh) just did a ton of work for us
@@ -270,7 +270,7 @@ the user name is yar and password is yar):
 
   * [http://localhost:8000/auth_server_lb?stats](http://localhost:8000/auth_server_lb?stats) for auth server LB stats
   * [http://localhost:8070/key_server_lb?stats](http://localhost:8070/key_server_lb?stats) for key server LB stats
-  * [http://localhost:8080/app_server_lb?stats](http://localhost:8080/app_server_lb?stats) for app server LB stats
+  * [http://localhost:8080/app_service_lb?stats](http://localhost:8080/app_service_lb?stats) for app service LB stats
 
 * this entire testing infrastructure was initally built to enable
 load testing - to explore load testing capabilities look at:

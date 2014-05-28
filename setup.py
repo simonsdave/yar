@@ -29,7 +29,7 @@ setup(
     packages=[
         "yar",
         "yar.util",
-        "yar.app_server",
+        "yar.app_service",
         "yar.auth_server",
         "yar.auth_server.basic",
         "yar.auth_server.mac",
@@ -39,7 +39,7 @@ setup(
         "yar.key_store.design_docs",
     ],
     scripts=[
-        "bin/app_server",
+        "bin/app_service",
         "bin/auth_server",
         "bin/key_server",
         "bin/key_store_installer",

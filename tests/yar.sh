@@ -2,7 +2,7 @@
 #
 # yar.sh is a cli for manage a yar test deployment
 # the cli lets you perform operations such as add
-# and remove a server from a tier in a test deployment.
+# and remove a service from a tier in a test deployment.
 #
 # exit codes
 #   0           ok
@@ -20,22 +20,22 @@ usage_detail() {
     usage_summary
     echo ""
     echo "The most commonly used `basename $0` commands are:"
-    echo "  as  manage and query app servers"
+    echo "  as  manage and query app services"
 }
 
-app_server_add() {
+app_service_add() {
     if [ $# != 0 ]; then
         echo "usage: `basename $0` as add"
         return 1
     fi
-    create_app_server
-    create_app_server_lb
+    create_app_service
+    create_app_service_lb
     return 0
 }
 
-app_server_remove() {
+app_service_remove() {
     if [ $# != 1 ]; then
-        echo "usage: `basename $0` as rm <app server>"
+        echo "usage: `basename $0` as rm <app service>"
         return 1
     fi
     # from http://www.serverphorums.com/read.php?10,588090,590171#msg-590171
@@ -54,38 +54,38 @@ app_server_remove() {
     return 0
 }
 
-app_server_stats() {
+app_service_stats() {
     if [ $# != 0 ]; then
         echo "usage: `basename $0` as stats"
         return 1
     fi
-    get_app_server_stats
+    get_app_service_stats
     return 0
 }
 
-app_server_usage() {
+app_service_usage() {
     echo "usage: `basename $0` as [add|rm|stats]"
 }
 
-app_server() {
+app_service() {
     COMMAND=`echo ${1:-} | awk '{print toupper($0)}'`
     shift
     case "$COMMAND" in
         ADD)
-            app_server_add $@
+            app_service_add $@
             ;;
         REMOVE|RM)
-            app_server_remove $@
+            app_service_remove $@
             ;;
         STATS|STAT)
-            app_server_stats $@
+            app_service_stats $@
             ;;
         "")
-            app_server_usage
+            app_service_usage
             return 1
             ;;
         *)
-            app_server_usage
+            app_service_usage
             return 1
             ;;
     esac
@@ -96,8 +96,8 @@ app_server() {
 COMMAND=`echo ${1:-} | awk '{print toupper($0)}'`
 shift
 case "$COMMAND" in
-    AS|APP_SERVER|APP_SERVER|APPS)
-        app_server $@
+    AS|APP_SERVICE|APPS)
+        app_service $@
         ;;
     "")
         usage_detail

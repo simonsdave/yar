@@ -108,32 +108,32 @@ fi
 yar_init_deployment "$DOCKER_CONTAINER_DATA"
 
 #
-# App Server
+# App Service
 #
-echo_if_not_silent "Starting App Server(s)"
+echo_if_not_silent "Starting App Service(s)"
 
-NUMBER_APP_SERVERS_PATTERN='\["app_server"\,"number_of_servers"\]'
-NUMBER_APP_SERVERS=$(get_from_json "$NUMBER_APP_SERVERS_PATTERN" "1" < $DEPLOYMENT_PROFILE)
+NUMBER_APP_SERVICES_PATTERN='\["app_service"\,"number_of_servers"\]'
+NUMBER_APP_SERVICES=$(get_from_json "$NUMBER_APP_SERVICES_PATTERN" "1" < $DEPLOYMENT_PROFILE)
 
-for APP_SERVER_NUMBER in $(seq 1 $NUMBER_APP_SERVERS)
+for APP_SERVICE_NUMBER in $(seq 1 $NUMBER_APP_SERVICES)
 do
-    echo_if_not_silent "-- $APP_SERVER_NUMBER: Starting App Server"
-	if ! APP_SERVER=$(create_app_server); then
-		echo_to_stderr_if_not_silent "-- $APP_SERVER_NUMBER: App Server failed to start"
+    echo_if_not_silent "-- $APP_SERVICE_NUMBER: Starting App Service"
+	if ! APP_SERVICE=$(create_app_service); then
+		echo_to_stderr_if_not_silent "-- $APP_SERVICE_NUMBER: App Service failed to start"
 		exit 1
 	fi
-	echo_if_not_silent "-- $APP_SERVER_NUMBER: App Server listening on $APP_SERVER"
+	echo_if_not_silent "-- $APP_SERVICE_NUMBER: App Service listening on $APP_SERVICE"
 done
 
 #
-# App Server LB
+# App Service LB
 #
-echo_if_not_silent "Starting App Server LB"
-if ! APP_SERVER_LB=$(create_app_server_lb); then
-    echo_to_stderr_if_not_silent "-- App Server LB failed to start"
+echo_if_not_silent "Starting App Service LB"
+if ! APP_SERVICE_LB=$(create_app_service_lb); then
+    echo_to_stderr_if_not_silent "-- App Service LB failed to start"
     exit 1
 fi
-echo_if_not_silent "-- App Server LB listening on $APP_SERVER_LB"
+echo_if_not_silent "-- App Service LB listening on $APP_SERVICE_LB"
 
 #
 # Nonce Store(s)
@@ -231,7 +231,7 @@ for AUTH_SERVER_NUMBER in $(seq 1 $NUMBER_AUTH_SERVERS)
 do
     echo_if_not_silent "-- $AUTH_SERVER_NUMBER: Starting Auth Server"
 
-	if ! AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVER_LB $APP_SERVER_LB $NONCE_STORES); then
+	if ! AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVER_LB $APP_SERVICE_LB $NONCE_STORES); then
 		echo_to_stderr_if_not_silent "-- Auth Server failed to start"
 		exit 1
 	fi

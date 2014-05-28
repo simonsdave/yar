@@ -30,9 +30,9 @@
         # 
         "number_of_servers": 3
     },
-    "app_server": {
+    "app_service": {
         #
-        # "number_of_servers" defines the number of app servers
+        # "number_of_servers" defines the number of app services
         # in the deployment.
         # 
         "number_of_servers": 3

@@ -319,7 +319,7 @@ run_load_test() {
 
     #
     # during the load test the auth server was making requests
-    # to the app server. the statements below extract timing
+    # to the app service. the statements below extract timing
     # information about the requests from the auth server's
     # log and then plots 2 different graphs of response times.
     #
@@ -337,7 +337,7 @@ run_load_test() {
         $TEMPFILE \
         $PERCENTILETEMPFILE
 
-    TITLE="App Server Response Time - $START_TIME"
+    TITLE="App Service Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
@@ -346,7 +346,7 @@ run_load_test() {
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
-    TITLE="App Server Response Time - $START_TIME"
+    TITLE="App Service Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
@@ -428,25 +428,25 @@ run_load_test() {
     done
 
     gen_cpu_usage_graph \
-        "App Server Load Balancer CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
-        "APP_SERVER_LB_CONTAINER_ID" \
+        "App Service Load Balancer CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "APP_SERVICE_LB_CONTAINER_ID" \
         "$RESULTS_FILE_BASE_NAME-25-app-server-lb-cpu-usage.png"
 
-    local APP_SERVER_NUMBER=1
-    for APP_SERVER_CONTAINER_ID_KEY in $(get_all_app_server_container_id_keys)
+    local APP_SERVICE_NUMBER=1
+    for APP_SERVICE_CONTAINER_ID_KEY in $(get_all_app_service_container_id_keys)
     do
-        local GRAPH_TITLE="App Server # $APP_SERVER_NUMBER CPU Usage"
+        local GRAPH_TITLE="App Service # $APP_SERVICE_NUMBER CPU Usage"
         GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
 
         local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-26-app-server"
-        GRAPH_FILENAME="$GRAPH_FILENAME-$APP_SERVER_NUMBER-cpu-usage.png"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$APP_SERVICE_NUMBER-cpu-usage.png"
 
         gen_cpu_usage_graph \
             "$GRAPH_TITLE" \
-            "$APP_SERVER_CONTAINER_ID_KEY" \
+            "$APP_SERVICE_CONTAINER_ID_KEY" \
             "$GRAPH_FILENAME"
 
-        let "APP_SERVER_NUMBER += 1"
+        let "APP_SERVICE_NUMBER += 1"
     done
 
     #
@@ -519,25 +519,25 @@ run_load_test() {
     done
 
     gen_mem_usage_graph \
-        "App Server Load Balancer Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
-        "APP_SERVER_LB_CONTAINER_ID" \
+        "App Service Load Balancer Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "APP_SERVICE_LB_CONTAINER_ID" \
         "$RESULTS_FILE_BASE_NAME-36-app-server-lb-memory-usage.png"
 
-    local APP_SERVER_NUMBER=1
-    for APP_SERVER_CONTAINER_ID_KEY in $(get_all_app_server_container_id_keys)
+    local APP_SERVICE_NUMBER=1
+    for APP_SERVICE_CONTAINER_ID_KEY in $(get_all_app_service_container_id_keys)
     do
-        local GRAPH_TITLE="App Server # $APP_SERVER_NUMBER Memory Usage"
+        local GRAPH_TITLE="App Service # $APP_SERVICE_NUMBER Memory Usage"
         GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
 
         local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-37-app-server"
-        GRAPH_FILENAME="$GRAPH_FILENAME-$APP_SERVER_NUMBER-memory-usage.png"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$APP_SERVICE_NUMBER-memory-usage.png"
 
         gen_mem_usage_graph \
             "$GRAPH_TITLE" \
-            "$APP_SERVER_CONTAINER_ID_KEY" \
+            "$APP_SERVICE_CONTAINER_ID_KEY" \
             "$GRAPH_FILENAME"
 
-        let "APP_SERVER_NUMBER += 1"
+        let "APP_SERVICE_NUMBER += 1"
     done
 
 	local NONCE_STORE_NUMBER=1
