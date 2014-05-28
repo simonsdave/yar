@@ -65,3 +65,4 @@ if there's no concept of resource ownership.
 ### Possible Related References
 * [Cloud Security Alliance (CSA) Software Defined Perimeter (SDP)](https://cloudsecurityalliance.org/research/sdp/)
 * [Security Operations: Moving to a Narrative-Driven Model](http://www.securityweek.com/security-operations-moving-narrative-driven-model)
+* [XACML](http://en.wikipedia.org/wiki/XACML), [ndg-xacml](https://pypi.python.org/pypi/ndg-xacml/0.5.0)
