@@ -30,14 +30,14 @@ class CommandLineParser(optparse.OptionParser):
             type="logginglevel",
             help=help)
 
-        default = [("127.0.0.1", 8080)]
+        default = "127.0.0.1:8080"
         help = "port - default = %s" % default
         self.add_option(
             "--lon",
             action="store",
             dest="listen_on",
             default=default,
-            type="hostcolonportsparsed",
+            type="hostcolonportparsed",
             help=help)
 
         default = None
