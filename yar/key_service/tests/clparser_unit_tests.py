@@ -1,15 +1,15 @@
 """This module implements a collection of unit tests for
-the Key Server's key_server.clparser.CommandLineParser."""
+the Key Service's key_service.clparser.CommandLineParser."""
 
 import logging
 import unittest
 
-from yar.key_server.clparser import CommandLineParser
+from yar.key_service.clparser import CommandLineParser
 
 
 class CommandLineParserUnitTase(unittest.TestCase):
-    """A collection of unit tests for the Key Server's
-    key_server.clparser.CommandLineParser."""
+    """A collection of unit tests for the Key Service's
+    key_service.clparser.CommandLineParser."""
 
     def test_defaults(self):
         """Verify the command line parser supplies the

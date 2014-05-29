@@ -12,7 +12,7 @@ An HTML version of the coverage report can now be found in coverage_report/index
 See [Attack Vectors](Attack_Vectors.md).
 
 ### How are keys generated?
-See [Key Generation](../yar/key_server#key-generation).
+See [Key Generation](../yar/key_service#key-generation).
 
 ### What's an MAC?
 See [this](http://en.wikipedia.org/wiki/Message_authentication_code).

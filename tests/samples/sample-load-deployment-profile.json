@@ -16,9 +16,9 @@
         #
         "percent_active_creds": 2
     },
-    "key_server": {
+    "key_service": {
         #
-        # "number_of_servers" defines the number of key servers
+        # "number_of_servers" defines the number of key services
 		# in the deployment.
         # 
         "number_of_servers": 3

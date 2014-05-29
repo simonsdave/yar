@@ -45,7 +45,7 @@ requests to the 3 end-points.
 * **:TODO:** what access control model does yar use? (DAS assuming RBC)
 * **:TODO:** describe the API requests that the build system makes to yar to configure the
   access control model for the newly created resources - the API calls will
-  be made to what we currently call the key server where the key server, like
+  be made to what we currently call the key service where the key service, like
   the build system, is deployed in the application tier vs the auth server
   which is deployed in the DMZ
   (remember the build system is deployed as a service behind yar's auth server)

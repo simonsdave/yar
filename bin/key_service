@@ -1,17 +1,17 @@
 #!/usr/bin/env python
-"""The key server's mainline."""
+"""The key service's mainline."""
 
 import logging
 
 import tornado.httpserver
 import tornado.web
 
-from yar.key_server import clparser
-from yar.key_server import key_server_request_handler
+from yar.key_service import clparser
+from yar.key_service import key_service_request_handler
 from yar.util import tsh
 from yar.util import logging_config
 
-_logger = logging.getLogger("KEYSERVER.%s" % __name__)
+_logger = logging.getLogger("KEYSERVICE.%s" % __name__)
 
 
 if __name__ == "__main__":
@@ -25,17 +25,17 @@ if __name__ == "__main__":
 
     tsh.install()
 
-    key_server_request_handler._key_store = clo.key_store
+    key_service_request_handler._key_store = clo.key_store
 
     _logger.info(
-        "Key server listening on '%s' and using key store '%s'",
+        "Key service listening on '%s' and using key store '%s'",
         clo.listen_on,
         clo.key_store)
 
     handlers = [
         (
-            key_server_request_handler.url_spec,
-            key_server_request_handler.RequestHandler
+            key_service_request_handler.url_spec,
+            key_service_request_handler.RequestHandler
         ),
     ]
 

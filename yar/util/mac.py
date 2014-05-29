@@ -151,7 +151,7 @@ class MACKeyIdentifier(str):
         a while but in the end the current implementation seemed
         to make the most sense because (i) nothing about the mac
         key identifier needs to be 'secure' (ii) wanted to be able
-        to run a cluster of key servers to generate mac key identifers
+        to run a cluster of key services to generate mac key identifers
         across multiple data centers so needed an approach which
         saw a very high probability that generated mac key identifiers
         where unique."""

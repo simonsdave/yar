@@ -52,11 +52,11 @@ class CommandLineParser(optparse.OptionParser):
             help=help)
 
         default = "127.0.0.1:8070"
-        help = "key server - default = %s" % default
+        help = "key service - default = %s" % default
         self.add_option(
-            "--keyserver",
+            "--keyservice",
             action="store",
-            dest="key_server",
+            dest="key_service",
             default=default,
             type="hostcolonport",
             help=help)

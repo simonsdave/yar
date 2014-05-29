@@ -21,7 +21,7 @@ class APIKey(str):
         a while but in the end the current implementation seemed
         to make the most sense because (i) nothing about the api
         key needs to be 'secure' (ii) wanted to be able
-        to run a cluster of key servers to api keys
+        to run a cluster of key services to api keys
         across multiple data centers so needed an approach which
         saw a very high probability that generated api keys
         where unique."""

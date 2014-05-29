@@ -1,4 +1,4 @@
-"""This module contains a collection of key server specific utilities."""
+"""This module contains a collection of key service specific utilities."""
 
 import json
 import logging
@@ -31,8 +31,8 @@ def filter_out_non_model_creds_properties(creds):
 
 class AsyncAction(object):
     """```AsyncAction``` is an abstract base class for all key
-    server classes which encapsulate async interaction between
-    the key server and key store. The primary intent of this
+    service classes which encapsulate async interaction between
+    the key service and key store. The primary intent of this
     class is to abstract away all tornado details from the
     derived classes and isolate the async control code into
     a single spot. This isolation makes mock creation in unit

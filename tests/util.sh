@@ -853,28 +853,28 @@ extract_random_set_of_creds_from_key_store() {
 }
 
 #
-# create a docker container to run a key server
+# create a docker container to run a key service
 #
 # arguments
 #   1   key store
 #
 # exit codes
 #   0   ok
-#   1   general/non-specific failure - key server container not started
+#   1   general/non-specific failure - key service container not started
 #   2   can't find yar_img
 #
-create_key_server() {
+create_key_service() {
 
     #
     # extract function arguments and setup function specific config
     #
     local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
 
-    local KEY_SERVER_NUMBER=$(get_number_deployment_config_keys \
-        "KEY_SERVER_CONTAINER_ID_[[:digit:]]\+")
-    let "KEY_SERVER_NUMBER += 1"
+    local KEY_SERVICE_NUMBER=$(get_number_deployment_config_keys \
+        "KEY_SERVICE_CONTAINER_ID_[[:digit:]]\+")
+    let "KEY_SERVICE_NUMBER += 1"
 
-    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Key-Server-$KEY_SERVER_NUMBER
+    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Key-Service-$KEY_SERVICE_NUMBER
     mkdir -p $DATA_DIRECTORY
 
     local KEY_STORE=${1:-}
@@ -890,29 +890,29 @@ create_key_server() {
         return 2
     fi
 
-    local KEY_SERVER_CMD="key_server \
+    local KEY_SERVICE_CMD="key_service \
         --log=info \
         --lon=0.0.0.0:$PORT \
         --key_store=$KEY_STORE \
-        --logfile=/var/yar_key_server/key_server_log"
+        --logfile=/var/yar_key_service/key_service_log"
     local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
-    local KEY_SERVER=$(sudo docker run \
+    local KEY_SERVICE=$(sudo docker run \
         -d \
-        --name="Key_Server_$KEY_SERVER_NUMBER" \
-        -v $DATA_DIRECTORY:/var/yar_key_server \
+        --name="Key_Service_$KEY_SERVICE_NUMBER" \
+        -v $DATA_DIRECTORY:/var/yar_key_service \
         $IMAGE_NAME \
-        $KEY_SERVER_CMD 2> "$DOCKER_RUN_STDERR")
-    if [ "$KEY_SERVER" == "" ]; then
-        local MSG="Error starting Key Server container"
+        $KEY_SERVICE_CMD 2> "$DOCKER_RUN_STDERR")
+    if [ "$KEY_SERVICE" == "" ]; then
+        local MSG="Error starting Key Service container"
         MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
         echo_to_stderr_if_not_silent "$MSG"
         return 2
     fi
-    local KEY_SERVER_IP=$(get_container_ip $KEY_SERVER)
+    local KEY_SERVICE_IP=$(get_container_ip $KEY_SERVICE)
 
-    echo "KEY_SERVER_CONTAINER_ID_$KEY_SERVER_NUMBER=$KEY_SERVER" >> ~/.yar.deployment
-    echo "KEY_SERVER_IP_$KEY_SERVER_NUMBER=$KEY_SERVER_IP" >> ~/.yar.deployment
-    echo "KEY_SERVER_END_POINT_$KEY_SERVER_NUMBER=$KEY_SERVER_IP:$PORT" >> ~/.yar.deployment
+    echo "KEY_SERVICE_CONTAINER_ID_$KEY_SERVICE_NUMBER=$KEY_SERVICE" >> ~/.yar.deployment
+    echo "KEY_SERVICE_IP_$KEY_SERVICE_NUMBER=$KEY_SERVICE_IP" >> ~/.yar.deployment
+    echo "KEY_SERVICE_END_POINT_$KEY_SERVICE_NUMBER=$KEY_SERVICE_IP:$PORT" >> ~/.yar.deployment
 
     #
     # key sever should now be running so let's verify that
@@ -921,18 +921,18 @@ create_key_server() {
     for i in {1..10}
     do
         sleep 1
-        if curl -s http://$KEY_SERVER_IP:$PORT/v1.0/creds >& /dev/null; then
-            echo $KEY_SERVER_IP:$PORT
+        if curl -s http://$KEY_SERVICE_IP:$PORT/v1.0/creds >& /dev/null; then
+            echo $KEY_SERVICE_IP:$PORT
             return 0
         fi
     done
 
-    echo_to_stderr_if_not_silent "Could not verify availability of Key Server on $KEY_SERVER_IP:$PORT"
+    echo_to_stderr_if_not_silent "Could not verify availability of Key Service on $KEY_SERVICE_IP:$PORT"
     return 1
 }
 
 #
-# echo to stdout each of the key server container id keys
+# echo to stdout each of the key service container id keys
 # listed in ~/.yar.deployment
 #
 # example expected usage
@@ -940,7 +940,7 @@ create_key_server() {
 #   #!/usr/bin/env bash
 #   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 #   source $SCRIPT_DIR_NAME/util.sh
-#   for KSCK in $(get_all_key_server_container_id_keys); do
+#   for KSCK in $(get_all_key_service_container_id_keys); do
 #       echo ">>>$KSCK<<<"
 #   done
 #
@@ -949,14 +949,14 @@ create_key_server() {
 #
 # exit codes
 #   0   ok
-#   1   too many key servers in ~/.yar.deployment
+#   1   too many key services in ~/.yar.deployment
 #
-get_all_key_server_container_id_keys() {
-    for KEY_SERVER_NUMBER in {1..100}
+get_all_key_service_container_id_keys() {
+    for KEY_SERVICE_NUMBER in {1..100}
     do
-        local KEY="KEY_SERVER_CONTAINER_ID_$KEY_SERVER_NUMBER"
-        local KEY_SERVER_CONTAINER_ID=$(get_deployment_config "$KEY" "")
-        if [ "$KEY_SERVER_CONTAINER_ID" == "" ]; then
+        local KEY="KEY_SERVICE_CONTAINER_ID_$KEY_SERVICE_NUMBER"
+        local KEY_SERVICE_CONTAINER_ID=$(get_deployment_config "$KEY" "")
+        if [ "$KEY_SERVICE_CONTAINER_ID" == "" ]; then
             return 0
         fi
         echo $KEY
@@ -965,24 +965,24 @@ get_all_key_server_container_id_keys() {
 }
 
 #
-# create a docker container to run the key server load balancer
+# create a docker container to run the key service load balancer
 #
 # arguments
 #   none
 #
 # exit codes
 #   0   ok
-#   1   general/non-specific failure - key server container not started
+#   1   general/non-specific failure - key service container not started
 #   2   can't find haproxy_img
 #
-create_key_server_lb() {
+create_key_service_lb() {
 
     #
     # extract function arguments and setup function specific config
     #
     local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
 
-    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Key-Server-LB
+    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Key-Service-LB
     mkdir -p $DATA_DIRECTORY
 
     local PORT=8070
@@ -990,15 +990,15 @@ create_key_server_lb() {
     #
     # spin up the server
     #
-    cp $SCRIPT_DIR_NAME/cfg-haproxy/key_server $DATA_DIRECTORY/cfg-haproxy
+    cp $SCRIPT_DIR_NAME/cfg-haproxy/key_service $DATA_DIRECTORY/cfg-haproxy
 
-    local KEY_SERVER_NUMBER=1
-    for KEY_SERVER_CONTAINER_ID_KEY in $(get_all_key_server_container_id_keys)
+    local KEY_SERVICE_NUMBER=1
+    for KEY_SERVICE_CONTAINER_ID_KEY in $(get_all_key_service_container_id_keys)
     do
-        KEY_SERVER_CONTAINER_ID=$(get_deployment_config "$KEY_SERVER_CONTAINER_ID_KEY")
-        KEY_SERVER_IP=$(get_container_ip "$KEY_SERVER_CONTAINER_ID")
-    	echo "    server key_server_$KEY_SERVER_NUMBER $KEY_SERVER_IP check" >> $DATA_DIRECTORY/cfg-haproxy
-        let "KEY_SERVER_NUMBER += 1"
+        KEY_SERVICE_CONTAINER_ID=$(get_deployment_config "$KEY_SERVICE_CONTAINER_ID_KEY")
+        KEY_SERVICE_IP=$(get_container_ip "$KEY_SERVICE_CONTAINER_ID")
+    	echo "    server key_service_$KEY_SERVICE_NUMBER $KEY_SERVICE_IP check" >> $DATA_DIRECTORY/cfg-haproxy
+        let "KEY_SERVICE_NUMBER += 1"
     done
 
     local IMAGE_NAME=haproxy_img
@@ -1007,26 +1007,26 @@ create_key_server_lb() {
         return 2
     fi
 
-    local KEY_SERVER_LB_CMD="haproxy.sh /haproxy/cfg-haproxy /haproxy/haproxy.pid"
+    local KEY_SERVICE_LB_CMD="haproxy.sh /haproxy/cfg-haproxy /haproxy/haproxy.pid"
     local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
-    local KEY_SERVER_LB=$(sudo docker run \
+    local KEY_SERVICE_LB=$(sudo docker run \
         -d \
-        --name="Key_Server_LB" \
+        --name="Key_Service_LB" \
 		-p $PORT:$PORT \
         -v $DATA_DIRECTORY:/haproxy \
         $IMAGE_NAME \
-        $KEY_SERVER_LB_CMD 2> $DOCKER_RUN_STDERR)
-    if [ "$KEY_SERVER_LB" == "" ]; then
-        local MSG="Error starting Key Server LB container"
+        $KEY_SERVICE_LB_CMD 2> $DOCKER_RUN_STDERR)
+    if [ "$KEY_SERVICE_LB" == "" ]; then
+        local MSG="Error starting Key Service LB container"
         MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
         echo_to_stderr_if_not_silent "$MSG"
         return 2
     fi
-    local KEY_SERVER_LB_IP=$(get_container_ip $KEY_SERVER_LB)
+    local KEY_SERVICE_LB_IP=$(get_container_ip $KEY_SERVICE_LB)
 
-    echo "KEY_SERVER_LB_CONTAINER_ID=$KEY_SERVER_LB" >> ~/.yar.deployment
-    echo "KEY_SERVER_LB_IP=$KEY_SERVER_LB_IP" >> ~/.yar.deployment
-    echo "KEY_SERVER_LB_END_POINT=$KEY_SERVER_LB_IP:$PORT" >> ~/.yar.deployment
+    echo "KEY_SERVICE_LB_CONTAINER_ID=$KEY_SERVICE_LB" >> ~/.yar.deployment
+    echo "KEY_SERVICE_LB_IP=$KEY_SERVICE_LB_IP" >> ~/.yar.deployment
+    echo "KEY_SERVICE_LB_END_POINT=$KEY_SERVICE_LB_IP:$PORT" >> ~/.yar.deployment
 
     #
     # key sever lb should now be running so let's verify that
@@ -1035,13 +1035,13 @@ create_key_server_lb() {
     for i in {1..10}
     do
         sleep 1
-        curl -s http://$KEY_SERVER_LB_IP:$PORT/dave.html >& /dev/null
+        curl -s http://$KEY_SERVICE_LB_IP:$PORT/dave.html >& /dev/null
         if [ $? == 0 ]; then
             break
         fi
     done
 
-    echo $KEY_SERVER_LB_IP:$PORT
+    echo $KEY_SERVICE_LB_IP:$PORT
 }
 
 #
@@ -1195,7 +1195,7 @@ get_all_nonce_store_end_points() {
 # create a docker container to run an auth_server
 #
 # arguments
-#   1   key server
+#   1   key service
 #   2   app service
 #   3   nonce store
 #
@@ -1218,8 +1218,8 @@ create_auth_server() {
     local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Auth-Server-$AUTH_SERVER_NUMBER
     mkdir -p $DATA_DIRECTORY
 
-    local KEY_SERVER=${1:-}
-    local APP_SERVER=${2:-}
+    local KEY_SERVICE=${1:-}
+    local APP_SERVICE=${2:-}
     local NONCE_STORE=${3:-}
 
     local PORT=8000
@@ -1236,8 +1236,8 @@ create_auth_server() {
     local AUTH_SERVER_CMD="auth_server \
         --log=info \
         --lon=0.0.0.0:$PORT \
-        --keyserver=$KEY_SERVER \
-        --appserver=$APP_SERVER \
+        --keyservice=$KEY_SERVICE \
+        --appserver=$APP_SERVICE \
         --noncestore=$NONCE_STORE \
         --logfile=/var/auth_server/auth_server_log"
     local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr

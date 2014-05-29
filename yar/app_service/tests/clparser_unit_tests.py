@@ -8,8 +8,8 @@ from yar.app_service.clparser import CommandLineParser
 
 
 class CommandLineParserUnitTase(unittest.TestCase):
-    """A collection of unit tests for the Key Server's
-    key_server.clparser.CommandLineParser."""
+    """A collection of unit tests for the Key Service's
+    key_service.clparser.CommandLineParser."""
 
     def test_defaults(self):
         """Verify the command line parser supplies the

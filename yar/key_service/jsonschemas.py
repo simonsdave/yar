@@ -1,9 +1,9 @@
 """This module contains JSON schemas which can be used to validate
-JSON bodies of request to and responses from the key server."""
+JSON bodies of request to and responses from the key service."""
 
 
 """```create_creds_request``` is a JSON schema used to validate
-create credentials requests to the key server."""
+create credentials requests to the key service."""
 create_creds_request = {
     "type": "object",
     "properties": {
@@ -27,7 +27,7 @@ create_creds_request = {
 
 
 """```get_creds_response``` is a JSON schema used to validate
-the key server's response to get creds request."""
+the key service's response to get creds request."""
 get_creds_response = {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "Get Creds Response",
@@ -144,5 +144,5 @@ get_creds_response = {
 
 
 """```create_creds_response``` is a JSON schema used to validate
-the key server's response to create creds request."""
+the key service's response to create creds request."""
 create_creds_response = get_creds_response

@@ -1,5 +1,5 @@
 """This module contains a collection of unit tests which
-validate lib/jsonschemas.py"""
+validate key service's jsonschemas.py"""
 
 import unittest
 import json
@@ -9,7 +9,7 @@ import os
 
 import jsonschema
 
-from yar.key_server import jsonschemas
+from yar.key_service import jsonschemas
 from yar.util import mac
 from yar.util import basic
 

@@ -1,4 +1,4 @@
-"""This module implements the key server's unit tests."""
+"""This module implements the key service's unit tests."""
 
 import httplib
 import httplib2
@@ -20,8 +20,8 @@ import tornado.netutil
 import tornado.options
 import tornado.web
 
-from yar.key_server import jsonschemas
-from yar.key_server import key_server_request_handler
+from yar.key_service import jsonschemas
+from yar.key_service import key_service_request_handler
 from yar.util import mac
 from yar.util import basic
 from yar.tests import yar_test_util
@@ -32,12 +32,12 @@ class KeyServer(yar_test_util.Server):
     def __init__(self, key_store):
         yar_test_util.Server.__init__(self)
 
-        key_server_request_handler._key_store = key_store
+        key_service_request_handler._key_store = key_store
 
         handlers = [
             (
-                key_server_request_handler.url_spec,
-                key_server_request_handler.RequestHandler
+                key_service_request_handler.url_spec,
+                key_service_request_handler.RequestHandler
             ),
         ]
         app = tornado.web.Application(handlers=handlers)
@@ -53,22 +53,22 @@ class TestCase(yar_test_util.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._database_name = "das%s" % str(uuid.uuid4()).replace("-", "")[:7]
-        cls._key_server = KeyServer("127.0.0.1:5984/%s" % cls._database_name)
+        cls._key_service = KeyServer("127.0.0.1:5984/%s" % cls._database_name)
         cls._ioloop = yar_test_util.IOLoop()
         cls._ioloop.start()
 
     @classmethod
     def tearDownClass(cls):
         cls._ioloop.stop()
-        cls._key_server.shutdown()
-        cls._key_server = None
+        cls._key_service.shutdown()
+        cls._key_service = None
         cls._database_name = None
 
     def setUp(self):
         self._creds_database = []
 
     def url(self):
-        return "http://127.0.0.1:%s/v1.0/creds" % self.__class__._key_server.port
+        return "http://127.0.0.1:%s/v1.0/creds" % type(self)._key_service.port
 
     def _key_from_creds(self, creds):
         if "mac" in creds:
@@ -105,7 +105,7 @@ class TestCase(yar_test_util.TestCase):
             callback(creds)
 
         name_of_method_to_patch = (
-            "yar.key_server.async_creds_creator."
+            "yar.key_service.async_creds_creator."
             "AsyncCredsCreator.create"
         )
         with mock.patch(name_of_method_to_patch, create_patch):
@@ -193,7 +193,7 @@ class TestCase(yar_test_util.TestCase):
             callback(creds=None, is_creds_collection=None)
 
         name_of_method_to_patch = (
-            "yar.key_server.async_creds_retriever.AsyncCredsRetriever.fetch"
+            "yar.key_service.async_creds_retriever.AsyncCredsRetriever.fetch"
         )
         with mock.patch(name_of_method_to_patch, fetch_patch):
             url = "%s/%s" % (self.url(), the_key)
@@ -270,7 +270,7 @@ class TestCase(yar_test_util.TestCase):
                 callback(creds=principals_creds, is_creds_collection=True)
 
         name_of_method_to_patch = (
-            "yar.key_server.async_creds_retriever."
+            "yar.key_service.async_creds_retriever."
             "AsyncCredsRetriever.fetch"
         )
         with mock.patch(name_of_method_to_patch, fetch_patch):
@@ -311,7 +311,7 @@ class TestCase(yar_test_util.TestCase):
             callback(False)
 
         name_of_method_to_patch = (
-            "yar.key_server.async_creds_deleter.AsyncCredsDeleter.delete"
+            "yar.key_service.async_creds_deleter.AsyncCredsDeleter.delete"
         )
         with mock.patch(name_of_method_to_patch, delete_patch):
             url = "%s/%s" % (self.url(), the_key)
@@ -335,7 +335,7 @@ class TestCase(yar_test_util.TestCase):
             callback(creds=None, is_creds_collection=None)
 
         name_of_method_to_patch = (
-            "yar.key_server.async_creds_retriever."
+            "yar.key_service.async_creds_retriever."
             "AsyncCredsRetriever.fetch"
         )
         with mock.patch(name_of_method_to_patch, fetch_patch):
@@ -419,7 +419,7 @@ class TestCase(yar_test_util.TestCase):
             self.assertIsNotNone(callback)
             callback(None)
 
-        with mock.patch("yar.key_server.async_creds_creator.AsyncCredsCreator.create", create_patch):
+        with mock.patch("yar.key_service.async_creds_creator.AsyncCredsCreator.create", create_patch):
             http_client = httplib2.Http()
             response, content = http_client.request(
                 self.url(),
@@ -439,7 +439,7 @@ class TestCase(yar_test_util.TestCase):
             self.assertIsNotNone(callback)
             callback(None)
 
-        with mock.patch("yar.key_server.async_creds_deleter.AsyncCredsDeleter.delete", delete_patch):
+        with mock.patch("yar.key_service.async_creds_deleter.AsyncCredsDeleter.delete", delete_patch):
             url = "%s/%s" % (self.url(), the_mac_key_identifier)
             http_client = httplib2.Http()
             response, content = http_client.request(url, "DELETE")
@@ -522,14 +522,14 @@ class TestCase(yar_test_util.TestCase):
 
     def test_create_creds_failure(self):
         """Verify that when credentials creation fails (for whatever reason)
-        that the key server returns an INTERNAL_SERVER_ERROR status code."""
+        that the key service returns an INTERNAL_SERVER_ERROR status code."""
 
         def create_patch(acc, principal, auth_scheme, callback):
             # the "None" below indicates a failure has occured
             callback(None)
 
         name_of_method_to_patch = (
-            "yar.key_server.async_creds_creator."
+            "yar.key_service.async_creds_creator."
             "AsyncCredsCreator.create"
         )
         with mock.patch(name_of_method_to_patch, create_patch):

@@ -1,4 +1,4 @@
-"""This module implements unit tests for the key server's
+"""This module implements unit tests for the key service's
 async_creds_retriever module."""
 
 import httplib
@@ -8,13 +8,13 @@ import uuid
 
 import mock
 
-from yar.key_server import async_creds_deleter
+from yar.key_service import async_creds_deleter
 from yar.util import mac
 from yar.tests import yar_test_util
 
 
 class TestCaseAsyncCredsDeleter(yar_test_util.TestCase):
-    """A collection of whitebox unit tests for the key server's
+    """A collection of whitebox unit tests for the key service's
     async_creds_deleter module."""
 
     _key_store = "dave:42"
@@ -46,7 +46,7 @@ class TestCaseAsyncCredsDeleter(yar_test_util.TestCase):
             self.assertFalse(is_ok)
 
         name_of_method_to_patch = (
-            "yar.key_server.async_creds_retriever."
+            "yar.key_service.async_creds_retriever."
             "AsyncCredsRetriever.fetch"
         )
         with mock.patch(name_of_method_to_patch, async_creds_retriever_fetch_patch):
@@ -98,9 +98,9 @@ class TestCaseAsyncCredsDeleter(yar_test_util.TestCase):
             self.assertIsNotNone(is_ok)
             self.assertTrue(is_ok)
 
-        name_of_method_to_patch = "yar.key_server.async_creds_retriever.AsyncCredsRetriever.fetch"
+        name_of_method_to_patch = "yar.key_service.async_creds_retriever.AsyncCredsRetriever.fetch"
         with mock.patch(name_of_method_to_patch, async_creds_retriever_fetch_patch):
-            name_of_method_to_patch = "yar.key_server.ks_util.AsyncAction.async_req_to_key_store"
+            name_of_method_to_patch = "yar.key_service.ks_util.AsyncAction.async_req_to_key_store"
             with mock.patch(name_of_method_to_patch, async_req_to_key_store_patch):
                 acd = async_creds_deleter.AsyncCredsDeleter(type(self)._key_store)
                 acd.delete(
@@ -169,9 +169,9 @@ class TestCaseAsyncCredsDeleter(yar_test_util.TestCase):
             self.assertIsNotNone(is_ok)
             self.assertFalse(is_ok)
 
-        name_of_method_to_patch = "yar.key_server.async_creds_retriever.AsyncCredsRetriever.fetch"
+        name_of_method_to_patch = "yar.key_service.async_creds_retriever.AsyncCredsRetriever.fetch"
         with mock.patch(name_of_method_to_patch, async_creds_retriever_fetch_patch):
-            name_of_method_to_patch = "yar.key_server.ks_util.AsyncAction.async_req_to_key_store"
+            name_of_method_to_patch = "yar.key_service.ks_util.AsyncAction.async_req_to_key_store"
             with mock.patch(name_of_method_to_patch, async_req_to_key_store_patch):
                 acd = async_creds_deleter.AsyncCredsDeleter(type(self)._key_store)
                 acd.delete(

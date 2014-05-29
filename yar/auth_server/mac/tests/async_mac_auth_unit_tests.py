@@ -167,7 +167,7 @@ class TestAsyncMACAuth(yar_test_util.TestCase):
 
     def test_creds_not_found(self):
         """When a request contains Authorization HTTP header with a
-        mac key identifier that the key server doesn't know about,
+        mac key identifier that the key service doesn't know about,
         confirm that ```async_mac_auth.AsyncMACAuth``` tags this as an
         authentication failure with
         ```async_mac_auth.AUTH_FAILURE_DETAIL_CREDS_NOT_FOUND```

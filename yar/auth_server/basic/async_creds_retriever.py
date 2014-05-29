@@ -1,5 +1,5 @@
 """This module hides the gory details of async'ly interacting
-with the key server to retrieve credentials for the basic
+with the key service to retrieve credentials for the basic
 authentication scheme."""
 
 import httplib
@@ -7,19 +7,19 @@ import logging
 
 import tornado.httpclient
 
-from yar.key_server import jsonschemas
+from yar.key_service import jsonschemas
 from yar.util import mac
 from yar.util import trhutil
 
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
-"""This host:port combination define the location of the key server."""
-key_server_address = "127.0.0.1:8070"
+"""This host:port combination define the location of the key service."""
+key_service = "127.0.0.1:8070"
 
 
 class AsyncCredsRetriever(object):
     """Wraps all the gory details of async'ly interacting with
-    the key server to retrieve credentials for use with basic
+    the key service to retrieve credentials for use with basic
     authentication scheme."""
 
     def __init__(self, api_key):
@@ -33,7 +33,7 @@ class AsyncCredsRetriever(object):
         self._callback = callback
 
         url = "http://%s/v1.0/creds/%s" % (
-            key_server_address,
+            key_service_address,
             self._api_key)
         http_request = tornado.httpclient.HTTPRequest(
             url=url,
@@ -43,9 +43,9 @@ class AsyncCredsRetriever(object):
         http_client.fetch(http_request, self._on_fetch_done)
 
     def _on_fetch_done(self, response):
-        """Called when request to the key server returns."""
+        """Called when request to the key service returns."""
 
-        _logger.info("Key Server (%s - %s) responded in %d ms",
+        _logger.info("Key Service (%s - %s) responded in %d ms",
             response.effective_url,
             response.request.method,
             int(response.request_time * 1000))

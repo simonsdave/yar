@@ -16,4 +16,4 @@ Below is a list of these attack vectors and corresponding countermeasure(s).
 
 ### :TODO: How to describe this?
 * see [this](http://haacked.com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx)
-and think about the key server's responses
+and think about the key service's responses

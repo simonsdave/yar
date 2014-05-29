@@ -82,7 +82,7 @@ class Authenticator(object):
 
     def _on_creds_fetch_done(self, is_ok, principal=None):
         """After ```AsyncBasicCredsRetriever``` has finished attempting to
-        retrieve credentials from the key server this method is called.
+        retrieve credentials from the key service this method is called.
         ```is_ok``` will be False if an error occured when fetching the
         credentials. ```principal``` will be None on error and when the
         credentials can't be found."""

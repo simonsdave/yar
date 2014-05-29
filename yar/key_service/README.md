@@ -1,23 +1,23 @@
-To start the Key Server:
+To start the Key Service:
 
 ~~~~~
-key_server
+key_service
 ~~~~~
 
-By default the Key Server will attempt to listen on 127.0.0.1:8070 and connect to
+By default the Key Service will attempt to listen on 127.0.0.1:8070 and connect to
 a [Key Store](../key_store) at 127.0.0.1:5984/creds.
-For a complete list of the Key Server's command line options try:
+For a complete list of the Key Service's command line options try:
 
 ~~~~~
-key_server --help
+key_service --help
 ~~~~~
 
-The Key Server is configured using command line options.
+The Key Service is configured using command line options.
 No configuration file is used for configuration.
 
 All credentials are associated with a principal.
 Principals are represented as a string at least one character long.
-The Key Server doesn't care what's the string as long as it's one character long.
+The Key Service doesn't care what's the string as long as it's one character long.
 
 To create a set of credentials for the principal dave@example.com
 that will be used

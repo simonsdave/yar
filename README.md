@@ -26,13 +26,13 @@ yar implements [MAC](http://en.wikipedia.org/wiki/Message_authentication_code)
 and [Basic](http://en.wikipedia.org/wiki/Basic_authentication) authentication schemes - MACs
 are calculated per the [OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02) specification
   * key generation for the above authentication schemes using [Keyczar](http://www.keyczar.org/)
-  * [Auth Server](yar/auth_server) and [Key Server](yar/key_server) are [Tornado](http://www.tornadoweb.org/en/stable/) servers leveraging Tornado's [asynchronous/high concurrency capabilites](http://www.tornadoweb.org/en/stable/networking.html) - yar's high concurrency capability is verified with an [extensive and automated load testing framework](tests/load) that leverages [Vagrant](http://www.vagrantup.com/), [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Docker](https://www.docker.io/)
+  * [Auth Server](yar/auth_server) and [Key Service](yar/key_service) are [Tornado](http://www.tornadoweb.org/en/stable/) servers leveraging Tornado's [asynchronous/high concurrency capabilites](http://www.tornadoweb.org/en/stable/networking.html) - yar's high concurrency capability is verified with an [extensive and automated load testing framework](tests/load) that leverages [Vagrant](http://www.vagrantup.com/), [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Docker](https://www.docker.io/)
   * [HAProxy](http://haproxy.1wt.eu/) is used to load balance requests across tiers of
-[Auth Servers](yar/auth_server), [Key Servers](yar/key_server) and  [Key Stores](yar/key_store)
+[Auth Servers](yar/auth_server), [Key Services](yar/key_service) and  [Key Stores](yar/key_store)
 enabling these tiers to independantly
 [scale horizontally](http://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling)
   * high quality code base - ~1,500 LOC and 200+ unit tests with 99% code coverage
-  * small footprint - for example, the [Auth Server](yar/auth_server) and [Key Server](yar/key_server)
+  * small footprint - for example, the [Auth Server](yar/auth_server) and [Key Service](yar/key_service)
 require < 25 MB of memory @ concurrency levels of 100
   * [Key Store](yar/key_store) is built on [CouchDB](http://couchdb.apache.org/) so the [Key Store](yar/key_store) inherits all the nice architectual/operational qualities of [CouchDB](http://couchdb.apache.org/)
   * intended deployment environment is [Ubuntu 12.04](http://releases.ubuntu.com/12.04.4/) and
@@ -103,11 +103,11 @@ by running the following in a new terminal window
 cd; cd yar; source bin/cfg4dev; key_store_installer --log=info --create=true
 ~~~~~
 
-* start the Key Server: in a new terminal window run the following to start the Key Server - by
-default the Key Server will listen on 127.0.0.1:8070
+* start the Key Service: in a new terminal window run the following to start the Key Service - by
+default the Key Service will listen on 127.0.0.1:8070
 
 ~~~~~
-cd; cd yar; source bin/cfg4dev; key_server --log=info
+cd; cd yar; source bin/cfg4dev; key_service --log=info
 ~~~~~
 
 * generate an inital set of credentials by issuing the

@@ -1,4 +1,4 @@
-"""This module contains the key server's primary
+"""This module contains the key service's primary
 Tornado request handler logic."""
 
 import urllib
@@ -10,7 +10,7 @@ import tornado.web
 from async_creds_creator import AsyncCredsCreator
 from async_creds_retriever import AsyncCredsRetriever
 from async_creds_deleter import AsyncCredsDeleter
-from yar.key_server import jsonschemas
+from yar.key_service import jsonschemas
 from yar.util import trhutil
 
 _logger = logging.getLogger("KEYSERVER.%s" % __name__)
@@ -19,7 +19,7 @@ _logger = logging.getLogger("KEYSERVER.%s" % __name__)
 a URL when talking to the key store."""
 _key_store = "127.0.0.1:5984/creds"
 
-"""The key server's mainline should use this URL spec
+"""The key service's mainline should use this URL spec
 to describe the URLs that ```RequestHandler``` can
 correctly service."""
 url_spec = r"/v1.0/creds(?:/([^/]+))?"

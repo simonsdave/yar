@@ -20,8 +20,8 @@ Options:
                         8000)]
   --authmethod=APP_SERVER_AUTH_METHOD
                         app server's authorization method - default = YAR
-  --keyserver=KEY_SERVER
-                        key server - default = 127.0.0.1:8070
+  --keyservice=KEY_SERVICE
+                        key service - default = 127.0.0.1:8070
   --appserver=APP_SERVER
                         app server - default = 127.0.0.1:8080
   --maxage=MAXAGE       max age (in seconds) of valid request - default = 30

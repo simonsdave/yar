@@ -13,35 +13,35 @@ import tornado.httputil
 
 from yar.util import basic
 from yar.auth_server.basic import async_creds_retriever
-from yar import key_server
-from yar.key_server import jsonschemas
+from yar import key_service
+from yar.key_service import jsonschemas
 from yar.tests import yar_test_util
 
 
 class TestAsyncCredsRetriever(yar_test_util.TestCase):
 
-    _key_server = "dave:42"
+    _key_service = "dave:42"
 
     @classmethod
     def setUpClass(cls):
-        async_creds_retriever.key_server_address = cls._key_server
+        async_creds_retriever.key_service_address = cls._key_service
 
     @classmethod
     def tearDownClass(cls):
-        async_creds_retriever.key_server = None
+        async_creds_retriever.key_service = None
 
     def assertKeyServerRequestOk(self, request, api_key):
         self.assertIsNotNone(request)
         self.assertIsNotNone(request.url)
         expected_url = "http://%s/v1.0/creds/%s" % (
-            self.__class__._key_server,
+            self.__class__._key_service,
             api_key)
         self.assertEqual(request.url, expected_url)
         self.assertIsNotNone(request.method)
         self.assertEqual(request.method, "GET")
 
-    def test_key_server_tornado_error_response(self):
-        """Confirm that when the key server returns an error (as
+    def test_key_service_tornado_error_response(self):
+        """Confirm that when the key service returns an error (as
         in a tornado response.error) that this is flagged as an
         error to the callback of the fetch method of
         ```AsyncCredsRetriever```."""
@@ -68,8 +68,8 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             acr = async_creds_retriever.AsyncCredsRetriever(the_api_key)
             acr.fetch(on_async_creds_retriever_done)
 
-    def test_key_server_unexpected_tornado_response_code(self):
-        """Confirm that when the key server returns an unexpected
+    def test_key_service_unexpected_tornado_response_code(self):
+        """Confirm that when the key service returns an unexpected
         response code (only expect OK & NOT_FOUND) that this is flagged
         as an error to the callback of the fetch method of
         ```AsyncCredsRetriever```."""
@@ -96,7 +96,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             acr.fetch(on_async_creds_retriever_done)
 
     def test_creds_not_found(self):
-        """Confirm that when the key server returns a NOT_FOUND
+        """Confirm that when the key service returns a NOT_FOUND
         response code that this is flagged as being ok to the callback
         of the fetch method of ```AsyncCredsRetriever```."""
         the_api_key = basic.APIKey.generate()
@@ -122,8 +122,8 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             acr = async_creds_retriever.AsyncCredsRetriever(the_api_key)
             acr.fetch(on_async_creds_retriever_done)
 
-    def test_key_server_returns_zero_length_response(self):
-        """Confirm that when the key server returns a zero length
+    def test_key_service_returns_zero_length_response(self):
+        """Confirm that when the key service returns a zero length
         response this is flagged as an error to the callback the
         fetch method of ```AsyncCredsRetriever```."""
         the_api_key = basic.APIKey.generate()
@@ -154,8 +154,8 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             acr = async_creds_retriever.AsyncCredsRetriever(the_api_key)
             acr.fetch(on_async_creds_retriever_done)
 
-    def test_key_server_returns_body_that_is_not_valid_json(self):
-        """Confirm that when the key server returns a response
+    def test_key_service_returns_body_that_is_not_valid_json(self):
+        """Confirm that when the key service returns a response
         body that's not json is flagged as an error to the callback
         the fetch method of ```AsyncCredsRetriever```."""
         the_api_key = basic.APIKey.generate()
@@ -187,8 +187,8 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             acr = async_creds_retriever.AsyncCredsRetriever(the_api_key)
             acr.fetch(on_async_creds_retriever_done)
 
-    def test_key_server_returns_body_with_unexpected_json(self):
-        """Confirm that when the key server returns a response
+    def test_key_service_returns_body_with_unexpected_json(self):
+        """Confirm that when the key service returns a response
         body that's json but has unexpected attributes that this
         is flagged as an error to the callback the fetch method of
         ```AsyncCredsRetriever```."""
@@ -209,7 +209,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             })
             self.assertIsNotValidJSON(
                 response.body,
-                key_server.jsonschemas.get_creds_response)
+                key_service.jsonschemas.get_creds_response)
             response.request_time = 24
             callback(response)
 
@@ -255,7 +255,7 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             })
             self.assertIsValidJSON(
                 response.body,
-                key_server.jsonschemas.get_creds_response)
+                key_service.jsonschemas.get_creds_response)
             response.request_time = 24
             callback(response)
 

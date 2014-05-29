@@ -11,36 +11,36 @@ import tornado.httpclient
 import tornado.httputil
 
 from yar.auth_server.mac import async_mac_creds_retriever
-from yar import key_server
-from yar.key_server import jsonschemas
+from yar import key_service
+from yar.key_service import jsonschemas
 from yar.util import mac
 from yar.tests import yar_test_util
 
 
 class TestAsyncMACCredsRetriever(yar_test_util.TestCase):
 
-    _key_server = "dave:42"
+    _key_service = "dave:42"
 
     @classmethod
     def setUpClass(cls):
-        async_mac_creds_retriever.key_server_address = cls._key_server
+        async_mac_creds_retriever.key_service_address = cls._key_service
 
     @classmethod
     def tearDownClass(cls):
-        async_mac_creds_retriever.key_server = None
+        async_mac_creds_retriever.key_service = None
 
     def assertKeyServerRequestOk(self, request, mac_key_identifier):
         self.assertIsNotNone(request)
         self.assertIsNotNone(request.url)
         expected_url = "http://%s/v1.0/creds/%s" % (
-            self.__class__._key_server,
+            self.__class__._key_service,
             mac_key_identifier)
         self.assertEqual(request.url, expected_url)
         self.assertIsNotNone(request.method)
         self.assertEqual(request.method, "GET")
 
-    def test_key_server_tornado_error_response(self):
-        """Confirm that when the key server returns an error (as
+    def test_key_service_tornado_error_response(self):
+        """Confirm that when the key service returns an error (as
         in a tornado response.error) that this is flagged as an
         error to the callback of the fetch method of
         ```AsyncMACCredsRetriever```."""
@@ -65,8 +65,8 @@ class TestAsyncMACCredsRetriever(yar_test_util.TestCase):
             acr = async_mac_creds_retriever.AsyncMACCredsRetriever(the_mac_key_identifier)
             acr.fetch(on_async_mac_creds_retriever_done)
 
-    def test_key_server_tornado_http_error_response(self):
-        """Confirm that when the key server returns an http error (as
+    def test_key_service_tornado_http_error_response(self):
+        """Confirm that when the key service returns an http error (as
         a non httplib.ok response.code) that this is flagged as an
         error to the callback of the fetch method of
         ```AsyncMACCredsRetriever```."""
@@ -92,8 +92,8 @@ class TestAsyncMACCredsRetriever(yar_test_util.TestCase):
             acr = async_mac_creds_retriever.AsyncMACCredsRetriever(the_mac_key_identifier)
             acr.fetch(on_async_mac_creds_retriever_done)
 
-    def test_key_server_returns_zero_length_response(self):
-        """Confirm that when the key server returns a zero length
+    def test_key_service_returns_zero_length_response(self):
+        """Confirm that when the key service returns a zero length
         response this is flagged as an error to the callback the
         fetch method of ```AsyncMACCredsRetriever```."""
         the_mac_key_identifier = mac.MACKeyIdentifier.generate()
@@ -123,8 +123,8 @@ class TestAsyncMACCredsRetriever(yar_test_util.TestCase):
             acr = async_mac_creds_retriever.AsyncMACCredsRetriever(the_mac_key_identifier)
             acr.fetch(on_async_mac_creds_retriever_done)
 
-    def test_key_server_returns_non_json_response(self):
-        """Confirm that when the key server returns a non-zero length
+    def test_key_service_returns_non_json_response(self):
+        """Confirm that when the key service returns a non-zero length
         response that is not JSON this is flagged as an error to the callback
         the fetch method of ```AsyncMACCredsRetriever```."""
         the_mac_key_identifier = mac.MACKeyIdentifier.generate()
@@ -155,8 +155,8 @@ class TestAsyncMACCredsRetriever(yar_test_util.TestCase):
             acr = async_mac_creds_retriever.AsyncMACCredsRetriever(the_mac_key_identifier)
             acr.fetch(on_async_mac_creds_retriever_done)
 
-    def test_key_server_returns_an_invalid_json_response(self):
-        """Confirm that when the key server returns a valid JSON document
+    def test_key_service_returns_an_invalid_json_response(self):
+        """Confirm that when the key service returns a valid JSON document
         but the JSON contains unexpected properties is flagged as an error
         to the callback the fetch method of ```AsyncMACCredsRetriever```."""
         the_mac_key_identifier = mac.MACKeyIdentifier.generate()
@@ -173,7 +173,7 @@ class TestAsyncMACCredsRetriever(yar_test_util.TestCase):
             })
             self.assertIsNotValidJSON(
                 response.body,
-                key_server.jsonschemas.get_creds_response)
+                key_service.jsonschemas.get_creds_response)
             response.headers = tornado.httputil.HTTPHeaders({
                 "Content-type": "application/json; charset=utf8",
                 "Content-length": str(len(response.body)),
@@ -192,8 +192,8 @@ class TestAsyncMACCredsRetriever(yar_test_util.TestCase):
             acr = async_mac_creds_retriever.AsyncMACCredsRetriever(the_mac_key_identifier)
             acr.fetch(on_async_mac_creds_retriever_done)
 
-    def test_key_server_returns_all_good(self):
-        """Confirm that when the key server returns a valid JSON document
+    def test_key_service_returns_all_good(self):
+        """Confirm that when the key service returns a valid JSON document
         but the JSON contains unexpected properties is flagged as an error
         to the callback the fetch method of ```AsyncMACCredsRetriever```."""
         the_mac_key_identifier = mac.MACKeyIdentifier.generate()
@@ -224,7 +224,7 @@ class TestAsyncMACCredsRetriever(yar_test_util.TestCase):
             })
             self.assertIsValidJSON(
                 response.body,
-                key_server.jsonschemas.get_creds_response)
+                key_service.jsonschemas.get_creds_response)
             response.headers = tornado.httputil.HTTPHeaders({
                 "Content-type": "application/json; charset=utf8",
                 "Content-length": str(len(response.body)),

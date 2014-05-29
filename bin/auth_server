@@ -35,13 +35,13 @@ if __name__ == "__main__":
     fmt = (
         "Auth Server listening on {clo.listen_on} "
         "using Nonce Store {clo.nonce_store}, "
-        "Key Server '{clo.key_server}' "
+        "Key Service '{clo.key_service}' "
         "and App Server '{clo.app_server}'"
     )
     _logger.info(fmt.format(clo=clo))
 
-    async_creds_retriever.key_server_address = clo.key_server
-    async_mac_creds_retriever.key_server_address = clo.key_server
+    async_creds_retriever.key_service_address = clo.key_service
+    async_mac_creds_retriever.key_service_address = clo.key_service
     async_mac_auth.maxage = clo.maxage
     async_nonce_checker.nonce_store = clo.nonce_store
     async_app_server_forwarder.app_server = clo.app_server

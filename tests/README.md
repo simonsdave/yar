@@ -269,7 +269,7 @@ your testing VM, go to the links below (in all cases
 the user name is yar and password is yar):
 
   * [http://localhost:8000/auth_server_lb?stats](http://localhost:8000/auth_server_lb?stats) for auth server LB stats
-  * [http://localhost:8070/key_server_lb?stats](http://localhost:8070/key_server_lb?stats) for key server LB stats
+  * [http://localhost:8070/key_service_lb?stats](http://localhost:8070/key_service_lb?stats) for key service LB stats
   * [http://localhost:8080/app_service_lb?stats](http://localhost:8080/app_service_lb?stats) for app service LB stats
 
 * this entire testing infrastructure was initally built to enable

@@ -1,5 +1,5 @@
 """This module contains all the logic required to parse the key
-server's command line."""
+service's command line."""
 
 import optparse
 import logging
@@ -8,7 +8,7 @@ from yar.util import clparserutil
 
 
 class CommandLineParser(optparse.OptionParser):
-    """This class parses the key server's command line."""
+    """This class parses the key service's command line."""
 
     def __init__(self):
         optparse.OptionParser.__init__(

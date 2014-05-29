@@ -1,4 +1,4 @@
-"""This module implements unit tests for the key server's ks_util module."""
+"""This module implements unit tests for the key service's ks_util module."""
 
 import httplib
 import json
@@ -10,7 +10,7 @@ import mock
 import tornado.httputil
 
 from yar.tests import yar_test_util
-from yar.key_server import ks_util
+from yar.key_service import ks_util
 
 
 class TestCaseFilterOutNonModelCredProperties(yar_test_util.TestCase):

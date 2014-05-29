@@ -33,7 +33,7 @@ setup(
         "yar.auth_server",
         "yar.auth_server.basic",
         "yar.auth_server.mac",
-        "yar.key_server",
+        "yar.key_service",
         "yar.key_store",
         # see "data_files" comment on why the next shouldn't be here
         "yar.key_store.design_docs",
@@ -41,7 +41,7 @@ setup(
     scripts=[
         "bin/app_service",
         "bin/auth_server",
-        "bin/key_server",
+        "bin/key_service",
         "bin/key_store_installer",
         "bin/yarcurl",
         "bin/jpp",

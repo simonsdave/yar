@@ -1,4 +1,4 @@
-"""This module implements unit tests for the key server's
+"""This module implements unit tests for the key service's
 async_creds_creator module."""
 
 import httplib
@@ -8,14 +8,14 @@ import uuid
 
 import mock
 
-from yar.key_server import async_creds_creator
-from yar.key_server import ks_util
+from yar.key_service import async_creds_creator
+from yar.key_service import ks_util
 from yar.util import mac
 from yar.tests import yar_test_util
 
 
 class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
-    """A collection of unit tests for the key server's
+    """A collection of unit tests for the key service's
     async_creds_creator module."""
 
     _key_store = "dave:42"
@@ -77,7 +77,7 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
             self.assertIsNone(creds)
 
         name_of_method_to_patch = (
-            "yar.key_server.ks_util."
+            "yar.key_service.ks_util."
             "AsyncAction.async_req_to_key_store"
         )
         with mock.patch(name_of_method_to_patch, async_req_to_key_store_patch):
@@ -174,7 +174,7 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
                 ks_util.filter_out_non_model_creds_properties(self.the_creds))
 
         name_of_method_to_patch = (
-            "yar.key_server.ks_util."
+            "yar.key_service.ks_util."
             "AsyncAction.async_req_to_key_store"
         )
         with mock.patch(name_of_method_to_patch, async_req_to_key_store_patch):

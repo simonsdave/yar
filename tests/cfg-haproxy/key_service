@@ -22,7 +22,7 @@ defaults
     timeout client  10000
     timeout server  10000
 
-listen key_server_lb 0.0.0.0:8070
+listen key_service_lb 0.0.0.0:8070
     # http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#mode
     mode http
 
@@ -34,7 +34,7 @@ listen key_server_lb 0.0.0.0:8070
     #
     # how's the above possible? with a bit of config detail
     #
-    # 1/ in util.sh:create_key_server_lb tells the docker
+    # 1/ in util.sh:create_key_service_lb tells the docker
     # container in which haproxy is running to forward traffic
     # on port 8070 from the VirtualBox hosting the container
     # to the container
@@ -51,7 +51,7 @@ listen key_server_lb 0.0.0.0:8070
     # http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#stats%20enable
     stats enable
     # http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#stats%20uri
-    stats uri /key_server_lb?stats
+    stats uri /key_service_lb?stats
     # http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#stats%20realm
     stats realm yar
     # http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#stats%20auth

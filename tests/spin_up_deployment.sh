@@ -5,7 +5,7 @@ source $SCRIPT_DIR_NAME/util.sh
 
 create_basic_creds() {
 
-    KEY_SERVER=${1:-}
+    KEY_SERVICE=${1:-}
     PRINCIPAL=${2:-}
 
     CREDS_FILE_NAME=$(mktemp)
@@ -15,7 +15,7 @@ create_basic_creds() {
         -X POST \
         -H "Content-Type: application/json; charset=utf8" \
         -d "{\"principal\":\"$PRINCIPAL\", \"auth_scheme\":\"basic\"}" \
-        http://$KEY_SERVER/v1.0/creds > $CREDS_FILE_NAME
+        http://$KEY_SERVICE/v1.0/creds > $CREDS_FILE_NAME
 
     local API_KEY=`cat $CREDS_FILE_NAME | get_from_json '\["basic"\,"api_key"\]'`
 
@@ -26,7 +26,7 @@ create_basic_creds() {
 
 create_mac_creds() {
 
-    KEY_SERVER=${1:-}
+    KEY_SERVICE=${1:-}
     PRINCIPAL=${2:-}
 
     CREDS_FILE_NAME=$(mktemp)
@@ -36,7 +36,7 @@ create_mac_creds() {
         -X POST \
         -H "Content-Type: application/json; charset=utf8" \
         -d "{\"principal\":\"$PRINCIPAL\", \"auth_scheme\":\"mac\"}" \
-        http://$KEY_SERVER/v1.0/creds > $CREDS_FILE_NAME
+        http://$KEY_SERVICE/v1.0/creds > $CREDS_FILE_NAME
 
     local MAC_ALGORITHM=`cat $CREDS_FILE_NAME | get_from_json \
         '\["mac"\,"mac_algorithm"\]'`
@@ -112,7 +112,7 @@ yar_init_deployment "$DOCKER_CONTAINER_DATA"
 #
 echo_if_not_silent "Starting App Service(s)"
 
-NUMBER_APP_SERVICES_PATTERN='\["app_service"\,"number_of_servers"\]'
+NUMBER_APP_SERVICES_PATTERN='\["app_service"\,"number_of_services"\]'
 NUMBER_APP_SERVICES=$(get_from_json "$NUMBER_APP_SERVICES_PATTERN" "1" < $DEPLOYMENT_PROFILE)
 
 for APP_SERVICE_NUMBER in $(seq 1 $NUMBER_APP_SERVICES)
@@ -190,34 +190,34 @@ if [ "$DEPLOYMENT_PROFILE" != "" ]; then
 fi
 
 #
-# Key Server
+# Key Service
 #
-echo_if_not_silent "Starting Key Server(s)"
+echo_if_not_silent "Starting Key Service(s)"
 
-NUMBER_KEY_SERVERS_PATTERN='\["key_server"\,"number_of_servers"\]'
-NUMBER_KEY_SERVERS=$(get_from_json "$NUMBER_KEY_SERVERS_PATTERN" "1" < $DEPLOYMENT_PROFILE)
+NUMBER_KEY_SERVICES_PATTERN='\["key_service"\,"number_of_services"\]'
+NUMBER_KEY_SERVICES=$(get_from_json "$NUMBER_KEY_SERVICES_PATTERN" "1" < $DEPLOYMENT_PROFILE)
 
-for KEY_SERVER_NUMBER in $(seq 1 $NUMBER_KEY_SERVERS)
+for KEY_SERVICE_NUMBER in $(seq 1 $NUMBER_KEY_SERVICES)
 do
-    echo_if_not_silent "-- $KEY_SERVER_NUMBER: Starting Key Server"
+    echo_if_not_silent "-- $KEY_SERVICE_NUMBER: Starting Key Service"
 
-	if ! KEY_SERVER=$(create_key_server $KEY_STORE); then
-		echo_to_stderr_if_not_silent "-- $KEY_SERVER_NUMBER: Key Server failed to start"
+	if ! KEY_SERVICE=$(create_key_service $KEY_STORE); then
+		echo_to_stderr_if_not_silent "-- $KEY_SERVICE_NUMBER: Key Service failed to start"
 		exit 1
 	fi
 
-	echo_if_not_silent "-- $KEY_SERVER_NUMBER: Key Server listening on $KEY_SERVER"
+	echo_if_not_silent "-- $KEY_SERVICE_NUMBER: Key Service listening on $KEY_SERVICE"
 done
 
 #
-# Key Server LB
+# Key Service LB
 #
-echo_if_not_silent "Starting Key Server LB"
-if ! KEY_SERVER_LB=$(create_key_server_lb); then
-    echo_to_stderr_if_not_silent "-- Key Server LB failed to start"
+echo_if_not_silent "Starting Key Service LB"
+if ! KEY_SERVICE_LB=$(create_key_service_lb); then
+    echo_to_stderr_if_not_silent "-- Key Service LB failed to start"
     exit 1
 fi
-echo_if_not_silent "-- Key Server LB listening on $KEY_SERVER_LB"
+echo_if_not_silent "-- Key Service LB listening on $KEY_SERVICE_LB"
 
 #
 # Auth Server(s)
@@ -231,7 +231,7 @@ for AUTH_SERVER_NUMBER in $(seq 1 $NUMBER_AUTH_SERVERS)
 do
     echo_if_not_silent "-- $AUTH_SERVER_NUMBER: Starting Auth Server"
 
-	if ! AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVER_LB $APP_SERVICE_LB $NONCE_STORES); then
+	if ! AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVICE_LB $APP_SERVICE_LB $NONCE_STORES); then
 		echo_to_stderr_if_not_silent "-- Auth Server failed to start"
 		exit 1
 	fi
@@ -253,8 +253,8 @@ echo_if_not_silent "-- Auth Server LB listening on $AUTH_SERVER_LB"
 # services now running ... let's provision some creds
 #
 PRINCIPAL="dave@example.com"
-create_basic_creds $KEY_SERVER $PRINCIPAL
-create_mac_creds $KEY_SERVER $PRINCIPAL
+create_basic_creds $KEY_SERVICE $PRINCIPAL
+create_mac_creds $KEY_SERVICE $PRINCIPAL
 
 #
 # Summarize the key items in the deployment

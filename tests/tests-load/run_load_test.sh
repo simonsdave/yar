@@ -237,15 +237,15 @@ run_load_test() {
 
     #
     # during the load test, the auth servers were making requests
-    # to the key server LB. the statements below extract timing
+    # to the key service LB. the statements below extract timing
     # information about the requests from the auth server's
     # log and then plots 2 different graphs of response times.
     #
     TEMPFILE=$(mktemp)
     cat $DOCKER_CONTAINER_DATA/Auth-Server-*/auth_server_log | \
-        grep "Key Server.*responded in [0-9]\+ ms$" | \
+        grep "Key Service.*responded in [0-9]\+ ms$" | \
         awk 'BEGIN {FS = "\t"; OFS = "\t"}; { print int($1 / 1000), $5 }' | \
-        sed -s "s/\tKey Server.*responded in /\t/g" |
+        sed -s "s/\tKey Service.*responded in /\t/g" |
         sed -s "s/[[:space:]]ms$//g" \
         > $TEMPFILE
 
@@ -255,21 +255,21 @@ run_load_test() {
         $TEMPFILE \
         $PERCENTILETEMPFILE
 
-    TITLE="Key Server Response Time - $START_TIME"
+    TITLE="Key Service Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-04-key-server-response-time.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-04-key-service-response-time.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
-    TITLE="Key Server Response Time - $START_TIME"
+    TITLE="Key Service Response Time - $START_TIME"
     TITLE="$TITLE: Concurrency = $CONCURRENCY"
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-05-key-server-response-time-by-time-in-test.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-05-key-service-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time_by_time
 
@@ -277,13 +277,13 @@ run_load_test() {
     rm -f $TEMPFILE >& /dev/null
 
     #
-    # during the load test the key server was making requests
+    # during the load test the key service was making requests
     # to the key store. the statements below extract timing
-    # information about the requests from the key server's
+    # information about the requests from the key service's
     # log and then plots 2 different graphs of response times.
     #
     TEMPFILE=$(mktemp)
-    cat $DOCKER_CONTAINER_DATA/Key-Server*/key_server_log | \
+    cat $DOCKER_CONTAINER_DATA/Key-Service*/key_service_log | \
         grep "Key Store.*responded in [0-9]\+ ms$" | \
         awk 'BEGIN {FS = "\t"; OFS = "\t"}; { print int($1 / 1000), $5 }' | \
         sed -s "s/\tKey Store.*responded in /\t/g" |
@@ -384,25 +384,25 @@ run_load_test() {
     done
 
     gen_cpu_usage_graph \
-        "Key Server Load Balancer CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
-        "KEY_SERVER_LB_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-21-key-server-lb-cpu-usage.png"
+        "Key Service Load Balancer CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "KEY_SERVICE_LB_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-21-key-service-lb-cpu-usage.png"
 
-    local KEY_SERVER_NUMBER=1
-    for KEY_SERVER_CONTAINER_ID_KEY in $(get_all_key_server_container_id_keys)
+    local KEY_SERVICE_NUMBER=1
+    for KEY_SERVICE_CONTAINER_ID_KEY in $(get_all_key_service_container_id_keys)
     do
-        local GRAPH_TITLE="Key Server # $KEY_SERVER_NUMBER CPU Usage"
+        local GRAPH_TITLE="Key Service # $KEY_SERVICE_NUMBER CPU Usage"
         GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
 
-        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-22-key-server"
-        GRAPH_FILENAME="$GRAPH_FILENAME-$KEY_SERVER_NUMBER-cpu-usage.png"
+        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-22-key-service"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$KEY_SERVICE_NUMBER-cpu-usage.png"
 
         gen_cpu_usage_graph \
             "$GRAPH_TITLE" \
-            "$KEY_SERVER_CONTAINER_ID_KEY" \
+            "$KEY_SERVICE_CONTAINER_ID_KEY" \
             "$GRAPH_FILENAME"
 
-        let "KEY_SERVER_NUMBER += 1"
+        let "KEY_SERVICE_NUMBER += 1"
     done
 
     gen_cpu_usage_graph \
@@ -475,25 +475,25 @@ run_load_test() {
     done
 
     gen_mem_usage_graph \
-        "Key Server Load Balancer Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
-        "KEY_SERVER_LB_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-32-key-server-lb-memory-usage.png"
+        "Key Service Load Balancer Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "KEY_SERVICE_LB_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-32-key-service-lb-memory-usage.png"
 
-    local KEY_SERVER_NUMBER=1
-    for KEY_SERVER_CONTAINER_ID_KEY in $(get_all_key_server_container_id_keys)
+    local KEY_SERVICE_NUMBER=1
+    for KEY_SERVICE_CONTAINER_ID_KEY in $(get_all_key_service_container_id_keys)
     do
-        local GRAPH_TITLE="Key Server # $KEY_SERVER_NUMBER Memory Usage"
+        local GRAPH_TITLE="Key Service # $KEY_SERVICE_NUMBER Memory Usage"
         GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
 
         local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-33-auth-server"
-        GRAPH_FILENAME="$GRAPH_FILENAME-$KEY_SERVER_NUMBER-memory-usage.png"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$KEY_SERVICE_NUMBER-memory-usage.png"
 
         gen_mem_usage_graph \
             "$GRAPH_TITLE" \
-            "$KEY_SERVER_CONTAINER_ID_KEY" \
+            "$KEY_SERVICE_CONTAINER_ID_KEY" \
             "$GRAPH_FILENAME"
 
-        let "KEY_SERVER_NUMBER += 1"
+        let "KEY_SERVICE_NUMBER += 1"
     done
 
     gen_mem_usage_graph \
