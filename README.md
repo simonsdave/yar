@@ -77,12 +77,12 @@ In the instructions below it's assumed yar is installed to your home directory.
 cd; git clone https://github.com/simonsdave/yar.git
 ~~~~~
 
-* start the App Server with the following in a new terminal window - by default the app
-server listens on 127:0.0.1:8080 - this app server is only for
+* start the App Service with the following in a new terminal window - by default the App
+Service listens on 127:0.0.1:8080 - this App Service is only for
 testing/development - you wouldn't use this in a production deployment:
 
 ~~~~~
-cd; cd yar; source bin/cfg4dev; app_server --log=info
+cd; cd yar; source bin/cfg4dev; app_service --log=info
 ~~~~~
 
 * start the Key Store - if [CouchDB](http://couchdb.apache.org/)
@@ -150,7 +150,7 @@ cd; cd yar; source bin/cfg4dev; auth_server --log=info
 ~~~~~
 
 * Okay, all of your infrastructure should now be running!
-Time to issue your first request to the app server thru the authentication server.
+Time to issue your first request to the App Service thru the authentication server.
 In a new terminal window issue the following commands to setup your PATH:
 
 ~~~~~
@@ -159,7 +159,7 @@ cd; cd yar; source bin/cfg4dev
 
 * In the same window that you executed the above commands, you'll now use
 [yarcurl](bin/yarcurl) 
-to issue a request to the app server via the auth server:
+to issue a request to the App Service via the auth server:
 
 ~~~~~
 yarcurl GET http://127.0.0.1:8000/dave-was-here.html

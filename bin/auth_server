@@ -8,7 +8,7 @@ import time
 import tornado.httpserver
 import tornado.web
 
-from yar.auth_server import async_app_server_forwarder
+from yar.auth_server import async_app_service_forwarder
 from yar.auth_server.basic import async_creds_retriever
 from yar.auth_server.mac import async_mac_creds_retriever
 from yar.auth_server.mac import async_mac_auth
@@ -36,7 +36,7 @@ if __name__ == "__main__":
         "Auth Server listening on {clo.listen_on} "
         "using Nonce Store {clo.nonce_store}, "
         "Key Service '{clo.key_service}' "
-        "and App Server '{clo.app_server}'"
+        "and App Service '{clo.app_service}'"
     )
     _logger.info(fmt.format(clo=clo))
 
@@ -44,8 +44,8 @@ if __name__ == "__main__":
     async_mac_creds_retriever.key_service_address = clo.key_service
     async_mac_auth.maxage = clo.maxage
     async_nonce_checker.nonce_store = clo.nonce_store
-    async_app_server_forwarder.app_server = clo.app_server
-    async_app_server_forwarder.auth_method = clo.app_server_auth_method
+    async_app_service_forwarder.app_service = clo.app_service
+    async_app_service_forwarder.auth_method = clo.app_service_auth_method
 
     handlers = [
         (

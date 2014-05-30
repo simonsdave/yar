@@ -1,5 +1,5 @@
 """This module implements the unit tests for the auth server's
-async_app_server_forwarder module."""
+async_app_service_forwarder module."""
 
 import httplib
 import os
@@ -11,18 +11,18 @@ import tornado.httputil
 from yar.util import mac
 from yar.tests import yar_test_util
 
-from yar.auth_server import async_app_server_forwarder
+from yar.auth_server import async_app_service_forwarder
 
 class TestAsyncCredsForwarder(yar_test_util.TestCase):
 
-    _app_server = "dave:42"
-    _app_server_auth_method = "BILLYBOB"
+    _app_service = "dave:42"
+    _app_service_auth_method = "BILLYBOB"
 
     @classmethod
     def setUpClass(cls):
-        aasf = async_app_server_forwarder
-        aasf.app_server = cls._app_server
-        aasf.app_server_auth_method = cls._app_server_auth_method
+        aasf = async_app_service_forwarder
+        aasf.app_service = cls._app_service
+        aasf.app_service_auth_method = cls._app_service_auth_method
 
     @classmethod
     def tearDownClass(cls):
@@ -39,17 +39,17 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
         the_response_body,
         the_response_content_type):
         """This is a long but very useful utility method that is intended to
-        test ```async_app_server_forwarder.AsyncAppServerForwarder```
+        test ```async_app_service_forwarder.AsyncAppServiceForwarder```
         forwarding functionality when things are working corectly."""
 
         the_response_is_ok = True
         the_request_principal = "das@example.com"
 
-        def async_app_server_forwarder_forward_patch(http_client, request, callback):
+        def async_app_service_forwarder_forward_patch(http_client, request, callback):
             self.assertIsNotNone(request)
 
             expected_url = "http://%s%s" % (
-                self.__class__._app_server,
+                self.__class__._app_service,
                 the_request_uri
             )
             self.assertEqual(request.url, expected_url)
@@ -61,7 +61,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             self.assertEqual(len(request.headers), 1 + len(the_request_headers))
             expected_headers = tornado.httputil.HTTPHeaders(the_request_headers)
             expected_headers["Authorization"] = "%s %s" % (
-                self.__class__._app_server_auth_method,
+                self.__class__._app_service_auth_method,
                 the_request_principal)
             self.assertEqual(request.headers, expected_headers)
 
@@ -76,7 +76,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             response.request_time = 24
             callback(response)
 
-        def on_async_app_server_forward_done(
+        def on_async_app_service_forward_done(
             is_ok,
             http_status_code,
             headers,
@@ -108,17 +108,17 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
                 self.assertEqual(headers, the_expected_headers)
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
-        with mock.patch(name_of_method_to_patch, async_app_server_forwarder_forward_patch):
-            aasf = async_app_server_forwarder.AsyncAppServerForwarder(
+        with mock.patch(name_of_method_to_patch, async_app_service_forwarder_forward_patch):
+            aasf = async_app_service_forwarder.AsyncAppServiceForwarder(
                 the_request_method,
                 the_request_uri,
                 the_request_headers,
                 the_request_body,
                 the_request_principal)
-            aasf.forward(on_async_app_server_forward_done)
+            aasf.forward(on_async_app_service_forward_done)
 
     def test_all_good_001(self):
-        """Validate ```async_app_server_forwarder.AsyncAppServerForwarder```
+        """Validate ```async_app_service_forwarder.AsyncAppServiceForwarder```
         is working correctly when forwarding requests that have:
             0/ GET
             1/ no request body
@@ -140,7 +140,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             the_response_content_type = "text/plain; charset=utf8")
 
     def test_all_good_002(self):
-        """Validate ```async_app_server_forwarder.AsyncAppServerForwarder```
+        """Validate ```async_app_service_forwarder.AsyncAppServiceForwarder```
         is working correctly when forwarding requests that have:
             0/ GET
             1/ no request body
@@ -162,7 +162,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             the_response_content_type = None)
 
     def test_all_good_003(self):
-        """Validate ```async_app_server_forwarder.AsyncAppServerForwarder```
+        """Validate ```async_app_service_forwarder.AsyncAppServiceForwarder```
         is working correctly when forwarding requests that have:
             0/ GET
             1/ no request body
@@ -184,7 +184,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             the_response_content_type = None)
 
     def test_all_good_004(self):
-        """Validate ```async_app_server_forwarder.AsyncAppServerForwarder```
+        """Validate ```async_app_service_forwarder.AsyncAppServiceForwarder```
         is working correctly when forwarding POST requests that have:
             0/ POST
             1/ no request body
@@ -208,7 +208,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
 
     def test_error(self):
         """This is a long but very useful utility method that is intended to
-        test ```async_app_server_forwarder.AsyncAppServerForwarder```
+        test ```async_app_service_forwarder.AsyncAppServiceForwarder```
         forwarding functionality when things are working corectly."""
         the_request_method = "GET"
         the_request_uri = "/mvs/"
@@ -228,11 +228,11 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
 
         the_response_is_ok = True
 
-        def async_app_server_forwarder_forward_patch(http_client, request, callback):
+        def async_app_service_forwarder_forward_patch(http_client, request, callback):
             self.assertIsNotNone(request)
 
             expected_url = "http://%s%s" % (
-                self.__class__._app_server,
+                self.__class__._app_service,
                 the_request_uri
             )
             self.assertEqual(request.url, expected_url)
@@ -244,7 +244,7 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             self.assertEqual(len(request.headers), 1 + len(the_request_headers))
             expected_headers = tornado.httputil.HTTPHeaders(the_request_headers)
             expected_headers["Authorization"] = "%s %s" % (
-                self.__class__._app_server_auth_method,
+                self.__class__._app_service_auth_method,
                 the_request_principal)
             self.assertEqual(request.headers, expected_headers)
 
@@ -254,16 +254,16 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             response.request_time = 24
             callback(response)
 
-        def on_async_app_server_forward_done(is_ok):
+        def on_async_app_service_forward_done(is_ok):
             self.assertIsNotNone(is_ok)
             self.assertFalse(is_ok)
 
         name_of_method_to_patch = "tornado.httpclient.AsyncHTTPClient.fetch"
-        with mock.patch(name_of_method_to_patch, async_app_server_forwarder_forward_patch):
-            aasf = async_app_server_forwarder.AsyncAppServerForwarder(
+        with mock.patch(name_of_method_to_patch, async_app_service_forwarder_forward_patch):
+            aasf = async_app_service_forwarder.AsyncAppServiceForwarder(
                 the_request_method,
                 the_request_uri,
                 the_request_headers,
                 the_request_body,
                 the_request_principal)
-            aasf.forward(on_async_app_server_forward_done)
+            aasf.forward(on_async_app_service_forward_done)

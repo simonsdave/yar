@@ -8,7 +8,7 @@ auth_server
 line options. Use the --help option to list them.
 
 ~~~~~
-auth_server --help
+(env)>auth_server --help
 Usage: auth_server [options]
 
 Options:
@@ -16,19 +16,20 @@ Options:
   --log=LOGGING_LEVEL   logging level
                         [DEBUG,INFO,WARNING,ERROR,CRITICAL,FATAL] - default =
                         ERROR
-  --lon=LISTEN_ON       address:port to listen on - default = [('127.0.0.1',
-                        8000)]
-  --authmethod=APP_SERVER_AUTH_METHOD
-                        app server's authorization method - default = YAR
+  --lon=LISTEN_ON       address:port to listen on - default = 127.0.0.1:8000
+  --appserviceauthmethod=APP_SERVICE_AUTH_METHOD
+                        app service's authorization method - default = YAR
   --keyservice=KEY_SERVICE
                         key service - default = 127.0.0.1:8070
-  --appserver=APP_SERVER
-                        app server - default = 127.0.0.1:8080
+  --appserver=APP_SERVICE
+                        app service - default = 127.0.0.1:8080
   --maxage=MAXAGE       max age (in seconds) of valid request - default = 30
   --noncestore=NONCE_STORE
                         memcached servers for nonce store - default =
                         ['127.0.0.1:11211']
   --syslog=SYSLOG       syslog unix domain socket - default = None
+  --logfile=LOGGING_FILE
+                        log to this file - default = None
 ~~~~~
 
 When starting to use infrastructure like the Auth Server the natural instinct

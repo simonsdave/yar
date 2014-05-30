@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-"""This module contains a super simple app server to be used for testing."""
+"""This module contains a super simple app service
+to be used for testing."""
 
 import datetime
 import httplib

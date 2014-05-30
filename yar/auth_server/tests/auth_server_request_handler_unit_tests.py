@@ -198,8 +198,8 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
                 self.assertNoAuthFailureDetail(response)
                 self.assertNoAuthFailureDebugDetails(response)
 
-    def test_forward_to_app_server_failed(self):
-        """Verify that when async the foward to the app server fails,
+    def test_forward_to_app_service_failed(self):
+        """Verify that when async the foward to the app service fails,
         that the response is ```httplib.INTERNAL_SERVER_ERROR```."""
         the_principal = str(uuid.uuid4()).replace("-", "")
 
@@ -212,12 +212,12 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
         )
         with mock.patch(name_of_method_to_patch, authenticate_patch):
 
-            def forward_patch(async_app_server_forwarder, callback):
+            def forward_patch(async_app_service_forwarder, callback):
                 callback(is_ok=False)
 
             name_of_method_to_patch = (
-                "yar.auth_server.async_app_server_forwarder."
-                "AsyncAppServerForwarder.forward"
+                "yar.auth_server.async_app_service_forwarder."
+                "AsyncAppServiceForwarder.forward"
             )
             with mock.patch(name_of_method_to_patch, forward_patch):
 
@@ -230,7 +230,7 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
                 self.assertEqual(response.code, httplib.INTERNAL_SERVER_ERROR)
 
     def _test_forward_all_good(self, the_method, the_request_body, the_response_body):
-        """Happy path verification of forwarding request to app server
+        """Happy path verification of forwarding request to app service
         after authentication is successful."""
 
         the_principal = str(uuid.uuid4()).replace("-", "")
@@ -251,7 +251,7 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
         )
         with mock.patch(name_of_method_to_patch, authenticate_patch):
 
-            def forward_patch(async_app_server_forwarder, callback):
+            def forward_patch(async_app_service_forwarder, callback):
                 callback(
                     is_ok=True,
                     http_status_code=the_status_code,
@@ -259,8 +259,8 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
                     body=the_response_body)
 
             name_of_method_to_patch = (
-                "yar.auth_server.async_app_server_forwarder."
-                "AsyncAppServerForwarder.forward"
+                "yar.auth_server.async_app_service_forwarder."
+                "AsyncAppServiceForwarder.forward"
             )
             with mock.patch(name_of_method_to_patch, forward_patch):
 

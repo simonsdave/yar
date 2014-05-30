@@ -1,5 +1,5 @@
 """This module contains the logic for async forwarding
-of requests to the app server."""
+of requests to the app service."""
 
 import logging
 
@@ -11,18 +11,18 @@ from yar.util.trhutil import get_request_body_if_exists
 _logger = logging.getLogger("AUTHSERVER.%s" % __name__)
 
 """Once a request has been authenticated, the request is forwarded
-to the app server as defined by this host:port combination."""
-app_server = None
+to the app service as defined by this host:port combination."""
+app_service = None
 
-"""Once the auth server has verified the sender's identity the request
-is forwarded to the app server. The forward to the app server does not
+"""Once the auth service has verified the sender's identity the request
+is forwarded to the app service. The forward to the app service does not
 contain the original request's HTTP Authorization header but instead
-uses the authorization method described by ```app_server_auth_method```
+uses the authorization method described by ```app_service_auth_method```
 and the the credential's principal."""
-app_server_auth_method = "YAR"
+app_service_auth_method = "YAR"
 
 
-class AsyncAppServerForwarder(object):
+class AsyncAppServiceForwarder(object):
 
     def __init__(self, method, uri, headers, body, principal):
         object.__init__(self)
@@ -38,11 +38,11 @@ class AsyncAppServerForwarder(object):
 
         headers = tornado.httputil.HTTPHeaders(self._headers)
         headers["Authorization"] = "%s %s" % (
-            app_server_auth_method,
+            app_service_auth_method,
             self._principal)
 
         http_request = tornado.httpclient.HTTPRequest(
-            url="http://%s%s" % (app_server, self._uri),
+            url="http://%s%s" % (app_service, self._uri),
             method=self._method,
             body=self._body,
             headers=headers,
@@ -53,7 +53,7 @@ class AsyncAppServerForwarder(object):
 
     def _on_forward_done(self, response):
 
-        _logger.info("App Server (%s - %s) responded in %d ms",
+        _logger.info("App Service (%s - %s) responded in %d ms",
             response.effective_url,
             response.request.method,
             int(response.request_time * 1000))

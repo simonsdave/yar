@@ -1,5 +1,4 @@
-"""This module contains the core logic for the authenication server.
-The server uses implements MAC Access Authentication."""
+"""This module contains the core logic for the auth server."""
 
 import httplib
 import logging
@@ -9,7 +8,7 @@ import tornado.web
 
 import mac.async_mac_auth
 import basic.async_auth
-import async_app_server_forwarder
+import async_app_service_forwarder
 from yar.util import strutil
 from yar.util import trhutil
 
@@ -44,7 +43,7 @@ _auth_scheme_reg_ex = re.compile(
     "^\s*(?P<auth_scheme>(MAC|BASIC))\s+.*",
     re.IGNORECASE)
 
-"""The authentication server supports a number of authentication mechanisms.
+"""The auth server supports a number of authentication mechanisms.
 ```_auth_scheme_to_auth_class``` is used to convert an authentication scheme
 into the class that implements the authentication mechanism."""
 _auth_scheme_to_auth_class = {
@@ -150,16 +149,16 @@ class RequestHandler(trhutil.RequestHandler):
 
         # the request has been successfully authenticated:-)
         # all that's left now is to asyc'y forward the request 
-        # to the application server
-        aasf = async_app_server_forwarder.AsyncAppServerForwarder(
+        # to the app service
+        aasf = async_app_service_forwarder.AsyncAppServiceForwarder(
             self.request.method,
             self.request.uri,
             self.request.headers,
             self.get_request_body_if_exists(),
             principal)
-        aasf.forward(self._on_app_server_done)
+        aasf.forward(self._on_app_service_done)
 
-    def _on_app_server_done(
+    def _on_app_service_done(
         self,
         is_ok,
         http_status_code=None,
@@ -181,7 +180,7 @@ class RequestHandler(trhutil.RequestHandler):
         """The less a potential threat knows about security infrastructre
         the better. With that in mind, this method attempts to remove the
         Server HTTP header if it appears in a response. This won't
-        protect against app servers returning such a header since yar
+        protect against app service's returning such a header since yar
         just proxies the response but it will prevent this header from leaking
         out in scenarios such as authentocation failure because no
         Authorization header was found in the request."""

@@ -42,11 +42,11 @@ class CommandLineParser(optparse.OptionParser):
             help=help)
 
         default = "YAR"
-        help = "app server's authorization method - default = %s" % default
+        help = "app service's authorization method - default = %s" % default
         self.add_option(
-            "--authmethod",
+            "--appserviceauthmethod",
             action="store",
-            dest="app_server_auth_method",
+            dest="app_service_auth_method",
             default=default,
             type="string",
             help=help)
@@ -62,11 +62,11 @@ class CommandLineParser(optparse.OptionParser):
             help=help)
 
         default = "127.0.0.1:8080"
-        help = "app server - default = %s" % default
+        help = "app service - default = %s" % default
         self.add_option(
             "--appserver",
             action="store",
-            dest="app_server",
+            dest="app_service",
             default=default,
             type="hostcolonport",
             help=help)
