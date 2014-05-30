@@ -1,4 +1,4 @@
-"""This module implements the unit tests for the auth server's
+"""This module implements the unit tests for the auth service's
 async_creds_retriever module used with basic auth scheme."""
 
 import httplib
@@ -12,7 +12,7 @@ import tornado.httpclient
 import tornado.httputil
 
 from yar.util import basic
-from yar.auth_server.basic import async_creds_retriever
+from yar.auth_service.basic import async_creds_retriever
 from yar import key_service
 from yar.key_service import jsonschemas
 from yar.tests import yar_test_util

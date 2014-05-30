@@ -1,5 +1,5 @@
-"""This module contains unit tests for the auth server's
-auth_server_request_handler module."""
+"""This module contains unit tests for the auth service's
+auth_service_request_handler module."""
 
 import httplib
 import os
@@ -15,19 +15,19 @@ import tornado.web
 import tornado.testing
 
 from yar.tests import yar_test_util
-from yar.auth_server import auth_server_request_handler
-from yar.auth_server.auth_server_request_handler import auth_failure_detail_header_name
-from yar.auth_server.auth_server_request_handler import debug_header_prefix
+from yar.auth_service import auth_service_request_handler
+from yar.auth_service.auth_service_request_handler import auth_failure_detail_header_name
+from yar.auth_service.auth_service_request_handler import debug_header_prefix
 
 
 class ControlIncludeAuthFailureDebugDetails(object):
-    """A helper class that simplifies controlling if the auth server
+    """A helper class that simplifies controlling if the auth service
     request handler includes auth falure debug details in a
     response."""
 
     def __init__(self, value):
         name = (
-            "yar.auth_server.auth_server_request_handler."
+            "yar.auth_service.auth_service_request_handler."
             "_include_auth_failure_debug_details"
         )
         self._patcher = mock.patch(name, mock.Mock(return_value=value))
@@ -40,13 +40,13 @@ class ControlIncludeAuthFailureDebugDetails(object):
 
 
 class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
-    """Unit tests for ```auth_server_request_handler.RequestHandler```."""
+    """Unit tests for ```auth_service_request_handler.RequestHandler```."""
 
     def get_app(self):
         handlers = [
             (
-                auth_server_request_handler.url_spec,
-                auth_server_request_handler.RequestHandler
+                auth_service_request_handler.url_spec,
+                auth_service_request_handler.RequestHandler
             ),
         ]
         self.app = tornado.web.Application(handlers=handlers)
@@ -104,9 +104,9 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
         auth_failure_debug_details = self._get_auth_failure_debug_details(response)
         self.assertTrue(0 == len(auth_failure_debug_details))
 
-    def test_no_server_header_in_response(self):
+    def test_no_service_header_in_response(self):
         """This test confirms that no Server http header appears in
-        the auth server's response when authentication fails because
+        the auth service's response when authentication fails because
         no Authorization header is supplied in a request."""
 
         with ControlIncludeAuthFailureDebugDetails(True):
@@ -114,30 +114,30 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
             self.assertEqual(response.code, httplib.UNAUTHORIZED)
             self.assertAuthFailureDetail(
                 response,
-                auth_server_request_handler.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
+                auth_service_request_handler.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
             self.assertTrue("Server" not in response.headers)
 
     def test_no_authorization_header(self):
         """This test confirms that authentication fails if no Authorization
-        header is supplied in the auth server's."""
+        header is supplied in the auth service's."""
 
         with ControlIncludeAuthFailureDebugDetails(True):
             response = self.fetch("/", method="GET", headers={})
             self.assertEqual(response.code, httplib.UNAUTHORIZED)
             self.assertAuthFailureDetail(
                 response,
-                auth_server_request_handler.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
+                auth_service_request_handler.AUTH_FAILURE_DETAIL_NO_AUTH_HEADER)
 
     def test_empty_authorization_header(self):
         """This test confirms that authentication fails if a zero length
-        Authorization header is supplied in a request to the auth server."""
+        Authorization header is supplied in a request to the auth service."""
 
         with ControlIncludeAuthFailureDebugDetails(True):
             response = self.fetch("/", method="GET", headers={"Authorization": ""})
             self.assertEqual(response.code, httplib.UNAUTHORIZED)
             self.assertAuthFailureDetail(
                 response,
-                auth_server_request_handler.AUTH_FAILURE_DETAIL_UNKNOWN_AUTHENTICATION_SCHEME)
+                auth_service_request_handler.AUTH_FAILURE_DETAIL_UNKNOWN_AUTHENTICATION_SCHEME)
 
     def test_invalid_authorization_header(self):
         """This test confirms that authentication fails if an Authorization
@@ -149,15 +149,15 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
             self.assertEqual(response.code, httplib.UNAUTHORIZED)
             self.assertAuthFailureDetail(
                 response,
-                auth_server_request_handler.AUTH_FAILURE_DETAIL_UNKNOWN_AUTHENTICATION_SCHEME)
+                auth_service_request_handler.AUTH_FAILURE_DETAIL_UNKNOWN_AUTHENTICATION_SCHEME)
 
-    def test_auth_failure_detail_correctly_in_auth_server_response(self):
+    def test_auth_failure_detail_correctly_in_auth_service_response(self):
         """This test confirms that when an authenticator
         supplies authentication failure detail that the failure
-        detail is in the auth server's HTTP response as an HTTP header
+        detail is in the auth service's HTTP response as an HTTP header
         if the appropriate configuration is enabled."""
 
-        the_auth_failure_detail = auth_server_request_handler.AUTH_FAILURE_DETAIL_FOR_TESTING
+        the_auth_failure_detail = auth_service_request_handler.AUTH_FAILURE_DETAIL_FOR_TESTING
 
         the_auth_failure_debug_details = {
             str(uuid.uuid4()).replace("-", ""): str(uuid.uuid4()).replace("-", ""),
@@ -172,7 +172,7 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
                 auth_failure_debug_details=the_auth_failure_debug_details)
 
         name_of_method_to_patch = (
-            "yar.auth_server.mac."
+            "yar.auth_service.mac."
             "async_mac_auth.AsyncMACAuth.authenticate"
         )
         with mock.patch(name_of_method_to_patch, authenticate_patch):
@@ -207,7 +207,7 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
             callback(is_auth_ok=True, principal=the_principal)
 
         name_of_method_to_patch = (
-            "yar.auth_server.mac."
+            "yar.auth_service.mac."
             "async_mac_auth.AsyncMACAuth.authenticate"
         )
         with mock.patch(name_of_method_to_patch, authenticate_patch):
@@ -216,7 +216,7 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
                 callback(is_ok=False)
 
             name_of_method_to_patch = (
-                "yar.auth_server.async_app_service_forwarder."
+                "yar.auth_service.async_app_service_forwarder."
                 "AsyncAppServiceForwarder.forward"
             )
             with mock.patch(name_of_method_to_patch, forward_patch):
@@ -246,7 +246,7 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
             callback(is_auth_ok=True, principal=the_principal)
 
         name_of_method_to_patch = (
-            "yar.auth_server.mac."
+            "yar.auth_service.mac."
             "async_mac_auth.AsyncMACAuth.authenticate"
         )
         with mock.patch(name_of_method_to_patch, authenticate_patch):
@@ -259,7 +259,7 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
                     body=the_response_body)
 
             name_of_method_to_patch = (
-                "yar.auth_server.async_app_service_forwarder."
+                "yar.auth_service.async_app_service_forwarder."
                 "AsyncAppServiceForwarder.forward"
             )
             with mock.patch(name_of_method_to_patch, forward_patch):

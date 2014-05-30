@@ -1,4 +1,4 @@
-"""This module implements the unit tests for the auth server's
+"""This module implements the unit tests for the auth service's
 async_app_service_forwarder module."""
 
 import httplib
@@ -11,7 +11,7 @@ import tornado.httputil
 from yar.util import mac
 from yar.tests import yar_test_util
 
-from yar.auth_server import async_app_service_forwarder
+from yar.auth_service import async_app_service_forwarder
 
 class TestAsyncCredsForwarder(yar_test_util.TestCase):
 

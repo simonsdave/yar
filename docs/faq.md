@@ -77,10 +77,10 @@ MAC_KEY=$(echo -n $MAC_KEY | base64 --decode)
 
 ### How do I debug authentication failures?
 This is hard. It's the one knock against using MACs.
-First step would be to restart the [Auth Server](../yar/auth_server) using debug level logging.
+First step would be to restart the [Auth Service](../yar/auth_service) using debug level logging.
 This will generate additional logging output but more importantly it will generate
-lots of additional HTTP X-Yar-Auth-Server headers that provide detailed insight into how
-the [Auth Server](../yar/auth_server) is computing the MAC.
+lots of additional HTTP X-Yar-Auth- headers that provide detailed insight into how
+the [Auth Service](../yar/auth_service) is computing the MAC.
 99% of the time reviewing this output will help you track down the problem.
 
 ### What's up with the name "yar"?

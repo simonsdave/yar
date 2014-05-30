@@ -1,4 +1,4 @@
-"""This module implements the unit tests for the auth server's
+"""This module implements the unit tests for the auth service's
 vi async_nonce_checker  module."""
 
 import os
@@ -6,7 +6,7 @@ import sys
 
 import mock
 
-from yar.auth_server.mac import async_nonce_checker
+from yar.auth_service.mac import async_nonce_checker
 from yar.util import mac
 from yar.tests import yar_test_util
 

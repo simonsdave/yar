@@ -251,14 +251,14 @@ get_creds_config() {
 #
 # get the value associated with a key in ~/.yar.deployment
 #
-# for example, the following script gets the auth server
+# for example, the following script gets the auth service
 # container ID from ~/.yar.deployment
 #
 #   #!/usr/bin/env bash
 #   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 #   source $SCRIPT_DIR_NAME/util.sh
-#   AUTH_SERVER_CONTAINER_ID=$(get_deployment_config "AUTH_SERVER_CONTAINER_ID")
-#   echo $AUTH_SERVER_CONTAINER_ID
+#   AUTH_SERVICE_CONTAINER_ID=$(get_deployment_config "AUTH_SERVICE_CONTAINER_ID")
+#   echo $AUTH_SERVICE_CONTAINER_ID
 #
 get_deployment_config() {
     local KEY=${1:-}
@@ -286,8 +286,8 @@ get_deployment_config() {
 #   #!/usr/bin/env bash
 #   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 #   source $SCRIPT_DIR_NAME/util.sh
-#   NUMBER_AUTH_SERVERS=$(get_number_deployment_config_keys "AUTH_SERVER_CONTAINER_ID_[[:digit:]]\+")
-#   echo $NUMBER_AUTH_SERVERS
+#   NUMBER_AUTH_SERVICES=$(get_number_deployment_config_keys "AUTH_SERVICE_CONTAINER_ID_[[:digit:]]\+")
+#   echo $NUMBER_AUTH_SERVICES
 #
 # arguments
 #   1   pattern to search for
@@ -1192,7 +1192,7 @@ get_all_nonce_store_end_points() {
 }
 
 #
-# create a docker container to run an auth_server
+# create a docker container to run an auth_service
 #
 # arguments
 #   1   key service
@@ -1204,18 +1204,18 @@ get_all_nonce_store_end_points() {
 #   1   general/non-specific failure - nonce store container not started
 #   2   can't find yar_img
 #
-create_auth_server() {
+create_auth_service() {
 
     #
     # extract function arguments and setup function specific config
     #
     local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
 
-    local AUTH_SERVER_NUMBER=$(get_number_deployment_config_keys \
-        "AUTH_SERVER_CONTAINER_ID_[[:digit:]]\+")
-    let "AUTH_SERVER_NUMBER += 1"
+    local AUTH_SERVICE_NUMBER=$(get_number_deployment_config_keys \
+        "AUTH_SERVICE_CONTAINER_ID_[[:digit:]]\+")
+    let "AUTH_SERVICE_NUMBER += 1"
 
-    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Auth-Server-$AUTH_SERVER_NUMBER
+    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Auth-Service-$AUTH_SERVICE_NUMBER
     mkdir -p $DATA_DIRECTORY
 
     local KEY_SERVICE=${1:-}
@@ -1225,7 +1225,7 @@ create_auth_server() {
     local PORT=8000
 
     #
-    # spin up the auth server
+    # spin up the auth service
     #
     local IMAGE_NAME=yar_img
     if ! does_image_exist $IMAGE_NAME; then
@@ -1233,51 +1233,51 @@ create_auth_server() {
         return 2
     fi
 
-    local AUTH_SERVER_CMD="auth_server \
+    local AUTH_SERVICE_CMD="auth_service \
         --log=info \
         --lon=0.0.0.0:$PORT \
         --keyservice=$KEY_SERVICE \
         --appserver=$APP_SERVICE \
         --noncestore=$NONCE_STORE \
-        --logfile=/var/auth_server/auth_server_log"
+        --logfile=/var/auth_service/auth_service_log"
     local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
-    local AUTH_SERVER=$(sudo docker run \
+    local AUTH_SERVICE=$(sudo docker run \
         -d \
-        --name="Auth_Server_$AUTH_SERVER_NUMBER" \
-        -v $DATA_DIRECTORY:/var/auth_server \
+        --name="Auth_Service_$AUTH_SERVICE_NUMBER" \
+        -v $DATA_DIRECTORY:/var/auth_service \
         $IMAGE_NAME \
-        $AUTH_SERVER_CMD 2> "$DOCKER_RUN_STDERR")
-    if [ "$AUTH_SERVER" == "" ]; then
-        local MSG="Error starting Auth Server container"
+        $AUTH_SERVICE_CMD 2> "$DOCKER_RUN_STDERR")
+    if [ "$AUTH_SERVICE" == "" ]; then
+        local MSG="Error starting Auth Service container"
         MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
         echo_to_stderr_if_not_silent "$MSG"
         return 2
     fi
-    local AUTH_SERVER_IP=$(get_container_ip $AUTH_SERVER)
+    local AUTH_SERVICE_IP=$(get_container_ip $AUTH_SERVICE)
 
-    echo "AUTH_SERVER_CONTAINER_ID_$AUTH_SERVER_NUMBER=$AUTH_SERVER" >> ~/.yar.deployment
-    echo "AUTH_SERVER_IP_$AUTH_SERVER_NUMBER=$AUTH_SERVER_IP" >> ~/.yar.deployment
-    echo "AUTH_SERVER_END_POINT_$AUTH_SERVER_NUMBER=$AUTH_SERVER_IP:$PORT" >> ~/.yar.deployment
+    echo "AUTH_SERVICE_CONTAINER_ID_$AUTH_SERVICE_NUMBER=$AUTH_SERVICE" >> ~/.yar.deployment
+    echo "AUTH_SERVICE_IP_$AUTH_SERVICE_NUMBER=$AUTH_SERVICE_IP" >> ~/.yar.deployment
+    echo "AUTH_SERVICE_END_POINT_$AUTH_SERVICE_NUMBER=$AUTH_SERVICE_IP:$PORT" >> ~/.yar.deployment
 
     #
-    # auth server should now be running so let's verify that
+    # auth service should now be running so let's verify that
     # before we return control to the caller ...
     #
     for i in {1..10}
     do
         sleep 1
-        if curl -s http://$AUTH_SERVER_IP:$PORT >& /dev/null; then
-            echo $AUTH_SERVER_IP:$PORT
+        if curl -s http://$AUTH_SERVICE_IP:$PORT >& /dev/null; then
+            echo $AUTH_SERVICE_IP:$PORT
             return 0
         fi
     done
 
-    echo_to_stderr_if_not_silent "Could not verify availability of Auth Server on $AUTH_SERVER_IP:$PORT"
+    echo_to_stderr_if_not_silent "Could not verify availability of Auth Service on $AUTH_SERVICE_IP:$PORT"
     return 1
 }
 
 #
-# echo to stdout each of the auth server container id keys
+# echo to stdout each of the auth service container id keys
 # listed in ~/.yar.deployment
 #
 # example expected usage
@@ -1285,7 +1285,7 @@ create_auth_server() {
 #   #!/usr/bin/env bash
 #   SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 #   source $SCRIPT_DIR_NAME/util.sh
-#   for ASIDK in $(get_all_auth_server_container_id_keys); do
+#   for ASIDK in $(get_all_auth_service_container_id_keys); do
 #       echo ">>>$ASIDK<<<"
 #   done
 #
@@ -1294,14 +1294,14 @@ create_auth_server() {
 #
 # exit codes
 #   0   ok
-#   1   too many auth servers in ~/.yar.deployment
+#   1   too many auth services in ~/.yar.deployment
 #
-get_all_auth_server_container_id_keys() {
-    for AUTH_SERVER_NUMBER in {1..100}
+get_all_auth_service_container_id_keys() {
+    for AUTH_SERVICE_NUMBER in {1..100}
     do
-        local KEY="AUTH_SERVER_CONTAINER_ID_$AUTH_SERVER_NUMBER"
-        local AUTH_SERVER_CONTAINER_ID=$(get_deployment_config "$KEY" "")
-        if [ "$AUTH_SERVER_CONTAINER_ID" == "" ]; then
+        local KEY="AUTH_SERVICE_CONTAINER_ID_$AUTH_SERVICE_NUMBER"
+        local AUTH_SERVICE_CONTAINER_ID=$(get_deployment_config "$KEY" "")
+        if [ "$AUTH_SERVICE_CONTAINER_ID" == "" ]; then
             return 0
         fi
         echo $KEY
@@ -1310,24 +1310,24 @@ get_all_auth_server_container_id_keys() {
 }
 
 #
-# create a docker container to run the auth server load balancer
+# create a docker container to run the auth service load balancer
 #
 # arguments
 #   1   name of data directory - mkdir -p called on this name
 #
 # exit codes
 #   0   ok
-#   1   general/non-specific failure - auth server container not started
+#   1   general/non-specific failure - auth service container not started
 #   2   can't find haproxy_img
 #
-create_auth_server_lb() {
+create_auth_service_lb() {
 
     #
     # extract function arguments and setup function specific config
     #
     local DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION")
 
-    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Auth-Server-LB
+    local DATA_DIRECTORY=$DEPLOYMENT_LOCATION/Auth-Service-LB
     mkdir -p $DATA_DIRECTORY
 
     local PORT=8000
@@ -1335,15 +1335,15 @@ create_auth_server_lb() {
     #
     # generate the haproxy config file
     #
-    cp $SCRIPT_DIR_NAME/cfg-haproxy/auth_server $DATA_DIRECTORY/cfg-haproxy
+    cp $SCRIPT_DIR_NAME/cfg-haproxy/auth_service $DATA_DIRECTORY/cfg-haproxy
 
-    local AUTH_SERVER_NUMBER=1
-    for AUTH_SERVER_CONTAINER_ID_KEY in $(get_all_auth_server_container_id_keys)
+    local AUTH_SERVICE_NUMBER=1
+    for AUTH_SERVICE_CONTAINER_ID_KEY in $(get_all_auth_service_container_id_keys)
     do
-        AUTH_SERVER_CONTAINER_ID=$(get_deployment_config "$AUTH_SERVER_CONTAINER_ID_KEY")
-        AUTH_SERVER_IP=$(get_container_ip "$AUTH_SERVER_CONTAINER_ID")
-    	echo "    server auth_server_$AUTH_SERVER_NUMBER $AUTH_SERVER_IP check" >> $DATA_DIRECTORY/cfg-haproxy
-        let "AUTH_SERVER_NUMBER += 1"
+        AUTH_SERVICE_CONTAINER_ID=$(get_deployment_config "$AUTH_SERVICE_CONTAINER_ID_KEY")
+        AUTH_SERVICE_IP=$(get_container_ip "$AUTH_SERVICE_CONTAINER_ID")
+    	echo "    server auth_service_$AUTH_SERVICE_NUMBER $AUTH_SERVICE_IP check" >> $DATA_DIRECTORY/cfg-haproxy
+        let "AUTH_SERVICE_NUMBER += 1"
     done
 
     #
@@ -1355,41 +1355,41 @@ create_auth_server_lb() {
         return 2
     fi
 
-    local AUTH_SERVER_LB_CMD="haproxy.sh /haproxy/cfg-haproxy /haproxy/haproxy.pid"
+    local AUTH_SERVICE_LB_CMD="haproxy.sh /haproxy/cfg-haproxy /haproxy/haproxy.pid"
     local DOCKER_RUN_STDERR=$DATA_DIRECTORY/docker_run_stderr
-    local AUTH_SERVER_LB=$(sudo docker run \
+    local AUTH_SERVICE_LB=$(sudo docker run \
         -d \
-        --name="Auth_Server_LB" \
+        --name="Auth_Service_LB" \
 		-p $PORT:$PORT \
         -v $DATA_DIRECTORY:/haproxy \
         $IMAGE_NAME \
-        $AUTH_SERVER_LB_CMD 2> "$DOCKER_RUN_STDERR")
-    if [ "$AUTH_SERVER_LB" == "" ]; then
-        local MSG="Error starting Auth Server LB container"
+        $AUTH_SERVICE_LB_CMD 2> "$DOCKER_RUN_STDERR")
+    if [ "$AUTH_SERVICE_LB" == "" ]; then
+        local MSG="Error starting Auth Service LB container"
         MSG="$MSG - error details in '$DOCKER_RUN_STDERR'"
         echo_to_stderr_if_not_silent "$MSG"
         return 2
     fi
-    local AUTH_SERVER_LB_IP=$(get_container_ip $AUTH_SERVER_LB)
+    local AUTH_SERVICE_LB_IP=$(get_container_ip $AUTH_SERVICE_LB)
 
-    echo "AUTH_SERVER_LB_CONTAINER_ID=$AUTH_SERVER_LB" >> ~/.yar.deployment
-    echo "AUTH_SERVER_LB_IP=$AUTH_SERVER_LB_IP" >> ~/.yar.deployment
-    echo "AUTH_SERVER_LB_END_POINT=$AUTH_SERVER_LB_IP:$PORT" >> ~/.yar.deployment
+    echo "AUTH_SERVICE_LB_CONTAINER_ID=$AUTH_SERVICE_LB" >> ~/.yar.deployment
+    echo "AUTH_SERVICE_LB_IP=$AUTH_SERVICE_LB_IP" >> ~/.yar.deployment
+    echo "AUTH_SERVICE_LB_END_POINT=$AUTH_SERVICE_LB_IP:$PORT" >> ~/.yar.deployment
 
     #
-    # auth server LB should now be running so let's verify that
+    # auth service LB should now be running so let's verify that
     # before we return control to the caller ...
     #
     for i in {1..10}
     do
         sleep 1
-        curl -s http://$AUTH_SERVER_LB_IP:$PORT/dave.html >& /dev/null
+        curl -s http://$AUTH_SERVICE_LB_IP:$PORT/dave.html >& /dev/null
         if [ $? == 0 ]; then
             break
         fi
     done
 
-    echo $AUTH_SERVER_LB_IP:$PORT
+    echo $AUTH_SERVICE_LB_IP:$PORT
 }
 
 #

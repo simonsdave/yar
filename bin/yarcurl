@@ -4,7 +4,7 @@
 # A wrapper around cURL that adds HTTP Authorization header
 # as per the "OAuth 2.0 Message Authentication Code (MAC) Tokens"
 # (http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02) spec
-# and then issues a request to a yar Auth Server.
+# and then issues a request to a yar Auth Service.
 #
 # Credits
 # -- the mktemp usage pattern to ensure portability across Mac OS X and Ubunutu

@@ -50,9 +50,9 @@
         # 
         "number_of_servers": 3
     },
-    "auth_server": {
+    "auth_service": {
         #
-        # "number_of_servers" defines the number of auth servers
+        # "number_of_servers" defines the number of auth services
         # in the deployment.
         # 
         "number_of_servers": 3

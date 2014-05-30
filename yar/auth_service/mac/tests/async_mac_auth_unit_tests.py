@@ -1,4 +1,4 @@
-"""This module implements the unit tests for the auth server's
+"""This module implements the unit tests for the auth service's
 async_mac_auth module."""
 
 import httplib
@@ -8,7 +8,7 @@ import sys
 import mock
 import tornado.httputil
 
-from yar.auth_server.mac import async_mac_auth
+from yar.auth_service.mac import async_mac_auth
 from yar.util import mac
 from yar.tests import yar_test_util
 
@@ -146,7 +146,7 @@ class TestAsyncMACAuth(yar_test_util.TestCase):
             callback(False)
 
         name_of_method_to_patch = (
-            "yar.auth_server.mac."
+            "yar.auth_service.mac."
             "async_nonce_checker.AsyncNonceChecker.fetch"
         )
         with mock.patch(name_of_method_to_patch, async_nonce_checker_fetch_patch):
@@ -189,7 +189,7 @@ class TestAsyncMACAuth(yar_test_util.TestCase):
             callback(True)
 
         name_of_method_to_patch = (
-            "yar.auth_server.mac."
+            "yar.auth_service.mac."
             "async_nonce_checker.AsyncNonceChecker.fetch"
         )
         with mock.patch(name_of_method_to_patch, async_nonce_checker_fetch_patch):
@@ -198,7 +198,7 @@ class TestAsyncMACAuth(yar_test_util.TestCase):
                 callback(False, the_mac_key_identifier)
 
             name_of_method_to_patch = (
-                "yar.auth_server.mac."
+                "yar.auth_service.mac."
                 "async_mac_creds_retriever.AsyncMACCredsRetriever.fetch"
             )
             with mock.patch(name_of_method_to_patch, async_creds_retriever_fetch_patch):
@@ -258,7 +258,7 @@ class TestAsyncMACAuth(yar_test_util.TestCase):
             callback(True)
 
         name_of_method_to_patch = (
-            "yar.auth_server.mac."
+            "yar.auth_service.mac."
             "async_nonce_checker.AsyncNonceChecker.fetch"
         )
         with mock.patch(name_of_method_to_patch, async_nonce_checker_fetch_patch):
@@ -276,7 +276,7 @@ class TestAsyncMACAuth(yar_test_util.TestCase):
                     the_principal)
 
             name_of_method_to_patch = (
-                "yar.auth_server.mac."
+                "yar.auth_service.mac."
                 "async_mac_creds_retriever.AsyncMACCredsRetriever.fetch"
             )
             with mock.patch(name_of_method_to_patch, async_creds_retriever_fetch_patch):

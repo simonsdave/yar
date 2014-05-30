@@ -30,9 +30,9 @@ setup(
         "yar",
         "yar.util",
         "yar.app_service",
-        "yar.auth_server",
-        "yar.auth_server.basic",
-        "yar.auth_server.mac",
+        "yar.auth_service",
+        "yar.auth_service.basic",
+        "yar.auth_service.mac",
         "yar.key_service",
         "yar.key_store",
         # see "data_files" comment on why the next shouldn't be here
@@ -40,7 +40,7 @@ setup(
     ],
     scripts=[
         "bin/app_service",
-        "bin/auth_server",
+        "bin/auth_service",
         "bin/key_service",
         "bin/key_store_installer",
         "bin/yarcurl",

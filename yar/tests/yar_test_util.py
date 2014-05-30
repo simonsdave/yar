@@ -13,7 +13,7 @@ import tornado.netutil
 
 
 class Server(object):
-    """An abstract base class for mock auth server, key service and
+    """An abstract base class for mock auth service, key service and
     app service. The primary reason for this class to exist is so the
     constructor can find an available port for the server to run and
     save that port & associated socket object in the socket and
@@ -41,7 +41,7 @@ class Server(object):
 
 class IOLoop(threading.Thread):
     """This class makes it easy for a test case's `setUpClass()` to start
-    a Tornado io loop on the non-main thread so that the io loop, auth server
+    a Tornado io loop on the non-main thread so that the io loop, auth service
     key service and app service can operate 'in the background' while the
     unit test runs on the main thread."""
 

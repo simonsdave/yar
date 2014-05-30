@@ -46,9 +46,9 @@ requests to the 3 end-points.
 * **:TODO:** describe the API requests that the build system makes to yar to configure the
   access control model for the newly created resources - the API calls will
   be made to what we currently call the key service where the key service, like
-  the build system, is deployed in the application tier vs the auth server
+  the build system, is deployed in the application tier vs the auth service
   which is deployed in the DMZ
-  (remember the build system is deployed as a service behind yar's auth server)
+  (remember the build system is deployed as a service behind yar's auth service)
 
 ### Open Questions
 * does yar support the notion of resource ownership? can't use DAC

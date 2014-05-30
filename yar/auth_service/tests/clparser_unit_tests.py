@@ -1,15 +1,15 @@
 """This module implements a collection of unit tests for
-the Auth Server's auth_server.clparser.CommandLineParser."""
+the Auth Service's auth_service.clparser.CommandLineParser."""
 
 import logging
 import unittest
 
-from yar.auth_server.clparser import CommandLineParser
+from yar.auth_service.clparser import CommandLineParser
 
 
 class CommandLineParserUnitTase(unittest.TestCase):
-    """A collection of unit tests for the Auth Server's
-    auth_server.clparser.CommandLineParser."""
+    """A collection of unit tests for the Auth Service's
+    auth_service.clparser.CommandLineParser."""
 
     def test_defaults(self):
         """Verify the command line parser supplies the

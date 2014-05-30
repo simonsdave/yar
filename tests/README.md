@@ -99,7 +99,7 @@ Initalizating Deployment
 -- Removing '~/.yar.deployment'
 -- Removing '~/.yar.creds'
 -- Removing '~/.yar.creds.random.set'
--- Deployment Location '/tmp/tmp.O7sNLYQVOQ'
+-- Deployment Location '/tmp/tmp.XQQwX0r0Wr'
 Starting App Service(s)
 -- 1: Starting App Service
 -- 1: App Service listening on 172.17.0.2:8080
@@ -110,16 +110,16 @@ Starting Nonce Store(s)
 -- 1: Nonce Store listening on 172.17.0.4:11211
 Starting Key Store
 -- Key Store listening on 172.17.0.5:5984/creds
-Starting Key Server(s)
--- 1: Starting Key Server
--- 1: Key Server listening on 172.17.0.6:8070
-Starting Key Server LB
--- Key Server LB listening on 172.17.0.7:8070
-Starting Auth Server(s)
--- 1: Starting Auth Server
--- Auth Server listening on 172.17.0.8:8000
-Starting Auth Server LB
--- Auth Server LB listening on 172.17.0.9:8000
+Starting Key Service(s)
+-- 1: Starting Key Service
+-- 1: Key Service listening on 172.17.0.6:8070
+Starting Key Service LB
+-- Key Service LB listening on 172.17.0.7:8070
+Starting Auth Service(s)
+-- 1: Starting Auth Service
+-- Auth Service listening on 172.17.0.8:8000
+Starting Auth Service LB
+-- Auth Service LB listening on 172.17.0.9:8000
 Deployment Highlights
 -- entry point @ 172.17.0.9:8000
 -- creds in ~/.yar.creds
@@ -132,7 +132,7 @@ vagrant@vagrant-ubuntu-trusty-64:/vagrant$
 which describes elements of the deployment
 * let's walk thru each of items in the "Deployment Highlights" section
 * "entry point" describes the IP + port pair of the HAProxy
-instance that balances load across all auth servers in the deployment
+instance that balances load across all auth services in the deployment
 * let' issue a [cURL](http://en.wikipedia.org/wiki/CURL) command
 to the entry point and see what happens
 
@@ -163,7 +163,7 @@ sense of what was happening
 * the HTTP response code was 401 Unauthorized
 * why? the [cURL](http://en.wikipedia.org/wiki/CURL)
 requests are getting rejected by the auth
-servers because the auth servers can't authenticate the request
+servers because the auth services can't authenticate the request
 which brings us to the second item the "Deployment Highlights" section
 * as part of spinning up the deployment, [spin_up_deployment.sh](spin_up_deployment.sh)
 provisioned some credentials and saved them in ~/.yar.creds
@@ -180,7 +180,7 @@ vagrant@precise64:/vagrant$
 
 * armed with the credentials let's issue a
 new [cURL](http://en.wikipedia.org/wiki/CURL)
-request that the auth servers will be able to
+request that the auth services will be able to
 successfully authenticate
 
 ~~~~~
@@ -268,7 +268,7 @@ this was made possible - in a browser on the same machine running
 your testing VM, go to the links below (in all cases
 the user name is yar and password is yar):
 
-  * [http://localhost:8000/auth_server_lb?stats](http://localhost:8000/auth_server_lb?stats) for auth server LB stats
+  * [http://localhost:8000/auth_service_lb?stats](http://localhost:8000/auth_service_lb?stats) for auth service LB stats
   * [http://localhost:8070/key_service_lb?stats](http://localhost:8070/key_service_lb?stats) for key service LB stats
   * [http://localhost:8080/app_service_lb?stats](http://localhost:8080/app_service_lb?stats) for app service LB stats
 

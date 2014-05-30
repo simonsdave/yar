@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""This module contains the core logic for the authenication server.
-The server uses implements MAC Access Authentication."""
+"""This module contains the core logic for the auth service."""
 
 import logging
 import time
@@ -8,13 +7,13 @@ import time
 import tornado.httpserver
 import tornado.web
 
-from yar.auth_server import async_app_service_forwarder
-from yar.auth_server.basic import async_creds_retriever
-from yar.auth_server.mac import async_mac_creds_retriever
-from yar.auth_server.mac import async_mac_auth
-from yar.auth_server.mac import async_nonce_checker
-from yar.auth_server import auth_server_request_handler
-from yar.auth_server import clparser
+from yar.auth_service import async_app_service_forwarder
+from yar.auth_service.basic import async_creds_retriever
+from yar.auth_service.mac import async_mac_creds_retriever
+from yar.auth_service.mac import async_mac_auth
+from yar.auth_service.mac import async_nonce_checker
+from yar.auth_service import auth_service_request_handler
+from yar.auth_service import clparser
 from yar.util import logging_config
 from yar.util import tsh
 
@@ -33,7 +32,7 @@ if __name__ == "__main__":
     tsh.install()
 
     fmt = (
-        "Auth Server listening on {clo.listen_on} "
+        "Auth Service listening on {clo.listen_on} "
         "using Nonce Store {clo.nonce_store}, "
         "Key Service '{clo.key_service}' "
         "and App Service '{clo.app_service}'"
@@ -49,8 +48,8 @@ if __name__ == "__main__":
 
     handlers = [
         (
-            auth_server_request_handler.url_spec,
-            auth_server_request_handler.RequestHandler
+            auth_service_request_handler.url_spec,
+            auth_service_request_handler.RequestHandler
         ),
     ]
     app = tornado.web.Application(handlers=handlers)

@@ -1,4 +1,4 @@
-"""This module implements the unit tests for the auth server's
+"""This module implements the unit tests for the auth service's
 basic.async_auth module."""
 
 import base64
@@ -9,7 +9,7 @@ import mock
 import tornado.httputil
 
 from yar.util import basic
-from yar.auth_server.basic import async_auth
+from yar.auth_service.basic import async_auth
 from yar.tests import yar_test_util
 
 
@@ -191,7 +191,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
             callback(False)
 
         name_of_method_to_patch = (
-            "yar.auth_server.basic.async_creds_retriever."
+            "yar.auth_service.basic.async_creds_retriever."
             "AsyncCredsRetriever.fetch"
         )
         with mock.patch(name_of_method_to_patch, fetch_patch):
@@ -228,7 +228,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
             callback(True, principal)
 
         name_of_method_to_patch = (
-            "yar.auth_server.basic.async_creds_retriever."
+            "yar.auth_service.basic.async_creds_retriever."
             "AsyncCredsRetriever.fetch"
         )
         with mock.patch(name_of_method_to_patch, fetch_patch):
@@ -262,7 +262,7 @@ class TestAsyncAuth(yar_test_util.TestCase):
             callback(True, the_principal)
 
         name_of_method_to_patch = (
-            "yar.auth_server.basic.async_creds_retriever."
+            "yar.auth_service.basic.async_creds_retriever."
             "AsyncCredsRetriever.fetch"
         )
         with mock.patch(name_of_method_to_patch, fetch_patch):

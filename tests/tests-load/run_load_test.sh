@@ -107,8 +107,8 @@ run_load_test() {
         echo "$CONCURRENCY: Error spinning up deployment"
         return 1
     fi
-    local AUTH_SERVER_LB=$(get_deployment_config "AUTH_SERVER_LB_END_POINT" "")
-    echo "$CONCURRENCY: Deployment end point = $AUTH_SERVER_LB"
+    local AUTH_SERVICE_LB=$(get_deployment_config "AUTH_SERVICE_LB_END_POINT" "")
+    echo "$CONCURRENCY: Deployment end point = $AUTH_SERVICE_LB"
 
     #
     # test is about to begin ... time to start collecting metrics
@@ -130,7 +130,7 @@ run_load_test() {
 
         locust \
             -f "$SCRIPT_DIR_NAME/locustfile.py" \
-            -H http://$AUTH_SERVER_LB \
+            -H http://$AUTH_SERVICE_LB \
             --no-web \
             -n $NUMBER_OF_REQUESTS \
             -c $CONCURRENCY \
@@ -161,7 +161,7 @@ run_load_test() {
             -n $NUMBER_OF_REQUESTS \
             -A $API_KEY: \
             -g $RESULTS_DATA \
-            http://$AUTH_SERVER_LB/dave.html \
+            http://$AUTH_SERVICE_LB/dave.html \
             >& /dev/null
 
     fi
@@ -236,13 +236,13 @@ run_load_test() {
         $SCRIPT_DIR_NAME/gp.cfg/response_time_by_time
 
     #
-    # during the load test, the auth servers were making requests
+    # during the load test, the auth services were making requests
     # to the key service LB. the statements below extract timing
-    # information about the requests from the auth server's
+    # information about the requests from the auth service's
     # log and then plots 2 different graphs of response times.
     #
     TEMPFILE=$(mktemp)
-    cat $DOCKER_CONTAINER_DATA/Auth-Server-*/auth_server_log | \
+    cat $DOCKER_CONTAINER_DATA/Auth-Service-*/auth_service_log | \
         grep "Key Service.*responded in [0-9]\+ ms$" | \
         awk 'BEGIN {FS = "\t"; OFS = "\t"}; { print int($1 / 1000), $5 }' | \
         sed -s "s/\tKey Service.*responded in /\t/g" |
@@ -318,13 +318,13 @@ run_load_test() {
     rm -f $TEMPFILE >& /dev/null
 
     #
-    # during the load test the auth server was making requests
+    # during the load test the auth service was making requests
     # to the app service. the statements below extract timing
-    # information about the requests from the auth server's
+    # information about the requests from the auth service's
     # log and then plots 2 different graphs of response times.
     #
     TEMPFILE=$(mktemp)
-    cat $DOCKER_CONTAINER_DATA/Auth-Server-*/auth_server_log | \
+    cat $DOCKER_CONTAINER_DATA/Auth-Service-*/auth_service_log | \
         grep "App Service.*responded in [0-9]\+ ms$" | \
         awk 'BEGIN {FS = "\t"; OFS = "\t"}; { print int($1 / 1000), $5 }' | \
         sed -s "s/\tApp Service.*responded in /\t/g" |
@@ -362,25 +362,25 @@ run_load_test() {
     # metrics graphing ... cpu ...
     #
     gen_cpu_usage_graph \
-        "Auth Server Load Balancer CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
-        "AUTH_SERVER_LB_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-20-auth-server-lb-cpu-usage.png"
+        "Auth Service Load Balancer CPU Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "AUTH_SERVICE_LB_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-20-auth-service-lb-cpu-usage.png"
 
-    local AUTH_SERVER_NUMBER=1
-    for AUTH_SERVER_CONTAINER_ID_KEY in $(get_all_auth_server_container_id_keys)
+    local AUTH_SERVICE_NUMBER=1
+    for AUTH_SERVICE_CONTAINER_ID_KEY in $(get_all_auth_service_container_id_keys)
     do
-        local GRAPH_TITLE="Auth Server # $AUTH_SERVER_NUMBER CPU Usage"
+        local GRAPH_TITLE="Auth Service # $AUTH_SERVICE_NUMBER CPU Usage"
         GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
 
-        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-21-auth-server"
-        GRAPH_FILENAME="$GRAPH_FILENAME-$AUTH_SERVER_NUMBER-cpu-usage.png"
+        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-21-auth-service"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$AUTH_SERVICE_NUMBER-cpu-usage.png"
 
         gen_cpu_usage_graph \
             "$GRAPH_TITLE" \
-            "$AUTH_SERVER_CONTAINER_ID_KEY" \
+            "$AUTH_SERVICE_CONTAINER_ID_KEY" \
             "$GRAPH_FILENAME"
 
-        let "AUTH_SERVER_NUMBER += 1"
+        let "AUTH_SERVICE_NUMBER += 1"
     done
 
     gen_cpu_usage_graph \
@@ -453,25 +453,25 @@ run_load_test() {
     # metrics graphing ... memory ...
     #
     gen_mem_usage_graph \
-        "Auth Server Load Balancer Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
-        "AUTH_SERVER_LB_CONTAINER_ID" \
-        "$RESULTS_FILE_BASE_NAME-30-auth-server-lb-memory-usage.png"
+        "Auth Service Load Balancer Memory Usage - $START_TIME: Concurrency = $CONCURRENCY" \
+        "AUTH_SERVICE_LB_CONTAINER_ID" \
+        "$RESULTS_FILE_BASE_NAME-30-auth-service-lb-memory-usage.png"
 
-    local AUTH_SERVER_NUMBER=1
-    for AUTH_SERVER_CONTAINER_ID_KEY in $(get_all_auth_server_container_id_keys)
+    local AUTH_SERVICE_NUMBER=1
+    for AUTH_SERVICE_CONTAINER_ID_KEY in $(get_all_auth_service_container_id_keys)
     do
-        local GRAPH_TITLE="Auth Server # $AUTH_SERVER_NUMBER Memory Usage"
+        local GRAPH_TITLE="Auth Service # $AUTH_SERVICE_NUMBER Memory Usage"
         GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
 
-        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-31-auth-server"
-        GRAPH_FILENAME="$GRAPH_FILENAME-$AUTH_SERVER_NUMBER-memory-usage.png"
+        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-31-auth-service"
+        GRAPH_FILENAME="$GRAPH_FILENAME-$AUTH_SERVICE_NUMBER-memory-usage.png"
 
         gen_mem_usage_graph \
             "$GRAPH_TITLE" \
-            "$AUTH_SERVER_CONTAINER_ID_KEY" \
+            "$AUTH_SERVICE_CONTAINER_ID_KEY" \
             "$GRAPH_FILENAME"
 
-        let "AUTH_SERVER_NUMBER += 1"
+        let "AUTH_SERVICE_NUMBER += 1"
     done
 
     gen_mem_usage_graph \
@@ -485,7 +485,7 @@ run_load_test() {
         local GRAPH_TITLE="Key Service # $KEY_SERVICE_NUMBER Memory Usage"
         GRAPH_TITLE="$GRAPH_TITLE - $START_TIME: Concurrency = $CONCURRENCY"
 
-        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-33-auth-server"
+        local GRAPH_FILENAME="$RESULTS_FILE_BASE_NAME-33-auth-service"
         GRAPH_FILENAME="$GRAPH_FILENAME-$KEY_SERVICE_NUMBER-memory-usage.png"
 
         gen_mem_usage_graph \

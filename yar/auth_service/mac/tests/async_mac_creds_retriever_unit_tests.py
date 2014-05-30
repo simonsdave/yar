@@ -1,4 +1,4 @@
-"""This module implements the unit tests for the auth server's
+"""This module implements the unit tests for the auth service's
 async_mac_creds_retriever module."""
 
 import httplib
@@ -10,7 +10,7 @@ import mock
 import tornado.httpclient
 import tornado.httputil
 
-from yar.auth_server.mac import async_mac_creds_retriever
+from yar.auth_service.mac import async_mac_creds_retriever
 from yar import key_service
 from yar.key_service import jsonschemas
 from yar.util import mac

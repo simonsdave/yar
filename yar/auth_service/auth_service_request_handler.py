@@ -1,4 +1,4 @@
-"""This module contains the core logic for the auth server."""
+"""This module contains the core logic for the auth service."""
 
 import httplib
 import logging
@@ -12,14 +12,14 @@ import async_app_service_forwarder
 from yar.util import strutil
 from yar.util import trhutil
 
-_logger = logging.getLogger("AUTHSERVER.%s" % __name__)
+_logger = logging.getLogger("AUTHSERVICE.%s" % __name__)
 
-"""When authentication fails and the auth server's logging is set
+"""When authentication fails and the auth service's logging is set
 to a debug level responses will contain a series of HTTP headers
 that provide additional detail on why the authentication failed.
 All of theses header names are prefixed by the value of
 ```debug_header_prefix```."""
-debug_header_prefix = "X-Yar-Auth-Server-"
+debug_header_prefix = "X-Yar-Auth-"
 
 auth_failure_detail_header_name = "%sAuth-Failure-Detail" % debug_header_prefix
 
@@ -35,7 +35,7 @@ AUTH_FAILURE_DETAIL_NO_AUTH_HEADER = 0x0000 + 0x0001
 AUTH_FAILURE_DETAIL_UNKNOWN_AUTHENTICATION_SCHEME = 0x0000 + 0x0002
 AUTH_FAILURE_DETAIL_FOR_TESTING = 0x0000 + 0x00ff
 
-"""When the auth server first recieves a request it extracts the
+"""When the auth service first recieves a request it extracts the
 authentication scheme from the value associated with the request's 
 HTTP authorization header. ```_auth_scheme_reg_ex``` is the regular
 expression used to parse and extract the authentication scheme."""
@@ -43,7 +43,7 @@ _auth_scheme_reg_ex = re.compile(
     "^\s*(?P<auth_scheme>(MAC|BASIC))\s+.*",
     re.IGNORECASE)
 
-"""The auth server supports a number of authentication mechanisms.
+"""The auth service supports a number of authentication mechanisms.
 ```_auth_scheme_to_auth_class``` is used to convert an authentication scheme
 into the class that implements the authentication mechanism."""
 _auth_scheme_to_auth_class = {
@@ -51,7 +51,7 @@ _auth_scheme_to_auth_class = {
     "BASIC": basic.async_auth.Authenticator,
 }
 
-"""The auth server's mainline should use this URL spec
+"""The auth service's mainline should use this URL spec
 to describe the URLs that ```RequestHandler``` can
 correctly service."""
 url_spec = r".*"

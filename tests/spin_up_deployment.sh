@@ -220,34 +220,34 @@ fi
 echo_if_not_silent "-- Key Service LB listening on $KEY_SERVICE_LB"
 
 #
-# Auth Server(s)
+# Auth Service(s)
 #
-echo_if_not_silent "Starting Auth Server(s)"
+echo_if_not_silent "Starting Auth Service(s)"
 
-NUMBER_AUTH_SERVERS_PATTERN='\["auth_server"\,"number_of_servers"\]'
-NUMBER_AUTH_SERVERS=$(get_from_json "$NUMBER_AUTH_SERVERS_PATTERN" "1" < $DEPLOYMENT_PROFILE)
+NUMBER_AUTH_SERVICES_PATTERN='\["auth_service"\,"number_of_servers"\]'
+NUMBER_AUTH_SERVICES=$(get_from_json "$NUMBER_AUTH_SERVICES_PATTERN" "1" < $DEPLOYMENT_PROFILE)
 
-for AUTH_SERVER_NUMBER in $(seq 1 $NUMBER_AUTH_SERVERS)
+for AUTH_SERVICE_NUMBER in $(seq 1 $NUMBER_AUTH_SERVICES)
 do
-    echo_if_not_silent "-- $AUTH_SERVER_NUMBER: Starting Auth Server"
+    echo_if_not_silent "-- $AUTH_SERVICE_NUMBER: Starting Auth Service"
 
-	if ! AUTH_SERVER=$(create_auth_server $DATA_DIRECTORY $KEY_SERVICE_LB $APP_SERVICE_LB $NONCE_STORES); then
-		echo_to_stderr_if_not_silent "-- Auth Server failed to start"
+	if ! AUTH_SERVICE=$(create_auth_service $DATA_DIRECTORY $KEY_SERVICE_LB $APP_SERVICE_LB $NONCE_STORES); then
+		echo_to_stderr_if_not_silent "-- Auth Service failed to start"
 		exit 1
 	fi
 
-	echo_if_not_silent "-- Auth Server listening on $AUTH_SERVER"
+	echo_if_not_silent "-- Auth Service listening on $AUTH_SERVICE"
 done
 
 #
-# Auth Server LB
+# Auth Service LB
 #
-echo_if_not_silent "Starting Auth Server LB"
-if ! AUTH_SERVER_LB=$(create_auth_server_lb); then
-    echo_to_stderr_if_not_silent "-- Auth Server LB failed to start"
+echo_if_not_silent "Starting Auth Service LB"
+if ! AUTH_SERVICE_LB=$(create_auth_service_lb); then
+    echo_to_stderr_if_not_silent "-- Auth Service LB failed to start"
     exit 1
 fi
-echo_if_not_silent "-- Auth Server LB listening on $AUTH_SERVER_LB"
+echo_if_not_silent "-- Auth Service LB listening on $AUTH_SERVICE_LB"
 
 #
 # services now running ... let's provision some creds
@@ -261,7 +261,7 @@ create_mac_creds $KEY_SERVICE $PRINCIPAL
 #
 echo_if_not_silent "Deployment Highlights"
 
-echo_if_not_silent "-- entry point @ $AUTH_SERVER_LB"
+echo_if_not_silent "-- entry point @ $AUTH_SERVICE_LB"
 
 if [ -r ~/.yar.creds ]; then
     echo_if_not_silent "-- creds in ~/.yar.creds"
