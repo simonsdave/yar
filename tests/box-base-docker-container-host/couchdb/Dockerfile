@@ -1,10 +1,10 @@
 # creates a docker image based on ubuntu 12.04 that runs
-# couchdb 1.5 listening on 0.0.0.0:5984.
+# couchdb 1.5.1 listening on 0.0.0.0:5984.
 #
 # this seems like a pretty complicated Dockfile. where's all this
 # complexity coming from? can you do a simple apt-get couchdb?
 # apt-get couchdb installs version 1.2 of couchdb and we wanted
-# version 1.5:-(
+# version 1.5.1:-(
 #
 # create image
 #
@@ -49,9 +49,9 @@ RUN apt-get install -y build-essential
 RUN apt-get install -y erlang-base erlang-dev erlang-nox erlang-eunit
 RUN apt-get install -y libmozjs185-dev libicu-dev libcurl4-gnutls-dev libtool
 
-RUN curl -O http://mirror.csclub.uwaterloo.ca/apache/couchdb/source/1.5.0/apache-couchdb-1.5.0.tar.gz 
-RUN tar -xvf apache-couchdb-1.5.0.tar.gz
-RUN cd apache-couchdb-1.5.0; ./configure; make; make install
+RUN curl -O http://mirror.csclub.uwaterloo.ca/apache/couchdb/source/1.5.1/apache-couchdb-1.5.1.tar.gz 
+RUN tar -xvf apache-couchdb-1.5.1.tar.gz
+RUN cd apache-couchdb-1.5.1; ./configure; make; make install
 
 RUN adduser --gecos --disabled-login --disabled-password --no-create-home couchdb
 
