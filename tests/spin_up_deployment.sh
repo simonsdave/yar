@@ -263,16 +263,21 @@ echo_if_not_silent "Deployment Highlights"
 
 echo_if_not_silent "-- entry point @ $AUTH_SERVICE_LB"
 
+DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION" "")
+if [ ! "$DEPLOYMENT_LOCATION" == "" ]; then
+    echo_if_not_silent "-- deployment location '$DEPLOYMENT_LOCATION'"
+fi
+
 if [ -r ~/.yar.creds ]; then
-    echo_if_not_silent "-- creds in ~/.yar.creds"
+    echo_if_not_silent "-- creds in '~/.yar.creds'"
 fi
 
 if [ -r ~/.yar.deployment ]; then
-    echo_if_not_silent "-- description in ~/.yar.deployment"
+    echo_if_not_silent "-- description in '~/.yar.deployment'"
 fi
 
 if [ -r ~/.yar.creds.random.set ]; then
-    echo_if_not_silent "-- random set of creds in ~/.yar.creds.random.set"
+    echo_if_not_silent "-- random set of creds in '~/.yar.creds.random.set'"
 fi
 
 exit 0
