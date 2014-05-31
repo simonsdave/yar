@@ -261,12 +261,12 @@ create_mac_creds $KEY_SERVICE $PRINCIPAL
 #
 echo_if_not_silent "Deployment Highlights"
 
-echo_if_not_silent "-- entry point @ $AUTH_SERVICE_LB"
-
 DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION" "")
 if [ ! "$DEPLOYMENT_LOCATION" == "" ]; then
     echo_if_not_silent "-- deployment location '$DEPLOYMENT_LOCATION'"
 fi
+
+echo_if_not_silent "-- entry point @ 'http://$AUTH_SERVICE_LB'"
 
 if [ -r ~/.yar.creds ]; then
     echo_if_not_silent "-- creds in '~/.yar.creds'"
