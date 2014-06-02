@@ -67,7 +67,7 @@ fi
 #
 # Useful for debugging
 #
-echo_in_yellow "Key Parameters"
+echo_if_not_silent "Key Parameters" "yellow"
 echo "-- CREDS_BATCH_SIZE = $CREDS_BATCH_SIZE"
 echo "-- COUCH_BATCH_SIZE = $COUCH_BATCH_SIZE"
 echo "-- PERCENT_BASIC_CREDS = $PERCENT_BASIC_CREDS%"
@@ -79,12 +79,12 @@ DATA_DIRECTORY=$SCRIPT_DIR_NAME/temp_couchdb
 rm -rf $DATA_DIRECTORY >& /dev/null
 rm -f $SCRIPT_DIR_NAME/*.creds.couch
 
-yar_init_deployment "$DATA_DIRECTORY"
+yar_init_deployment "$DATA_DIRECTORY" "yellow"
 
 #
 # create a key store in an isolated container
 #
-echo_in_yellow "Creating Key Store"
+echo_if_not_silent "Creating Key Store" "yellow"
 if ! KEY_STORE=$(create_key_store "" "" false); then
     echo "Failed to create key store"
     exit 1
@@ -98,7 +98,7 @@ echo "-- Key Store data saved in '$DATA_DIRECTORY'"
 # each millionth upload and save the copy to the same
 # directory as this script
 #
-echo_in_yellow "Creating Couch Files"
+echo_if_not_silent "Creating Couch Files" "yellow"
 TOTAL_NUMBER_OF_CREDS=0
 while true
 do
@@ -145,7 +145,7 @@ do
         fi
 
         DEST=$SCRIPT_DIR_NAME/$TOTAL_NUMBER_OF_CREDS.$PERCENT_BASIC_CREDS.creds.couch
-        echo_in_red "-- Creating '$DEST'"
+        echo_if_not_silent "-- Creating '$DEST'" "bold yellow"
         cp $DATA_DIRECTORY/Key-Store/data/creds.couch $DEST
     fi
 

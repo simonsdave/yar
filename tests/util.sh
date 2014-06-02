@@ -30,7 +30,10 @@ get_from_json() {
 
 #
 # write the first argument to this function (which is assumed
-# to be a string) to stdout in yellow
+# to be a string) to stdout formatting the string as per the
+# second argument. the second optional argument is a string with
+# a list of formatting words seperated by a space. valid formatting
+# words are bold, yellow, red, blue.
 #
 # arguments
 #   1   string to format
@@ -69,49 +72,17 @@ echo_formatted() {
 
 #
 # write the first argument to this function (which is assumed
-# to be a string) to stdout in yellow
-#
-# exit codes
-#   0   always
-#
-echo_in_yellow() {
-	echo "$(tput setaf 3)${1:-}$(tput sgr0)" 
-	return 0
-}
-
-#
-# write the first argument to this function (which is assumed
-# to be a string) to stdout in red
-#
-# exit codes
-#   0   always
-#
-echo_in_red() {
-	echo "$(tput setaf 1)${1:-}$(tput sgr0)" 
-	return 0
-}
-
-#
-# write the first argument to this function (which is assumed
-# to be a string) to stdout in blue
-#
-# exit codes
-#   0   always
-#
-echo_in_blue() {
-	echo "$(tput setaf 4)${1:-}$(tput sgr0)" 
-	return 0
-}
-
-#
-# write the first argument to this function (which is assumed
 # to be a string) to stderr
+#
+# arguments
+#   1   string to write to stderr
+#   2   format string (see echo_formatted)
 #
 # exit codes
 #   0   always
 #
 echo_to_stderr() {
-	echo ${1:-} >&2
+    echo $(echo_formatted "${1:-}" "${2:-}") >&2
 	return 0
 }
 
@@ -120,12 +91,16 @@ echo_to_stderr() {
 # function is assumed to be a string and the function echo's
 # the string to stdout
 #
+# arguments
+#   1   string to write to stdout
+#   2   format string (see echo_formatted)
+#
 # exit codes
 #   0   always
 #
 echo_if_verbose() {
     if [ 1 -eq ${VERBOSE:-0} ]; then
-        echo $1
+        echo $(echo_formatted "${1:-}" "${2:-}")
     fi
     return 0
 }
@@ -134,6 +109,9 @@ echo_if_verbose() {
 # if the variable $VERBOSE is 1 then the first argument to this
 # function is assumed to be a file name and the function cats the
 # contents of the file to stdout
+#
+# arguments
+#   1   name of file to cat to stdout
 #
 # exit codes
 #   0   always
@@ -150,12 +128,16 @@ cat_if_verbose() {
 # function is assumed to be a string and the function echo's
 # the string to stdout
 #
+# arguments
+#   1   string to write to stdout
+#   2   format string (see echo_formatted)
+#
 # exit codes
 #   0   always
 #
 echo_if_not_silent() {
     if [ 0 -eq ${SILENT:-0} ]; then
-        echo $1
+        echo $(echo_formatted "${1:-}" "${2:-}")
     fi
     return 0
 }
@@ -165,14 +147,17 @@ echo_if_not_silent() {
 # function is assumed to be a string and the function echo's
 # the string to stdout
 #
+# arguments
+#   1   string to write to stderr
+#   2   format string (see echo_formatted)
+#
 # exit codes
 #   0   always
 #
 echo_to_stderr_if_not_silent() {
     if [ 0 -eq ${SILENT:-0} ]; then
-		echo_to_stderr "${1:-}"
+		echo_to_stderr "${1:-}" "${2:-}"
     fi
-
     return 0
 }
 
@@ -181,6 +166,9 @@ echo_to_stderr_if_not_silent() {
 # function is assumed to be a file name and the function cats the
 # contents of the file to stdout
 #
+# arguments
+#   1   name of file to cat to stdout
+#
 # exit codes
 #   0   always
 #
@@ -188,10 +176,11 @@ cat_if_not_silent() {
     if [ 0 -eq ${SILENT:-0} ]; then
         cat $1
     fi
-
     return 0
 }
-# # a few BASH script should be able to run on both Ubuntu
+
+#
+# a few BASH script should be able to run on both Ubuntu
 # and OS X - mktemp operates slightly differently on these
 # two platforms - this function insulates scripts from
 # the differences
@@ -369,6 +358,7 @@ left_zero_pad() {
 #
 # arguments
 #   1   directory in which deployment will be spun up
+#   2   format string for "headers" in output
 #
 # exit codes
 #   0   always
@@ -376,12 +366,12 @@ left_zero_pad() {
 yar_init_deployment() {
     local DEPLOYMENT_LOCATION=${1:-}
 
-    echo_if_not_silent "$(tput setaf 3)Initalizating Deployment$(tput sgr0)"
+    echo_if_not_silent "Initalizating Deployment" "${2:-}"
 
     echo_if_not_silent "-- Removing all existing containers"
     local SCRIPT_DIR_NAME="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
     if ! $SCRIPT_DIR_NAME/rm_all_containers.sh; then
-        echo_to_stderr_if_not_silent "-- Error removing all existing containers"
+        echo_to_stderr_if_not_silent "-- Error removing all existing containers" "red"
         return 1
     fi
 

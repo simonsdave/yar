@@ -51,7 +51,7 @@ fi
 #
 # Useful for debugging
 #
-echo_in_yellow "Key Parameters"
+echo_if_not_silent "Key Parameters" "yellow"
 echo "-- Number of Creds = $MAX_NUMBER_OF_CREDS"
 echo "-- Percent Basic Creds = $PERCENT_BASIC_CREDS%"
 
@@ -67,9 +67,9 @@ mkdir -p "$RESULTS_DIR"
 #
 DATA_DIRECTORY=$(platform_safe_mktemp_directory)
 
-yar_init_deployment "$DATA_DIRECTORY"
+yar_init_deployment "$DATA_DIRECTORY" "yellow"
 
-echo_in_yellow "Creating Key Store"
+echo_if_not_silent "Creating Key Store" "yellow"
 if ! KEY_STORE=$(create_key_store); then
     echo "Failed to create Key Store"
     exit 1
@@ -94,7 +94,7 @@ creds_batch_sizes() {
     done
 }
 
-echo_in_yellow "Starting Test"
+echo_if_not_silent "Starting Test" "yellow"
 TOTAL_NUMBER_OF_CREDS=0
 for CREDS_BATCH_SIZE in $(creds_batch_sizes)
 do
@@ -166,7 +166,7 @@ done
 # charts so we can figure out some results!
 #
 
-echo_in_yellow "Generating result graphs"
+echo_if_not_silent "Generating result graphs" "yellow"
 
 #
 # generate a title page for the summary report

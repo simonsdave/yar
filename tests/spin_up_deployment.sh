@@ -105,12 +105,12 @@ fi
 #
 # some cleanup before we start the meat of this script
 #
-yar_init_deployment "$DOCKER_CONTAINER_DATA"
+yar_init_deployment "$DOCKER_CONTAINER_DATA" "yellow"
 
 #
 # App Service
 #
-echo_if_not_silent "Starting App Service(s)"
+echo_if_not_silent "Starting App Service(s)" "yellow"
 
 NUMBER_APP_SERVICES_PATTERN='\["app_service"\,"number_of_services"\]'
 NUMBER_APP_SERVICES=$(get_from_json "$NUMBER_APP_SERVICES_PATTERN" "1" < $DEPLOYMENT_PROFILE)
@@ -128,7 +128,7 @@ done
 #
 # App Service LB
 #
-echo_if_not_silent "Starting App Service LB"
+echo_if_not_silent "Starting App Service LB" "yellow"
 if ! APP_SERVICE_LB=$(create_app_service_lb); then
     echo_to_stderr_if_not_silent "-- App Service LB failed to start"
     exit 1
@@ -138,7 +138,7 @@ echo_if_not_silent "-- App Service LB listening on $APP_SERVICE_LB"
 #
 # Nonce Store(s)
 #
-echo_if_not_silent "Starting Nonce Store(s)"
+echo_if_not_silent "Starting Nonce Store(s)" "yellow"
 
 NUMBER_NONCE_STORES_PATTERN='\["nonce_store"\,"number_of_servers"\]'
 NUMBER_NONCE_STORES=$(get_from_json "$NUMBER_NONCE_STORES_PATTERN" "1" < $DEPLOYMENT_PROFILE)
@@ -159,7 +159,7 @@ NONCE_STORES=$(echo $NONCE_STORES | sed -e "s/^\,//g")
 #
 # Key Store
 #
-echo_if_not_silent "Starting Key Store"
+echo_if_not_silent "Starting Key Store" "yellow"
 
 KEY_STORE_SIZE=""
 if [ "$DEPLOYMENT_PROFILE" != "" ]; then
@@ -192,7 +192,7 @@ fi
 #
 # Key Service
 #
-echo_if_not_silent "Starting Key Service(s)"
+echo_if_not_silent "Starting Key Service(s)" "yellow"
 
 NUMBER_KEY_SERVICES_PATTERN='\["key_service"\,"number_of_services"\]'
 NUMBER_KEY_SERVICES=$(get_from_json "$NUMBER_KEY_SERVICES_PATTERN" "1" < $DEPLOYMENT_PROFILE)
@@ -212,7 +212,7 @@ done
 #
 # Key Service LB
 #
-echo_if_not_silent "Starting Key Service LB"
+echo_if_not_silent "Starting Key Service LB" "yellow"
 if ! KEY_SERVICE_LB=$(create_key_service_lb); then
     echo_to_stderr_if_not_silent "-- Key Service LB failed to start"
     exit 1
@@ -222,7 +222,7 @@ echo_if_not_silent "-- Key Service LB listening on $KEY_SERVICE_LB"
 #
 # Auth Service(s)
 #
-echo_if_not_silent "Starting Auth Service(s)"
+echo_if_not_silent "Starting Auth Service(s)" "yellow"
 
 NUMBER_AUTH_SERVICES_PATTERN='\["auth_service"\,"number_of_servers"\]'
 NUMBER_AUTH_SERVICES=$(get_from_json "$NUMBER_AUTH_SERVICES_PATTERN" "1" < $DEPLOYMENT_PROFILE)
@@ -242,7 +242,7 @@ done
 #
 # Auth Service LB
 #
-echo_if_not_silent "Starting Auth Service LB"
+echo_if_not_silent "Starting Auth Service LB" "yellow"
 if ! AUTH_SERVICE_LB=$(create_auth_service_lb); then
     echo_to_stderr_if_not_silent "-- Auth Service LB failed to start"
     exit 1
@@ -252,14 +252,17 @@ echo_if_not_silent "-- Auth Service LB listening on $AUTH_SERVICE_LB"
 #
 # services now running ... let's provision some creds
 #
+echo_if_not_silent "Provisioning credentials" "yellow"
 PRINCIPAL="dave@example.com"
+echo_if_not_silent "-- basic"
 create_basic_creds $KEY_SERVICE $PRINCIPAL
+echo_if_not_silent "-- mac"
 create_mac_creds $KEY_SERVICE $PRINCIPAL
 
 #
 # Summarize the key items in the deployment
 #
-echo_if_not_silent "Deployment Highlights"
+echo_if_not_silent "Deployment Highlights" "yellow"
 
 DEPLOYMENT_LOCATION=$(get_deployment_config "DEPLOYMENT_LOCATION" "")
 if [ ! "$DEPLOYMENT_LOCATION" == "" ]; then
