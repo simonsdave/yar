@@ -32,6 +32,45 @@ get_from_json() {
 # write the first argument to this function (which is assumed
 # to be a string) to stdout in yellow
 #
+# arguments
+#   1   string to format
+#   2   format string
+#
+# exit codes
+#   0   always
+#
+echo_formatted() {
+
+    for FORMAT in $(echo ${2:-} | tr " " "\n")
+    do
+        FORMAT=$(echo $FORMAT | awk "{print toupper(\"$FORMAT\")}")
+        case "$FORMAT" in
+            BOLD)
+                echo -n "$(tput bold)"
+                ;;
+            RED)
+                echo -n "$(tput setaf 1)"
+                ;;
+            YELLOW)
+                echo -n "$(tput setaf 3)"
+                ;;
+            BLUE)
+                echo -n "$(tput setaf 4)"
+                ;;
+            *)
+                ;;
+        esac
+    done
+
+	echo "${1:-}$(tput sgr0)" 
+
+	return 0
+}
+
+#
+# write the first argument to this function (which is assumed
+# to be a string) to stdout in yellow
+#
 # exit codes
 #   0   always
 #
@@ -73,33 +112,6 @@ echo_in_blue() {
 #
 echo_to_stderr() {
 	echo ${1:-} >&2
-	return 0
-}
-
-# # a few BASH script should be able to run on both Ubuntu
-# and OS X - mktemp operates slightly differently on these
-# two platforms - this function insulates scripts from
-# the differences
-#
-# exit codes
-#   0   always
-#
-platform_safe_mktemp() {
-	mktemp 2> /dev/null || mktemp -t DAS
-	return 0
-}
-
-#
-# a few BASH script should be able to run on both Ubuntu
-# and OS X - mktemp operates slightly differently on these
-# two platforms - this function insulates scripts from
-# the differences
-#
-# exit codes
-#   0   always
-#
-platform_safe_mktemp_directory() {
-	mktemp -d 2> /dev/null || mktemp -d -t DAS
 	return 0
 }
 
@@ -179,6 +191,33 @@ cat_if_not_silent() {
 
     return 0
 }
+# # a few BASH script should be able to run on both Ubuntu
+# and OS X - mktemp operates slightly differently on these
+# two platforms - this function insulates scripts from
+# the differences
+#
+# exit codes
+#   0   always
+#
+platform_safe_mktemp() {
+	mktemp 2> /dev/null || mktemp -t DAS
+	return 0
+}
+
+#
+# a few BASH script should be able to run on both Ubuntu
+# and OS X - mktemp operates slightly differently on these
+# two platforms - this function insulates scripts from
+# the differences
+#
+# exit codes
+#   0   always
+#
+platform_safe_mktemp_directory() {
+	mktemp -d 2> /dev/null || mktemp -d -t DAS
+	return 0
+}
+
 
 #
 # test if a docker image exists in the local repo
