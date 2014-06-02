@@ -85,7 +85,7 @@ do
 done
 
 if [ "$DOCKER_CONTAINER_DATA" == "" ]; then
-    DOCKER_CONTAINER_DATA=$(mktemp -d)
+    DOCKER_CONTAINER_DATA=$(platform_safe_mktemp_directory)
 else
     if [ ! -d $DOCKER_CONTAINER_DATA ]; then
         echo "Can't find directory '$DOCKER_CONTAINER_DATA'"
