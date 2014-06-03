@@ -25,4 +25,4 @@ class APIKey(str):
         across multiple data centers so needed an approach which
         saw a very high probability that generated api keys
         where unique."""
-        return cls(str(uuid.uuid4()).replace("-", ""))
+        return cls(uuid.uuid4().hex)
