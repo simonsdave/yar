@@ -82,3 +82,71 @@ CREDS=$(curl -s http://localhost:5984/creds/$API_KEY | sed -e 's/"is_deleted":fa
 CONTENT_TYPE="Content-Type: application/json; charset=utf8"
 curl -v -X PUT -H "$CONTENT_TYPE" -d "$CREDS" http://localhost:5984/creds/$API_KEY
 ~~~~~
+
+# Operational Scenarios
+
+To get metrics on the creds database
+
+~~~~~
+curl -s http://localhost:5984/creds | python -mjson.tool
+{
+    "committed_update_seq": 100001,
+    "compact_running": false,
+    "data_size": 38050910,
+    "db_name": "creds",
+    "disk_format_version": 6,
+    "disk_size": 49496177,
+    "doc_count": 100001,
+    "doc_del_count": 0,
+    "instance_start_time": "1401746975591983",
+    "purge_seq": 0,
+    "update_seq": 100001
+}
+~~~~~
+
+To get the list of all views in the creds database
+(request below based on [this](http://stackoverflow.com/questions/2814352/get-all-design-documents-in-couchdb))
+
+~~~~~
+curl -s 'http://localhost:5984/creds/_all_docs?startkey="_design"&endkey="_design0"' | python -mjson.tool
+{
+    "offset": 62651,
+    "rows": [
+        {
+            "id": "_design/creds",
+            "key": "_design/creds",
+            "value": {
+                "rev": "1-893becf62a1444aedb82aeacda0f2100"
+            }
+        }
+    ],
+    "total_rows": 100001
+}
+~~~~~
+
+To get metrics on the creds view
+
+~~~~~
+curl -s http://localhost:5984/creds/_design/creds/_info | python -mjson.tool
+{
+    "name": "creds",
+    "view_index": {
+        "compact_running": false,
+        "data_size": 0,
+        "disk_size": 51,
+        "language": "javascript",
+        "purge_seq": 0,
+        "signature": "d892d333ca8f8ec8a7850c3e6d5e5285",
+        "update_seq": 0,
+        "updater_running": false,
+        "waiting_clients": 0,
+        "waiting_commit": false
+    }
+}
+~~~~~
+
+See [CouchDB reference manual](http://couchdb.readthedocs.org/en/latest/maintenance/compaction.html)
+for lots of details. The manual does a good outlining 
+[database compaction](http://couchdb.readthedocs.org/en/latest/maintenance/compaction.html#database-compaction)
+and
+[view compaction](http://couchdb.readthedocs.org/en/latest/maintenance/compaction.html#views-compaction).
