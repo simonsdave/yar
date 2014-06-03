@@ -364,9 +364,13 @@ left_zero_pad() {
 #   0   always
 #
 yar_init_deployment() {
-    local DEPLOYMENT_LOCATION=${1:-}
 
     echo_if_not_silent "Initalizating Deployment" "${2:-}"
+
+    local DEPLOYMENT_LOCATION=${1:-}
+    if [ "" == "$DEPLOYMENT_LOCATION" ]; then
+        DEPLOYMENT_LOCATION=$(platform_safe_mktemp_directory)
+    fi
 
     echo_if_not_silent "-- Removing all existing containers"
     local SCRIPT_DIR_NAME="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
