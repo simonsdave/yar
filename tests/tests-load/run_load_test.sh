@@ -319,6 +319,49 @@ run_load_test() {
 
     #
     # during the load test the auth service was making requests
+    # to the nonce store. the statements below extract timing
+    # information about the requests from the auth service's
+    # log and then plots graphs of response times.
+    #
+
+    TEMPFILE=$(mktemp)
+    cat $DOCKER_CONTAINER_DATA/Auth-Service-*/auth_service_log | \
+        grep "Nonce Store.*responded in [0-9]\+ us$" | \
+        awk 'BEGIN {FS = "\t"; OFS = "\t"}; {print int($1 / 1000), $5}' | \
+        sed -s "s/\tNonce Store.*responded in/\t/g" |
+        sed -s "s/[[:space:]]us$//g" | \
+        awk 'BEGIN {FS = "\t"; OFS = "\t"}; {print $1, int($2 / 1000)}' \
+        > $TEMPFILE
+
+    PERCENTILETEMPFILE=$(mktemp)
+    generate_yar_server_log_file_percentile \
+        $PERCENTILE \
+        $TEMPFILE \
+        $PERCENTILETEMPFILE
+
+    TITLE="Nonce Store Response Time - $START_TIME"
+    TITLE="$TITLE: Concurrency = $CONCURRENCY"
+    TITLE="$TITLE; ${PERCENTILE}th Percentile"
+    gnuplot \
+        -e "input_filename='$PERCENTILETEMPFILE'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-09-nonce-store-response-time.png'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
+
+    TITLE="Nonce Store Response Time - $START_TIME"
+    TITLE="$TITLE: Concurrency = $CONCURRENCY"
+    TITLE="$TITLE; ${PERCENTILE}th Percentile"
+    gnuplot \
+        -e "input_filename='$PERCENTILETEMPFILE'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-10-nonce-store-response-time-by-time-in-test.png'" \
+        -e "title='$TITLE'" \
+        $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time_by_time
+
+    rm "$TEMPFILE"
+    rm "$PERCENTILETEMPFILE"
+
+    #
+    # during the load test the auth service was making requests
     # to the app service. the statements below extract timing
     # information about the requests from the auth service's
     # log and then plots 2 different graphs of response times.
@@ -342,7 +385,7 @@ run_load_test() {
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-08-app-service-response-time.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-11-app-service-response-time.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time
 
@@ -351,7 +394,7 @@ run_load_test() {
     TITLE="$TITLE; ${PERCENTILE}th Percentile"
     gnuplot \
         -e "input_filename='$PERCENTILETEMPFILE'" \
-        -e "output_filename='$RESULTS_FILE_BASE_NAME-09-app-service-response-time-by-time-in-test.png'" \
+        -e "output_filename='$RESULTS_FILE_BASE_NAME-12-app-service-response-time-by-time-in-test.png'" \
         -e "title='$TITLE'" \
         $SCRIPT_DIR_NAME/gp.cfg/yar_server_response_time_by_time
 
