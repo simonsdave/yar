@@ -3,7 +3,7 @@
 # | python -mjson.tool
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
-source $SCRIPT_DIR_NAME/util.sh
+source $SCRIPT_DIR_NAME/../util.sh
 
 as_mb() {
     BYTES=$1
@@ -77,8 +77,11 @@ is_creds_view_compaction_running() {
 
 yar_init_deployment
 
-KS=$(create_key_store 100000 90)
-echo $KS
+if ! KS=$(create_key_store 100000 90); then
+    echo "error starting key store"
+    exit 1
+fi
+echo "Key Store @ http://$KS"
 
 database_metrics "$KS"
 creds_view_metrics "$KS"
