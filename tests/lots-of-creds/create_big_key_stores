@@ -89,7 +89,7 @@ if ! KEY_STORE=$(create_key_store "" "" false); then
     echo "Failed to create key store"
     exit 1
 fi
-echo "-- Key Store available @ '$KEY_STORE'"
+echo "-- Key Store available @ 'http://$KEY_STORE'"
 echo "-- Key Store data saved in '$DATA_DIRECTORY'"
 
 #
