@@ -87,16 +87,21 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
         the_creds = {
             "_id": "9010212ebe184b13aecbd5ca5d72ae64",
             "_rev": "1-c81488ccbec47b14cec7010e18459a16",
-            "is_deleted": True,         # :TODO: is 'True' right here?
+            "is_deleted": True,
             "mac_algorithm": mac.MAC.algorithm,
             "mac_key": mac.MACKey.generate(),
             "mac_key_identifier": the_mac_key_identifier,
             "principal": "dave@example.com",
             "type": "creds_v1.0",
         }
+
         the_body = {
             "rows": [
-                the_creds,
+                {
+                    "id": the_creds["_id"],
+                    "key": the_creds["mac_key_identifier"],
+                    "value": the_creds,
+                },
             ],
         }
 
