@@ -20,7 +20,7 @@ usage() {
     echo "usage: `basename $0` [--mnc <max # creds>] [--pbc <% basic creds>]"
 }
 
-MAX_NUMBER_OF_CREDS=20000000
+MAX_NUMBER_OF_CREDS=5000000
 PERCENT_BASIC_CREDS=90
 
 while [[ 0 -ne $# ]]
@@ -88,7 +88,7 @@ creds_batch_sizes() {
     echo 1000
     echo 5000
     echo 19000
-    for i in $(seq 100)
+    for i in $(seq 10000)
     do
         echo 25000
     done
