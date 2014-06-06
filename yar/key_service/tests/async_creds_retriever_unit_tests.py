@@ -25,7 +25,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
         the_code,
         the_body):
 
-        self.the_key = str(uuid.uuid4()).replace("-", "")
+        self.the_key = uuid.uuid4().hex
 
         def async_req_to_key_store_patch(
             acr,
@@ -37,7 +37,9 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             self.assertIsNotNone(acr)
 
             self.assertIsNotNone(path)
-            self.assertEqual(path, self.the_key)
+            expected_path_fmt = '_design/creds/_view/by_identifier?key="%s"'
+            expected_path = expected_path_fmt % self.the_key
+            self.assertEqual(path, expected_path)
 
             self.assertIsNotNone(method)
             self.assertEqual(method, "GET")
@@ -81,15 +83,21 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
         the_is_filter_out_deleted,
         the_is_filter_out_non_model_properties):
 
-        the_body = {
+        the_mac_key_identifier = mac.MACKeyIdentifier.generate()
+        the_creds = {
             "_id": "9010212ebe184b13aecbd5ca5d72ae64",
             "_rev": "1-c81488ccbec47b14cec7010e18459a16",
-            "is_deleted": True,
+            "is_deleted": True,         # :TODO: is 'True' right here?
             "mac_algorithm": mac.MAC.algorithm,
             "mac_key": mac.MACKey.generate(),
-            "mac_key_identifier": mac.MACKeyIdentifier.generate(),
+            "mac_key_identifier": the_mac_key_identifier,
             "principal": "dave@example.com",
             "type": "creds_v1.0",
+        }
+        the_body = {
+            "rows": [
+                the_creds,
+            ],
         }
 
         def async_req_to_key_store_patch(
@@ -102,7 +110,9 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             self.assertIsNotNone(acr)
 
             self.assertIsNotNone(path)
-            self.assertEqual(path, the_body["mac_key_identifier"])
+            expected_path_fmt = '_design/creds/_view/by_identifier?key="%s"'
+            expected_path = expected_path_fmt % the_mac_key_identifier
+            self.assertEqual(path, expected_path)
 
             self.assertIsNotNone(method)
             self.assertEqual(method, "GET")
@@ -113,6 +123,10 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             callback(is_ok=True, code=httplib.OK, body=the_body)
 
         def on_async_create_done(creds, is_creds_collection):
+
+            self.assertIsNotNone(is_creds_collection)
+            self.assertFalse(is_creds_collection)
+
             if the_is_filter_out_deleted:
                 self.assertIsNone(creds)
             else:
@@ -120,19 +134,16 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
                 if the_is_filter_out_non_model_properties:
                     self.assertEqual(
                         creds,
-                        ks_util.filter_out_non_model_creds_properties(the_body))
+                        ks_util.filter_out_non_model_creds_properties(the_creds))
                 else:
-                    self.assertEqual(creds, the_body)
-
-            self.assertIsNotNone(is_creds_collection)
-            self.assertFalse(is_creds_collection)
+                    self.assertEqual(creds, the_creds)
 
         name_of_method_to_patch = "yar.key_service.ks_util.AsyncAction.async_req_to_key_store"
         with mock.patch(name_of_method_to_patch, async_req_to_key_store_patch):
             acr = async_creds_retriever.AsyncCredsRetriever(type(self)._key_store)
             acr.fetch(
                 callback=on_async_create_done,
-                key=the_body["mac_key_identifier"],
+                key=the_mac_key_identifier,
                 principal=None,
                 is_filter_out_deleted=the_is_filter_out_deleted,
                 is_filter_out_non_model_properties=the_is_filter_out_non_model_properties)

@@ -22,7 +22,7 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
 
     def _test_bad(self, the_is_ok, the_auth_scheme, the_http_status_code):
 
-        self.the_principal = str(uuid.uuid4()).replace("-", "")
+        self.the_principal = uuid.uuid4().hex
 
         def async_req_to_key_store_patch(
             acc,
@@ -34,9 +34,10 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
             self.assertIsNotNone(acc)
 
             self.assertIsNotNone(path)
+            self.assertEqual(path, "")
 
             self.assertIsNotNone(method)
-            self.assertEqual(method, "PUT")
+            self.assertEqual(method, "POST")
 
             self.assertIsNotNone(body)
 
@@ -54,9 +55,6 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
                 mac_section_of_body = body["mac"]
 
                 self.assertIn("mac_key_identifier", mac_section_of_body)
-                self.assertEqual(
-                    mac_section_of_body["mac_key_identifier"],
-                    path)
 
                 self.assertIn("mac_key", mac_section_of_body)
 
@@ -113,7 +111,7 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
 
     def _test_ok(self, the_auth_scheme):
 
-        self.the_principal = str(uuid.uuid4()).replace("-", "")
+        self.the_principal = uuid.uuid4().hex
         self.the_creds = None
 
         def async_req_to_key_store_patch(
@@ -126,9 +124,10 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
             self.assertIsNotNone(acc)
 
             self.assertIsNotNone(path)
+            self.assertEqual(path, "")
 
             self.assertIsNotNone(method)
-            self.assertEqual(method, "PUT")
+            self.assertEqual(method, "POST")
 
             self.assertIsNotNone(body)
             self.the_creds = body
@@ -147,9 +146,6 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
                 mac_section_of_body = body["mac"]
 
                 self.assertIn("mac_key_identifier", mac_section_of_body)
-                self.assertEqual(
-                    mac_section_of_body["mac_key_identifier"],
-                    path)
 
                 self.assertIn("mac_key", mac_section_of_body)
 

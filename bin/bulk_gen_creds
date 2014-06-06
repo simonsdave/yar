@@ -23,16 +23,16 @@ if __name__ == "__main__":
     print '{"docs": ['
 
     mac_fmt = (
-        '{"_id": "%s", '
-        '"principal": "%s@example.com", '
-        '"type": "creds_v1.0", '
-        '"is_deleted": false, '
-        '"mac": {'
-        '"mac_key_identifier": "%s",'
-        '"mac_key": "%s",'
-        '"mac_algorithm": "%s"'
-        '}'
-        '},'
+        '{'
+        '    "principal": "%s@example.com", '
+        '    "type": "creds_v1.0", '
+        '    "is_deleted": false, '
+        '    "mac": {'
+        '        "mac_key_identifier": "%s",'
+        '        "mac_key": "%s",'
+        '        "mac_algorithm": "%s"'
+        '    }'
+        '}%s'
     )
     
     for i in range(0, number_of_mac_creds):
@@ -40,21 +40,22 @@ if __name__ == "__main__":
         mac_key = yar.util.mac.MACKey.generate()
         mac_algorithm = yar.util.mac.MAC.algorithm
         principal = str(uuid.uuid4()).replace("-", "")
+        comma_or_nothing = "" if i == (number_of_mac_creds - 1) and (0 == number_of_basic_creds) else ","
         print mac_fmt % (
-            mac_key_identifier,
             principal,
             mac_key_identifier,
             mac_key,
-            mac_algorithm)
+            mac_algorithm,
+            comma_or_nothing)
 
     basic_fmt = (
-        '{"_id": "%s", '
-        '"principal": "%s@example.com", '
-        '"type": "creds_v1.0", '
-        '"is_deleted": false, '
-        '"basic": {'
-        '"api_key": "%s"'
-        '}'
+        '{'
+        '    "principal": "%s@example.com", '
+        '    "type": "creds_v1.0", '
+        '    "is_deleted": false, '
+        '    "basic": {'
+        '        "api_key": "%s"'
+        '    }'
         '}%s'
     )
     
@@ -62,6 +63,6 @@ if __name__ == "__main__":
         api_key = yar.util.basic.APIKey.generate()
         principal = str(uuid.uuid4()).replace("-", "")
         comma_or_nothing = "" if i == (number_of_basic_creds - 1) else ","
-        print basic_fmt % (api_key, principal, api_key, comma_or_nothing)
+        print basic_fmt % (principal, api_key, comma_or_nothing)
 
     print ']}'

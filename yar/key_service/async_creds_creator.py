@@ -35,27 +35,25 @@ class AsyncCredsCreator(AsyncAction):
             "is_deleted": False,
         }
         if auth_scheme == "mac":        
-            mac_key_identifier = mac.MACKeyIdentifier.generate()
             self._creds["mac"] = {
-                "mac_key_identifier": mac_key_identifier,
+                "mac_key_identifier": mac.MACKeyIdentifier.generate(),
                 "mac_key": mac.MACKey.generate(),
                 "mac_algorithm": mac.MAC.algorithm,
             }
-            path = mac_key_identifier
         else:
-            api_key = basic.APIKey.generate()
             self._creds["basic"] = {
-                "api_key": api_key,
+                "api_key": basic.APIKey.generate(),
             }
-            path = api_key
 
         self.async_req_to_key_store(
-            path,
-            "PUT",
+            "",
+            "POST",
             self._creds,
             self._on_async_req_to_key_store_done)
 
     def _on_async_req_to_key_store_done(self, is_ok, code=None, body=None):
+        """Called when async_req_to_key_store() completes."""
+
         if not is_ok or code != httplib.CREATED:
             self._callback(None)
             return

@@ -54,18 +54,23 @@ class AsyncAction(object):
 
         self._my_callback = callback
 
+        url = "http://%s/%s" % (self.key_store, path)
+
         json_encoded_body = json.dumps(body) if body else None
 
-        url = "http://%s/%s" % (self.key_store, path)
         headers = tornado.httputil.HTTPHeaders({
             "Accept": "application/json",
-            "Accept-Encoding": "charset=utf8"
+            "Accept-Encoding": "charset=utf8",
         })
+        if body:
+            headers["Content-Type"] = "application/json; charset=utf8"
+
         request = tornado.httpclient.HTTPRequest(
             url,
             method=method,
             headers=headers,
             body=json_encoded_body)
+
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_client.fetch(
             request,
@@ -74,13 +79,24 @@ class AsyncAction(object):
     def _http_client_fetch_callback(self, response):
         """Called when ```tornado.httpclient.AsyncHTTPClient``` completes."""
 
-        _logger.info("Key Store (%s - %s) responded in %d ms",
+        """Need to be careful about changing this message format because
+        the load testing infrastructure srcaps the logs for this message
+        in this format."""
+        _logger.info(
+            "Key Store (%s - %s) responded in %d ms",
             response.effective_url,
             response.request.method,
             int(response.request_time * 1000))
 
         if response.error:
+            _logger.error(
+                "Key Store responded to %s on %s with error '%s'",
+                response.request.method,
+                response.effective_url,
+                response.error)
+
             self._my_callback(False)
+
             return
 
         wrapped_response = trhutil.Response(response)
