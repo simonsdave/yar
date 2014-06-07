@@ -117,6 +117,19 @@ do
     fi
 
     #
+    # force materialization of the creds view
+    #
+    STATUS_CODE=$(curl \
+        -s \
+        -o /dev/null \
+        --write-out '%{http_code}' \
+        http://$KEY_STORE/_design/creds/_view/by_identifier?limit=1)
+    if [ $? -ne 0 ] || [ "$STATUS_CODE" != "200" ]; then
+        echo "View materialization failed"
+        exit 1
+    fi
+
+    #
     # local.ini for CouchDB should have been configured with
     #
     # [couchdb]
@@ -148,7 +161,15 @@ do
     DATA_SIZE=$(cat $TEMP_DATABASE_METRICS | get_from_json '\["data_size"\]')
     DISK_SIZE=$(cat $TEMP_DATABASE_METRICS | get_from_json '\["disk_size"\]')
 
-    echo -e "$DOC_COUNT\t$DATA_SIZE\t$DISK_SIZE" >> $DATABASE_METRICS
+    curl \
+        -s \
+        -X GET \
+        http://$KEY_STORE/_design/creds/_info  >& $TEMP_DATABASE_METRICS
+
+    VIEW_DATA_SIZE=$(cat $TEMP_DATABASE_METRICS | get_from_json '\["view_index","data_size"\]')
+    VIEW_DISK_SIZE=$(cat $TEMP_DATABASE_METRICS | get_from_json '\["view_index","disk_size"\]')
+
+    echo -e "$DOC_COUNT\t$DATA_SIZE\t$DISK_SIZE\t$VIEW_DATA_SIZE\t$VIEW_DISK_SIZE" >> $DATABASE_METRICS
 
     rm $TEMP_DATABASE_METRICS
 
@@ -158,8 +179,6 @@ do
     fi
 
 done
-
-# :TODO: tell $KEY_STORE to clean itself up
 
 #
 # now that we've generated all the metrics let's generate some pretty
@@ -192,7 +211,7 @@ convert \
 SUMMARY_DATABASE_METRICS=$(platform_safe_mktemp)
 
 awk 'BEGIN {FS = "\t"; OFS = "\t"} ; \
-    { print int($1/1000), int($2/(1024*1024)), int($3/(1024*1024)) }' \
+    { print int($1/1000), int($2/(1024*1024)), int($3/(1024*1024)), int($4/(1024*1024)), int($5/(1024*1024)) }' \
     $DATABASE_METRICS > $SUMMARY_DATABASE_METRICS
 
 #
