@@ -11,13 +11,35 @@
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source $SCRIPT_DIR_NAME/../util.sh
 
-#
-# this script accepts one optional (--mnc) command line argument
-# which defines (roughly) the max number of credentials to load
-# into the key store
-#
 usage() {
     echo "usage: `basename $0` [--mnc <max # creds>] [--pbc <% basic creds>]"
+}
+
+# arguments
+#   1   ip:port/database
+#
+# return value
+#   0   if view compaction is running
+#   1   if view compaction is not running
+
+is_creds_view_compaction_running() {
+
+    TEMP_DATABASE_METRICS=$(platform_safe_mktemp)
+
+    curl \
+        -s \
+        -X GET \
+        http://$1/_design/creds/_info >& $TEMP_DATABASE_METRICS
+
+    COMPACT_RUNNING=$(cat $TEMP_DATABASE_METRICS | get_from_json '\["view_index","compact_running"\]')
+
+    rm $TEMP_DATABASE_METRICS
+
+    if [ "$COMPACT_RUNNING" == "true" ]; then
+        return 0
+    fi
+
+    return 1
 }
 
 MAX_NUMBER_OF_CREDS=5000000
@@ -128,6 +150,26 @@ do
         echo "View materialization failed"
         exit 1
     fi
+
+    #
+    # compact the creds view
+    #
+    echo -n "-- Compacting creds view ."
+
+    curl \
+        -s \
+        -o /dev/null \
+        -X POST \
+        -H "Content-Type: application/json" \
+        http://$KEY_STORE/_compact/creds
+
+    sleep 1
+    while is_creds_view_compaction_running "$KEY_STORE"
+    do
+        echo -n "."
+        sleep 1
+    done
+    echo " done"
 
     #
     # local.ini for CouchDB should have been configured with
