@@ -1,7 +1,7 @@
 Database performance can often have a dramatic impact on
-overall system performance. The Key Store load tests were
-created to explore how Key Store size (# of credentials)
-affects the Key Store's performance. Also, the Key Store
+overall system performance. The [Key Store](../../yar/key_store) load tests were
+created to explore how [Key Store](../../yar/key_store) size (# of credentials)
+affects the [Key Store's](../../yar/key_store) performance. Also, the [Key Store](../../yar/key_store)
 load tests provide an effective mechanism for understanding
 how [CouchDB](http://couchdb.apache.org/) performs in general.
 
