@@ -32,6 +32,7 @@ set datafile separator ','
 set style line 1 lc rgb '#0000ff' lt 1 lw 10
 set style line 2 lc rgb '#ff0000' lt 1 lw 10
 
-plot cache_hits_input_filename using 1:2 with linespoints ls 1 title '# Hits (aka # Nonce Reuses)', sets_input_filename using 1:2 with linespoints ls 2 title '# Sets (aka # Nonce Saves)'
+plot cache_hits_input_filename using 1:2 with linespoints ls 1 title '# Hits (aka # Nonce Reuses)', \
+     sets_input_filename using 1:2 with linespoints ls 2 title '# Sets (aka # Nonce Saves)'
 
 exit
