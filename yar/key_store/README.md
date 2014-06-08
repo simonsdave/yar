@@ -45,27 +45,12 @@ To get an existing set of credentials used for
 [Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)
 
 ~~~~~
-curl -s 'http://localhost:5984/creds/_design/creds/_view/by_identifier?key="<API KEY>"'
+curl -s 'http://localhost:5984/creds/_design/by_identifier/_view/by_identifier?key="<API KEY>"'
 ~~~~~
-
-> It's worth pausing for 2 seconds to review the above
-to understand why it's using a CouchDB view to retrieve
-and individual document.
-In early versions of yar, the Key Store used the
-[Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)'s
-API Key as the CouchDB document key. Turns out the API Key
-is not "CouchDB b-tree friendly". What does this mean? The best
-illustration of the problem came when exploring how the size of the
-database grew as a function of the number of credentials
-(see [this](../../tests/tests-key-store-size/) for test details).
-After some Googling it became clear that the cause of the problem
-was using Python's uuid.uuid4() for document keys and
-PUTing new documents into CouchDB rather than using CouchDB's own
-UUIDs and POSTing new documents.
 
 To create a new set of credentials for
 [MAC Authentication](http://en.wikipedia.org/wiki/Message_authentication_code)
-and save them to th Key Store
+and save them to the Key Store
 
 ~~~~~
 MAC_KEY_IDENTIFIER=$(python -c "from yar.util.mac import MACKeyIdentifier; print MACKeyIdentifier.generate()")
@@ -80,13 +65,13 @@ To get an existing set of credentials used for
 [MAC Authentication](http://en.wikipedia.org/wiki/Message_authentication_code)
 
 ~~~~~
-curl -s 'http://localhost:5984/creds/_design/creds/_view/by_identifier?key="<MAC KEY IDENTIFIER>"'
+curl -s 'http://localhost:5984/creds/_design/by_identifier/_view/by_identifier?key="<MAC KEY IDENTIFIER>"'
 ~~~~~
 
 To get all credentials for a principal
 
 ~~~~~
-curl -s 'http://localhost:5984/creds/_design/creds/_view/by_principal?key="dave@example.com"'
+curl -s 'http://localhost:5984/creds/_design/by_principal/_view/by_principal?key="dave@example.com"'
 ~~~~~
 
 To delete an existing set of credentials used for
@@ -99,7 +84,44 @@ CONTENT_TYPE="Content-Type: application/json; charset=utf8"
 curl -v -X PUT -H "$CONTENT_TYPE" -d "$CREDS" http://localhost:5984/creds/$API_KEY
 ~~~~~
 
-# Operational Scenarios
+# Design Notes
+
+## Document Keys & UUIDs
+In early versions of yar, the Key Store used the
+[Basic Authentication](http://en.wikipedia.org/wiki/Basic_authentication)'s
+API Key and MAC Key Identifier as the CouchDB document key.
+It turns out that these kind of keys are not "CouchDB b-tree friendly".
+What does this mean? The best
+illustration of the problem came when exploring how the size of the
+database grew as a function of the number of credentials
+(see [this](../../tests/tests-key-store-size/) for test details).
+After some Googling it became clear that the cause of the problem
+was using Python's uuid.uuid4() for document keys and
+PUTing new documents into CouchDB rather than using CouchDB's own
+UUIDs and POSTing new documents.
+
+> So, the CouchDB design pattern that's used for document keys is:
+* POST to create documents and let CouchDB generate its own UUID for the
+new document
+* documents probably have a natural key that you would have liked to use
+as the document key; include this key as a document attribute and create
+a few to permit retrieval of documents by the natural key
+
+## Design Docs & Views
+In the above you may noticed that all of yar's CouchDB views are maintained
+within there own design document. Early versions of yar had a single design
+document containing many views but this was changed as operational experience
+was gained with CouchDB (mostly through load testing) when the following kinds
+of things where learned
+* you only compact design document not views
+(see [this](http://couchdb.readthedocs.org/en/latest/maintenance/compaction.html#views-compaction))
+* you can only get metrics about design documents not views
+(see [this](http://couchdb.readthedocs.org/en/latest/api/ddoc/common.html?highlight=_info#get--db-_design-ddoc-_info]))
+
+> So, the CouchDB design pattern that used for view storage is:
+* every view is stored in its own design document
+
+# Operational Notes
 
 To get metrics on the creds database
 
@@ -140,10 +162,10 @@ curl -s 'http://localhost:5984/creds/_all_docs?startkey="_design"&endkey="_desig
 }
 ~~~~~
 
-To get metrics on the creds view
+To get metrics on the by_identifier design document
 
 ~~~~~
-curl -s http://localhost:5984/creds/_design/creds/_info | python -mjson.tool
+curl -s http://localhost:5984/creds/_design/by_identifier/_info | python -mjson.tool
 {
     "name": "creds",
     "view_index": {
