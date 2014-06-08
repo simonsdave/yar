@@ -72,14 +72,16 @@ setup(
         "http://github.com/dpnova/tornado-memcache/tarball/master#egg=tornado-memcache-0.1",
     ],
     # MANIFEST.in in same directory as this setup.py should contain
-    # a single line:
+    # the following:
     #
-    #   include yar/key_store/design_docs/creds.json
+    #   include yar/key_store/design_docs/by_principal.json
+    #   include yar/key_store/design_docs/by_identifier.json
     #
-    # Also, the line below shouldn't be commented out in this setup.py
+    # Also, the lines below shouldn't be commented out in this setup.py
     #
     #   data_files = [
-    #       ("", ["yar/key_store/creds.json"]),
+    #       ("", ["yar/key_store/by_identifier.json"]),
+    #       ("", ["yar/key_store/by_principal.json"]),
     #   ],
     #
     # And finally, yar.key_store.design_docs shouldn't be in packages.

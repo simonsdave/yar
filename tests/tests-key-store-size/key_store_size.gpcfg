@@ -1,21 +1,28 @@
 set terminal pngcairo size 3200,1800 font "Ubuntu,36"
 set size 1, 1
+
 set xlabel xaxis_label
 set ylabel yaxis_label
+
 title='Key Store Size as Function of Number of Credentials'
 set title title font "Ubuntu Bold,36"
+
 set key left top
 
 set style line 1 lt 1 lw 10 lc rgb 'blue'
 set style line 2 lt 1 lw 10 lc rgb 'red'
 set style line 3 lt 1 lw 10 lc rgb 'yellow'
 set style line 4 lt 1 lw 10 lc rgb 'orange'
+set style line 5 lt 1 lw 10 lc rgb 'grey'
+set style line 6 lt 1 lw 10 lc rgb 'black'
 
 set output output_filename
 set datafile separator '\t'
 plot input_filename using 1:2 title 'Database Data Size' with linespoints ls 1, \
      input_filename using 1:3 title 'Database Disk Size' with linespoints ls 2, \
-     input_filename using 1:4 title 'View Data Size' with linespoints ls 3, \
-     input_filename using 1:5 title 'View Disk Size' with linespoints ls 4
+     input_filename using 1:4 title 'By Principal Data Size' with linespoints ls 3, \
+     input_filename using 1:5 title 'By Principal Disk Size' with linespoints ls 4, \
+     input_filename using 1:6 title 'By Identifier Data Size' with linespoints ls 5, \
+     input_filename using 1:7 title 'By Identifier Disk Size' with linespoints ls 6
 
 exit

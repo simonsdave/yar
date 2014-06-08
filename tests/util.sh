@@ -736,7 +736,13 @@ create_key_store() {
     for i in {1..10}
     do
         sleep 1
-        if curl -s http://$KEY_STORE_IP:$PORT >& /dev/null; then
+
+        STATUS_CODE=$(curl \
+            -s \
+            -o /dev/null \
+            --write-out '%{http_code}' \
+            http://$KEY_STORE_IP:$PORT)
+        if [ $? == 0 ] && [ "$STATUS_CODE" == "200" ]; then
 
             #
             # couchdb has successfully started ...
@@ -785,11 +791,22 @@ create_key_store() {
             for i in {1..10}
             do
                 sleep 1
-                if curl -s http://$KEY_STORE_IP:$PORT/$DATABASE >& /dev/null; then
 
-                    echo "KEY_STORE_DB=$KEY_STORE_IP:$PORT/$DATABASE" >> ~/.yar.deployment
+                STATUS_CODE=$(curl \
+                    -s \
+                    -o /dev/null \
+                    --write-out '%{http_code}' \
+                    http://$KEY_STORE_IP:$PORT/$DATABASE)
+                if [ $? == 0 ] && [ "$STATUS_CODE" == "200" ]; then
+                    KEY_STORE=$KEY_STORE_IP:$PORT/$DATABASE
 
-                    echo $KEY_STORE_IP:$PORT/$DATABASE
+                    echo "KEY_STORE_DB=$KEY_STORE" >> ~/.yar.deployment
+                    echo $KEY_STORE
+
+                    if [ "$CREATE_DESIGN_DOCS" == "true" ]; then
+                        materalize_view $KEY_STORE "by_identifier" "by_identifier"
+                        materalize_view $KEY_STORE "by_principal" "by_principal"
+                    fi
 
                     return 0
                 fi
@@ -803,6 +820,35 @@ create_key_store() {
 
     echo_to_stderr_if_not_silent "Could not verify availability of CouchDB on Key Store on $KEY_STORE_IP:$PORT"
     return 4
+}
+
+# issue a curl request to a view for for the view
+# to materialize
+#
+# arguments
+#   1   ip:port/database
+#   2   design doc name
+#   3   view name
+#
+# return value
+#   0   always
+
+materalize_view() {
+
+    COUCHDB=${1:-}
+    DESIGN_DOC=${2:-}
+    VIEW=${3:-}
+
+    STATUS_CODE=$(curl \
+        -s \
+        -o /dev/null \
+        --write-out '%{http_code}' \
+        http://$COUCHDB/_design/$DESIGN_DOC/_view/$VIEW?limit=1)
+    if [ $? -ne 0 ] || [ "$STATUS_CODE" != "200" ]; then
+        return 1
+    fi
+
+    return 0
 }
 
 #

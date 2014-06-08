@@ -42,6 +42,55 @@ is_creds_view_compaction_running() {
     return 1
 }
 
+# arguments
+#   1   ip:port/database
+#   2   view name
+#
+# return value
+#   0   always
+
+materalize_and_compact_view() {
+
+    KEY_STORE=${1:-}
+    VIEW=${2:-}
+    DESIGN_DOC=$VIEW
+
+    #
+    # force materialization of the creds view
+    #
+    STATUS_CODE=$(curl \
+        -s \
+        -o /dev/null \
+        --write-out '%{http_code}' \
+        http://$KEY_STORE/_design/$DESIGN_DOC/_view/$VIEW?limit=1)
+    if [ $? -ne 0 ] || [ "$STATUS_CODE" != "200" ]; then
+        echo "View materialization failed"
+        exit 1
+    fi
+
+    #
+    # compact the creds view
+    #
+    echo -n "-- Compacting $DESIGN_DOC ."
+
+    curl \
+        -s \
+        -o /dev/null \
+        -X POST \
+        -H "Content-Type: application/json" \
+        http://$KEY_STORE/_compact/$DESIGN_DOC
+
+    sleep 1
+    while is_creds_view_compaction_running "$KEY_STORE"
+    do
+        echo -n "."
+        sleep 1
+    done
+    echo " done"
+
+    return 0
+}
+
 MAX_NUMBER_OF_CREDS=5000000
 PERCENT_BASIC_CREDS=90
 
@@ -141,35 +190,8 @@ do
     #
     # force materialization of the creds view
     #
-    STATUS_CODE=$(curl \
-        -s \
-        -o /dev/null \
-        --write-out '%{http_code}' \
-        http://$KEY_STORE/_design/creds/_view/by_identifier?limit=1)
-    if [ $? -ne 0 ] || [ "$STATUS_CODE" != "200" ]; then
-        echo "View materialization failed"
-        exit 1
-    fi
-
-    #
-    # compact the creds view
-    #
-    echo -n "-- Compacting creds view ."
-
-    curl \
-        -s \
-        -o /dev/null \
-        -X POST \
-        -H "Content-Type: application/json" \
-        http://$KEY_STORE/_compact/creds
-
-    sleep 1
-    while is_creds_view_compaction_running "$KEY_STORE"
-    do
-        echo -n "."
-        sleep 1
-    done
-    echo " done"
+    materalize_and_compact_view "$KEY_STORE" "by_identifier"
+    materalize_and_compact_view "$KEY_STORE" "by_principal"
 
     #
     # local.ini for CouchDB should have been configured with
@@ -206,12 +228,20 @@ do
     curl \
         -s \
         -X GET \
-        http://$KEY_STORE/_design/creds/_info  >& $TEMP_DATABASE_METRICS
+        http://$KEY_STORE/_design/by_principal/_info  >& $TEMP_DATABASE_METRICS
 
-    VIEW_DATA_SIZE=$(cat $TEMP_DATABASE_METRICS | get_from_json '\["view_index","data_size"\]')
-    VIEW_DISK_SIZE=$(cat $TEMP_DATABASE_METRICS | get_from_json '\["view_index","disk_size"\]')
+    BY_PRINCIPAL_DATA_SIZE=$(cat $TEMP_DATABASE_METRICS | get_from_json '\["view_index","data_size"\]')
+    BY_PRINCIPAL_DISK_SIZE=$(cat $TEMP_DATABASE_METRICS | get_from_json '\["view_index","disk_size"\]')
 
-    echo -e "$DOC_COUNT\t$DATA_SIZE\t$DISK_SIZE\t$VIEW_DATA_SIZE\t$VIEW_DISK_SIZE" >> $DATABASE_METRICS
+    curl \
+        -s \
+        -X GET \
+        http://$KEY_STORE/_design/by_identifier/_info  >& $TEMP_DATABASE_METRICS
+
+    BY_IDENTIFIER_DATA_SIZE=$(cat $TEMP_DATABASE_METRICS | get_from_json '\["view_index","data_size"\]')
+    BY_IDENTIFIER_DISK_SIZE=$(cat $TEMP_DATABASE_METRICS | get_from_json '\["view_index","disk_size"\]')
+
+    echo -e "$DOC_COUNT\t$DATA_SIZE\t$DISK_SIZE\t$BY_PRINCIPAL_DATA_SIZE\t$BY_PRINCIPAL_DISK_SIZE\t$BY_IDENTIFIER_DATA_SIZE\t$BY_IDENTIFIER_DISK_SIZE" >> $DATABASE_METRICS
 
     rm $TEMP_DATABASE_METRICS
 
@@ -253,7 +283,7 @@ convert \
 SUMMARY_DATABASE_METRICS=$(platform_safe_mktemp)
 
 awk 'BEGIN {FS = "\t"; OFS = "\t"} ; \
-    { print int($1/1000), int($2/(1024*1024)), int($3/(1024*1024)), int($4/(1024*1024)), int($5/(1024*1024)) }' \
+    { print int($1/1000), int($2/(1024*1024)), int($3/(1024*1024)), int($4/(1024*1024)), int($5/(1024*1024)), int($4/(1024*1024)), int($5/(1024*1024)) }' \
     $DATABASE_METRICS > $SUMMARY_DATABASE_METRICS
 
 #

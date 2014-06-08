@@ -29,9 +29,9 @@ class AsyncCredsRetriever(AsyncAction):
         self._is_filter_out_deleted = is_filter_out_deleted
 
         if key:
-            path = '_design/creds/_view/by_identifier?key="%s"' % key
+            path = '_design/by_identifier/_view/by_identifier?key="%s"' % key
         else:
-            path = '_design/creds/_view/by_principal?key="%s"' % principal
+            path = '_design/by_principal/_view/by_principal?key="%s"' % principal
 
         self.async_req_to_key_store(
             path,

@@ -37,7 +37,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             self.assertIsNotNone(acr)
 
             self.assertIsNotNone(path)
-            expected_path_fmt = '_design/creds/_view/by_identifier?key="%s"'
+            expected_path_fmt = '_design/by_identifier/_view/by_identifier?key="%s"'
             expected_path = expected_path_fmt % self.the_key
             self.assertEqual(path, expected_path)
 
@@ -115,7 +115,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             self.assertIsNotNone(acr)
 
             self.assertIsNotNone(path)
-            expected_path_fmt = '_design/creds/_view/by_identifier?key="%s"'
+            expected_path_fmt = '_design/by_identifier/_view/by_identifier?key="%s"'
             expected_path = expected_path_fmt % the_mac_key_identifier
             self.assertEqual(path, expected_path)
 
@@ -235,7 +235,7 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             self.assertIsNotNone(acr)
 
             expected_path_fmt = (
-                '_design/creds/_view/by_principal?key="%s"'
+                '_design/by_principal/_view/by_principal?key="%s"'
             )
             expected_path = expected_path_fmt % the_principal
             self.assertIsNotNone(path)
