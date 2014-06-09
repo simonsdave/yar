@@ -17,34 +17,8 @@ usage() {
 
 # arguments
 #   1   ip:port/database
-#
-# return value
-#   0   if view compaction is running
-#   1   if view compaction is not running
-
-is_creds_view_compaction_running() {
-
-    TEMP_DATABASE_METRICS=$(platform_safe_mktemp)
-
-    curl \
-        -s \
-        -X GET \
-        http://$1/_design/creds/_info >& $TEMP_DATABASE_METRICS
-
-    COMPACT_RUNNING=$(cat $TEMP_DATABASE_METRICS | get_from_json '\["view_index","compact_running"\]')
-
-    rm $TEMP_DATABASE_METRICS
-
-    if [ "$COMPACT_RUNNING" == "true" ]; then
-        return 0
-    fi
-
-    return 1
-}
-
-# arguments
-#   1   ip:port/database
-#   2   view name
+#   2   design doc name
+#   3   view name
 #
 # return value
 #   0   always
@@ -52,36 +26,23 @@ is_creds_view_compaction_running() {
 materalize_and_compact_view() {
 
     KEY_STORE=${1:-}
-    VIEW=${2:-}
-    DESIGN_DOC=$VIEW
+    DESIGN_DOC=${2:-}
+    VIEW=${3:-}
 
-    #
-    # force materialization of the creds view
-    #
-    STATUS_CODE=$(curl \
-        -s \
-        -o /dev/null \
-        --write-out '%{http_code}' \
-        http://$KEY_STORE/_design/$DESIGN_DOC/_view/$VIEW?limit=1)
-    if [ $? -ne 0 ] || [ "$STATUS_CODE" != "200" ]; then
+    if ! cdb_materalize_view "$KEY_STORE" "$DESIGN_DOC" "$VIEW"; then
         echo "View materialization failed"
         exit 1
     fi
 
-    #
-    # compact the creds view
-    #
     echo -n "-- Compacting $DESIGN_DOC ."
 
-    curl \
-        -s \
-        -o /dev/null \
-        -X POST \
-        -H "Content-Type: application/json" \
-        http://$KEY_STORE/_compact/$DESIGN_DOC
+    if ! cdb_start_view_compaction "$KEY_STORE" "$DESIGN_DOC"; then
+        echo "Failed to start view materialization"
+        exit 1
+    fi
 
     sleep 1
-    while is_creds_view_compaction_running "$KEY_STORE"
+    while cdb_is_view_compaction_running "$KEY_STORE"
     do
         echo -n "."
         sleep 1
@@ -190,8 +151,8 @@ do
     #
     # force materialization of the creds view
     #
-    materalize_and_compact_view "$KEY_STORE" "by_identifier"
-    materalize_and_compact_view "$KEY_STORE" "by_principal"
+    materalize_and_compact_view "$KEY_STORE" "by_identifier" "by_identifier"
+    materalize_and_compact_view "$KEY_STORE" "by_principal" "by_principal"
 
     #
     # local.ini for CouchDB should have been configured with

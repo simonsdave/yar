@@ -7,9 +7,6 @@
 #	SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 #	source $SCRIPT_DIR_NAME/util.sh
 
-SCRIPT_DIR_NAME="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
-source $SCRIPT_DIR_NAME/couchdb_util.sh
-
 get_container_ip() {
     CONTAINER_ID=${1:-}
     sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $CONTAINER_ID
@@ -210,6 +207,101 @@ platform_safe_mktemp_directory() {
 	return 0
 }
 
+# issue a curl request to a view for for the view
+# to materialize
+#
+# arguments
+#   1   ip:port/database
+#   2   design doc name
+#   3   view name
+#
+# return value
+#   0   on success
+#   1   on failure
+
+cdb_materalize_view() {
+
+    COUCHDB=${1:-}
+    DESIGN_DOC=${2:-}
+    VIEW=${3:-}
+
+    STATUS_CODE=$(curl \
+        -s \
+        -o /dev/null \
+        --write-out '%{http_code}' \
+        http://$COUCHDB/_design/$DESIGN_DOC/_view/$VIEW?limit=1)
+    if [ $? -ne 0 ] || [ "$STATUS_CODE" != "200" ]; then
+        return 1
+    fi
+
+    return 0
+
+}
+
+# start view compaction
+#
+# arguments
+#   1   ip:port/database
+#   2   design doc name
+#
+# return value
+#   0   if view compaction is running
+#   1   if view compaction is not running
+
+cdb_start_view_compaction() {
+
+    COUCHDB=${1:-}
+    DESIGN_DOC=${2:-}
+
+    STATUS_CODE=$(curl \
+        -s \
+        -o /dev/null \
+        --write-out '%{http_code}' \
+        -X POST \
+        -H "Content-Type: application/json" \
+        http://$KEY_STORE/_compact/$DESIGN_DOC)
+    if [ $? -ne 0 ] || [ "$STATUS_CODE" != "202" ]; then
+        return 1
+    fi
+
+    return 0
+
+}
+
+# determine if view compaction is running
+#
+# arguments
+#   1   ip:port/database
+#   2   design doc name
+#
+# return value
+#   0   if view compaction is running
+#   1   if view compaction is not running
+
+cdb_is_view_compaction_running() {
+
+    COUCHDB=${1:-}
+    DESIGN_DOC=${2:-}
+
+    TEMP_DATABASE_METRICS=$(platform_safe_mktemp)
+
+    curl \
+        -s \
+        -X GET \
+        http://$COUCHDB/_design/$DESIGN_DOC/_info >& $TEMP_DATABASE_METRICS
+
+    COMPACT_RUNNING=$(
+        cat $TEMP_DATABASE_METRICS | 
+        get_from_json '\["view_index","compact_running"\]')
+
+    rm $TEMP_DATABASE_METRICS
+
+    if [ "$COMPACT_RUNNING" == "true" ]; then
+        return 0
+    fi
+
+    return 1
+}
 
 #
 # test if a docker image exists in the local repo
