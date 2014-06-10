@@ -17,7 +17,7 @@ from yar.auth_service import clparser
 from yar.util import logging_config
 from yar.util import tsh
 
-_logger = logging.getLogger("AUTHSERVER.%s" % __name__)
+_logger = logging.getLogger("AUTHSERVICE.%s" % __name__)
 
 
 if __name__ == "__main__":
