@@ -7,8 +7,7 @@ import tornado.httpclient
 
 from yar.util import trhutil
 
-
-_logger = logging.getLogger("KEYSERVER.%s" % __name__)
+_logger = logging.getLogger("KEYSERVICE.%s" % __name__)
 
 
 def filter_out_non_model_creds_properties(creds):
@@ -79,9 +78,9 @@ class AsyncAction(object):
     def _http_client_fetch_callback(self, response):
         """Called when ```tornado.httpclient.AsyncHTTPClient``` completes."""
 
-        """Need to be careful about changing this message format because
-        the load testing infrastructure srcaps the logs for this message
-        in this format."""
+        """:TRICKY: Need to be careful about changing this message format
+        because the load testing infrastructure scrapes the logs for this
+        message in this format."""
         _logger.info(
             "Key Store (%s - %s) responded in %d ms",
             response.effective_url,
@@ -96,7 +95,6 @@ class AsyncAction(object):
                 response.error)
 
             self._my_callback(False)
-
             return
 
         wrapped_response = trhutil.Response(response)
