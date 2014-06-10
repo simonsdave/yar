@@ -15,7 +15,7 @@ from async_nonce_checker import AsyncNonceChecker
 be no older than ```maxage``` seconds before the current timestamp."""
 maxage = 30
 
-_logger = logging.getLogger("AUTHSERVER.%s" % __name__)
+_logger = logging.getLogger("AUTHSERVICE.%s" % __name__)
 
 # these constants define detailed MAC authentication failure reasons
 AUTH_FAILURE_DETAIL_TS_IN_FUTURE = 0x0100 + 0x0001

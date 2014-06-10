@@ -7,7 +7,7 @@ import re
 
 from async_creds_retriever import AsyncCredsRetriever
 
-_logger = logging.getLogger("AUTHSERVER.%s" % __name__)
+_logger = logging.getLogger("AUTHSERVICE.%s" % __name__)
 
 # these constants define detailed authentication failure reasons
 AUTH_FAILURE_DETAIL_NO_AUTH_HEADER = 0x0200 + 0x0001

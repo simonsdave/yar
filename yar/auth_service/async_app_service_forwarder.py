@@ -8,7 +8,7 @@ import tornado.httpclient
 
 from yar.util.trhutil import get_request_body_if_exists
 
-_logger = logging.getLogger("AUTHSERVER.%s" % __name__)
+_logger = logging.getLogger("AUTHSERVICE.%s" % __name__)
 
 """Once a request has been authenticated, the request is forwarded
 to the app service as defined by this host:port combination."""

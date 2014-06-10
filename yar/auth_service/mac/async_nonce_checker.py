@@ -7,7 +7,7 @@ import logging
 
 import tornadoasyncmemcache
 
-_logger = logging.getLogger("AUTHSERVER.%s" % __name__)
+_logger = logging.getLogger("AUTHSERVICE.%s" % __name__)
 
 """```nonce_store``` is a collection of host:port strings
 that point to the memcached cluster that implements the

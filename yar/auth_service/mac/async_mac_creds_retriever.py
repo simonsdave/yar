@@ -10,7 +10,7 @@ from yar.key_service import jsonschemas
 from yar.util import mac
 from yar.util import trhutil
 
-_logger = logging.getLogger("AUTHSERVER.%s" % __name__)
+_logger = logging.getLogger("AUTHSERVICE.%s" % __name__)
 
 """This host:port combination define the location of the key service."""
 key_service_address = "127.0.0.1:8070"
