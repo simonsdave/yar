@@ -7,8 +7,7 @@ import logging
 from ks_util import filter_out_non_model_creds_properties
 from ks_util import AsyncAction
 
-
-_logger = logging.getLogger("KEYSERVER.%s" % __name__)
+_logger = logging.getLogger("KEYSERVICE.%s" % __name__)
 
 
 class AsyncCredsRetriever(AsyncAction):

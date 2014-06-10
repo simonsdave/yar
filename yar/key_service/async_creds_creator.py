@@ -10,7 +10,7 @@ from ks_util import AsyncAction
 from yar.util import mac
 from yar.util import basic
 
-_logger = logging.getLogger("KEYSERVER.%s" % __name__)
+_logger = logging.getLogger("KEYSERVICE.%s" % __name__)
 
 
 class AsyncCredsCreator(AsyncAction):

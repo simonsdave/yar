@@ -13,7 +13,7 @@ from async_creds_deleter import AsyncCredsDeleter
 from yar.key_service import jsonschemas
 from yar.util import trhutil
 
-_logger = logging.getLogger("KEYSERVER.%s" % __name__)
+_logger = logging.getLogger("KEYSERVICE.%s" % __name__)
 
 """Format of this string is host:port/database. It's used to construct
 a URL when talking to the key store."""

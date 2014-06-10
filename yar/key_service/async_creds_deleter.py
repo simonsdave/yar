@@ -7,7 +7,7 @@ import logging
 from async_creds_retriever import AsyncCredsRetriever
 from ks_util import AsyncAction
 
-_logger = logging.getLogger("KEYSERVER.%s" % __name__)
+_logger = logging.getLogger("KEYSERVICE.%s" % __name__)
 
 
 class AsyncCredsDeleter(AsyncAction):
