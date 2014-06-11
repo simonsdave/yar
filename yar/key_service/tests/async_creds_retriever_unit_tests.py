@@ -289,3 +289,78 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
         self._test_ok_on_principal_request_to_key_store(
             the_is_filter_out_deleted=True,
             the_is_filter_out_non_model_properties=False)
+
+    def test_key_store_returns_multiple_docs_for_one_mac_key_identifier(self):
+        """A GET to the key store's
+        _design/by_identifier/_view/by_identifier
+        view should return either 1 or 0 creds.
+        This tests verifies how the AsyncCredsRetriever's
+        behavior when multiple creds are returned
+        from such a GET ie. when there's an error with
+        the view or in the key store's data."""
+
+        the_mac_key_identifier = mac.MACKeyIdentifier.generate()
+
+        the_creds = {
+            "_id": "9010212ebe184b13aecbd5ca5d72ae64",
+            "_rev": "1-c81488ccbec47b14cec7010e18459a16",
+            "is_deleted": False,
+            "mac_algorithm": mac.MAC.algorithm,
+            "mac_key": mac.MACKey.generate(),
+            "mac_key_identifier": the_mac_key_identifier,
+            "principal": "dave@example.com",
+            "type": "creds_v1.0",
+        }
+
+        the_body = {
+            "rows": [
+                {
+                    "id": the_creds["_id"],
+                    "key": the_creds["mac_key_identifier"],
+                    "value": the_creds,
+                },
+                {
+                    "id": the_creds["_id"],
+                    "key": the_creds["mac_key_identifier"],
+                    "value": the_creds,
+                },
+            ],
+        }
+
+        def async_req_to_key_store_patch(
+            acr,
+            path,
+            method,
+            body,
+            callback):
+
+            self.assertIsNotNone(acr)
+
+            self.assertIsNotNone(path)
+            expected_path_fmt = '_design/by_identifier/_view/by_identifier?key="%s"'
+            expected_path = expected_path_fmt % the_mac_key_identifier
+            self.assertEqual(path, expected_path)
+
+            self.assertIsNotNone(method)
+            self.assertEqual(method, "GET")
+
+            self.assertIsNone(body)
+
+            self.assertIsNotNone(callback)
+            callback(is_ok=True, code=httplib.OK, body=the_body)
+
+        def on_async_create_done(creds, is_creds_collection):
+
+            self.assertIsNone(creds)
+            self.assertIsNone(is_creds_collection)
+
+        name_of_method_to_patch = (
+            "yar.key_service.ks_util."
+            "AsyncAction.async_req_to_key_store"
+        )
+        key_store = type(self)._key_store
+        with mock.patch(name_of_method_to_patch, async_req_to_key_store_patch):
+            acr = async_creds_retriever.AsyncCredsRetriever(key_store)
+            acr.fetch(
+                callback=on_async_create_done,
+                key=the_mac_key_identifier)
