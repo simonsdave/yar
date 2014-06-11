@@ -66,6 +66,14 @@ class AsyncCredsRetriever(AsyncAction):
                 if 1 == num_creds:
                     self._callback(creds[0], False)
                 else:
+                    # this is an error case with either the view or the
+                    # data in the key store - we should never here.
+                    fmt = (
+                        "Got %d docs from Key Store for key '%s'. "
+                        "Expected 1 or 0 docs."
+                    )
+                    _logger.error(fmt, num_creds, self._key)
+
                     self._callback(None, None)
         else:
             self._callback(creds, True)
