@@ -381,36 +381,35 @@ class GetJSONRequestBodyTestCase(tornado.testing.AsyncHTTPTestCase):
             expected_body=GetJSONRequestBodyRequestHandler.body_if_not_found,
             content_type="dave")
 
-class ResponseGetJSONBodyTestCase(unittest.TestCase):
+
+class GetJSONBodyFromResponseTestCase(unittest.TestCase):
     """A collection of unit tests to validate the behavior
     of ```trutil.Response.get_json_body()"""
 
     def _run_failure_scenario(self, response, value_if_not_found, schema=None):
         if value_if_not_found is None:
-            self.assertIsNone(response.get_json_body(schema=schema))
+            body = trhutil.get_json_body_from_response(response, schema=schema)
+            self.assertIsNone(body)
         else:
-            self.assertEqual(
-                response.get_json_body(value_if_not_found, schema=schema),
-                value_if_not_found)
+            body = trhutil.get_json_body_from_response(
+                response,
+                value_if_not_found,
+                schema)
+            self.assertEqual(body, value_if_not_found)
 
     def _test_response_arg_is_none(self, value_if_not_found):
-        response = trhutil.Response(None)
-
-        self._run_failure_scenario(response, value_if_not_found)
+        self._run_failure_scenario(None, value_if_not_found)
 
     def test_response_arg_is_none_001(self):
-        value_if_not_found = None
-        self._test_response_arg_is_none(value_if_not_found)
+        self._test_response_arg_is_none(None)
 
     def test_response_arg_is_none_002(self):
         value_if_not_found = "dave"
         self._test_response_arg_is_none(value_if_not_found)
 
     def _test_response_code_is_not_ok(self, value_if_not_found):
-        response_mock = mock.Mock()
-        response_mock.code = httplib.INTERNAL_SERVER_ERROR
-        response = trhutil.Response(response_mock)
-
+        response = mock.Mock()
+        response.code = httplib.INTERNAL_SERVER_ERROR
         self._run_failure_scenario(response, value_if_not_found)
 
     def test_response_code_is_not_ok_001(self):
@@ -422,10 +421,9 @@ class ResponseGetJSONBodyTestCase(unittest.TestCase):
         self._test_response_code_is_not_ok(value_if_not_found)
 
     def _test_response_no_content_length_and_no_transfer_encoding(self, value_if_not_found):
-        response_mock = mock.Mock()
-        response_mock.code = httplib.OK
-        response_mock.headers = {}
-        response = trhutil.Response(response_mock)
+        response = mock.Mock()
+        response.code = httplib.OK
+        response.headers = {}
 
         self._run_failure_scenario(response, value_if_not_found)
 
@@ -438,12 +436,11 @@ class ResponseGetJSONBodyTestCase(unittest.TestCase):
         self._test_response_no_content_length_and_no_transfer_encoding(value_if_not_found)
 
     def _test_response_no_content_length_but_has_transfer_encoding(self, value_if_not_found):
-        response_mock = mock.Mock()
-        response_mock.code = httplib.OK
-        response_mock.headers = {
+        response = mock.Mock()
+        response.code = httplib.OK
+        response.headers = {
             "Transfer-Encoding": "what goes here",
         }
-        response = trhutil.Response(response_mock)
 
         self._run_failure_scenario(response, value_if_not_found)
 
@@ -456,13 +453,12 @@ class ResponseGetJSONBodyTestCase(unittest.TestCase):
         self._test_response_no_content_length_but_has_transfer_encoding(value_if_not_found)
 
     def _test_response_bad_content_type(self, value_if_not_found):
-        response_mock = mock.Mock()
-        response_mock.code = httplib.OK
-        response_mock.headers = {
+        response = mock.Mock()
+        response.code = httplib.OK
+        response.headers = {
             "Content-length": 10,
             "Content-type": "bindle",
         }
-        response = trhutil.Response(response_mock)
 
         self._run_failure_scenario(response, value_if_not_found)
 
@@ -477,14 +473,13 @@ class ResponseGetJSONBodyTestCase(unittest.TestCase):
     # different json content types
 
     def _test_response_body_not_json(self, value_if_not_found):
-        response_mock = mock.Mock()
-        response_mock.code = httplib.OK
-        response_mock.body = "dave"
-        response_mock.headers = {
-            "Content-length": len(response_mock.body),
+        response = mock.Mock()
+        response.code = httplib.OK
+        response.body = "dave"
+        response.headers = {
+            "Content-length": len(response.body),
             "Content-type": "application/json; charset=utf-8",
         }
-        response = trhutil.Response(response_mock)
 
         self._run_failure_scenario(response, value_if_not_found)
 
@@ -512,14 +507,13 @@ class ResponseGetJSONBodyTestCase(unittest.TestCase):
         body = {
             "dave": "string that causes validation to fail"
         }
-        response_mock = mock.Mock()
-        response_mock.code = httplib.OK
-        response_mock.body = json.dumps(body)
-        response_mock.headers = {
-            "Content-length": len(response_mock.body),
+        response = mock.Mock()
+        response.code = httplib.OK
+        response.body = json.dumps(body)
+        response.headers = {
+            "Content-length": len(response.body),
             "Content-type": "application/json; charset=utf-8",
         }
-        response = trhutil.Response(response_mock)
 
         self._run_failure_scenario(response, value_if_not_found, schema)
 
@@ -532,22 +526,21 @@ class ResponseGetJSONBodyTestCase(unittest.TestCase):
          self._test_response_body_jsonschmea_validation_failure(value_if_not_found)
 
     def _test_response_ok_body(self, the_body, schema):
-        response_mock = mock.Mock()
-        response_mock.code = httplib.OK
-        response_mock.body = json.dumps(the_body)
-        response_mock.headers = {
-            "Content-length": len(response_mock.body),
+        response = mock.Mock()
+        response.code = httplib.OK
+        response.body = json.dumps(the_body)
+        response.headers = {
+            "Content-length": len(response.body),
             "Content-type": "application/json; charset=utf-8",
         }
-        response = trhutil.Response(response_mock)
         if schema is None:
             self.assertEqual(
                 the_body,
-                response.get_json_body())
+                trhutil.get_json_body_from_response(response))
         else:
             self.assertEqual(
                 the_body,
-                response.get_json_body(schema=schema))
+                trhutil.get_json_body_from_response(response, schema=schema))
 
     def test_response_ok_empty_body(self):
         body = {}

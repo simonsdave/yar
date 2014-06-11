@@ -50,8 +50,8 @@ class AsyncMACCredsRetriever(object):
             self._callback(False, self._mac_key_identifier)
             return
 
-        response = trhutil.Response(response)
-        body = response.get_json_body(
+        body = trhutil.get_json_body_from_response(
+            response,
             None,
             jsonschemas.get_creds_response)
         if body is None:

@@ -1,7 +1,6 @@
 """This module contains a series of utilities for writing
 Tornado request handlers."""
 
-
 import httplib
 import re
 import json
@@ -138,47 +137,39 @@ class RequestHandler(tornado.web.RequestHandler):
         return body
 
 
-class Response(object):
-    """A wrapper for a ```tornado.httpclient.HTTPResponse``` that exposes
-    a number of useful, commonly used methods."""
+def get_json_body_from_response(response, value_if_not_found=None, schema=None):
+    """Extract and return the JSON document from a
+    ```tornado.httpclient.HTTPResponse``` as well as optionally
+    validating the document against a schema. If there's
+    an error along the way return ```value_if_not_found```."""
+    if response is None:
+        return value_if_not_found
 
-    def __init__(self, response):
-        object.__init__(self)
-        self._response = response
+    if httplib.OK != response.code:
+        return value_if_not_found
 
-    def get_json_body(self, value_if_not_found=None, schema=None):
-        """Extract and return the JSON document from a
-        ```tornado.httpclient.HTTPResponse``` as well as optionally
-        validating the document against a schema. If there's
-        an error along the way return None."""
-        if self._response is None:
+    content_length = response.headers.get("Content-length", None)
+    if content_length is None:
+        transfer_encoding = response.headers.get(
+            "Transfer-Encoding",
+            None)
+        if transfer_encoding is None:
             return value_if_not_found
 
-        if httplib.OK != self._response.code:
+    content_type = response.headers.get("Content-type", None)
+    if not _is_json_utf8_content_type(content_type):
+        if not _is_json_content_type(content_type):
             return value_if_not_found
 
-        content_length = self._response.headers.get("Content-length", None)
-        if content_length is None:
-            transfer_encoding = self._response.headers.get(
-                "Transfer-Encoding",
-                None)
-            if transfer_encoding is None:
-                return value_if_not_found
+    try:
+        body = json.loads(response.body)
+    except:
+        return value_if_not_found
 
-        content_type = self._response.headers.get("Content-type", None)
-        if not _is_json_utf8_content_type(content_type):
-            if not _is_json_content_type(content_type):
-                return value_if_not_found
-
+    if schema is not None:
         try:
-            body = json.loads(self._response.body)
-        except:
+            jsonschema.validate(body, schema)
+        except Exception as ex:
             return value_if_not_found
 
-        if schema is not None:
-            try:
-                jsonschema.validate(body, schema)
-            except Exception as ex:
-                return value_if_not_found
-
-        return body
+    return body

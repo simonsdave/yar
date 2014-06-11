@@ -97,8 +97,7 @@ class AsyncAction(object):
             self._my_callback(False)
             return
 
-        wrapped_response = trhutil.Response(response)
         self._my_callback(
             True,
             response.code,
-            wrapped_response.get_json_body())
+            trhutil.get_json_body_from_response(response))
