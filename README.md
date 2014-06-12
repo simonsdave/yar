@@ -31,7 +31,7 @@ are calculated per the [OAuth 2.0 Message Authentication Code (MAC) Tokens](http
 [Auth Services](yar/auth_service), [Key Services](yar/key_service) and  [Key Stores](yar/key_store)
 enabling these tiers to independantly
 [scale horizontally](http://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling)
-  * high quality code base - ~1,500 LOC and 200+ unit tests with 99% code coverage
+  * high quality code base - ~1,200 LLOC and 200+ unit tests with 99% code coverage
   * small footprint - for example, the [Auth Service](yar/auth_service) and [Key Service](yar/key_service)
 require < 25 MB of memory @ concurrency levels of 100
   * [Key Store](yar/key_store) is built on [CouchDB](http://couchdb.apache.org/) so the [Key Store](yar/key_store) inherits all the nice architectual/operational qualities of [CouchDB](http://couchdb.apache.org/)
