@@ -16,7 +16,8 @@ create_basic_creds() {
 	local DB=${2:-}
 	
 	local API_KEY=$(python -c "from yar.util.basic import APIKey; print APIKey.generate()")
-	local CREDS="{\"principal\": \"dave@example.com\", \"type\": \"creds_v1.0\", \"is_deleted\": false, \"basic\": {\"api_key\": \"$API_KEY\"}}"
+	local WHEN_CREATED=$(date -u)
+	local CREDS="{\"principal\": \"dave@example.com\", \"type\": \"creds_v1.0\", \"is_deleted\": false, \"basic\": {\"api_key\": \"$API_KEY\"}, \"when_created\": \"$WHEN_CREATED\"}"
 	local CONTENT_TYPE="Content-Type: application/json; charset=utf8"
 	STATUS_CODE=$(curl \
 		-s \
@@ -53,19 +54,20 @@ get_basic_creds() {
 		JSON.sh | \
 		grep '\[\"rows\"\,0\,\"value\"\]' | \
 		sed -e 's/\[\"rows\"\,0\,\"value\"\]//g' | \
-		sed -e 's/[[:space:]]//g'
+		sed -e 's/^[[:space:]]//g'
 
 }
 
-delete_basic_api_key() {
+delete_basic_creds() {
 	local HOST=${1:-}
 	local DB=${2:-}
 	local API_KEY=${3:-}
 
 	echo "Deleting basic creds with api key '$API_KEY' from $HOST/$DB"
 
-	CREDS=$(get_basic_creds -s $HOST $DB $API_KEY |
-		sed 's/"is_deleted":false/"is_deleted":true/g')
+	local TIMESTAMP=$(date "+%s")
+	local CREDS=$(get_basic_creds -s $HOST $DB $API_KEY |
+		sed "s/\"is_deleted\":false/\"is_deleted\":$TIMESTAMP/g")
 
 	local ID=$(echo $CREDS | \
 		JSON.sh | \
@@ -88,21 +90,31 @@ fire_replication() {
 	local DB1=${2:-}
 	local DB2=${3:-}
 	
-	curl \
+	STATUS_CODE=$(curl \
 		-s \
 		-o /dev/null \
+		--write-out '%{http_code}' \
 		-X POST \
 		-H "Content-Type: application/json" \
 		-d "{\"source\": \"$DB1\", \"target\": \"$DB2\"}" \
-		http://$HOST/_replicate
+		http://$HOST/_replicate)
+	if [ $? -ne 0 ] || [ "$STATUS_CODE" -ne "200" ]; then
+		echo "Error replicating from '$DB1' to '$DB2'"
+		exit 1
+	fi
 
-	curl \
+	STATUS_CODE=$(curl \
 		-s \
 		-o /dev/null \
+		--write-out '%{http_code}' \
 		-X POST \
 		-H "Content-Type: application/json" \
 		-d "{\"source\": \"$DB2\", \"target\": \"$DB1\"}" \
-		http://$HOST/_replicate
+		http://$HOST/_replicate)
+	if [ $? -ne 0 ] || [ "$STATUS_CODE" -ne "200" ]; then
+		echo "Error replicating from '$DB2' to '$DB1'"
+		exit 1
+	fi
 }
 
 configure_continuous_replication() {
@@ -132,8 +144,9 @@ API_KEY=$(create_basic_creds $HOST $DB1)
 
 fire_replication $HOST $DB1 $DB2
 
-# delete_basic_api_key $HOST $DB1 $API_KEY
-delete_basic_api_key $HOST $DB2 $API_KEY
+delete_basic_creds $HOST $DB1 $API_KEY
+sleep 1
+delete_basic_creds $HOST $DB2 $API_KEY
 
 fire_replication $HOST $DB1 $DB2
 
