@@ -49,13 +49,10 @@ get_basic_creds() {
 	if [ $SILENT -ne 1 ]; then
 		echo "Getting basic creds with api key '$API_KEY' from $HOST/$DB"
 	fi
-	local URL="http://$HOST/$DB/_design/by_identifier/_view/by_identifier?key=\"$API_KEY\""
-	curl -s $URL | \
-		JSON.sh | \
-		grep '\[\"rows\"\,0\,\"value\"\]' | \
-		sed -e 's/\[\"rows\"\,0\,\"value\"\]//g' | \
-		sed -e 's/^[[:space:]]//g'
 
+	local URL="http://$HOST/$DB/_design/by_identifier/_view/by_identifier?key=\"$API_KEY\""
+	local APP='import sys, json; print json.dumps(json.load(sys.stdin)["rows"][0]["value"])'
+	curl -s $URL | python -c "$APP"
 }
 
 delete_basic_creds() {
@@ -69,11 +66,8 @@ delete_basic_creds() {
 	local CREDS=$(get_basic_creds -s $HOST $DB $API_KEY |
 		sed "s/\"is_deleted\":false/\"is_deleted\":$TIMESTAMP/g")
 
-	local ID=$(echo $CREDS | \
-		JSON.sh | \
-		grep '\[\"_id\"]' | \
-		sed -e 's/^\[\"_id\"][[:space:]]\"//g' | \
-		sed -e 's/"$//g')
+	local APP='import sys, json; print json.load(sys.stdin)["_id"]'
+	local ID=$(echo "$CREDS" | python -c "$APP")
 
 	CONTENT_TYPE="Content-Type: application/json; charset=utf8"
 	curl \
