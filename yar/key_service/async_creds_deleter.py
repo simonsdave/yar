@@ -35,7 +35,7 @@ class AsyncCredsDeleter(AsyncAction):
         creds["is_deleted"] = True
 
         self.async_req_to_key_store(
-            creds["mac_key_identifier"],
+            creds["_id"],
             "PUT",
             creds,
             self._on_response_from_key_store_to_put_for_delete)
