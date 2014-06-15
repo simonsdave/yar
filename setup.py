@@ -44,7 +44,6 @@ setup(
         "bin/key_service",
         "bin/key_store_installer",
         "bin/yarcurl",
-        "bin/jpp",
         "bin/bulk_gen_creds",
     ],
     install_requires=[
