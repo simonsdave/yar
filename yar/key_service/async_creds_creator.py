@@ -34,7 +34,7 @@ class AsyncCredsCreator(AsyncAction):
             "type": "creds_v1.0",
             "is_deleted": False,
         }
-        if auth_scheme == "mac":        
+        if auth_scheme == "mac":
             self._creds["mac"] = {
                 "mac_key_identifier": mac.MACKeyIdentifier.generate(),
                 "mac_key": mac.MACKey.generate(),
