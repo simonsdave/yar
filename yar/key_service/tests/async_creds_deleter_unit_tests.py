@@ -61,7 +61,7 @@ class TestCaseAsyncCredsDeleter(yar_test_util.TestCase):
         the_creds = {
             "_id": "9010212ebe184b13aecbd5ca5d72ae64",
             "_rev": "1-c81488ccbec47b14cec7010e18459a16",
-            "is_deleted": True,
+            "_deleted": True,
             "mac": {
                 "mac_algorithm": mac.MAC.algorithm,
                 "mac_key": mac.MACKey.generate(),
@@ -123,7 +123,6 @@ class TestCaseAsyncCredsDeleter(yar_test_util.TestCase):
         the_creds = {
             "_id": "9010212ebe184b13aecbd5ca5d72ae64",
             "_rev": "1-c81488ccbec47b14cec7010e18459a16",
-            "is_deleted": False,
             "mac": {
                 "mac_algorithm": mac.MAC.algorithm,
                 "mac_key": mac.MACKey.generate(),

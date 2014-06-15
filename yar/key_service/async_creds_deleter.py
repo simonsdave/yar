@@ -28,11 +28,11 @@ class AsyncCredsDeleter(AsyncAction):
 
         assert not is_creds_collection
 
-        if creds.get("is_deleted", False):
+        if creds.get("_deleted", False):
             self._callback(True)
             return
 
-        creds["is_deleted"] = True
+        creds["_deleted"] = True
 
         self.async_req_to_key_store(
             creds["_id"],
@@ -41,4 +41,4 @@ class AsyncCredsDeleter(AsyncAction):
             self._on_async_req_to_key_store_done)
 
     def _on_async_req_to_key_store_done(self, is_ok, code=None, body=None):
-        self._callback(is_ok and code == httplib.CREATED)
+        self._callback(is_ok and code == httplib.OK)
