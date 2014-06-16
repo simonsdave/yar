@@ -50,9 +50,6 @@ get_creds_response = {
                     ],
                     "additionalProperties": False,
                 },
-                "is_deleted": {
-                    "type": "boolean",
-                },
                 "principal": {
                     "type": "string",
                     "minLength": 1,
@@ -74,7 +71,6 @@ get_creds_response = {
             },
             "required": [
                 "basic",
-                "is_deleted",
                 "principal",
                 "links",
             ],
@@ -109,9 +105,6 @@ get_creds_response = {
                     ],
                     "additionalProperties": False,
                 },
-                "is_deleted": {
-                    "type": "boolean",
-                },
                 "principal": {
                     "type": "string",
                     "minLength": 1,
@@ -133,7 +126,6 @@ get_creds_response = {
             },
             "required": [
                 "mac",
-                "is_deleted",
                 "principal",
                 "links",
             ],

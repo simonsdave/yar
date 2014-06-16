@@ -197,7 +197,6 @@ class TestAsyncMACCredsRetriever(yar_test_util.TestCase):
         but the JSON contains unexpected properties is flagged as an error
         to the callback the fetch method of ```AsyncMACCredsRetriever```."""
         the_mac_key_identifier = mac.MACKeyIdentifier.generate()
-        the_is_deleted = False
         the_mac_algorithm = "hmac-sha-1"
         the_mac_key = mac.MACKey.generate()
         the_principal = "das@example.com"
@@ -214,7 +213,6 @@ class TestAsyncMACCredsRetriever(yar_test_util.TestCase):
                     "mac_key": the_mac_key,
                     "mac_key_identifier": the_mac_key_identifier,
                 },
-                "is_deleted": the_is_deleted,
                 "principal": the_principal,
                 "links": {
                     "self": {
@@ -235,7 +233,6 @@ class TestAsyncMACCredsRetriever(yar_test_util.TestCase):
         def on_async_mac_creds_retriever_done(
             is_ok,
             mac_key_identifier,
-            is_deleted,
             mac_algorithm,
             mac_key,
             principal):
@@ -245,9 +242,6 @@ class TestAsyncMACCredsRetriever(yar_test_util.TestCase):
 
             self.assertIsNotNone(mac_key_identifier)
             self.assertEqual(mac_key_identifier, the_mac_key_identifier)
-
-            self.assertIsNotNone(is_deleted)
-            self.assertEqual(is_deleted, the_is_deleted)
 
             self.assertIsNotNone(mac_algorithm)
             self.assertEqual(mac_algorithm, the_mac_algorithm)

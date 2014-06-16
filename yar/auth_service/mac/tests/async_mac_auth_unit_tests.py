@@ -266,11 +266,9 @@ class TestAsyncMACAuth(yar_test_util.TestCase):
             def async_creds_retriever_fetch_patch(acr, callback):
                 self.assertIsNotNone(acr)
                 is_ok = True
-                is_deleted = False
                 callback(
                     is_ok,
                     the_mac_key_identifier,
-                    is_deleted,
                     the_mac_algorithm,
                     the_mac_key,
                     the_principal)

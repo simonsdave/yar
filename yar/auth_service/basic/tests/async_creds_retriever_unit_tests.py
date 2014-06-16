@@ -238,7 +238,6 @@ class TestAsyncCredsRetriever(yar_test_util.TestCase):
             response.error = None
             response.code = httplib.OK
             response.body = json.dumps({
-                "is_deleted": False,
                 "basic": {
                     "api_key": the_api_key,
                 },

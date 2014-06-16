@@ -23,7 +23,6 @@ class TestCaseFilterOutNonModelCredProperties(yar_test_util.TestCase):
 
     def test_model_properties_are_not_filtered_out(self):
         creds = {
-            "is_deleted": str(uuid.uuid4()).replace("-", ""),
             "basic": str(uuid.uuid4()).replace("-", ""),
             "mac": str(uuid.uuid4()).replace("-", ""),
             "principal": str(uuid.uuid4()).replace("-", ""),
@@ -38,7 +37,6 @@ class TestCaseFilterOutNonModelCredProperties(yar_test_util.TestCase):
             "here": str(uuid.uuid4()).replace("-", ""),
         }
         creds = {
-            "is_deleted": str(uuid.uuid4()).replace("-", ""),
             "basic": str(uuid.uuid4()).replace("-", ""),
             "mac": str(uuid.uuid4()).replace("-", ""),
             "principal": str(uuid.uuid4()).replace("-", ""),
@@ -140,10 +138,11 @@ class TestCaseAsyncAction(yar_test_util.TestCase):
         response_body_as_dict = {
             "_id": "a6dc9a78867d4dee95d58adefa87c1a1",
             "_rev": "1-89d4dd4616978a4a2af907228af0cb69",
-            "is_deleted": False,
-            "mac_algorithm": "hmac-sha-1",
-            "mac_key": "XShLQP_vY8zZTlABKoFh9a7ALSdyEeP3WJaSUlCYVW4",
-            "mac_key_identifier": "a6dc9a78867d4dee95d58adefa87c1a1",
+            "mac": {
+                "mac_algorithm": "hmac-sha-1",
+                "mac_key": "XShLQP_vY8zZTlABKoFh9a7ALSdyEeP3WJaSUlCYVW4",
+                "mac_key_identifier": "a6dc9a78867d4dee95d58adefa87c1a1",
+            },
             "principal": "bindleberry@example.com",
             "type": "creds_v1.0",
         }
@@ -157,10 +156,11 @@ class TestCaseAsyncAction(yar_test_util.TestCase):
         request_body_as_dict = {
             "_id": "a6dc9a78867d4dee95d58adefa87c1a1",
             "_rev": "1-89d4dd4616978a4a2af907228af0cb69",
-            "is_deleted": False,
-            "mac_algorithm": "hmac-sha-1",
-            "mac_key": "XShLQP_vY8zZTlABKoFh9a7ALSdyEeP3WJaSUlCYVW4",
-            "mac_key_identifier": "a6dc9a78867d4dee95d58adefa87c1a1",
+            "mac": {
+                "mac_algorithm": "hmac-sha-1",
+                "mac_key": "XShLQP_vY8zZTlABKoFh9a7ALSdyEeP3WJaSUlCYVW4",
+                "mac_key_identifier": "a6dc9a78867d4dee95d58adefa87c1a1",
+            },
             "principal": "bindleberry@example.com",
             "type": "creds_v1.0",
         }

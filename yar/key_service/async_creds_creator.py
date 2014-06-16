@@ -32,7 +32,6 @@ class AsyncCredsCreator(AsyncAction):
         self._creds = {
             "principal": principal,
             "type": "creds_v1.0",
-            "is_deleted": False,
         }
         if auth_scheme == "mac":
             self._creds["mac"] = {

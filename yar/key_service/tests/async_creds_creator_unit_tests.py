@@ -47,9 +47,6 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
             self.assertIn("type", body)
             self.assertEqual(body["type"], "creds_v1.0")
 
-            self.assertIn("is_deleted", body)
-            self.assertFalse(body["is_deleted"])
-
             if the_auth_scheme == "mac":
                 self.assertIn("mac", body)
                 mac_section_of_body = body["mac"]
@@ -137,9 +134,6 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
 
             self.assertIn("type", body)
             self.assertEqual(body["type"], "creds_v1.0")
-
-            self.assertIn("is_deleted", body)
-            self.assertFalse(body["is_deleted"])
 
             if the_auth_scheme == "mac":
                 self.assertIn("mac", body)

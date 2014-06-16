@@ -16,10 +16,7 @@ class AsyncCredsDeleter(AsyncAction):
         self._callback = callback
 
         acr = AsyncCredsRetriever(self.key_store)
-        acr.fetch(
-            self._on_async_creds_retriever_done,
-            key=key,
-            is_filter_out_deleted=False)
+        acr.fetch(self._on_async_creds_retriever_done, key=key)
 
     def _on_async_creds_retriever_done(self, creds, is_creds_collection):
         if creds is None:

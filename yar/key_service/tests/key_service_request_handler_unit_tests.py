@@ -89,7 +89,6 @@ class TestCase(yar_test_util.TestCase):
 
             creds = {
                 "principal": principal,
-                "is_deleted": False,
             }
             if auth_scheme == "mac":
                 creds["mac"] = {
@@ -157,11 +156,7 @@ class TestCase(yar_test_util.TestCase):
 
             return (creds, location)
 
-    def _get_creds(
-        self,
-        the_key,
-        expected_to_be_found=True,
-        get_deleted=False):
+    def _get_creds(self, the_key, expected_to_be_found=True):
 
         self.assertIsNotNone(the_key)
         self.assertTrue(0 < len(the_key))
@@ -171,7 +166,6 @@ class TestCase(yar_test_util.TestCase):
             callback,
             key,
             principal,
-            is_filter_out_deleted,
             is_filter_out_non_model_properties):
 
             self.assertIsNotNone(acr)
@@ -183,22 +177,16 @@ class TestCase(yar_test_util.TestCase):
             for creds in self._creds_database:
                 key = self._key_from_creds(creds)
                 if the_key == key:
-                    if is_filter_out_deleted:
-                        self.assertIn("is_deleted", creds)
-                        if creds["is_deleted"]:
-                            callback(creds=None, is_creds_collection=False)
-                            return
                     callback(creds=creds, is_creds_collection=False)
                     return
             callback(creds=None, is_creds_collection=None)
 
         name_of_method_to_patch = (
-            "yar.key_service.async_creds_retriever.AsyncCredsRetriever.fetch"
+            "yar.key_service.async_creds_retriever."
+            "AsyncCredsRetriever.fetch"
         )
         with mock.patch(name_of_method_to_patch, fetch_patch):
             url = "%s/%s" % (self.url(), the_key)
-            if get_deleted:
-                url = "%s?deleted=true" % url
             http_client = httplib2.Http()
             response, content = http_client.request(url, "GET")
             if not expected_to_be_found:
@@ -245,7 +233,6 @@ class TestCase(yar_test_util.TestCase):
             callback,
             key,
             principal,
-            is_filter_out_deleted,
             is_filter_out_non_model_properties):
 
             self.assertIsNotNone(acr)
@@ -255,15 +242,11 @@ class TestCase(yar_test_util.TestCase):
                 self.assertIsNone(principal)
             else:
                 self.assertEqual(principal, the_principal)
-            if is_filter_out_deleted:
-                creds_database = [creds for creds in self._creds_database if not creds.get("is_deleted", False)]
-            else:
-                creds_database = self._creds_database
             if principal is None:
-                callback(creds=creds_database, is_creds_collection=True)
+                callback(creds=self._creds_database, is_creds_collection=True)
             else:
                 principals_creds = []
-                for creds in creds_database:
+                for creds in self._creds_database:
                     self.assertIn("principal", creds)
                     if principal == creds["principal"]:
                         principals_creds.append(creds)
@@ -298,36 +281,34 @@ class TestCase(yar_test_util.TestCase):
         self.assertIsNotNone(the_key)
         self.assertTrue(0 < len(the_key))
 
-        def delete_patch(acd, key, callback):
+        def async_creds_deleter_patch(acd, key, callback):
             self.assertIsNotNone(acd)
             self.assertIsNotNone(key)
             self.assertEqual(key, the_key)
             self.assertIsNotNone(callback)
-            for creds in self._creds_database:
-                if key == self._key_from_creds(creds):
-                    creds["is_deleted"] = True
-                    callback(True)
-                    return
-            callback(False)
+            new_creds_database = [creds for creds in self._creds_database if key != self._key_from_creds(creds)]
+            deleted = len(new_creds_database) != len(self._creds_database)
+            self._creds_database = new_creds_database
+            callback(deleted)
 
         name_of_method_to_patch = (
-            "yar.key_service.async_creds_deleter.AsyncCredsDeleter.delete"
+            "yar.key_service.async_creds_deleter."
+            "AsyncCredsDeleter.delete"
         )
-        with mock.patch(name_of_method_to_patch, delete_patch):
+        with mock.patch(name_of_method_to_patch, async_creds_deleter_patch):
             url = "%s/%s" % (self.url(), the_key)
             http_client = httplib2.Http()
             response, content = http_client.request(url, "DELETE")
             self.assertTrue(httplib.OK == response.status)
 
     def test_get_of_non_existent_resource(self):
-        the_key = str(uuid.uuid4()).replace("-", "")
+        the_key = uuid.uuid4().hex
 
         def fetch_patch(
             acr,
             callback,
             key,
             principal,
-            is_filter_out_deleted,
             is_filter_out_non_model_properties):
             self.assertIsNotNone(acr)
             self.assertIsNotNone(callback)
@@ -411,7 +392,7 @@ class TestCase(yar_test_util.TestCase):
         self.assertTrue(httplib.BAD_REQUEST == response.status)
 
     def test_post_failure(self):
-        the_principal = str(uuid.uuid4()).replace("-", "")
+        the_principal = uuid.uuid4().hex
 
         def create_patch(acc, principal, callback):
             self.assertIsNotNone(acc)
@@ -430,7 +411,7 @@ class TestCase(yar_test_util.TestCase):
             self.assertTrue(httplib.INTERNAL_SERVER_ERROR == response.status)
 
     def test_delete_failure(self):
-        the_mac_key_identifier = str(uuid.uuid4()).replace("-", "")
+        the_mac_key_identifier = uuid.uuid4().hex
 
         def delete_patch(acd, mac_key_identifier, callback):
             self.assertIsNotNone(acd)
@@ -439,7 +420,11 @@ class TestCase(yar_test_util.TestCase):
             self.assertIsNotNone(callback)
             callback(None)
 
-        with mock.patch("yar.key_service.async_creds_deleter.AsyncCredsDeleter.delete", delete_patch):
+        name_of_method_to_patch = (
+            "yar.key_service.async_creds_deleter."
+            "AsyncCredsDeleter.delete"
+        )
+        with mock.patch(name_of_method_to_patch, delete_patch):
             url = "%s/%s" % (self.url(), the_mac_key_identifier)
             http_client = httplib2.Http()
             response, content = http_client.request(url, "DELETE")
@@ -473,12 +458,12 @@ class TestCase(yar_test_util.TestCase):
         self.assertTrue(httplib.METHOD_NOT_ALLOWED == response.status)
 
     def test_get_by_principal(self):
-        principal = str(uuid.uuid4()).replace("-", "")
+        principal = uuid.uuid4().hex
         principal_creds = []
         for x in range(1, 11):
             principal_creds.append(self._create_creds(principal))
 
-        other_principal = str(uuid.uuid4()).replace("-", "")
+        other_principal = uuid.uuid4().hex
         other_principal_creds = []
         for x in range(1, 4):
             other_principal_creds.append(self._create_creds(other_principal))
@@ -489,7 +474,7 @@ class TestCase(yar_test_util.TestCase):
         # :TODO: validate all_principal_creds is same as principal_creds
 
     def _test_all_good_for_simple_create_and_delete(self, auth_scheme):
-        principal = str(uuid.uuid4()).replace("-", "")
+        principal = uuid.uuid4().hex
         (creds, location) = self._create_creds(principal, auth_scheme)
         self.assertIsNotNone(creds)
 
@@ -511,14 +496,13 @@ class TestCase(yar_test_util.TestCase):
         self._test_all_good_for_simple_create_and_delete("basic")
 
     def test_deleted_creds_not_returned_by_default_on_get(self):
-        principal = str(uuid.uuid4()).replace("-", "")
+        principal = uuid.uuid4().hex
         (creds_on_create, location_on_create) = self._create_creds(principal)
         key = self._key_from_creds(creds_on_create)
         creds_on_get_before_delete = self._get_creds(key)
         self.assertIsNotNone(creds_on_get_before_delete)
         self._delete_creds(key)
         self._get_creds(key, expected_to_be_found=False)
-        self._get_creds(key, get_deleted=True)
 
     def test_create_creds_failure(self):
         """Verify that when credentials creation fails (for whatever reason)

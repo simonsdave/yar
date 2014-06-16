@@ -17,7 +17,6 @@ class AsyncCredsRetriever(AsyncAction):
         callback,
         key=None,
         principal=None,
-        is_filter_out_deleted=True,
         is_filter_out_non_model_properties=False):
 
         self._key = key
@@ -25,7 +24,6 @@ class AsyncCredsRetriever(AsyncAction):
         self._callback = callback
         self._is_filter_out_non_model_properties = \
             is_filter_out_non_model_properties
-        self._is_filter_out_deleted = is_filter_out_deleted
 
         if key:
             fmt = '_design/by_identifier/_view/by_identifier?key="%s"'
@@ -50,9 +48,6 @@ class AsyncCredsRetriever(AsyncAction):
         creds = []
         for row in body.get("rows", []):
             doc = row.get("value", {})
-            if doc.get("is_deleted", False):
-                if self._is_filter_out_deleted:
-                    continue
             if self._is_filter_out_non_model_properties:
                 doc = filter_out_non_model_creds_properties(doc)
             creds.append(doc)

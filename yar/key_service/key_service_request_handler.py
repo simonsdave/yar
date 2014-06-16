@@ -41,16 +41,11 @@ class RequestHandler(trhutil.RequestHandler):
             self.finish()
             return
 
-        get_deleted_creds = True \
-            if self.get_argument("deleted", None) \
-            else False
-
         acr = AsyncCredsRetriever(_key_store)
         acr.fetch(
             self._on_async_creds_retrieve_done,
             key=key,
             principal=principal,
-            is_filter_out_deleted=(not get_deleted_creds),
             is_filter_out_non_model_properties=True)
 
     def _on_async_creds_retrieve_done(self, creds, is_creds_collection):

@@ -74,17 +74,6 @@ class KeyServerGetCredsResponseTestCase(unittest.TestCase):
             return
         self._validate(response)
 
-    def test_is_deleted_is_not_boolean(self):
-        response = self._generate_good_response()
-        if not response:
-            # :TODO: crappy way to do this - how do we avoid nosetests selecting
-            # this abstract base class as a real test case class
-            return
-        self._validate(response)
-        response["is_deleted"] = self._uuid()
-        with self.assertRaises(jsonschema.ValidationError):
-            self._validate(response)
-
     def test_invalid_principal(self):
         response = self._generate_good_response()
         if not response:
@@ -134,7 +123,6 @@ class KeyServerGetBasicCredsResponseTestCase(KeyServerGetCredsResponseTestCase):
             "basic": {
                 "api_key": str(api_key),
             },
-            "is_deleted": True,
             "principal": "simonsdave@gmail.com",
             "links": {
                 "self": {
@@ -167,7 +155,6 @@ class KeyServerGetMACCredsResponseTestCase(KeyServerGetCredsResponseTestCase):
                 "mac_key": str(mac_key),
                 "mac_key_identifier": str(mac_key_identifier),
             },
-            "is_deleted": True,
             "principal": "simonsdave@gmail.com",
             "links": {
                 "self": {

@@ -26,17 +26,11 @@ class TestCaseAsyncCredsDeleter(yar_test_util.TestCase):
 
         the_key = uuid.uuid4().hex
 
-        def async_creds_retriever_fetch_patch(
-            acd,
-            callback,
-            key,
-            is_filter_out_deleted):
+        def async_creds_retriever_fetch_patch(acd, callback, key):
 
             self.assertIsNotNone(acd)
 
             self.assertEqual(key, the_key)
-
-            self.assertFalse(is_filter_out_deleted)
 
             self.assertIsNotNone(callback)
             callback(creds=None, is_creds_collection=None)
@@ -71,17 +65,11 @@ class TestCaseAsyncCredsDeleter(yar_test_util.TestCase):
             "type": "creds_v1.0",
         }
 
-        def async_creds_retriever_fetch_patch(
-            acd,
-            callback,
-            key,
-            is_filter_out_deleted):
+        def async_creds_retriever_fetch_patch(acd, callback, key):
 
             self.assertIsNotNone(acd)
 
             self.assertEqual(key, the_creds["mac"]["mac_key_identifier"])
-
-            self.assertFalse(is_filter_out_deleted)
 
             self.assertIsNotNone(callback)
             callback(creds=the_creds, is_creds_collection=False)
@@ -132,17 +120,11 @@ class TestCaseAsyncCredsDeleter(yar_test_util.TestCase):
             "type": "creds_v1.0",
         }
 
-        def async_creds_retriever_fetch_patch(
-            acd,
-            callback,
-            key,
-            is_filter_out_deleted):
+        def async_creds_retriever_fetch_patch(acd, callback, key):
 
             self.assertIsNotNone(acd)
 
             self.assertEqual(key, the_creds["mac"]["mac_key_identifier"])
-
-            self.assertFalse(is_filter_out_deleted)
 
             self.assertIsNotNone(callback)
             callback(creds=the_creds, is_creds_collection=False)

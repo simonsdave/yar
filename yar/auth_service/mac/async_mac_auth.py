@@ -37,7 +37,6 @@ class AsyncMACAuth(object):
         self,
         is_ok,
         mac_key_identifier,
-        is_deleted=None,
         mac_algorithm=None,
         mac_key=None,
         principal=None):

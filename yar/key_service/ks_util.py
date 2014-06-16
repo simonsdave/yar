@@ -20,7 +20,6 @@ def filter_out_non_model_creds_properties(creds):
     if creds is None:
         return None
     model_creds_properties = [
-        "is_deleted",
         "basic",
         "mac",
         "principal"

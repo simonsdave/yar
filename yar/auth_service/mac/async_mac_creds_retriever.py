@@ -66,7 +66,6 @@ class AsyncMACCredsRetriever(object):
         self._callback(
             True,
             mac.MACKeyIdentifier(body["mac"]["mac_key_identifier"]),
-            body["is_deleted"],
             body["mac"]["mac_algorithm"],
             mac.MACKey(body["mac"]["mac_key"]),
             body["principal"])
