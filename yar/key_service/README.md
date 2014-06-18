@@ -20,7 +20,7 @@ Principals are represented as a string at least one character long.
 The Key Service doesn't care what's the string as long as it's one character long.
 
 To create a set of credentials for the principal dave@example.com
-that will be used
+that will be used for
 [MAC](http://en.wikipedia.org/wiki/Message_authentication_code)
 Autentication:
 
@@ -72,13 +72,6 @@ To delete a set of existing credentials:
 
 ~~~~~
 curl -X DELETE http://127.0.0.1:8070/v1.0/creds/<MAC key identifier or API key>
-~~~~~
-
-To get all credentials for a principal
-including those that have been deleted:
-
-~~~~~
-curl http://127.0.0.1:8070/v1.0/creds?principal=dave@example.com&deleted=true
 ~~~~~
 
 ### Key Generation
