@@ -17,7 +17,7 @@ create_basic_creds() {
 	
 	local API_KEY=$(python -c "from yar.util.basic import APIKey; print APIKey.generate()")
 	local WHEN_CREATED=$(date -u)
-	local CREDS="{\"principal\": \"dave@example.com\", \"type\": \"creds_v1.0\", \"is_deleted\": false, \"basic\": {\"api_key\": \"$API_KEY\"}, \"when_created\": \"$WHEN_CREATED\"}"
+	local CREDS="{\"principal\": \"dave@example.com\", \"type\": \"creds_v1.0\", \"basic\": {\"api_key\": \"$API_KEY\"}, \"when_created\": \"$WHEN_CREATED\"}"
 	local CONTENT_TYPE="Content-Type: application/json; charset=utf8"
 	STATUS_CODE=$(curl \
 		-s \
@@ -62,10 +62,8 @@ delete_basic_creds() {
 
 	echo "Deleting basic creds with api key '$API_KEY' from $HOST/$DB"
 
-	local TIMESTAMP=$(date "+%s")
-	local CREDS=$(get_basic_creds -s $HOST $DB $API_KEY |
-		sed "s/\"is_deleted\":false/\"is_deleted\":$TIMESTAMP/g")
-
+	local APP='import sys, json; j = json.load(sys.stdin); j["_deleted"] = True; print json.dumps(j);'
+	local CREDS=$(get_basic_creds -s $HOST $DB $API_KEY | python -c "$APP")
 	local APP='import sys, json; print json.load(sys.stdin)["_id"]'
 	local ID=$(echo "$CREDS" | python -c "$APP")
 
@@ -139,12 +137,10 @@ API_KEY=$(create_basic_creds $HOST $DB1)
 fire_replication $HOST $DB1 $DB2
 
 delete_basic_creds $HOST $DB1 $API_KEY
-sleep 1
-delete_basic_creds $HOST $DB2 $API_KEY
 
 fire_replication $HOST $DB1 $DB2
 
-get_basic_creds $HOST $DB1 $API_KEY
-get_basic_creds $HOST $DB2 $API_KEY
+# get_basic_creds $HOST $DB1 $API_KEY
+# get_basic_creds $HOST $DB2 $API_KEY
 
 exit 0
