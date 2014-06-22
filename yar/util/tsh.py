@@ -8,6 +8,7 @@ import logging
 
 _logger = logging.getLogger("UTIL.%s" % __name__)
 
+
 def _term_signal_handler(signalNumber, frame):
     assert signalNumber == signal.SIGINT
     _logger.info("Shutting down ...")

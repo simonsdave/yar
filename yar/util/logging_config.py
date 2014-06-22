@@ -5,6 +5,7 @@ centralized in the configure() function of this module."""
 import logging
 import time
 
+
 def configure(level, filename, syslog):
     """This function is expected to be called from the server's
     mainline with level, filename and syslog probably coming from

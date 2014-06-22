@@ -37,10 +37,9 @@ def _is_json_utf8_content_type(content_type):
     return True
 
 
-def get_request_host_and_port(
-    request,
-    host_if_not_found=None,
-    port_if_not_found=None):
+def get_request_host_and_port(request,
+                              host_if_not_found=None,
+                              port_if_not_found=None):
     """Return the request's 'Host' HTTP header parsed into its
     host and port components."""
     value = request.headers.get("Host", None)
@@ -89,10 +88,9 @@ class RequestHandler(tornado.web.RequestHandler):
     and responses. The utility methods focus on requests and responses
     that use JSON."""
 
-    def get_request_host_and_port(
-        self,
-        host_if_not_found=None,
-        port_if_not_found=None):
+    def get_request_host_and_port(self,
+                                  host_if_not_found=None,
+                                  port_if_not_found=None):
         """Return the request's 'Host' HTTP header parsed into its
         host and port components."""
         rv = get_request_host_and_port(
@@ -137,7 +135,9 @@ class RequestHandler(tornado.web.RequestHandler):
         return body
 
 
-def get_json_body_from_response(response, value_if_not_found=None, schema=None):
+def get_json_body_from_response(response,
+                                value_if_not_found=None,
+                                schema=None):
     """Extract and return the JSON document from a
     ```tornado.httpclient.HTTPResponse``` as well as optionally
     validating the document against a schema. If there's

@@ -57,13 +57,23 @@ def __check_host_colon_port(option, opt, value, return_parsed_value):
 def _check_host_colon_ports(option, opt, value):
     """Type checking function for command line parser's
     'hostcolonports' type."""
-    return _parse_host_colon_ports(option, opt, value, return_parsed_pairs=False)
+    rv = _parse_host_colon_ports(
+        option,
+        opt,
+        value,
+        return_parsed_pairs=False)
+    return rv
 
 
 def _check_host_colon_ports_parsed(option, opt, value):
     """Type checking function for command line parser's
     'hostcolonportsparsed' type."""
-    return _parse_host_colon_ports(option, opt, value, return_parsed_pairs=True)
+    rv = _parse_host_colon_ports(
+        option,
+        opt,
+        value,
+        return_parsed_pairs=True)
+    return rv
 
 
 def _parse_host_colon_ports(option, opt, value, return_parsed_pairs):
@@ -97,12 +107,12 @@ def _parse_host_colon_port(server, must_have_host):
     the expected form None is returned."""
 
     if must_have_host:
-        host_colon_port_reg_ex_pattern = "^\s*(?P<host>[^\:]+)\:(?P<port>\d+)\s*$"
+        pattern = "^\s*(?P<host>[^\:]+)\:(?P<port>\d+)\s*$"
     else:
-        host_colon_port_reg_ex_pattern = "^\s*(?:(?P<host>[^\:]+)\:)?(?P<port>\d+)\s*$"
-    host_colon_port_reg_ex = re.compile(host_colon_port_reg_ex_pattern)
+        pattern = "^\s*(?:(?P<host>[^\:]+)\:)?(?P<port>\d+)\s*$"
+    reg_ex = re.compile(pattern)
 
-    match = host_colon_port_reg_ex.match(server)
+    match = reg_ex.match(server)
     if not match:
         return None
     host = match.group("host")
