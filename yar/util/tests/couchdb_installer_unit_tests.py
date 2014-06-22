@@ -17,7 +17,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
         are supplied."""
         args = []
 
-        clp = CommandLineParser("description")
+        clp = CommandLineParser("description", "creds")
         (clo, cla) = clp.parse_args(args)
 
         self.assertFalse(clo.delete)
@@ -34,7 +34,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
             "--log", "info",
         ]
 
-        clp = CommandLineParser("description")
+        clp = CommandLineParser("description", "creds")
         (clo, cla) = clp.parse_args(args)
 
         self.assertFalse(clo.delete)
@@ -51,7 +51,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
             "--host", "example.com:1234",
         ]
 
-        clp = CommandLineParser("description")
+        clp = CommandLineParser("description", "creds")
         (clo, cla) = clp.parse_args(args)
 
         self.assertFalse(clo.delete)
@@ -68,7 +68,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
             "--database", "davewashere",
         ]
 
-        clp = CommandLineParser("description")
+        clp = CommandLineParser("description", "creds")
         (clo, cla) = clp.parse_args(args)
 
         self.assertFalse(clo.delete)
@@ -85,7 +85,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
             "--create", "f",
         ]
 
-        clp = CommandLineParser("description")
+        clp = CommandLineParser("description", "creds")
         (clo, cla) = clp.parse_args(args)
 
         self.assertFalse(clo.delete)
@@ -102,7 +102,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
             "--createdesign", "f",
         ]
 
-        clp = CommandLineParser("description")
+        clp = CommandLineParser("description", "creds")
         (clo, cla) = clp.parse_args(args)
 
         self.assertFalse(clo.delete)
@@ -119,7 +119,7 @@ class CommandLineParserUnitTase(unittest.TestCase):
             "--delete", "t",
         ]
 
-        clp = CommandLineParser("description")
+        clp = CommandLineParser("description", "creds")
         (clo, cla) = clp.parse_args(args)
 
         self.assertTrue(clo.delete)

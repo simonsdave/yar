@@ -23,7 +23,10 @@ created create a mainline for the installer like the example below:
                 "and/or delete the CouchDB database that implements "
                 "yar's Key Store."
             )
-            couchdb_installer.CommandLineParser.__init__(self, description)
+            couchdb_installer.CommandLineParser.__init__(
+                self,
+                description,
+                "creds")
 
     if __name__ == "__main__":
         couchdb_installer.main(CommandLineParser(), design_docs)
@@ -147,7 +150,7 @@ class CommandLineParser(optparse.OptionParser):
     parse command line arguments for a CouchDB installer.
     See this module's complete example for how to use this class."""
 
-    def __init__(self, description):
+    def __init__(self, description, default_database):
 
         optparse.OptionParser.__init__(
             self,
@@ -179,7 +182,7 @@ class CommandLineParser(optparse.OptionParser):
             type="hostcolonport",
             help=help)
 
-        default = "creds"
+        default = default_database
         help = "database - default = %s" % default
         self.add_option(
             "--database",

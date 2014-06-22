@@ -18,7 +18,10 @@ class CommandLineParser(couchdb_installer.CommandLineParser):
             "and/or delete the CouchDB database that implements "
             "yar's Key Store."
         )
-        couchdb_installer.CommandLineParser.__init__(self, description)
+        couchdb_installer.CommandLineParser.__init__(
+            self,
+            description,
+            "creds")
 
 if __name__ == "__main__":
     couchdb_installer.main(CommandLineParser(), design_docs)
