@@ -34,7 +34,7 @@ if __name__ == "__main__":
         '    }'
         '}%s'
     )
-    
+
     for i in range(0, number_of_mac_creds):
         mac_key_identifier = yar.util.mac.MACKeyIdentifier.generate()
         mac_key = yar.util.mac.MACKey.generate()
@@ -58,7 +58,7 @@ if __name__ == "__main__":
         '    }'
         '}%s'
     )
-    
+
     for i in range(0, number_of_basic_creds):
         api_key = yar.util.basic.APIKey.generate()
         principal = str(uuid.uuid4()).replace("-", "")
