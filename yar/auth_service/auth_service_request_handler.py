@@ -23,11 +23,11 @@ debug_header_prefix = "X-Yar-Auth-"
 
 auth_failure_detail_header_name = "%sAuth-Failure-Detail" % debug_header_prefix
 
-# implementation of ```_include_auth_failure_debug_details()``` is pretty
-# obvious. what might be less clear is the motivation for the function.
-# this function is only here so that test frameworks can override the
-# implementation to force and unforce auth debug details to be generated
 def _include_auth_failure_debug_details():
+    """implementation of ```_include_auth_failure_debug_details()``` is pretty
+    obvious. what might be less clear is the motivation for the function.
+    this function is only here so that test frameworks can override the
+    implementation to force and unforce auth debug details to be generated."""
     return _logger.isEnabledFor(logging.DEBUG)
 
 # these constants define detailed authentication failure reasons
@@ -36,7 +36,7 @@ AUTH_FAILURE_DETAIL_UNKNOWN_AUTHENTICATION_SCHEME = 0x0000 + 0x0002
 AUTH_FAILURE_DETAIL_FOR_TESTING = 0x0000 + 0x00ff
 
 """When the auth service first recieves a request it extracts the
-authentication scheme from the value associated with the request's 
+authentication scheme from the value associated with the request's
 HTTP authorization header. ```_auth_scheme_reg_ex``` is the regular
 expression used to parse and extract the authentication scheme."""
 _auth_scheme_reg_ex = re.compile(
@@ -60,7 +60,7 @@ url_spec = r".*"
 class RequestHandler(trhutil.RequestHandler):
 
     #
-    # :TODO: what happens to "custom" HTTP methods outside of the 
+    # :TODO: what happens to "custom" HTTP methods outside of the
     # 7 method listed below?
     #
 
@@ -116,12 +116,11 @@ class RequestHandler(trhutil.RequestHandler):
         aha = auth_class(self.request)
         aha.authenticate(self._on_auth_done)
 
-    def _on_auth_done(
-        self,
-        is_auth_ok,
-        auth_failure_detail=None,
-        auth_failure_debug_details=None,
-        principal=None):
+    def _on_auth_done(self,
+                      is_auth_ok,
+                      auth_failure_detail=None,
+                      auth_failure_debug_details=None,
+                      principal=None):
 
         # :TODO: how to differentiate between an authentication failure
         # and a failure with the authentication infrastructure
@@ -148,7 +147,7 @@ class RequestHandler(trhutil.RequestHandler):
             return
 
         # the request has been successfully authenticated:-)
-        # all that's left now is to asyc'y forward the request 
+        # all that's left now is to asyc'y forward the request
         # to the app service
         aasf = async_app_service_forwarder.AsyncAppServiceForwarder(
             self.request.method,
@@ -158,12 +157,11 @@ class RequestHandler(trhutil.RequestHandler):
             principal)
         aasf.forward(self._on_app_service_done)
 
-    def _on_app_service_done(
-        self,
-        is_ok,
-        http_status_code=None,
-        headers=None,
-        body=None):
+    def _on_app_service_done(self,
+                             is_ok,
+                             http_status_code=None,
+                             headers=None,
+                             body=None):
 
         if is_ok:
             self.set_status(http_status_code)

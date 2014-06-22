@@ -53,7 +53,8 @@ class AsyncAppServiceForwarder(object):
 
     def _on_forward_done(self, response):
 
-        _logger.info("App Service (%s - %s) responded in %d ms",
+        _logger.info(
+            "App Service (%s - %s) responded in %d ms",
             response.effective_url,
             response.request.method,
             int(response.request_time * 1000))
