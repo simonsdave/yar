@@ -12,12 +12,11 @@ _logger = logging.getLogger("KEYSERVICE.%s" % __name__)
 
 class AsyncCredsRetriever(AsyncAction):
 
-    def fetch(
-        self,
-        callback,
-        key=None,
-        principal=None,
-        is_filter_out_non_model_properties=False):
+    def fetch(self,
+              callback,
+              key=None,
+              principal=None,
+              is_filter_out_non_model_properties=False):
 
         self._key = key
         self._principal = principal

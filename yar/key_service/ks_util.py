@@ -43,12 +43,11 @@ class AsyncAction(object):
         object.__init__(self)
         self.key_store = key_store
 
-    def async_req_to_key_store(
-        self,
-        path,
-        method,
-        body,
-        callback):
+    def async_req_to_key_store(self,
+                               path,
+                               method,
+                               body,
+                               callback):
 
         self._my_callback = callback
 
