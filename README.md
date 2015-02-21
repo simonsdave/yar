@@ -1,3 +1,4 @@
+#yar [![Requirements Status](https://requires.io/github/simonsdave/yar/requirements.svg?branch=master)](https://requires.io/github/simonsdave/yar/requirements/?branch=master)
 So you've spent time writing an awesome RESTful API and now you want to "secure it".
 As you start Googling for a solution you'll quickly find there are
 [a number of commerical API management solutions](docs/faq.md#what-other-api-management-solutions-exist)
@@ -37,11 +38,11 @@ require < 25 MB of memory @ concurrency levels of 100
   * [Key Store](yar/key_store) is built on [CouchDB](http://couchdb.apache.org/) so the [Key Store](yar/key_store) inherits all the nice architectual/operational qualities of [CouchDB](http://couchdb.apache.org/)
   * intended deployment environment is [Ubuntu 12.04](http://releases.ubuntu.com/12.04.4/) and
 development environment is [Mac OS X](http://www.apple.com/ca/osx/)
-  
+
 Is the project complete? Nope! yar is still a work in progress.
 You can find the list of open issues [here](https://github.com/simonsdave/yar/issues?state=open).
 
-Development Prerequisites 
+Development Prerequisites
 -------------------------
 * code written and tested on Mac OS X using:
   * [git](http://git-scm.com/)
@@ -69,7 +70,7 @@ In the instructions below it's assumed yar is installed to your home directory.
 > Before you start working through the instructions below make sure you
 > have installed the components described above. In particular, if you don't install
 > [command line tools for Xcode](https://developer.apple.com/downloads/index.action)
-> you'll find it hard to debug the error messages produced by **source bin/cfg4dev**. 
+> you'll find it hard to debug the error messages produced by **source bin/cfg4dev**.
 
 * get the source code by running the following in a new terminal window
 
@@ -158,7 +159,7 @@ cd; cd yar; source bin/cfg4dev
 ~~~~~
 
 * In the same window that you executed the above commands, you'll now use
-[yarcurl](bin/yarcurl) 
+[yarcurl](bin/yarcurl)
 to issue a request to the App Service via the Auth Service:
 
 ~~~~~
