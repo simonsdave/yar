@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     app = tornado.web.Application(handlers=handlers)
 
-    http_server = tornado.httpserver.HTTPServer(app)
+    http_server = tornado.httpserver.HTTPServer(app, xheaders=True)
     http_server.listen(
         port=clo.listen_on[1],
         address=clo.listen_on[0])
