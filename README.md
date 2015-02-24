@@ -1,4 +1,4 @@
-#yar [![Requirements Status](https://requires.io/github/simonsdave/yar/requirements.svg?branch=master)](https://requires.io/github/simonsdave/yar/requirements/?branch=master)
+#yar ![](https://travis-ci.org/simonsdave/yar.svg?branch=master) [![Requirements Status](https://requires.io/github/simonsdave/yar/requirements.svg?branch=master)](https://requires.io/github/simonsdave/yar/requirements/?branch=master)
 So you've spent time writing an awesome RESTful API and now you want to "secure it".
 As you start Googling for a solution you'll quickly find there are
 [a number of commerical API management solutions](docs/faq.md#what-other-api-management-solutions-exist)
