@@ -47,11 +47,11 @@ setup(
         "bin/bulk_gen_creds",
     ],
     install_requires=[
-        "httplib2==0.9",
-        "jsonschema==2.4.0",
-        "tornado==4.1",
+        "httplib2==0.9.1",
+        "jsonschema==2.5.1",
         "python-keyczar==0.715",
-        "requests==2.5.2",
+        "requests==2.7.0",
+        "tornado==4.2.1",
         "tornado-memcache==0.1",
     ],
     dependency_links=[
@@ -68,7 +68,7 @@ setup(
         # and the version number listed in tornado-memcache's setup.py.
         # all 3 of these version numbers had to match to get this all to
         # work correctly.
-        "http://github.com/dpnova/tornado-memcache/tarball/master#egg=tornado-memcache-0.1",
+        "https://github.com/dpnova/tornado-memcache/tarball/master#egg=tornado-memcache-0.1",
     ],
     # MANIFEST.in in same directory as this setup.py should contain
     # the following:

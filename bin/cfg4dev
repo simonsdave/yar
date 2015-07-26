@@ -5,7 +5,8 @@ if [ -f "$PWD/requirements.txt" ]; then
 	else
 		virtualenv env
 		source "$PWD/env/bin/activate"
-		pip install --requirement "$PWD/requirements.txt"
+        pip install pip==1.5.6
+		pip install --process-dependency-links --requirement "$PWD/requirements.txt"
 	fi
 	export PATH=$PATH:"$PWD/bin"
 	export PYTHONPATH="$PWD"
