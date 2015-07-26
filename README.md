@@ -70,7 +70,7 @@ In the instructions below it's assumed yar is installed to your home directory.
 > Before you start working through the instructions below make sure you
 > have installed the components described above. In particular, if you don't install
 > [command line tools for Xcode](https://developer.apple.com/downloads/index.action)
-> you'll find it hard to debug the error messages produced by **source bin/cfg4dev**.
+> you'll find it hard to debug the error messages produced by **source cfg4dev**.
 
 * get the source code by running the following in a new terminal window
 
@@ -83,7 +83,7 @@ Service listens on 127:0.0.1:8080 - this App Service is only for
 testing/development - you wouldn't use this in a production deployment:
 
 ~~~~~
-cd; cd yar; source bin/cfg4dev; app_service --log=info
+cd; cd yar; source cfg4dev; app_service --log=info
 ~~~~~
 
 * start the Key Store - if [CouchDB](http://couchdb.apache.org/)
@@ -101,14 +101,14 @@ couchdb
 by running the following in a new terminal window
 
 ~~~~~
-cd; cd yar; source bin/cfg4dev; key_store_installer --log=info --create=true
+cd; cd yar; source cfg4dev; key_store_installer --log=info --create=true
 ~~~~~
 
 * start the Key Service: in a new terminal window run the following to start the Key Service - by
 default the Key Service will listen on 127.0.0.1:8070
 
 ~~~~~
-cd; cd yar; source bin/cfg4dev; key_service --log=info
+cd; cd yar; source cfg4dev; key_service --log=info
 ~~~~~
 
 * generate an inital set of credentials by issuing the
@@ -147,7 +147,7 @@ memcached -vv
 default, the Auth Service listens on 127.0.0.1:8000
 
 ~~~~~
-cd; cd yar; source bin/cfg4dev; auth_service --log=info
+cd; cd yar; source cfg4dev; auth_service --log=info
 ~~~~~
 
 * Okay, all of your infrastructure should now be running!
@@ -155,7 +155,7 @@ Time to issue your first request to the App Service thru the Auth Service.
 In a new terminal window issue the following commands to setup your PATH:
 
 ~~~~~
-cd; cd yar; source bin/cfg4dev
+cd; cd yar; source cfg4dev
 ~~~~~
 
 * In the same window that you executed the above commands, you'll now use
