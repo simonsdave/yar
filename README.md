@@ -21,19 +21,16 @@ yar is a reverse proxy that sits in front of your RESTful API
 to realize an API Management solution with the following
 features/capabilities:
 
-  * authentication of API requestors using the standard HTTP approach to
-authentication (see [this](https://www.ietf.org/rfc/rfc2617.txt) for details) - more specifically,
-yar implements [MAC](http://en.wikipedia.org/wiki/Message_authentication_code)
+  * authentication of API requestors using
+[MAC](http://en.wikipedia.org/wiki/Message_authentication_code)
 and [Basic](http://en.wikipedia.org/wiki/Basic_authentication) authentication schemes - MACs
 are calculated per the [OAuth 2.0 Message Authentication Code (MAC) Tokens](http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02) specification
   * key generation for the above authentication schemes using [Keyczar](http://www.keyczar.org/)
   * [Auth Service](yar/auth_service) and [Key Service](yar/key_service) are built on [Tornado](http://www.tornadoweb.org/en/stable/) leveraging Tornado's [asynchronous/high concurrency capabilites](http://www.tornadoweb.org/en/stable/networking.html) - yar's high concurrency capability is verified with an [extensive and automated load testing framework](tests/load) that leverages [Vagrant](http://www.vagrantup.com/), [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Docker](https://www.docker.io/)
-  * [HAProxy](http://haproxy.1wt.eu/) is used to load balance requests across tiers of
-[Auth Services](yar/auth_service), [Key Services](yar/key_service) and  [Key Stores](yar/key_store)
-enabling these tiers to independantly
-[scale horizontally](http://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling)
+  * [horizontal scaability](http://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling)
+of [Auth Services](yar/auth_service) and [Key Services](yar/key_service)
   * high quality code base - ~1,200 LLOC and 200+ unit tests with 99% code coverage
-  * small footprint - for example, the [Auth Service](yar/auth_service) and [Key Service](yar/key_service)
+  * small footprint - the [Auth Service](yar/auth_service) and [Key Service](yar/key_service)
 require < 25 MB of memory @ concurrency levels of 100
   * [Key Store](yar/key_store) is built on [CouchDB](http://couchdb.apache.org/) so the [Key Store](yar/key_store) inherits all the nice architectual/operational qualities of [CouchDB](http://couchdb.apache.org/)
   * intended deployment environment is [Ubuntu 12.04](http://releases.ubuntu.com/12.04.4/) and
@@ -41,23 +38,6 @@ development environment is [Mac OS X](http://www.apple.com/ca/osx/)
 
 Is the project complete? Nope! yar is still a work in progress.
 You can find the list of open issues [here](https://github.com/simonsdave/yar/issues?state=open).
-
-Development Prerequisites
--------------------------
-* code written and tested on Mac OS X using:
-  * [git](http://git-scm.com/)
-  * [Python 2.7](http://www.python.org/)
-  * [pip](http://www.pip-installer.org/en/latest/)
-  * [virtualenv](https://pypi.python.org/pypi/virtualenv)
-  * [CouchDB](http://couchdb.apache.org/)
-  * [memcached](http://memcached.org/)
-  * [command line tools for Xcode](https://developer.apple.com/downloads/index.action)
-  * [Vagrant](http://www.vagrantup.com/)
-  * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
-  * [Docker](https://www.docker.io/)
-  * see
-[requirements.txt](https://github.com/simonsdave/yar/blob/master/requirements.txt)
-for the complete list of Python packages on which yar depends
 
 Development Quick Start
 -----------------------
