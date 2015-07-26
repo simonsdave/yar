@@ -5,6 +5,5 @@ install:
   - source cfg4dev
   - pip install coveralls
 script:
-  nosetests --with-coverage --where=yar
-after_success:
-  coveralls
+  - nosetests --with-coverage --where=yar
+  - coveralls
