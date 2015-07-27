@@ -6,5 +6,5 @@ install:
   - source cfg4dev
   - pip install coveralls
 script:
-  - nosetests --with-coverage --where=yar
+  - nosetests --with-coverage --cover-erase --cover-branches
   - coveralls
