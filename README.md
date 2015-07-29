@@ -1,4 +1,5 @@
-#yar [![Requirements Status](https://requires.io/github/simonsdave/yar/requirements.svg?branch=master)](https://requires.io/github/simonsdave/yar/requirements/?branch=master) [![Build Status](https://travis-ci.org/simonsdave/yar.svg?branch=master)](https://travis-ci.org/simonsdave/yar) [![Coverage Status](http://coveralls.io/repos/simonsdave/yar/badge.svg?branch=master&service=github)](http://coveralls.io/github/simonsdave/yar?branch=master)
+#yar [![Requirements Status](https://requires.io/github/simonsdave/yar/requirements.svg?branch=master)](https://requires.io/github/simonsdave/yar/requirements/?branch=master) [![Build Status](https://travis-ci.org/simonsdave/yar.svg?branch=master)](https://travis-ci.org/simonsdave/yar) [![Coverage Status](http://coveralls.io/repos/simonsdave/yar/badge.svg?branch=master&service=github)](http://coveralls.io/github/simonsdave/yar?branch=master) ![Python 2.7](https://img.shields.io/badge/python-2.7-FFC100.svg?style=flat)
+
 So you've spent time writing an awesome RESTful API and now you want to "secure it".
 As you start Googling for a solution you'll quickly find there are
 [a number of commerical API management solutions](docs/faq.md#what-other-api-management-solutions-exist)
