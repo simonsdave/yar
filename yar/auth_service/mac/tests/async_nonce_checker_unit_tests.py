@@ -34,7 +34,7 @@ class TestAsyncNonceChecker(yar_test_util.TestCase):
         self._mac_key_identifier = mac.MACKeyIdentifier.generate()
         self._nonce = mac.Nonce.generate()
         self._nonce_store = {}
-            
+
         self._mock = None
 
         def client_pool_class_patch(nonce_store, maxclients):

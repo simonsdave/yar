@@ -230,12 +230,11 @@ class TestAsyncMACCredsRetriever(yar_test_util.TestCase):
             response.request_time = 24
             callback(response)
 
-        def on_async_mac_creds_retriever_done(
-            is_ok,
-            mac_key_identifier,
-            mac_algorithm,
-            mac_key,
-            principal):
+        def on_async_mac_creds_retriever_done(is_ok,
+                                              mac_key_identifier,
+                                              mac_algorithm,
+                                              mac_key,
+                                              principal):
 
             self.assertIsNotNone(is_ok)
             self.assertTrue(is_ok)

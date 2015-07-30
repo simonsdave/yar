@@ -41,7 +41,8 @@ class AsyncMACCredsRetriever(object):
 
     def _on_fetch_done(self, response):
         """Called when request to the key service returns."""
-        _logger.info("Key Service (%s - %s) responded in %d ms",
+        _logger.info(
+            "Key Service (%s - %s) responded in %d ms",
             response.effective_url,
             response.request.method,
             int(response.request_time * 1000))

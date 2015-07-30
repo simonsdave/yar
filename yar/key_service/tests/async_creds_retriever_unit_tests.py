@@ -13,26 +13,25 @@ from yar.key_service import ks_util
 from yar.util import mac
 from yar.tests import yar_test_util
 
+
 class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
     """A collection of unit tests for the key service's
     async_creds_retriever module."""
 
     _key_store = "dave:42"
 
-    def _test_error_from_async_req_to_key_store(
-        self,
-        the_is_ok,
-        the_code,
-        the_body):
+    def _test_error_from_async_req_to_key_store(self,
+                                                the_is_ok,
+                                                the_code,
+                                                the_body):
 
         self.the_key = uuid.uuid4().hex
 
-        def async_req_to_key_store_patch(
-            acr,
-            path,
-            method,
-            body,
-            callback):
+        def async_req_to_key_store_patch(acr,
+                                         path,
+                                         method,
+                                         body,
+                                         callback):
 
             self.assertIsNotNone(acr)
 
@@ -78,9 +77,8 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             the_code=httplib.OK,
             the_body=None)
 
-    def _test_ok_on_mac_key_identifier_request_to_key_store(
-        self,
-        the_is_filter_out_non_model_properties):
+    def _test_ok_on_mac_key_identifier_request_to_key_store(self,
+                                                            the_is_filter_out_non_model_properties):
 
         the_mac_key_identifier = mac.MACKeyIdentifier.generate()
         the_creds = {
@@ -105,12 +103,11 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             ],
         }
 
-        def async_req_to_key_store_patch(
-            acr,
-            path,
-            method,
-            body,
-            callback):
+        def async_req_to_key_store_patch(acr,
+                                         path,
+                                         method,
+                                         body,
+                                         callback):
 
             self.assertIsNotNone(acr)
 
@@ -161,45 +158,43 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
         self._test_ok_on_mac_key_identifier_request_to_key_store(
             the_is_filter_out_non_model_properties=False)
 
-    def _test_ok_on_principal_request_to_key_store(
-        self,
-        the_is_filter_out_non_model_properties):
+    def _test_ok_on_principal_request_to_key_store(self, the_is_filter_out_non_model_properties):
 
         the_principal = "dave@example.com"
 
         the_non_deleted_creds = [
             {
-                "_id": "070a69935bd840e09029a74837dc4755", 
-                "_rev": "1-f1a30395b5df30003421a8969b001be7", 
+                "_id": "070a69935bd840e09029a74837dc4755",
+                "_rev": "1-f1a30395b5df30003421a8969b001be7",
                 "mac": {
-                    "mac_algorithm": "hmac-sha-1", 
-                    "mac_key": "CHlFh7fIejF3NLmr73pCfqx3EL_xV2zDQgVcjRl45jM", 
-                    "mac_key_identifier": "070a69935bd840e09029a74837dc4755", 
+                    "mac_algorithm": "hmac-sha-1",
+                    "mac_key": "CHlFh7fIejF3NLmr73pCfqx3EL_xV2zDQgVcjRl45jM",
+                    "mac_key_identifier": "070a69935bd840e09029a74837dc4755",
                 },
                 "principal": the_principal,
                 "type": "creds_v1.0"
-            }, 
+            },
             {
-                "_id": "9c8411a78405460e825b5f4318ef9a57", 
-                "_rev": "1-ee4cfcd905e7d98ee7d0ed30463a7a99", 
+                "_id": "9c8411a78405460e825b5f4318ef9a57",
+                "_rev": "1-ee4cfcd905e7d98ee7d0ed30463a7a99",
                 "mac": {
-                    "mac_algorithm": "hmac-sha-1", 
-                    "mac_key": "pyHpZ6auevEEHTkZDhfVf-uKHV_YPEH2lctZXL5j4QQ", 
-                    "mac_key_identifier": "9c8411a78405460e825b5f4318ef9a57", 
+                    "mac_algorithm": "hmac-sha-1",
+                    "mac_key": "pyHpZ6auevEEHTkZDhfVf-uKHV_YPEH2lctZXL5j4QQ",
+                    "mac_key_identifier": "9c8411a78405460e825b5f4318ef9a57",
                 },
                 "principal": the_principal,
                 "type": "creds_v1.0"
-            }, 
+            },
         ]
 
         the_deleted_creds = [
             {
-                "_id": "e49df12a968f4340a6e5f06c43e868bb", 
-                "_rev": "1-8cfdd40a34ecaf4944e790e6beb028c5", 
+                "_id": "e49df12a968f4340a6e5f06c43e868bb",
+                "_rev": "1-8cfdd40a34ecaf4944e790e6beb028c5",
                 "mac": {
-                    "mac_algorithm": "hmac-sha-1", 
-                    "mac_key": "8m_yH35Q9iMEZx_OV5M136eJ4SJsTw0JO-Y6BS3scJY", 
-                    "mac_key_identifier": "e49df12a968f4340a6e5f06c43e868bb", 
+                    "mac_algorithm": "hmac-sha-1",
+                    "mac_key": "8m_yH35Q9iMEZx_OV5M136eJ4SJsTw0JO-Y6BS3scJY",
+                    "mac_key_identifier": "e49df12a968f4340a6e5f06c43e868bb",
                 },
                 "principal": the_principal,
                 "type": "creds_v1.0"
@@ -214,17 +209,16 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             return rv
 
         the_body = {
-            "offset": 0, 
+            "offset": 0,
             "rows": [_to_couchdb_fmt(x) for x in the_creds],
             "total_rows": len(the_creds)
         }
 
-        def async_req_to_key_store_patch(
-            acr,
-            path,
-            method,
-            body,
-            callback):
+        def async_req_to_key_store_patch(acr,
+                                         path,
+                                         method,
+                                         body,
+                                         callback):
 
             self.assertIsNotNone(acr)
 
@@ -311,12 +305,11 @@ class TestCaseAsyncCredsRetriever(yar_test_util.TestCase):
             ],
         }
 
-        def async_req_to_key_store_patch(
-            acr,
-            path,
-            method,
-            body,
-            callback):
+        def async_req_to_key_store_patch(acr,
+                                         path,
+                                         method,
+                                         body,
+                                         callback):
 
             self.assertIsNotNone(acr)
 

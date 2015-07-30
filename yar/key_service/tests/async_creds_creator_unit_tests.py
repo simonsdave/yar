@@ -24,12 +24,11 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
 
         self.the_principal = uuid.uuid4().hex
 
-        def async_req_to_key_store_patch(
-            acc,
-            path,
-            method,
-            body,
-            callback):
+        def async_req_to_key_store_patch(acc,
+                                         path,
+                                         method,
+                                         body,
+                                         callback):
 
             self.assertIsNotNone(acc)
 
@@ -111,12 +110,11 @@ class TestCaseAsyncCredsCreator(yar_test_util.TestCase):
         self.the_principal = uuid.uuid4().hex
         self.the_creds = None
 
-        def async_req_to_key_store_patch(
-            acc,
-            path,
-            method,
-            body,
-            callback):
+        def async_req_to_key_store_patch(acc,
+                                         path,
+                                         method,
+                                         body,
+                                         callback):
 
             self.assertIsNotNone(acc)
 

@@ -235,9 +235,9 @@ class TestAsyncMACAuth(yar_test_util.TestCase):
             the_body = "bindle berry"
             the_content_type = "application/json; charset=utf8"
         the_ext = mac.Ext.generate(the_content_type, the_body)
-        the_host="127.0.0.1"
-        the_port=8080
-        the_uri="/whatever.html"
+        the_host = "127.0.0.1"
+        the_port = 8080
+        the_uri = "/whatever.html"
         the_normalized_request_string = mac.NormalizedRequestString.generate(
             the_ts,
             the_nonce,
@@ -298,12 +298,11 @@ class TestAsyncMACAuth(yar_test_util.TestCase):
                 if the_body is not None:
                     request.body = the_body
                     request.headers["Content-Length"] = len(the_body)
-                
-                def on_auth_done(
-                    is_auth_ok,
-                    auth_failure_detail=None,
-                    auth_failure_debug_details=None,
-                    principal=None):
+
+                def on_auth_done(is_auth_ok,
+                                 auth_failure_detail=None,
+                                 auth_failure_debug_details=None,
+                                 principal=None):
 
                     self.assertIsNotNone(is_auth_ok)
 

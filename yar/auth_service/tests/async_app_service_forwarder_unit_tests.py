@@ -13,6 +13,7 @@ from yar.tests import yar_test_util
 
 from yar.auth_service import async_app_service_forwarder
 
+
 class TestAsyncCredsForwarder(yar_test_util.TestCase):
 
     _app_service = "dave:42"
@@ -28,16 +29,15 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
     def tearDownClass(cls):
         pass
 
-    def _test_good(
-        self,
-        the_request_method,
-        the_request_uri,
-        the_request_headers,
-        the_request_body,
-        the_response_code,
-        the_response_headers,
-        the_response_body,
-        the_response_content_type):
+    def _test_good(self,
+                   the_request_method,
+                   the_request_uri,
+                   the_request_headers,
+                   the_request_body,
+                   the_response_code,
+                   the_response_headers,
+                   the_response_body,
+                   the_response_content_type):
         """This is a long but very useful utility method that is intended to
         test ```async_app_service_forwarder.AsyncAppServiceForwarder```
         forwarding functionality when things are working corectly."""
@@ -76,11 +76,10 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             response.request_time = 24
             callback(response)
 
-        def on_async_app_service_forward_done(
-            is_ok,
-            http_status_code,
-            headers,
-            body):
+        def on_async_app_service_forward_done(is_ok,
+                                              http_status_code,
+                                              headers,
+                                              body):
 
             self.assertIsNotNone(is_ok)
             self.assertEqual(is_ok, the_response_is_ok)
@@ -125,19 +124,19 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             2/ 200 OK response code
             3/ a response body"""
         self._test_good(
-            the_request_method = "GET",
-            the_request_uri = "/dave.html",
-            the_request_headers = {
+            the_request_method="GET",
+            the_request_uri="/dave.html",
+            the_request_headers={
                 "X-Dave-Testing": 42,
             },
-            the_request_body = None,
-            the_response_code = httplib.OK,
-            the_response_headers = tornado.httputil.HTTPHeaders({
+            the_request_body=None,
+            the_response_code=httplib.OK,
+            the_response_headers=tornado.httputil.HTTPHeaders({
                 "X-Bindle": "one",
                 "X-Berry": "two",
             }),
-            the_response_body = "... hello!!!",
-            the_response_content_type = "text/plain; charset=utf8")
+            the_response_body="... hello!!!",
+            the_response_content_type="text/plain; charset=utf8")
 
     def test_all_good_002(self):
         """Validate ```async_app_service_forwarder.AsyncAppServiceForwarder```
@@ -147,19 +146,19 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             2/ 404 not found response code
             3/ no response body"""
         self._test_good(
-            the_request_method = "GET",
-            the_request_uri = "/dave.html",
-            the_request_headers = {
+            the_request_method="GET",
+            the_request_uri="/dave.html",
+            the_request_headers={
                 "X-Dave-Testing": 42,
             },
-            the_request_body = None,
-            the_response_code = httplib.NOT_FOUND,
-            the_response_headers = tornado.httputil.HTTPHeaders({
+            the_request_body=None,
+            the_response_code=httplib.NOT_FOUND,
+            the_response_headers=tornado.httputil.HTTPHeaders({
                 "X-Bindle": "one",
                 "X-Berry": "two",
             }),
-            the_response_body = None,
-            the_response_content_type = None)
+            the_response_body=None,
+            the_response_content_type=None)
 
     def test_all_good_003(self):
         """Validate ```async_app_service_forwarder.AsyncAppServiceForwarder```
@@ -169,19 +168,19 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             2/ 200 ok response code
             3/ no response body"""
         self._test_good(
-            the_request_method = "GET",
-            the_request_uri = "/dave.html",
-            the_request_headers = {
+            the_request_method="GET",
+            the_request_uri="/dave.html",
+            the_request_headers={
                 "X-Dave-Testing": 42,
             },
-            the_request_body = None,
-            the_response_code = httplib.OK,
-            the_response_headers = tornado.httputil.HTTPHeaders({
+            the_request_body=None,
+            the_response_code=httplib.OK,
+            the_response_headers=tornado.httputil.HTTPHeaders({
                 "X-Bindle": "one",
                 "X-Berry": "two",
             }),
-            the_response_body = None,
-            the_response_content_type = None)
+            the_response_body=None,
+            the_response_content_type=None)
 
     def test_all_good_004(self):
         """Validate ```async_app_service_forwarder.AsyncAppServiceForwarder```
@@ -191,20 +190,20 @@ class TestAsyncCredsForwarder(yar_test_util.TestCase):
             2/ 201 created response code
             3/ no response body"""
         self._test_good(
-            the_request_method = "POST",
-            the_request_uri = "/mvs/",
-            the_request_headers = {
+            the_request_method="POST",
+            the_request_uri="/mvs/",
+            the_request_headers={
                 "X-Dave-Testing": 42,
                 "Content-type": "text/plain; charset=utf8",
             },
-            the_request_body = "dave was here",
-            the_response_code = httplib.CREATED,
-            the_response_headers = tornado.httputil.HTTPHeaders({
+            the_request_body="dave was here",
+            the_response_code=httplib.CREATED,
+            the_response_headers=tornado.httputil.HTTPHeaders({
                 "X-Bindle": "one",
                 "X-Berry": "two",
             }),
-            the_response_body = None,
-            the_response_content_type = None)
+            the_response_body=None,
+            the_response_content_type=None)
 
     def test_error(self):
         """This is a long but very useful utility method that is intended to

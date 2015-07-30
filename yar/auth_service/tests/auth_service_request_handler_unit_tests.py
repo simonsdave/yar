@@ -88,7 +88,7 @@ class AuthServerRequestHandlerTestCase(tornado.testing.AsyncHTTPTestCase):
         for key, value in response.headers.iteritems():
             if key.lower().startswith(debug_header_prefix.lower()):
                 if auth_failure_detail_header_name.lower() != key.lower():
-                    rv[key[len(debug_header_prefix):].lower()] = value 
+                    rv[key[len(debug_header_prefix):].lower()] = value
         return rv
 
     def assertAuthFailureDebugDetails(self, response, auth_failure_debug_details):

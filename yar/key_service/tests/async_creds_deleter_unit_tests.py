@@ -74,12 +74,11 @@ class TestCaseAsyncCredsDeleter(yar_test_util.TestCase):
             self.assertIsNotNone(callback)
             callback(creds=the_creds, is_creds_collection=False)
 
-        def async_req_to_key_store_patch(
-            acd,
-            path,
-            method,
-            body,
-            callback):
+        def async_req_to_key_store_patch(acd,
+                                         path,
+                                         method,
+                                         body,
+                                         callback):
             """this patch is here to make sure we don't try to update
             creds that have already been deleted."""
             self.assertFalse(True)
@@ -129,12 +128,11 @@ class TestCaseAsyncCredsDeleter(yar_test_util.TestCase):
             self.assertIsNotNone(callback)
             callback(creds=the_creds, is_creds_collection=False)
 
-        def async_req_to_key_store_patch(
-            acd,
-            path,
-            method,
-            body,
-            callback):
+        def async_req_to_key_store_patch(acd,
+                                         path,
+                                         method,
+                                         body,
+                                         callback):
 
             self.assertIsNotNone(acd)
 

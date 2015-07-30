@@ -61,7 +61,6 @@ def fire_replication(host, source_db, target_db):
     }
     headers = {
         "Content-Type": "application/json",
-#        "Accept": "application/json",
     }
     url = "%s/_replicate" % host
     response = requests.post(

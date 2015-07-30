@@ -161,12 +161,11 @@ class TestCase(yar_test_util.TestCase):
         self.assertIsNotNone(the_key)
         self.assertTrue(0 < len(the_key))
 
-        def fetch_patch(
-            acr,
-            callback,
-            key,
-            principal,
-            is_filter_out_non_model_properties):
+        def fetch_patch(acr,
+                        callback,
+                        key,
+                        principal,
+                        is_filter_out_non_model_properties):
 
             self.assertIsNotNone(acr)
             self.assertIsNotNone(callback)
@@ -228,12 +227,11 @@ class TestCase(yar_test_util.TestCase):
         self.assertIsNotNone(the_principal)
         self.assertTrue(0 < len(the_principal))
 
-        def fetch_patch(
-            acr,
-            callback,
-            key,
-            principal,
-            is_filter_out_non_model_properties):
+        def fetch_patch(acr,
+                        callback,
+                        key,
+                        principal,
+                        is_filter_out_non_model_properties):
 
             self.assertIsNotNone(acr)
             self.assertIsNotNone(callback)
@@ -304,12 +302,11 @@ class TestCase(yar_test_util.TestCase):
     def test_get_of_non_existent_resource(self):
         the_key = uuid.uuid4().hex
 
-        def fetch_patch(
-            acr,
-            callback,
-            key,
-            principal,
-            is_filter_out_non_model_properties):
+        def fetch_patch(acr,
+                        callback,
+                        key,
+                        principal,
+                        is_filter_out_non_model_properties):
             self.assertIsNotNone(acr)
             self.assertIsNotNone(callback)
             self.assertEqual(key, the_key)

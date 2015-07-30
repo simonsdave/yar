@@ -14,6 +14,7 @@ import tornado.testing
 
 from yar.util import trhutil
 
+
 def _uuid():
     return str(uuid.uuid4()).replace("-", "")
 
@@ -148,7 +149,7 @@ class GetRequestHostAndPortRequestHandlerTestCase(tornado.testing.AsyncHTTPTestC
         else:
             headers = {"host": host_header_value}
         self.http_client.fetch(
-            self.get_url(query_string), 
+            self.get_url(query_string),
             self.stop,
             headers=tornado.httputil.HTTPHeaders(headers))
         response = self.wait()
@@ -220,7 +221,7 @@ class GetRequestHostAndPortRequestHandlerTestCase(tornado.testing.AsyncHTTPTestC
         else:
             headers = {"host": host_header_value}
         self.http_client.fetch(
-            self.get_url(query_string), 
+            self.get_url(query_string),
             self.stop,
             headers=tornado.httputil.HTTPHeaders(headers))
         response = self.wait()
@@ -336,12 +337,11 @@ class GetJSONRequestBodyTestCase(tornado.testing.AsyncHTTPTestCase):
         app = tornado.web.Application(handlers=handlers)
         return app
 
-    def _do_it(
-        self,
-        body,
-        expected_body=None,
-        content_type="application/json; charset=utf8",
-        delete_content_length=False):
+    def _do_it(self,
+               body,
+               expected_body=None,
+               content_type="application/json; charset=utf8",
+               delete_content_length=False):
 
         query_string = ""
         if delete_content_length:
@@ -518,12 +518,12 @@ class GetJSONBodyFromResponseTestCase(unittest.TestCase):
         self._run_failure_scenario(response, value_if_not_found, schema)
 
     def test_response_body_jsonschmea_validation_failure_001(self):
-         value_if_not_found = None
-         self._test_response_body_jsonschmea_validation_failure(value_if_not_found)
+        value_if_not_found = None
+        self._test_response_body_jsonschmea_validation_failure(value_if_not_found)
 
     def test_response_body_jsonschmea_validation_failure_002(self):
-         value_if_not_found = "dave"
-         self._test_response_body_jsonschmea_validation_failure(value_if_not_found)
+        value_if_not_found = "dave"
+        self._test_response_body_jsonschmea_validation_failure(value_if_not_found)
 
     def _test_response_ok_body(self, the_body, schema):
         response = mock.Mock()

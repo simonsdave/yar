@@ -96,7 +96,7 @@ setup(
     #   python setup.py sdist
     #
     # did indeed package the design documents in the sdist generated egg
-    # (yar/dist/yar-*.*.tar.gz). Yes this part worked! The problem came when 
+    # (yar/dist/yar-*.*.tar.gz). Yes this part worked! The problem came when
     # pip installing the egg:
     #
     #   pip install ./yar-*.*.tar.gz
@@ -115,7 +115,7 @@ setup(
     #
     # So what was the problem the the site approach? Works fine on Ubuntu but
     # site.getsitepackages() isn't available on Mac OS X (with the default 2.7
-    # Python version). 
+    # Python version).
     #
     # Some facts ... on Ubuntu 12.04:
     #

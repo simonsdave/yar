@@ -86,7 +86,7 @@ class TestCase(unittest.TestCase):
 
     def _is_valid_json(self, str_that_might_be_valid_json, schema):
         """Return ```True``` is ```str_that_might_be_valid_json``` is
-        a json document that is successfully validated by the 
+        a json document that is successfully validated by the
         JSON schema ```schema```."""
         if not self._is_json(str_that_might_be_valid_json):
             return False

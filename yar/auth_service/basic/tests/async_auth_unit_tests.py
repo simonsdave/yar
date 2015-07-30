@@ -147,11 +147,10 @@ class TestAsyncAuth(yar_test_util.TestCase):
         With this test the authorization header's value is not correctly
         base64 encoded."""
 
-        def on_auth_done(
-            is_auth_ok,
-            auth_failure_detail=None,
-            auth_failure_debug_details=None,
-            principal=None):
+        def on_auth_done(is_auth_ok,
+                         auth_failure_detail=None,
+                         auth_failure_debug_details=None,
+                         principal=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -173,11 +172,10 @@ class TestAsyncAuth(yar_test_util.TestCase):
         the_api_key = basic.APIKey.generate()
         the_principal = str(uuid.uuid4()).replace("-", "")
 
-        def on_auth_done(
-            is_auth_ok,
-            auth_failure_detail=None,
-            auth_failure_debug_details=None,
-            principal=None):
+        def on_auth_done(is_auth_ok,
+                         auth_failure_detail=None,
+                         auth_failure_debug_details=None,
+                         principal=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -209,11 +207,10 @@ class TestAsyncAuth(yar_test_util.TestCase):
         the_api_key = basic.APIKey.generate()
         the_principal = str(uuid.uuid4()).replace("-", "")
 
-        def on_auth_done(
-            is_auth_ok,
-            auth_failure_detail=None,
-            auth_failure_debug_details=None,
-            principal=None):
+        def on_auth_done(is_auth_ok,
+                         auth_failure_detail=None,
+                         auth_failure_debug_details=None,
+                         principal=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertFalse(is_auth_ok)
@@ -246,11 +243,10 @@ class TestAsyncAuth(yar_test_util.TestCase):
         the_api_key = basic.APIKey.generate()
         the_principal = str(uuid.uuid4()).replace("-", "")
 
-        def on_auth_done(
-            is_auth_ok,
-            auth_failure_detail=None,
-            auth_failure_debug_details=None,
-            principal=None):
+        def on_auth_done(is_auth_ok,
+                         auth_failure_detail=None,
+                         auth_failure_debug_details=None,
+                         principal=None):
 
             self.assertIsNotNone(is_auth_ok)
             self.assertTrue(is_auth_ok)

@@ -59,11 +59,10 @@ class TestCaseAsyncAction(yar_test_util.TestCase):
     def tearDownClass(cls):
         pass
 
-    def _test_good(
-        self,
-        request_method,
-        request_body_as_dict,
-        response_body_as_dict):
+    def _test_good(self,
+                   request_method,
+                   request_body_as_dict,
+                   response_body_as_dict):
         """This is a rather long but very useful utility method
         which enables complete testing of
         ```ks_util.AsyncAction.async_req_to_key_store```."""

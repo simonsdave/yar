@@ -170,7 +170,7 @@ class TestCase(unittest.TestCase):
             help="whatever")
         values = [
             ["bindle:8909", [("bindle", 8909)]],
-            ["b:8, 89, fiddle:43", [("b", 8), (None,89), ("fiddle", 43)]],
+            ["b:8, 89, fiddle:43", [("b", 8), (None, 89), ("fiddle", 43)]],
             ["b:8 , d:89", [("b", 8), ("d", 89)]],
             [" b:8 ,d:89", [("b", 8), ("d", 89)]],
             ["89", [(None, 89)]],

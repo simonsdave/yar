@@ -22,6 +22,7 @@ class HexifyTestCase(unittest.TestCase):
     def test_bytes_is_none(self):
         self.assertIsNone(mac._hexify(None))
 
+
 class DehexifyTestCase(unittest.TestCase):
 
     def test_bytes_encoded_as_hex_string_is_none(self):
@@ -29,6 +30,7 @@ class DehexifyTestCase(unittest.TestCase):
 
     def test_bytes_encoded_as_hex_string_not_decodable(self):
         self.assertIsNone(mac._dehexify("dave was here"))
+
 
 class MACKeyTestCase(unittest.TestCase):
 
@@ -346,11 +348,10 @@ class AuthHeaderValueTestCase(unittest.TestCase):
 
 class MACTestCase(unittest.TestCase):
 
-    def _core_test_logic(
-        self,
-        http_method,
-        body,
-        content_type):
+    def _core_test_logic(self,
+                         http_method,
+                         body,
+                         content_type):
 
         ts = mac.Timestamp.generate()
         nonce = mac.Nonce.generate()
