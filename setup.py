@@ -47,11 +47,11 @@ setup(
         "bin/bulk_gen_creds",
     ],
     install_requires=[
-        "httplib2==0.9.1",
+        "httplib2==0.9.2",
         "jsonschema==2.5.1",
         "python-keyczar==0.715",
-        "requests==2.7.0",
-        "tornado==4.2.1",
+        "requests==2.8.1",
+        "tornado==4.3",
         "tornado-memcache==0.1",
     ],
     dependency_links=[
