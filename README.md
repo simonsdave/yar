@@ -11,7 +11,7 @@ It's that last point that really motivated this project.
 How hard could it really be?
 Well, turned out to be more work than I originally thought (surprise)
 but it wasn't crazy hard and it's been super interesting.
-yar's about [1,200 logical lines of Python](bin/yarscm) and leverages a ton of amazing open source
+yar's about 1,200 logical lines of Python and leverages a ton of amazing open source
 components to provide a high quality, robust and feature rich
 API Management solution.
 
