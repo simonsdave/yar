@@ -96,6 +96,7 @@ sounded like a roar
 and my kids could not pronounce Seraph.
 
 ### What other API Management solutions exist?
+* [Kong](https://getkong.org/about/)
 * [API Umbrella](https://github.com/NREL/api-umbrella/)
 * [19 Oct '11 - ProgrammableWeb - 11 API Management Services](http://blog.programmableweb.com/2011/10/19/api-service-provider-roundup/)
 * [5 Oct '14 - API Evangelist - Taking A Fresh Look At What Open Source API Management Architecture Is Available](http://apievangelist.com/2014/10/05/taking-a-fresh-look-at-what-open-source-api-management-architecture-is-available)
