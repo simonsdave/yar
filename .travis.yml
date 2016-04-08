@@ -6,5 +6,7 @@ install:
   - source cfg4dev
   - pip install coveralls
 script:
-  - nosetests --with-coverage --cover-erase --cover-branches
-  - coveralls
+  - python setup.py sdist --formats=gztar
+  - nosetests --with-coverage --cover-branches --cover-erase --cover-package yar
+after_success:
+  - coveralls || true
