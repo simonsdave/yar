@@ -49,7 +49,7 @@ setup(
     install_requires=[
         "httplib2==0.9.2",
         "jsonschema==2.5.1",
-        "python-keyczar==0.715",
+        "python-keyczar==0.716",
         "requests==2.10.0",
         "tornado==4.3",
         "tornado-memcache==0.1",
