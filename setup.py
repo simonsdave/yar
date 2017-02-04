@@ -47,7 +47,7 @@ setup(
         "bin/bulk_gen_creds",
     ],
     install_requires=[
-        "httplib2==0.9.2",
+        "httplib2==0.10.2",
         "jsonschema==2.5.1",
         "python-keyczar==0.716",
         "requests==2.13.0",
