@@ -50,7 +50,7 @@ setup(
         "httplib2==0.10.3",
         "jsonschema==2.6.0",
         "python-keyczar==0.716",
-        "requests==2.17.3",
+        "requests==2.18.1",
         "tornado==4.5.1",
         "tornado-memcache==0.1",
     ],
