@@ -1,8 +1,8 @@
 # yar
 
-![Maintained](https://img.shields.io/maintenance/yes/2017.svg)
+![Maintained](https://img.shields.io/maintenance/no/2017.svg)
 [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
-![Python 2.7](https://img.shields.io/badge/python-2.7-FFC100.svg?style=flat) [![Requirements Status](https://requires.io/github/simonsdave/yar/requirements.svg?branch=master)](https://requires.io/github/simonsdave/yar/requirements/?branch=master)
+![Python 2.7](https://img.shields.io/badge/python-2.7-FFC100.svg?style=flat)
 [![Build Status](https://travis-ci.org/simonsdave/yar.svg?branch=master)](https://travis-ci.org/simonsdave/yar)
 [![Coverage Status](http://coveralls.io/repos/simonsdave/yar/badge.svg?branch=master&service=github)](http://coveralls.io/github/simonsdave/yar?branch=master)
 
