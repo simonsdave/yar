@@ -47,7 +47,9 @@ setup(
         "bin/bulk_gen_creds",
     ],
     install_requires=[
-        "httplib2==0.10.3",
+        # httplib2 removed since Dependabot was generatting
+        # "Known security vulnerabilities detected"
+        # "httplib2==0.10.3",
         "jsonschema==2.6.0",
         "python-keyczar==0.716",
         "requests==2.18.1",
